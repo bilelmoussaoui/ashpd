@@ -1,0 +1,14 @@
+[package]
+name = "libportal-rs"
+version = "0.1.0"
+description = "xdg-desktop-portal implementation"
+authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
+edition = "2018"
+repository = "https://github.com/bilelmoussaoui/libportal-rs"
+exclude = ["interfaces/*.xml"]
+keywords = ["portal", "flatpak", "xdg", "desktop", "documents", "desktop"]
+license = "MIT"
+
+[dependencies]
+zbus = "1.0"
+zvariant = "2.0"
