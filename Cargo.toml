@@ -1,5 +1,5 @@
 [package]
-name = "libportal-rs"
+name = "libportal"
 version = "0.1.0"
 description = "xdg-desktop-portal implementation"
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
