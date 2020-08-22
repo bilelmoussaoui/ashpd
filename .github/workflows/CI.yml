@@ -3,7 +3,7 @@ on:
     branches: [master]
   pull_request:
 
-name: backend CI
+name: CI
 
 jobs:
   check:
