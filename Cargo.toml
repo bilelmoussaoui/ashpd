@@ -12,3 +12,4 @@ license = "MIT"
 [dependencies]
 zbus = "1.0"
 zvariant = "2.0"
+serde = "1.0"

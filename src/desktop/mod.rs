@@ -30,7 +30,7 @@ pub use game_mod::GameModeProxy;
 pub use inhibit::InhibitProxy;
 pub use location::LocationProxy;
 pub use memory_monitor::MemoryMonitorProxy;
-pub use network_monitor::NetworkMonitorProxy;
+pub use network_monitor::{Connectivity, NetworkMonitorProxy};
 pub use notification::NotificationProxy;
 pub use open_uri::OpenURIProxy;
 pub use print::PrintProxy;
