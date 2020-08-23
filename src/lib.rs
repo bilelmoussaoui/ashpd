@@ -4,3 +4,8 @@
 pub mod desktop;
 pub mod documents;
 pub mod flatpak;
+pub mod request;
+pub mod session;
+
+pub use zbus;
+pub use zvariant;

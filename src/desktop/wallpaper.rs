@@ -6,7 +6,22 @@ use zbus::{dbus_proxy, fdo::Result};
     default_path = "/org/freedesktop/portal/desktop"
 )]
 trait Wallpaper {
-    /// SetWallpaperFile method
+    /// Sets the lockscreen, background or both wallapers from a file descriptor
+    ///
+    /// Returns a [`Request`] handle
+    ///
+    /// # Arguments
+    ///
+    /// * `parent_window` - Identifier for the application window
+    /// * `fd` - The wallapaper file description
+    /// * `options` - A hashmap
+    ///
+    ///     * `show-preview` -  boolean whether to show a preview of the picture
+    ///                 . Note that the portal may decide to show a preview even if this option is not set
+    ///     * `set-on` - string where to set the wallpaper.
+    ///           : possible values background, locksreen, both
+    ///
+    /// [`Request`]: ../request/struct.RequestProxy.html
     fn set_wallpaper_file(
         &self,
         parent_window: &str,
@@ -14,7 +29,22 @@ trait Wallpaper {
         options: HashMap<&str, zvariant::Value>,
     ) -> Result<String>;
 
-    /// SetWallpaperURI method
+    /// Sets the lockscreen, background or both wallapers from an URI
+    ///
+    /// Returns a [`Request`] handle
+    ///
+    /// # Arguments
+    ///
+    /// * `parent_window` - Identifier for the application window
+    /// * `uri` - The wallapaper URI
+    /// * `options` - A hashmap
+    ///
+    ///     * `show-preview` -  boolean whether to show a preview of the picture
+    ///                 . Note that the portal may decide to show a preview even if this option is not set
+    ///     * `set-on` - string where to set the wallpaper.
+    ///           : possible values background, locksreen, both
+    ///
+    /// [`Request`]: ../request/struct.RequestProxy.html
     fn set_wallpaper_uri(
         &self,
         parent_window: &str,
