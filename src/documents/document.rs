@@ -6,6 +6,19 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Documents",
     default_path = "/org/freedesktop/portal/documents"
 )]
+/// The interface lets sandboxed applications make files from the outside world available to sandboxed applications in a controlled way.
+///
+/// Exported files will be made accessible to the application via a fuse filesystem
+/// that gets mounted at `/run/user/$UID/doc/`. The filesystem gets mounted both outside
+/// and inside the sandbox, but the view inside the sandbox is restricted to just
+/// those files that the application is allowed to access.
+///
+/// Individual files will appear at `/run/user/$UID/doc/$DOC_ID/filename`,
+/// where `$DOC_ID` is the ID of the file in the document store.
+/// It is returned by the `Add()` and `AddNamed()` calls.
+///
+/// The permissions that the application has for a document store entry (see `GrantPermissions()`)
+/// are reflected in the POSIX mode bits in the fuse filesystem.
 trait Documents {
     /// Add method
     fn add(

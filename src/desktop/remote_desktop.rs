@@ -6,6 +6,7 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface lets sandboxed applications create remote desktop sessions.
 trait RemoteDesktop {
     /// CreateSession method
     fn create_session(&self, options: HashMap<&str, zvariant::Value>) -> Result<String>;

@@ -6,6 +6,8 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface lets sandboxed applications request that the application
+/// is allowed to run in the background or started automatically when the user logs in.
 trait Background {
     /// RequestBackground method
     fn request_background(

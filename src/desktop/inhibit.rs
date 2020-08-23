@@ -6,6 +6,7 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface lets sandboxed applications inhibit the user session from ending, suspending, idling or getting switched away.
 trait Inhibit {
     /// CreateMonitor method
     fn create_monitor(

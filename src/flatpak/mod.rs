@@ -6,6 +6,8 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Flatpak",
     default_path = "/org/freedesktop/portal/Flatpak"
 )]
+/// The interface exposes some interactions with Flatpak on the host to the sandbox.
+/// For example, it allows you to restart the applications or start a more sandboxed instance.
 trait Flatpak {
     /// CreateUpdateMonitor method
     fn create_update_monitor(&self, options: HashMap<&str, zvariant::Value>) -> Result<String>;

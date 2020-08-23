@@ -57,6 +57,9 @@ impl Type for Connectivity {
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface provides network status information to sandboxed applications.
+/// It is not a portal in the strict sense, since it does not involve user interaction.
+/// Applications are expected to use this interface indirectly, via a library API such as the GLib GNetworkMonitor interface.
 trait NetworkMonitor {
     /// Returns whether the given hostname is believed to be reachable
     ///

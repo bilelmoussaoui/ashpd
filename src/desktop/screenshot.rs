@@ -6,6 +6,7 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface lets sandboxed applications request a screenshot.
 trait Screenshot {
     /// Obtains the color of a single pixel.
     ///

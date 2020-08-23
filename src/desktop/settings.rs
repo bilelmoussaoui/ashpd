@@ -6,6 +6,8 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface provides read-only access to a small number of host settings required for toolkits similar to XSettings.
+/// It is not for general purpose settings.
 trait Settings {
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///

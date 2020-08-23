@@ -6,6 +6,8 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface lets sandboxed applications open URIs
+/// (e.g. a http: link to the applications homepage) under the control of the user.
 trait OpenURI {
     /// OpenDirectory method
     fn open_directory(

@@ -6,6 +6,7 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface lets sandboxed applications set the user's desktop background picture.
 trait Wallpaper {
     /// Sets the lockscreen, background or both wallapers from a file descriptor
     ///

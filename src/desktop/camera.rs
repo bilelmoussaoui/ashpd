@@ -6,6 +6,7 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
+/// The interface lets sandboxed applications access camera devices, such as web cams.
 trait Camera {
     /// AccessCamera method
     fn access_camera(&self, options: HashMap<&str, zvariant::Value>) -> Result<String>;
