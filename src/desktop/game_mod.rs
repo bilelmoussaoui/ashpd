@@ -1,7 +1,10 @@
 use zbus::{dbus_proxy, fdo::Result};
 
-#[dbus_proxy(interface = "org.freedesktop.portal.GameMode",
-default_path = "/org/freedesktop/portal/desktop")]
+#[dbus_proxy(
+    interface = "org.freedesktop.portal.GameMode",
+    default_service = "org.freedesktop.portal.Desktop",
+    default_path = "/org/freedesktop/portal/desktop"
+)]
 trait GameMode {
     /// QueryStatus method
     fn query_status(&self, pid: i32) -> Result<i32>;

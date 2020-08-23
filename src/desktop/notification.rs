@@ -3,6 +3,7 @@ use zbus::{dbus_proxy, fdo::Result};
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Notification",
+    default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
 trait Notification {
