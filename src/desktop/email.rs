@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Email",
@@ -26,14 +27,10 @@ trait Email {
     ///     * `bcc` -  A `[&str]` containing the email adresses to BCC
     ///     * `subject` - The subject of the email
     ///     * `body` - The body of the email
-    ///     * `attachment_fds` - A `[std::os::unix::io::RawFd]` list of file descriptors of file to attach
+    ///     * `attachment_fds` - A `[RawFd]` list of file descriptors of file to attach
     ///
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn compose_email(
-        &self,
-        parent_window: &str,
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<String>;
+    fn compose_email(&self, parent_window: &str, options: HashMap<&str, Value>) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property)]

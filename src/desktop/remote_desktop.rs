@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.RemoteDesktop",
@@ -9,13 +10,13 @@ use zbus::{dbus_proxy, fdo::Result};
 /// The interface lets sandboxed applications create remote desktop sessions.
 trait RemoteDesktop {
     /// CreateSession method
-    fn create_session(&self, options: HashMap<&str, zvariant::Value>) -> Result<String>;
+    fn create_session(&self, options: HashMap<&str, Value>) -> Result<String>;
 
     /// NotifyKeyboardKeycode method
     fn notify_keyboard_keycode(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         keycode: i32,
         state: u32,
     ) -> Result<()>;
@@ -24,7 +25,7 @@ trait RemoteDesktop {
     fn notify_keyboard_keysym(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         keysym: i32,
         state: u32,
     ) -> Result<()>;
@@ -33,7 +34,7 @@ trait RemoteDesktop {
     fn notify_pointer_axis(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         dx: f64,
         dy: f64,
     ) -> Result<()>;
@@ -42,7 +43,7 @@ trait RemoteDesktop {
     fn notify_pointer_axis_discrete(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         axis: u32,
         steps: i32,
     ) -> Result<()>;
@@ -51,7 +52,7 @@ trait RemoteDesktop {
     fn notify_pointer_button(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         button: i32,
         state: u32,
     ) -> Result<()>;
@@ -60,7 +61,7 @@ trait RemoteDesktop {
     fn notify_pointer_motion(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         dx: f64,
         dy: f64,
     ) -> Result<()>;
@@ -69,7 +70,7 @@ trait RemoteDesktop {
     fn notify_pointer_motion_absolute(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         stream: u32,
         x: f64,
         y: f64,
@@ -79,7 +80,7 @@ trait RemoteDesktop {
     fn notify_touch_down(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         stream: u32,
         slot: u32,
         x: f64,
@@ -90,7 +91,7 @@ trait RemoteDesktop {
     fn notify_touch_motion(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         stream: u32,
         slot: u32,
         x: f64,
@@ -101,23 +102,20 @@ trait RemoteDesktop {
     fn notify_touch_up(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
         slot: u32,
     ) -> Result<()>;
 
     /// SelectDevices method
-    fn select_devices(
-        &self,
-        session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<String>;
+    fn select_devices(&self, session_handle: &str, options: HashMap<&str, Value>)
+        -> Result<String>;
 
     /// Start method
     fn start(
         &self,
         session_handle: &str,
         parent_window: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// AvailableDeviceTypes property

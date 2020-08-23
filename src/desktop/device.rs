@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Device",
@@ -9,12 +10,19 @@ use zbus::{dbus_proxy, fdo::Result};
 /// The interface lets services ask if an application should get access to devices such as microphones, speakers or cameras.
 /// Not a portal in the strict sense, since the API is not directly accessible to applications inside the sandbox.
 trait Device {
-    /// AccessDevice method
+    /// Asks for access to a device.
+    ///
+    /// # Arguments
+    ///
+    /// * `pid` - The pid of the application on whose behalf the request is made
+    /// * `devices` - A list of devices to request access to. Supported values are 'microphone', 'speakers', 'camera'. Asking for multiple devices at the same time may or may not be supported
+    /// * `options` - A HashMap
+    ///     * `handle_token` - A string that will be used as the last element of the handle.
     fn access_device(
         &self,
         pid: u32,
         devices: &[&str],
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// version property

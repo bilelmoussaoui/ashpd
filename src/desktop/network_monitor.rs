@@ -5,6 +5,7 @@ use zvariant::{Signature, Type};
 
 #[derive(Serialize, Debug, Copy, Clone)]
 #[non_exhaustive]
+/// Host's network activity
 pub enum Connectivity {
     /// The host is not configured with a route to the internet.
     Local,

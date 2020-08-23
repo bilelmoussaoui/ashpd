@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 
 #[dbus_proxy(
@@ -21,17 +22,12 @@ use zbus::{dbus_proxy, fdo::Result};
 /// are reflected in the POSIX mode bits in the fuse filesystem.
 trait Documents {
     /// Add method
-    fn add(
-        &self,
-        o_path_fd: std::os::unix::io::RawFd,
-        reuse_existing: bool,
-        persistent: bool,
-    ) -> Result<String>;
+    fn add(&self, o_path_fd: RawFd, reuse_existing: bool, persistent: bool) -> Result<String>;
 
     /// AddFull method
     fn add_full(
         &self,
-        o_path_fds: &[std::os::unix::io::RawFd],
+        o_path_fds: &[RawFd],
         flags: u32,
         app_id: &str,
         permissions: &[&str],
@@ -40,7 +36,7 @@ trait Documents {
     /// AddNamed method
     fn add_named(
         &self,
-        o_path_parent_fd: std::os::unix::io::RawFd,
+        o_path_parent_fd: RawFd,
         filename: &[u8],
         reuse_existing: bool,
         persistent: bool,
@@ -49,7 +45,7 @@ trait Documents {
     /// AddNamedFull method
     fn add_named_full(
         &self,
-        o_path_fd: std::os::unix::io::RawFd,
+        o_path_fd: RawFd,
         filename: &[u8],
         flags: u32,
         app_id: &str,

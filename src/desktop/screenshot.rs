@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Screenshot",
@@ -20,11 +21,7 @@ trait Screenshot {
     ///     * `handle_token` - A string that will be used as the last element of the handle. Must be a valid object path element.
     ///
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn pick_color(
-        &self,
-        parent_window: &str,
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<String>;
+    fn pick_color(&self, parent_window: &str, options: HashMap<&str, Value>) -> Result<String>;
 
     /// Takes a screenshot
     ///
@@ -40,11 +37,7 @@ trait Screenshot {
     ///     * `interactive`- Hint shether the dialog should offer customization before taking a screenshot. Default is `false`
     ///
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn screenshot(
-        &self,
-        parent_window: &str,
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<String>;
+    fn screenshot(&self, parent_window: &str, options: HashMap<&str, Value>) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property)]

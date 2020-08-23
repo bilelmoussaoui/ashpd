@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Wallpaper",
@@ -27,8 +29,8 @@ trait Wallpaper {
     fn set_wallpaper_file(
         &self,
         parent_window: &str,
-        fd: std::os::unix::io::RawFd,
-        options: HashMap<&str, zvariant::Value>,
+        fd: RawFd,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// Sets the lockscreen, background or both wallapers from an URI
@@ -51,7 +53,7 @@ trait Wallpaper {
         &self,
         parent_window: &str,
         uri: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// version property

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Location",
@@ -9,14 +10,14 @@ use zbus::{dbus_proxy, fdo::Result};
 /// The interface lets sandboxed applications query basic information about the location.
 trait Location {
     /// CreateSession method
-    fn create_session(&self, options: HashMap<&str, zvariant::Value>) -> Result<String>;
+    fn create_session(&self, options: HashMap<&str, Value>) -> Result<String>;
 
     /// Start method
     fn start(
         &self,
         session_handle: &str,
         parent_window: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// version property

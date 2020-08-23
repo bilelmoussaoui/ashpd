@@ -1,5 +1,5 @@
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-
 #[dbus_proxy(
     interface = "org.freedesktop.portal.GameMode",
     default_service = "org.freedesktop.portal.Desktop",
@@ -29,11 +29,7 @@ trait GameMode {
     fn query_status(&self, pid: i32) -> Result<i32>;
 
     /// QueryStatusByPIDFd method
-    fn query_status_by_pidfd(
-        &self,
-        target: std::os::unix::io::RawFd,
-        requester: std::os::unix::io::RawFd,
-    ) -> Result<i32>;
+    fn query_status_by_pidfd(&self, target: RawFd, requester: RawFd) -> Result<i32>;
 
     /// QueryStatusByPid method
     fn query_status_by_pid(&self, target: i32, requester: i32) -> Result<i32>;
@@ -42,11 +38,7 @@ trait GameMode {
     fn register_game(&self, pid: i32) -> Result<i32>;
 
     /// RegisterGameByPIDFd method
-    fn register_game_by_pidfd(
-        &self,
-        target: std::os::unix::io::RawFd,
-        requester: std::os::unix::io::RawFd,
-    ) -> Result<i32>;
+    fn register_game_by_pidfd(&self, target: RawFd, requester: RawFd) -> Result<i32>;
 
     /// RegisterGameByPid method
     fn register_game_by_pid(&self, target: i32, requester: i32) -> Result<i32>;
@@ -55,11 +47,7 @@ trait GameMode {
     fn unregister_game(&self, pid: i32) -> Result<i32>;
 
     /// UnregisterGameByPIDFd method
-    fn unregister_game_by_pidfd(
-        &self,
-        target: std::os::unix::io::RawFd,
-        requester: std::os::unix::io::RawFd,
-    ) -> Result<i32>;
+    fn unregister_game_by_pidfd(&self, target: RawFd, requester: RawFd) -> Result<i32>;
 
     /// UnregisterGameByPid method
     fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<i32>;

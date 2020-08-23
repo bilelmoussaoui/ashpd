@@ -1,3 +1,4 @@
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 
 #[dbus_proxy(
@@ -16,7 +17,7 @@ trait Trash {
     ///
     /// * `fd` - the file descriptor
     ///
-    fn trash_file(&self, fd: std::os::unix::io::RawFd) -> Result<u32>;
+    fn trash_file(&self, fd: RawFd) -> Result<u32>;
 
     /// version property
     #[dbus_proxy(property)]

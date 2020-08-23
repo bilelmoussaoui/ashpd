@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.ScreenCast",
@@ -9,28 +11,25 @@ use zbus::{dbus_proxy, fdo::Result};
 /// The interface lets sandboxed applications create screen cast sessions.
 trait ScreenCast {
     /// CreateSession method
-    fn create_session(&self, options: HashMap<&str, zvariant::Value>) -> Result<String>;
+    fn create_session(&self, options: HashMap<&str, Value>) -> Result<String>;
 
     /// OpenPipeWireRemote method
     fn open_pipe_wire_remote(
         &self,
         session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<std::os::unix::io::RawFd>;
+        options: HashMap<&str, Value>,
+    ) -> Result<RawFd>;
 
     /// SelectSources method
-    fn select_sources(
-        &self,
-        session_handle: &str,
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<String>;
+    fn select_sources(&self, session_handle: &str, options: HashMap<&str, Value>)
+        -> Result<String>;
 
     /// Start method
     fn start(
         &self,
         session_handle: &str,
         parent_window: &str,
-        options: HashMap<&str, zvariant::Value>,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// AvailableCursorModes property

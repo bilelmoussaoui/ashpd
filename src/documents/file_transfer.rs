@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.FileTransfer",
@@ -18,22 +20,13 @@ use zbus::{dbus_proxy, fdo::Result};
 /// The portal will take care of exporting files in the document store as necessary to make them accessible to the target.
 trait FileTransfer {
     /// AddFiles method
-    fn add_files(
-        &self,
-        key: &str,
-        fds: &[std::os::unix::io::RawFd],
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<()>;
+    fn add_files(&self, key: &str, fds: &[RawFd], options: HashMap<&str, Value>) -> Result<()>;
 
     /// RetrieveFiles method
-    fn retrieve_files(
-        &self,
-        key: &str,
-        options: HashMap<&str, zvariant::Value>,
-    ) -> Result<Vec<String>>;
+    fn retrieve_files(&self, key: &str, options: HashMap<&str, Value>) -> Result<Vec<String>>;
 
     /// StartTransfer method
-    fn start_transfer(&self, options: HashMap<&str, zvariant::Value>) -> Result<String>;
+    fn start_transfer(&self, options: HashMap<&str, Value>) -> Result<String>;
 
     /// StopTransfer method
     fn stop_transfer(&self, key: &str) -> Result<()>;

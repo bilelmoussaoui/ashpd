@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Value;
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Print",
@@ -13,9 +15,9 @@ trait Print {
         &self,
         parent_window: &str,
         title: &str,
-        settings: HashMap<&str, zvariant::Value>,
-        page_setup: HashMap<&str, zvariant::Value>,
-        options: HashMap<&str, zvariant::Value>,
+        settings: HashMap<&str, Value>,
+        page_setup: HashMap<&str, Value>,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// Print method
@@ -23,8 +25,8 @@ trait Print {
         &self,
         parent_window: &str,
         title: &str,
-        fd: std::os::unix::io::RawFd,
-        options: HashMap<&str, zvariant::Value>,
+        fd: RawFd,
+        options: HashMap<&str, Value>,
     ) -> Result<String>;
 
     /// version property
