@@ -16,18 +16,11 @@ trait Account {
     ///
     /// # Arguments
     ///
-    /// * `handle` - A string that will be used as the last element of the handle.
-    /// * `app_id` - App id of the application
     /// * `window` - Identifier for the window
     /// * `options` - A HashMap
+    ///     * `handle_token` - A string that will be used as the last element of the handle. Must be a valid object path element.
     ///     * `reason` - A string that can be shown in the dialog to expain why the information is needed.
-    fn get_user_information(
-        &self,
-        handle: &str,
-        app_id: &str,
-        window: &str,
-        options: HashMap<&str, Value>,
-    ) -> Result<String>;
+    fn get_user_information(&self, window: &str, options: HashMap<&str, Value>) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property)]
