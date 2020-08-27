@@ -3,6 +3,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Print settings to set in the print dialog.
 pub struct PrintSettings {
     /// One of landscape, portrait, reverse_landscape or reverse_portrait.
     pub orientation: Option<String>,
@@ -61,6 +62,7 @@ pub struct PrintSettings {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Setup the printed pages.
 pub struct PrintPageSetup {
     /// the PPD name.
     pub ppdname: Option<String>,
@@ -85,6 +87,7 @@ pub struct PrintPageSetup {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a prepare print request.
 pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
@@ -93,6 +96,7 @@ pub struct PreparePrintOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a print request.
 pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,

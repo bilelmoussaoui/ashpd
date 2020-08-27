@@ -2,7 +2,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options for a device access request.
 pub struct DeviceAccessOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,

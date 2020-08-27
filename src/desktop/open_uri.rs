@@ -3,14 +3,14 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options for an open directory request.
 pub struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options for an open file request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,

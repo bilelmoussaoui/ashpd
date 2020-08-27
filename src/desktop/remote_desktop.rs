@@ -4,7 +4,7 @@ use zvariant::Value;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options on a create a remote session request.
 pub struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
@@ -13,7 +13,7 @@ pub struct CreateRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options on a select devices request.
 pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
@@ -22,6 +22,7 @@ pub struct SelectDevicesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a start remote desktop request.
 pub struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,

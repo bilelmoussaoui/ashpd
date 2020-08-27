@@ -4,10 +4,13 @@ use zvariant::{Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// The network status, composed of the avaiability, metered & connectivity
 pub struct NetworkStatus {
+    /// Whether the network is considered available.
     pub available: bool,
+    /// Whether the network is considered metered.
     pub metered: bool,
+    /// More detailed information about the host's network connectivity
     pub connectivity: u32,
 }
 
@@ -23,7 +26,7 @@ pub enum Connectivity {
     CaptivePortal,
     /// The host connected to a network, and can reach the full internet.
     FullNetwork,
-    // Invalid value
+    /// Invalid value
     Unknown,
 }
 

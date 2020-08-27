@@ -3,7 +3,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options on a retrieve secret request.
 pub struct ScecretOptions {
     /// A string returned by a pervious call to `retrieve_secret`
     pub token: Option<String>,

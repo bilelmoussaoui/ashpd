@@ -2,6 +2,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// A notification
 pub struct Notification {
     /// User-visible string to display as the title.
     pub title: String,
@@ -18,7 +19,9 @@ pub struct Notification {
     // Array of buttons to add to the notification.
     // pub buttons: Vec<Button>,
 }
+
 #[derive(SerializeDict, DeserializeDict, Type, Debug)]
+/// A notification button
 pub struct Button {
     /// User-visible label for the button. Mandatory.
     pub label: String,

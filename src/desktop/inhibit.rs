@@ -2,6 +2,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options for a create inhibit monitor request.
 pub struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
@@ -10,6 +11,7 @@ pub struct CreateMonitorOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options of an inhibit request.
 pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,

@@ -2,6 +2,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options for a open file request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
@@ -22,6 +23,7 @@ pub struct OpenFileOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options for a save file request.
 pub struct SaveFileOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
@@ -44,6 +46,7 @@ pub struct SaveFileOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options for a save files request.
 pub struct SaveFilesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,

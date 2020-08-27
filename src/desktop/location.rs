@@ -2,7 +2,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options for a location access request.
 pub struct LocationAccessOptions {
     /// A string that will be used as the last element of the session handle.
     pub session_handle_token: Option<String>,
@@ -17,7 +17,7 @@ pub struct LocationAccessOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options for a location session start request.
 pub struct LocationStartOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,

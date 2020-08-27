@@ -1,3 +1,10 @@
+//! libportal, the portal gun getting oxedized, the Rust wrapper for the XDG portals DBus interfaces.
+//! ```no_run
+//! let connection = zbus::Connection::new_session()?;
+//! let proxy = ScreenshotProxy::new(&connection)?;
+//! let request = proxy.pick_color("handle", PickColorOptions::default())?;
+//! ```
+
 /// Implementation of the various portals under `/org/freedesktop/portal/desktop`
 pub mod desktop;
 /// Implementation of the various portals under `/org/freedesktop/portal/documents`

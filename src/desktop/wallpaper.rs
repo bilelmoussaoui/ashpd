@@ -6,9 +6,13 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 #[serde(rename = "lowercase")]
+/// Where to set the wallpaper on.
 pub enum WallpaperSetOn {
+    /// Set the wallpaper only on the lockscreen.
     Lockscreen,
+    /// Set the wallpaper only on the background.
     Background,
+    /// Set the wallpaper on both lockscreen and background.
     Both,
 }
 
@@ -34,7 +38,7 @@ impl std::convert::TryFrom<zvariant::Value<'_>> for WallpaperSetOn {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options for a set wallpaper request.
 pub struct WallpaperOptions {
     /// Whether to show a preview of the picture
     /// Note that the portal may decide to show a preview even if this option is not set

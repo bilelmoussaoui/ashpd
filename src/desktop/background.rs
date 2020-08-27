@@ -1,7 +1,8 @@
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Specified options for a background request.
 pub struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
@@ -15,7 +16,7 @@ pub struct BackgroundOptions {
     //commandline:  Vec<String>,
 }
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-#[zvariant(deny_unknown_fields)]
+/// Result returned by the response signal after a background request.
 pub struct BackgroundResult {
     /// if the application is allowed to run in the background
     background: bool,

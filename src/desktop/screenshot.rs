@@ -2,6 +2,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a screenshot request.
 pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
@@ -22,6 +23,7 @@ impl Default for ScreenshotOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a pick color request.
 pub struct PickColorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,

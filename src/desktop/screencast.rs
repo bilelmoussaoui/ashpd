@@ -5,6 +5,7 @@ use zvariant::Value;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a create a screencast session request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
@@ -12,6 +13,7 @@ pub struct CreateSessionOptions {
     pub session_handle_token: Option<String>,
 }
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
@@ -24,6 +26,7 @@ pub struct SelectSourcesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a start screencast request.
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
