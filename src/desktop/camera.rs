@@ -2,6 +2,14 @@ use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Value;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[zvariant(deny_unknown_fields)]
+pub struct CameraAccessOptions {
+    /// A string that will be used as the last element of the handle.
+    pub handle_token: Option<String>,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Camera",
@@ -14,15 +22,18 @@ trait Camera {
     ///
     /// # Arguments
     ///
-    /// * `options` - A HashMap
-    ///     * `handle_token` - A string that will be used as the last element of the handle.
-    fn access_camera(&self, options: HashMap<&str, Value>) -> Result<String>;
+    /// * `options` - A [`CameraAccessOptions`]
+    ///
+    /// [`CameraAccessOptions`]: ./struct.CameraAccessOptions.html
+    fn access_camera(&self, options: CameraAccessOptions) -> Result<String>;
 
     /// Open a file descriptor to the PipeWire remote where the camera nodes are available.
-    /// The file descriptor should be used to create a pw_remote object,
-    /// by using pw_remote_connect_fd.
     ///
     /// Returns a File descriptor of an open PipeWire remote.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - ?
     fn open_pipe_wire_remote(&self, options: HashMap<&str, Value>) -> Result<RawFd>;
 
     /// A boolean stating whether there is any cameras available.
@@ -30,6 +41,6 @@ trait Camera {
     fn is_camera_present(&self) -> Result<bool>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

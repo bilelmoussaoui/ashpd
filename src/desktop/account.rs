@@ -1,6 +1,14 @@
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[zvariant(deny_unknown_fields)]
+pub struct UserInfoOptions {
+    /// A string that will be used as the last element of the handle.
+    pub handle_token: Option<String>,
+    /// Shown in the dialog to explain why the information is needed.
+    pub reason: String,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Account",
@@ -17,12 +25,12 @@ trait Account {
     /// # Arguments
     ///
     /// * `window` - Identifier for the window
-    /// * `options` - A HashMap
-    ///     * `handle_token` - A string that will be used as the last element of the handle. Must be a valid object path element.
-    ///     * `reason` - A string that can be shown in the dialog to expain why the information is needed.
-    fn get_user_information(&self, window: &str, options: HashMap<&str, Value>) -> Result<String>;
+    /// * `options` - A [`UserInfoOptions`]
+    ///
+    /// [`UserInfoOptions`]: ./struct.UserInfoOptions.html
+    fn get_user_information(&self, window: &str, options: UserInfoOptions) -> Result<String>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

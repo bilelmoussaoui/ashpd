@@ -1,7 +1,15 @@
 use serde::{Deserialize, Deserializer, Serialize};
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Signature, Type};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[zvariant(deny_unknown_fields)]
+pub struct NetworkStatus {
+    pub available: bool,
+    pub metered: bool,
+    pub connectivity: u32,
+}
 
 #[derive(Serialize, Debug, Copy, Clone)]
 #[non_exhaustive]
@@ -33,17 +41,6 @@ impl<'de> Deserialize<'de> for Connectivity {
             _ => Connectivity::Unknown,
         };
         Ok(response)
-    }
-
-    fn deserialize_in_place<D>(
-        deserializer: D,
-        place: &mut Self,
-    ) -> std::result::Result<(), D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        *place = Deserialize::deserialize(deserializer)?;
-        Ok(())
     }
 }
 
@@ -82,14 +79,9 @@ trait NetworkMonitor {
     fn get_metered(&self) -> Result<bool>;
 
     /// Returns the three values all at once.
-    ///
-    /// * `available` - bool
-    /// * `metered` - bool
-    /// * `connectivity` - Connectivity
-    ///
-    fn get_status(&self) -> Result<HashMap<String, zvariant::OwnedValue>>;
+    fn get_status(&self) -> Result<NetworkStatus>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

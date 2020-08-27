@@ -1,5 +1,4 @@
-mod document;
-mod file_transfer;
-
-pub use document::DocumentsProxy;
-pub use file_transfer::FileTransferProxy;
+/// Interact with `org.freedesktop.portal.Documents` interface.
+pub mod document;
+/// Interact with `org.freedesktop.portal.FileTransfer` interface.
+pub mod file_transfer;

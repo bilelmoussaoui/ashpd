@@ -16,10 +16,9 @@ trait Trash {
     /// # Arguments
     ///
     /// * `fd` - the file descriptor
-    ///
     fn trash_file(&self, fd: RawFd) -> Result<u32>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

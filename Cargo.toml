@@ -10,6 +10,7 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "documents", "desktop"]
 license = "MIT"
 
 [dependencies]
-zbus = "1.0"
-zvariant = "2.0"
+zbus = "1.1"
+zvariant = "2.1"
+zvariant_derive = "2.1"
 serde = "1.0"

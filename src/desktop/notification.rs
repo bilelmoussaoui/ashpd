@@ -1,6 +1,32 @@
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+pub struct Notification {
+    /// User-visible string to display as the title.
+    pub title: String,
+    /// User-visible string to display as the body.
+    pub body: Option<String>,
+    // Serialized icon (e.g using gio::Icon::serialize)
+    // icon: Option<String>,
+    /// The priority for the notification. Supported values: low, normal, high, urgent.
+    pub priority: Option<String>,
+    /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
+    pub default_action: Option<String>,
+    // Target parameter to send along when activating the default action.
+    //pub default_action_target: Option<OwnedValue>,
+    // Array of buttons to add to the notification.
+    // pub buttons: Vec<Button>,
+}
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+pub struct Button {
+    /// User-visible label for the button. Mandatory.
+    pub label: String,
+    /// Name of an action that is exported by the application. The action will be activated when the user clicks on the button.
+    pub action: String,
+    // Target parameter to send along when activating the action.
+    //pub target: Option<OwnedValue>,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Notification",
@@ -32,17 +58,7 @@ trait Notification {
     ///
     /// * `id` - Application-provided ID for this notification
     /// * `notification` - HashMap
-    ///     * `title` - User-visible string to display as the title.
-    ///     * `body` - User-visible string to display as the body.
-    ///     * `icon` -
-    ///     * `priority` - The priority for the notification. Supported values: low, normal, high, urgent.
-    ///     * `default-action` - Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
-    ///     * `default-action-target` - Target parameter to send along when activating the default action.
-    ///     * `buttons` - Array of serialized buttons to add to the notification.
-    ///         * `label` - User-visible label for the button. Mandatory.
-    ///         * `action` - Name of an action that is exported by the application. The action will be activated when the user clicks on the button. Mandatory.
-    ///         * `target` - Target parameter to send along when activating the action.
-    fn add_notification(&self, id: &str, notification: HashMap<&str, Value>) -> Result<()>;
+    fn add_notification(&self, id: &str, notification: Notification) -> Result<()>;
 
     /// Withdraws a notification.
     ///
@@ -55,6 +71,6 @@ trait Notification {
     // fn action_invoked(&self, id: &str, action: &str, params: &[Value]);
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

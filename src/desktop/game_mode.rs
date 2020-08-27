@@ -53,6 +53,6 @@ trait GameMode {
     fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<i32>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

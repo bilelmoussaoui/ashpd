@@ -1,6 +1,12 @@
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[zvariant(deny_unknown_fields)]
+pub struct DeviceAccessOptions {
+    /// A string that will be used as the last element of the handle.
+    pub handle_token: Option<String>,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Device",
@@ -16,16 +22,17 @@ trait Device {
     ///
     /// * `pid` - The pid of the application on whose behalf the request is made
     /// * `devices` - A list of devices to request access to. Supported values are 'microphone', 'speakers', 'camera'. Asking for multiple devices at the same time may or may not be supported
-    /// * `options` - A HashMap
-    ///     * `handle_token` - A string that will be used as the last element of the handle.
+    /// * `options` - [`DeviceAccessOptions`]
+    ///
+    /// [`DeviceAccessOptions`]: ./struct.DeviceAccessOptions.html
     fn access_device(
         &self,
         pid: u32,
         devices: &[&str],
-        options: HashMap<&str, Value>,
+        options: DeviceAccessOptions,
     ) -> Result<String>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

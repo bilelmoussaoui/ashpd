@@ -1,7 +1,13 @@
-use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[zvariant(deny_unknown_fields)]
+pub struct ScecretOptions {
+    /// A string returned by a pervious call to `retrieve_secret`
+    pub token: Option<String>,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Secret",
@@ -12,9 +18,9 @@ use zvariant::Value;
 /// The secret can then be used for encrypting confidential data inside the sandbox.
 trait Secret {
     /// RetrieveSecret method
-    fn retrieve_secret(&self, fd: RawFd, options: HashMap<&str, Value>) -> Result<String>;
+    fn retrieve_secret(&self, fd: RawFd, options: ScecretOptions) -> Result<String>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

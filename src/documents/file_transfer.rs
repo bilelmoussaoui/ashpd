@@ -2,6 +2,24 @@ use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Value;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+pub struct TransferOptions {
+    /// Whether to allow the chosen application to write to the files.
+    pub writable: bool,
+    /// Whether to stop the transfer automatically after the first `retrieve_files` call.
+    pub autostop: bool,
+}
+
+impl Default for TransferOptions {
+    fn default() -> Self {
+        Self {
+            writable: false,
+            autostop: true,
+        }
+    }
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.FileTransfer",
@@ -19,19 +37,47 @@ use zvariant::Value;
 /// Upon receiving this mimetype, the target should call RetrieveFiles with the key, to obtain the list of files.
 /// The portal will take care of exporting files in the document store as necessary to make them accessible to the target.
 trait FileTransfer {
-    /// AddFiles method
+    /// Adds files to a session.
+    /// This method can be called multiple times on a given session.
+    /// Note that only regular files (not directories) can be added.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - a key returned by `start_transfer`
+    /// * `fds` - a list of file descriptors of the files to register
+    /// * `options` - ?
     fn add_files(&self, key: &str, fds: &[RawFd], options: HashMap<&str, Value>) -> Result<()>;
 
-    /// RetrieveFiles method
+    /// Retrieves files that were previously added to the session with `add_files`.
+    /// The files will be exported in the document portal as-needed for the caller,
+    /// and they will be writable if the owner of the session allowed it.
+    ///
+    /// Returns the list of file paths
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - a key returned by `start_transfer`
+    /// * `options` - ?
     fn retrieve_files(&self, key: &str, options: HashMap<&str, Value>) -> Result<Vec<String>>;
 
-    /// StartTransfer method
-    fn start_transfer(&self, options: HashMap<&str, Value>) -> Result<String>;
+    /// Starts a session for a file transfer.
+    /// The caller should call `add_files` at least once, to add files to this session.
+    ///
+    /// Returns a key that can be passed to `retrieve_files` to obtain the files.
+    fn start_transfer(&self, options: TransferOptions) -> Result<String>;
 
-    /// StopTransfer method
+    /// Ends the transfer.
+    /// Further calls to `add_files` or `retrieve_files` for this key will return an error.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - A key returned by `start_transfer`
     fn stop_transfer(&self, key: &str) -> Result<()>;
 
+    // signal
+    // fn transfer_closed(&self, key: &str);
+
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

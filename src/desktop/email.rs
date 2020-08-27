@@ -1,6 +1,25 @@
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[zvariant(deny_unknown_fields)]
+pub struct EmailOptions {
+    /// A string that will be used as the last element of the handle.
+    pub handle_token: Option<String>,
+    /// The email address to send to
+    pub address: Option<String>,
+    // The email adresses to send to
+    // pub addresses: Vec<String>,
+    // The email adresses to CC
+    // pub cc: Vec<String>,
+    // The email adresses to BCC
+    // pub bcc: Vec<String>,
+    /// The subject of the email
+    pub subject: Option<String>,
+    /// The body of the email
+    pub body: Option<String>, // A list of file descriptors of files to attach
+                              // pub attachment_fds: Vec<RawFd>
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Email",
@@ -13,26 +32,17 @@ trait Email {
     ///
     /// Note that the default email client for the host will need to support mailto: URIs following RFC 2368
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a `Request` handle
     ///
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window
-    /// * `options` - A hashmap
+    /// * `options` - [`EmailOptions`]
     ///
-    ///     * `handle_token` - A string that will be used as the last element of the handle. Must be a valid object path element.
-    ///     * `address` - The email address to send to
-    ///     * `addresses` - A `[&str]` containing the email adresses to send to
-    ///     * `cc` - A `[&str]` containing the email adresses to CC
-    ///     * `bcc` -  A `[&str]` containing the email adresses to BCC
-    ///     * `subject` - The subject of the email
-    ///     * `body` - The body of the email
-    ///     * `attachment_fds` - A `[RawFd]` list of file descriptors of file to attach
-    ///
-    /// [`Request`]: ../request/struct.RequestProxy.html
-    fn compose_email(&self, parent_window: &str, options: HashMap<&str, Value>) -> Result<String>;
+    /// [`EmailOptions`]: ./struct.EmailOptions.html
+    fn compose_email(&self, parent_window: &str, options: EmailOptions) -> Result<String>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

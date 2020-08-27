@@ -1,7 +1,56 @@
-use std::collections::HashMap;
+use serde::{self, Deserialize, Serialize};
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant::{Signature, Type};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[serde(rename = "lowercase")]
+pub enum WallpaperSetOn {
+    Lockscreen,
+    Background,
+    Both,
+}
+
+impl Type for WallpaperSetOn {
+    fn signature() -> Signature<'static> {
+        Signature::from_string_unchecked("s".to_string())
+    }
+}
+
+impl std::convert::TryFrom<zvariant::Value<'_>> for WallpaperSetOn {
+    type Error = zvariant::Error;
+    fn try_from(v: zvariant::Value<'_>) -> std::result::Result<Self, Self::Error> {
+        match v {
+            zvariant::Value::Str(s) => match s.as_str() {
+                "lockscreen" => Ok(WallpaperSetOn::Lockscreen),
+                "background" => Ok(WallpaperSetOn::Background),
+                "both" => Ok(WallpaperSetOn::Both),
+                _ => Err(zvariant::Error::Message("invalid value".to_string())),
+            },
+            _ => Err(zvariant::Error::IncorrectType),
+        }
+    }
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[zvariant(deny_unknown_fields)]
+pub struct WallpaperOptions {
+    /// Whether to show a preview of the picture
+    /// Note that the portal may decide to show a preview even if this option is not set
+    pub show_preview: bool,
+    /// Where to set the wallpaper on
+    pub set_on: String,
+}
+
+impl Default for WallpaperOptions {
+    fn default() -> Self {
+        Self {
+            show_preview: true,
+            set_on: "both".to_string(),
+        }
+    }
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Wallpaper",
@@ -18,19 +67,15 @@ trait Wallpaper {
     ///
     /// * `parent_window` - Identifier for the application window
     /// * `fd` - The wallapaper file description
-    /// * `options` - A hashmap
+    /// * `options` - A [`WallpaperOptions`]
     ///
-    ///     * `show-preview` -  boolean whether to show a preview of the picture
-    ///                 . Note that the portal may decide to show a preview even if this option is not set
-    ///     * `set-on` - string where to set the wallpaper.
-    ///           : possible values background, locksreen, both
-    ///
+    /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn set_wallpaper_file(
         &self,
         parent_window: &str,
         fd: RawFd,
-        options: HashMap<&str, Value>,
+        options: WallpaperOptions,
     ) -> Result<String>;
 
     /// Sets the lockscreen, background or both wallapers from an URI
@@ -41,22 +86,18 @@ trait Wallpaper {
     ///
     /// * `parent_window` - Identifier for the application window
     /// * `uri` - The wallapaper URI
-    /// * `options` - A hashmap
+    /// * `options` - A [`WallpaperOptions`]
     ///
-    ///     * `show-preview` -  boolean whether to show a preview of the picture
-    ///                 . Note that the portal may decide to show a preview even if this option is not set
-    ///     * `set-on` - string where to set the wallpaper.
-    ///           : possible values background, locksreen, both
-    ///
+    /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn set_wallpaper_uri(
         &self,
         parent_window: &str,
         uri: &str,
-        options: HashMap<&str, Value>,
+        options: WallpaperOptions,
     ) -> Result<String>;
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

@@ -1,43 +1,42 @@
-mod account;
-mod background;
-mod camera;
-mod device;
-mod email;
-mod file_chooser;
-mod game_mod;
-mod inhibit;
-mod location;
-mod memory_monitor;
-mod network_monitor;
-mod notification;
-mod open_uri;
-mod print;
-mod remote_desktop;
-mod screencast;
-mod screenshot;
-mod secret;
-mod settings;
-mod trash;
-mod wallpaper;
-
-pub use account::AccountProxy;
-pub use background::BackgroundProxy;
-pub use camera::CameraProxy;
-pub use device::DeviceProxy;
-pub use email::EmailProxy;
-pub use file_chooser::FileChooserProxy;
-pub use game_mod::GameModeProxy;
-pub use inhibit::InhibitProxy;
-pub use location::LocationProxy;
-pub use memory_monitor::MemoryMonitorProxy;
-pub use network_monitor::{Connectivity, NetworkMonitorProxy};
-pub use notification::NotificationProxy;
-pub use open_uri::OpenURIProxy;
-pub use print::PrintProxy;
-pub use remote_desktop::RemoteDesktopProxy;
-pub use screencast::ScreenCastProxy;
-pub use screenshot::ScreenshotProxy;
-pub use secret::SecretProxy;
-pub use settings::SettingsProxy;
-pub use trash::TrashProxy;
-pub use wallpaper::WallpaperProxy;
+/// Interact with `org.freedesktop.portal.Account` interface.
+pub mod account;
+/// Interact with `org.freedesktop.portal.Background` interface.
+pub mod background;
+/// Interact with `org.freedesktop.portal.Camera` interface.
+pub mod camera;
+/// Interact with `org.freedesktop.portal.Device` interface.
+pub mod device;
+/// Interact with `org.freedesktop.portal.Email` interface.
+pub mod email;
+/// Interact with `org.freedesktop.portal.FileChooser` interface.
+pub mod file_chooser;
+/// Interact with `org.freedesktop.portal.GameMode` interface.
+pub mod game_mode;
+/// Interact with `org.freedesktop.portal.Inhibit` interface.
+pub mod inhibit;
+/// Interact with `org.freedesktop.portal.Location` interface.
+pub mod location;
+/// Interact with `org.freedesktop.portal.MemoryMonitor` interface.
+pub mod memory_monitor;
+/// Interact with `org.freedesktop.portal.NetworkMonitor` interface.
+pub mod network_monitor;
+/// Interact with `org.freedesktop.portal.Notification` interface.
+pub mod notification;
+/// Interact with `org.freedesktop.portal.OpenURI` interface.
+pub mod open_uri;
+/// Interact with `org.freedesktop.portal.Print` interface.
+pub mod print;
+/// Interact with `org.freedesktop.portal.RemoteDesktop` interface.
+pub mod remote_desktop;
+/// Interact with `org.freedesktop.portal.ScreenCast` interface.
+pub mod screencast;
+/// Interact with `org.freedesktop.portal.Screenshot` interface.
+pub mod screenshot;
+/// Interact with `org.freedesktop.portal.Secret` interface.
+pub mod secret;
+/// Interact with `org.freedesktop.portal.Settings` interface.
+pub mod settings;
+/// Interact with `org.freedesktop.portal.Trash` interface.
+pub mod trash;
+/// Interact with `org.freedesktop.portal.Wallpaper` interface.
+pub mod wallpaper;

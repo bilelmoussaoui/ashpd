@@ -1,3 +1,9 @@
+/// Implementation of the various portals under `/org/freedesktop/portal/desktop`
+pub mod desktop;
+/// Implementation of the various portals under `/org/freedesktop/portal/documents`
+pub mod documents;
+/// Implementation of the various portals under `/org/freedesktop/portal/Flatpak`
+pub mod flatpak;
 ///! # libportal
 ///!
 ///! libportal is a Rust wrapper around the XDG Portals DBus interfaces
@@ -6,11 +12,8 @@
 ///!
 mod request;
 mod session;
-
-pub mod desktop;
-pub mod documents;
-pub mod flatpak;
 pub use self::request::{RequestProxy, ResponseType};
 pub use self::session::SessionProxy;
+pub use serde;
 pub use zbus;
 pub use zvariant;

@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 
+/// A HashMap of the key: value found on a specific namespace
+pub type Namespace = HashMap<String, zvariant::OwnedValue>;
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Settings",
     default_service = "org.freedesktop.portal.Desktop",
@@ -17,7 +20,6 @@ trait Settings {
     ///
     /// * `namespace` - Namespace to look up key in
     /// * `key` - The key to get
-    ///
     fn read(&self, namespace: &str, key: &str) -> Result<zvariant::OwnedValue>;
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
@@ -30,16 +32,12 @@ trait Settings {
     ///
     ///     If `namespaces` is an empty array or contains an empty string it matches all.
     ///     Globbing is supported but only for trailing sections, e.g. "org.example.*".
-    ///
-    fn read_all(
-        &self,
-        namespaces: &[&str],
-    ) -> Result<HashMap<String, HashMap<String, zvariant::OwnedValue>>>;
+    fn read_all(&self, namespaces: &[&str]) -> Result<HashMap<String, Namespace>>;
 
     // TODO: re-enable once signals are available
     // fn setting_changed(&self, namespace: &str, key: &str, value: zvariant::OwnedValue);
 
     /// version property
-    #[dbus_proxy(property)]
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }
