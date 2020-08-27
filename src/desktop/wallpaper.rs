@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use serde::{self, Deserialize, Serialize};
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
@@ -77,7 +78,7 @@ trait Wallpaper {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn set_wallpaper_file(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         fd: RawFd,
         options: WallpaperOptions,
     ) -> Result<String>;
@@ -96,7 +97,7 @@ trait Wallpaper {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn set_wallpaper_uri(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         uri: &str,
         options: WallpaperOptions,
     ) -> Result<String>;

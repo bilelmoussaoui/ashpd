@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -53,7 +54,11 @@ trait Screenshot {
     ///
     /// [`PickColorOptions`]: ./struct.PickColorOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn pick_color(&self, parent_window: &str, options: PickColorOptions) -> Result<String>;
+    fn pick_color(
+        &self,
+        parent_window: WindowIdentifier,
+        options: PickColorOptions,
+    ) -> Result<String>;
 
     /// Takes a screenshot
     ///
@@ -66,7 +71,11 @@ trait Screenshot {
     ///
     /// [`ScreenshotOptions`]: ./struct.ScreenshotOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn screenshot(&self, parent_window: &str, options: ScreenshotOptions) -> Result<String>;
+    fn screenshot(
+        &self,
+        parent_window: WindowIdentifier,
+        options: ScreenshotOptions,
+    ) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

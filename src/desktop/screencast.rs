@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
@@ -100,7 +101,7 @@ trait ScreenCast {
     fn start(
         &self,
         session_handle: &str,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         options: StartCastOptions,
     ) -> Result<String>;
 

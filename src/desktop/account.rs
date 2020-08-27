@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -28,7 +29,11 @@ trait Account {
     /// * `options` - A [`UserInfoOptions`]
     ///
     /// [`UserInfoOptions`]: ./struct.UserInfoOptions.html
-    fn get_user_information(&self, window: &str, options: UserInfoOptions) -> Result<String>;
+    fn get_user_information(
+        &self,
+        window: WindowIdentifier,
+        options: UserInfoOptions,
+    ) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

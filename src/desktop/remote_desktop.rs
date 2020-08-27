@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Value;
@@ -299,7 +300,7 @@ trait RemoteDesktop {
     fn start(
         &self,
         session_handle: &str,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         options: StartRemoteOptions,
     ) -> Result<String>;
 

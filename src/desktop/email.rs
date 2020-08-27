@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -40,7 +41,11 @@ trait Email {
     /// * `options` - [`EmailOptions`]
     ///
     /// [`EmailOptions`]: ./struct.EmailOptions.html
-    fn compose_email(&self, parent_window: &str, options: EmailOptions) -> Result<String>;
+    fn compose_email(
+        &self,
+        parent_window: WindowIdentifier,
+        options: EmailOptions,
+    ) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

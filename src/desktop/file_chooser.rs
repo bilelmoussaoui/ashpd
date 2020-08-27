@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -84,7 +85,7 @@ trait FileChooser {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn open_file(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
     ) -> Result<String>;
@@ -103,7 +104,7 @@ trait FileChooser {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn save_file(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
     ) -> Result<String>;
@@ -127,7 +128,7 @@ trait FileChooser {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn save_files(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
     ) -> Result<String>;

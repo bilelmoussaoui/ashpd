@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -57,7 +58,7 @@ trait Location {
     fn start(
         &self,
         session_handle: &str,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         options: LocationStartOptions,
     ) -> Result<String>;
 

@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -39,7 +40,11 @@ trait Inhibit {
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn create_monitor(&self, parent_window: &str, options: CreateMonitorOptions) -> Result<String>;
+    fn create_monitor(
+        &self,
+        parent_window: WindowIdentifier,
+        options: CreateMonitorOptions,
+    ) -> Result<String>;
 
     /// Inhibits a session status changes.
     ///
@@ -58,7 +63,12 @@ trait Inhibit {
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn inhibit(&self, parent_window: &str, flags: u32, options: InhibitOptions) -> Result<String>;
+    fn inhibit(
+        &self,
+        parent_window: WindowIdentifier,
+        flags: u32,
+        options: InhibitOptions,
+    ) -> Result<String>;
 
     /// QueryEndResponse method
     fn query_end_response(&self, session_handle: &str) -> Result<()>;

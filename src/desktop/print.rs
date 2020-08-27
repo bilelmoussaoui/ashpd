@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -131,7 +132,7 @@ trait Print {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn prepare_print(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         title: &str,
         settings: PrintSettings,
         page_setup: PrintPageSetup,
@@ -155,7 +156,7 @@ trait Print {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn print(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         title: &str,
         fd: RawFd,
         options: PrintOptions,

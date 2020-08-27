@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -40,7 +41,7 @@ trait OpenURI {
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
     fn open_directory(
         &self,
-        parent_window: &str,
+        parent_window: WindowIdentifier,
         fd: RawFd,
         options: OpenDirOptions,
     ) -> Result<String>;
@@ -54,8 +55,12 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    fn open_file(&self, parent_window: &str, fd: RawFd, options: OpenFileOptions)
-        -> Result<String>;
+    fn open_file(
+        &self,
+        parent_window: WindowIdentifier,
+        fd: RawFd,
+        options: OpenFileOptions,
+    ) -> Result<String>;
 
     /// Asks to open a local file.
     ///
@@ -66,7 +71,12 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    fn open_uri(&self, parent_window: &str, uri: &str, options: OpenFileOptions) -> Result<String>;
+    fn open_uri(
+        &self,
+        parent_window: WindowIdentifier,
+        uri: &str,
+        options: OpenFileOptions,
+    ) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -19,7 +20,7 @@ trait UpdateMonitor {
     ///
     /// Note that updates are only allowed if the new version
     /// has the same permissions (or less) than the currently installed version
-    fn update(&self, parent_window: &str, options: UpdateOptions) -> Result<()>;
+    fn update(&self, parent_window: WindowIdentifier, options: UpdateOptions) -> Result<()>;
 
     // signal
     // fn update_available(&self, update_info: HashMap<&str, Value>);

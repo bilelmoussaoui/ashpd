@@ -1,3 +1,4 @@
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -40,8 +41,11 @@ trait Background {
     /// * `options` - [`BackgroundOptions`]
     ///
     /// [`BackgroundOptions`]: ./struct.BackgroundOptions.html
-    fn request_background(&self, parent_window: &str, options: BackgroundOptions)
-        -> Result<String>;
+    fn request_background(
+        &self,
+        parent_window: WindowIdentifier,
+        options: BackgroundOptions,
+    ) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]
