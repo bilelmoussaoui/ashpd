@@ -1,6 +1,7 @@
 use crate::WindowIdentifier;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -54,7 +55,7 @@ trait Inhibit {
         &self,
         parent_window: WindowIdentifier,
         options: CreateMonitorOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Inhibits a session status changes.
     ///
@@ -73,13 +74,13 @@ trait Inhibit {
         parent_window: WindowIdentifier,
         flags: InhibitFlags,
         options: InhibitOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// QueryEndResponse method
-    fn query_end_response(&self, session_handle: &str) -> Result<()>;
+    fn query_end_response(&self, session_handle: ObjectPath) -> Result<()>;
 
     // signal
-    // fn state_changed(&self, session_handle: &str, )
+    // fn state_changed(&self, session_handle: ObjectPath, )
 
     /// version property
     #[dbus_proxy(property, name = "version")]

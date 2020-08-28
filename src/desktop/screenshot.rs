@@ -1,7 +1,7 @@
 use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a screenshot request.
 pub struct ScreenshotOptions {
@@ -58,7 +58,7 @@ trait Screenshot {
         &self,
         parent_window: WindowIdentifier,
         options: PickColorOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Takes a screenshot
     ///
@@ -75,7 +75,7 @@ trait Screenshot {
         &self,
         parent_window: WindowIdentifier,
         options: ScreenshotOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

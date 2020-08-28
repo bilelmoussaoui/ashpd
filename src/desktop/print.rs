@@ -1,6 +1,7 @@
 use crate::WindowIdentifier;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -137,7 +138,7 @@ trait Print {
         settings: PrintSettings,
         page_setup: PrintPageSetup,
         options: PreparePrintOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Asks to print a file.
     /// The file must be passed in the form of a file descriptor open for reading.
@@ -160,7 +161,7 @@ trait Print {
         title: &str,
         fd: RawFd,
         options: PrintOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

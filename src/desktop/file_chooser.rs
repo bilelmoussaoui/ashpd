@@ -1,5 +1,6 @@
 use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -88,7 +89,7 @@ trait FileChooser {
         parent_window: WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Asks for a location to save a file.
     ///
@@ -107,7 +108,7 @@ trait FileChooser {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Asks for a folder as a location to save one or more files.
     /// The names of the files will be used as-is and appended to the
@@ -131,7 +132,7 @@ trait FileChooser {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

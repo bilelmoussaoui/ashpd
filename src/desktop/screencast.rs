@@ -3,7 +3,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant::{ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -65,7 +65,7 @@ trait ScreenCast {
     /// Returns a [`Request`] handle
     ///
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn create_session(&self, options: CreateSessionOptions) -> Result<String>;
+    fn create_session(&self, options: CreateSessionOptions) -> Result<OwnedObjectPath>;
 
     /// Open a file descriptor to the PipeWire remote where the screen cast streams are available.
     ///
@@ -79,7 +79,7 @@ trait ScreenCast {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn open_pipe_wire_remote(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
     ) -> Result<RawFd>;
 
@@ -98,8 +98,11 @@ trait ScreenCast {
     ///
     /// [`Request`]: ../request/struct.RequestProxy.html
     /// [`Session`]: ../session/struct.SessionProxy.html
-    fn select_sources(&self, session_handle: &str, options: SelectSourcesOptions)
-        -> Result<String>;
+    fn select_sources(
+        &self,
+        session_handle: ObjectPath,
+        options: SelectSourcesOptions,
+    ) -> Result<OwnedObjectPath>;
 
     /// Start the screen cast session.
     ///
@@ -120,10 +123,10 @@ trait ScreenCast {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn start(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         parent_window: WindowIdentifier,
         options: StartCastOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Available cursor mode.
     #[dbus_proxy(property)]

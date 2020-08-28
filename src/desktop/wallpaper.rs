@@ -2,7 +2,7 @@ use crate::WindowIdentifier;
 use serde::{self, Deserialize, Serialize};
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Signature, Type};
+use zvariant::{OwnedObjectPath, Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -81,7 +81,7 @@ trait Wallpaper {
         parent_window: WindowIdentifier,
         fd: RawFd,
         options: WallpaperOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Sets the lockscreen, background or both wallapers from an URI
     ///
@@ -100,7 +100,7 @@ trait Wallpaper {
         parent_window: WindowIdentifier,
         uri: &str,
         options: WallpaperOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

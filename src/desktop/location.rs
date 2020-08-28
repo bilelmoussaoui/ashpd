@@ -1,6 +1,7 @@
 use crate::WindowIdentifier;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -51,7 +52,7 @@ trait Location {
     ///
     /// [`LocationAccessOptions`]: ./struct.LocationAccessOptions.html
     /// [`Session`]: ../session/struct.SessionProxy.html
-    fn create_session(&self, options: LocationAccessOptions) -> Result<String>;
+    fn create_session(&self, options: LocationAccessOptions) -> Result<OwnedObjectPath>;
 
     /// Start the location session.
     /// An application can only attempt start a session once.
@@ -67,13 +68,13 @@ trait Location {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn start(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         parent_window: WindowIdentifier,
         options: LocationStartOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     // signal
-    // fn location_updated(&self, session_handle: &str, location: HashMap<&str, Value>);
+    // fn location_updated(&self, session_handle: ObjectPath, location: HashMap<&str, Value>);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

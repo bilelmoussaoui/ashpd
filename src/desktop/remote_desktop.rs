@@ -2,7 +2,7 @@ use crate::WindowIdentifier;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant::{ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -71,7 +71,7 @@ trait RemoteDesktop {
     ///
     /// [`CreateRemoteOptions`]: ./struct.CreateRemoteOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
-    fn create_session(&self, options: CreateRemoteOptions) -> Result<String>;
+    fn create_session(&self, options: CreateRemoteOptions) -> Result<OwnedObjectPath>;
 
     /// Notify keyboard code
     /// May only be called if KEYBOARD access was provided after starting the session.
@@ -86,7 +86,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_keyboard_keycode(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         keycode: i32,
         state: KeyState,
@@ -105,7 +105,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_keyboard_keysym(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         keysym: i32,
         state: KeyState,
@@ -128,7 +128,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_pointer_axis(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         dx: f64,
         dy: f64,
@@ -146,7 +146,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_pointer_axis_discrete(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         axis: Axis,
         steps: i32,
@@ -167,7 +167,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_pointer_button(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         button: i32,
         state: KeyState,
@@ -186,7 +186,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_pointer_motion(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         dx: f64,
         dy: f64,
@@ -206,7 +206,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_pointer_motion_absolute(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         stream: u32,
         x: f64,
@@ -230,7 +230,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_touch_down(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         stream: u32,
         slot: u32,
@@ -255,7 +255,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_touch_motion(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         stream: u32,
         slot: u32,
@@ -276,7 +276,7 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_touch_up(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         options: HashMap<&str, Value>,
         slot: u32,
     ) -> Result<()>;
@@ -290,8 +290,11 @@ trait RemoteDesktop {
     ///
     /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
     /// [`Session`]: ../session/struct.SessionProxy.html
-    fn select_devices(&self, session_handle: &str, options: SelectDevicesOptions)
-        -> Result<String>;
+    fn select_devices(
+        &self,
+        session_handle: ObjectPath,
+        options: SelectDevicesOptions,
+    ) -> Result<OwnedObjectPath>;
 
     ///  Start the remote desktop session.
     ///
@@ -309,10 +312,10 @@ trait RemoteDesktop {
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn start(
         &self,
-        session_handle: &str,
+        session_handle: ObjectPath,
         parent_window: WindowIdentifier,
         options: StartRemoteOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Available source types.
     #[dbus_proxy(property)]
