@@ -1,7 +1,6 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Signature, Type};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// The network status, composed of the avaiability, metered & connectivity
@@ -14,43 +13,18 @@ pub struct NetworkStatus {
     pub connectivity: u32,
 }
 
-#[derive(Serialize, Debug, Copy, Clone)]
-#[non_exhaustive]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
 /// Host's network activity
 pub enum Connectivity {
     /// The host is not configured with a route to the internet.
-    Local,
+    Local = 1,
     /// The host is connected to a network, but can't reach the full internet.
-    Limited,
+    Limited = 2,
     /// The host is behind a captive portal and cannot reach the full internet.
-    CaptivePortal,
+    CaptivePortal = 3,
     /// The host connected to a network, and can reach the full internet.
-    FullNetwork,
-    /// Invalid value
-    Unknown,
-}
-
-impl<'de> Deserialize<'de> for Connectivity {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let value = u32::deserialize(deserializer)?;
-        let response = match value {
-            1 => Connectivity::Local,
-            2 => Connectivity::Limited,
-            3 => Connectivity::CaptivePortal,
-            4 => Connectivity::FullNetwork,
-            _ => Connectivity::Unknown,
-        };
-        Ok(response)
-    }
-}
-
-impl Type for Connectivity {
-    fn signature() -> Signature<'static> {
-        Signature::from_str_unchecked("u")
-    }
+    FullNetwork = 4,
 }
 
 #[dbus_proxy(

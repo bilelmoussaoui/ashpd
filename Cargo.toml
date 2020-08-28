@@ -6,7 +6,7 @@ authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
 edition = "2018"
 repository = "https://github.com/bilelmoussaoui/libportal-rs"
 exclude = ["interfaces/*.xml"]
-keywords = ["portal", "flatpak", "xdg", "desktop", "documents", "desktop"]
+keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
 
 [dependencies]
@@ -14,3 +14,4 @@ zbus = "1.1"
 zvariant = "2.1"
 zvariant_derive = "2.1"
 serde = "1.0"
+serde_repr = "0.1"

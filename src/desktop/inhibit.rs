@@ -1,6 +1,7 @@
 use crate::WindowIdentifier;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for a create inhibit monitor request.
@@ -18,6 +19,15 @@ pub struct InhibitOptions {
     pub handle_token: Option<String>,
     /// User-visible reason for the inhibition.
     pub reason: String,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum InhibitFlags {
+    Logout = 1,
+    UserSwitch = 2,
+    Suspend = 3,
+    Idle = 4,
 }
 
 #[dbus_proxy(
@@ -54,11 +64,6 @@ trait Inhibit {
     ///
     /// * `parent_window` - The application window identifier
     /// * `flags` - The flags determine what changes are inhibited
-    ///     1 - Logout
-    ///     2 - User switch
-    ///     3 - Suspend
-    ///     4 - Idle
-    ///     FIXME: switch to an enum
     /// * `options` - [`InhibitOptions`]
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
@@ -66,7 +71,7 @@ trait Inhibit {
     fn inhibit(
         &self,
         parent_window: WindowIdentifier,
-        flags: u32,
+        flags: InhibitFlags,
         options: InhibitOptions,
     ) -> Result<String>;
 

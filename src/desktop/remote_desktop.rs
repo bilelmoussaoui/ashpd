@@ -1,8 +1,31 @@
 use crate::WindowIdentifier;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Value;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum KeyState {
+    Pressed = 0,
+    Released = 1,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum DeviceType {
+    Keyboard = 1,
+    Pointeur = 2,
+    Touchscreen = 4,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum Axis {
+    Vertical = 0,
+    Horizontal = 1,
+}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a create a remote session request.
@@ -59,9 +82,6 @@ trait RemoteDesktop {
     /// * `options` - ?
     /// * `keycode` - Keyboard code that was pressed or released
     /// * `state` - The new state of the keyboard code
-    ///     0: Pressed
-    ///     1: Released
-    ///     FIXME: replace with an enum
     ///
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_keyboard_keycode(
@@ -69,7 +89,7 @@ trait RemoteDesktop {
         session_handle: &str,
         options: HashMap<&str, Value>,
         keycode: i32,
-        state: u32,
+        state: KeyState,
     ) -> Result<()>;
 
     /// Notify keyboard symbol
@@ -81,9 +101,6 @@ trait RemoteDesktop {
     /// * `options` - ?
     /// * `keysym` - Keyboard symbol that was pressed or released
     /// * `state` - The new state of the keyboard code
-    ///     0: Pressed
-    ///     1: Released
-    ///     FIXME: replace with an enum
     ///
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_keyboard_keysym(
@@ -91,7 +108,7 @@ trait RemoteDesktop {
         session_handle: &str,
         options: HashMap<&str, Value>,
         keysym: i32,
-        state: u32,
+        state: KeyState,
     ) -> Result<()>;
 
     /// Notify pointer axis
@@ -125,17 +142,13 @@ trait RemoteDesktop {
     /// * `session_handle` - The [`Session`] object handle
     /// * `options` - ?
     /// * `axis` - The axis that was scrolled
-    ///     0: Vertical scroll
-    ///     1: Horizontal scroll
-    ///     FIXME: replace with an enum
-    /// * `steps` - The number of steps scrolled
     ///
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_pointer_axis_discrete(
         &self,
         session_handle: &str,
         options: HashMap<&str, Value>,
-        axis: u32,
+        axis: Axis,
         steps: i32,
     ) -> Result<()>;
 
@@ -150,9 +163,6 @@ trait RemoteDesktop {
     /// * `options` - ?
     /// * `button` - The pointer button was pressed or released
     /// * `state` - The new state of the keyboard code
-    ///     0: Pressed
-    ///     1: Released
-    ///     FIXME: replace with an enum
     ///
     /// [`Session`]: ../session/struct.SessionProxy.html
     fn notify_pointer_button(
@@ -160,7 +170,7 @@ trait RemoteDesktop {
         session_handle: &str,
         options: HashMap<&str, Value>,
         button: i32,
-        state: u32,
+        state: KeyState,
     ) -> Result<()>;
 
     /// Notify about a new relative pointer motion event.
@@ -305,10 +315,6 @@ trait RemoteDesktop {
     ) -> Result<String>;
 
     /// Available source types.
-    /// 1: Keyboard
-    /// 2: Pointeur
-    /// 4: Touchscreen
-    /// FIXME: replace with an enum
     #[dbus_proxy(property)]
     fn available_device_types(&self) -> Result<u32>;
 

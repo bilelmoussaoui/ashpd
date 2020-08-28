@@ -1,6 +1,18 @@
 use crate::WindowIdentifier;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum Accuracy {
+    None = 0,
+    Country = 1,
+    City = 2,
+    Neighborhood = 3,
+    Street = 4,
+    Exact = 5,
+}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for a location access request.
@@ -11,9 +23,7 @@ pub struct LocationAccessOptions {
     pub distance_threshold: Option<u32>,
     /// Time threshold in seconds. Default is 0.
     pub time_threshold: Option<u32>,
-    /// Requested accuracy. Default is EXACT.
-    /// Values: NONE 0, COUNTRY 1, CITY 2, NEIGHBORHOOD 3, STREET 4, EXACT 5
-    /// FIXME: switch to an enum
+    /// Requested accuracy. Default is `Accuracy::Exact`.
     pub accuracy: Option<u32>,
 }
 

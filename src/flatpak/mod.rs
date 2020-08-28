@@ -1,7 +1,30 @@
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum SandboxFlags {
+    /// Share the display access (X11, wayland) with the caller.
+    DisplayAccess = 1,
+    /// Share the sound access (pulseaudio) with the caller.
+    SoundAccess = 2,
+    /// Share the gpu access with the caller.
+    GPUAccess = 4,
+    /// Allow sandbox access to (filtered) session bus.
+    SessionBusAccess = 8,
+    /// Allow sandbox access to accessibility bus.
+    AccessibilityBusAccess = 16,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum SupportsFlags {
+    /// Supports the expose sandbox pids flag of Spawn.
+    ExposePids = 1,
+}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 pub struct SpawnOptions {
@@ -16,12 +39,6 @@ pub struct SpawnOptions {
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.
     pub sandbox_expose_fd_ro: Vec<RawFd>,
     /// Flags affecting the created sandbox.
-    /// 1: Share the display access (X11, wayland) with the caller.
-    /// 2: Share the sound access (pulseaudio) with the caller.
-    /// 4: Share the gpu access with the caller.
-    /// 8: Allow sandbox access to (filtered) session bus.
-    /// 16: Allow sandbox access to accessibility bus.
-    /// FIXME: convert to an enum
     pub sandbox_flags: Option<u32>,
 }
 
@@ -80,8 +97,6 @@ trait Flatpak {
     // fn spawn_existed(&self, pid: u32, exit_status: u32);
 
     /// Flags marking what optional features are available.
-    /// 1: Supports the expose sandbox pids flag of Spawn.
-    /// FIXME: replace with an enum
     #[dbus_proxy(property)]
     fn supports(&self) -> Result<u32>;
 

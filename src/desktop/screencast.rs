@@ -1,9 +1,10 @@
 use crate::WindowIdentifier;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Value;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a create a screencast session request.
@@ -13,6 +14,7 @@ pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
     pub session_handle_token: Option<String>,
 }
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
@@ -24,6 +26,24 @@ pub struct SelectSourcesOptions {
     pub multiple: bool,
     /// Determines how the cursor will be drawn in the screen cast stream.
     pub cursor_mode: u32,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum SourceType {
+    Monitor = 1,
+    Window = 2,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum CursorMode {
+    /// The cursor is not part of the screen cast stream.
+    Hidden = 1,
+    /// The cursor is embedded as part of the stream buffers.
+    Embedded = 2,
+    /// The cursor is not part of the screen cast stream, but sent as PipeWire stream metadata.
+    Metadata = 4,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -105,18 +125,11 @@ trait ScreenCast {
         options: StartCastOptions,
     ) -> Result<String>;
 
-    /// Available cursor mode. Currently defined modes are:
-    /// 1: Hidden. The cursor is not part of the screen cast stream.
-    /// 2: Embedded: The cursor is embedded as part of the stream buffers.
-    /// 4: Metadata: The cursor is not part of the screen cast stream, but sent as PipeWire stream metadata.
-    /// FIXME: switch to an enum
+    /// Available cursor mode.
     #[dbus_proxy(property)]
     fn available_cursor_modes(&self) -> Result<u32>;
 
-    /// Available source types. Currently defined types are:
-    /// 1: Monitor
-    /// 2: Window
-    /// FIXME: switch to an enum
+    /// Available source types.
     #[dbus_proxy(property)]
     fn available_source_types(&self) -> Result<u32>;
 
