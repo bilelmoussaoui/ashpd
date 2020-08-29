@@ -1,4 +1,5 @@
-use zbus::{dbus_proxy, fdo::Result};
+use zbus::{fdo::DBusProxy, fdo::Result, Connection};
+
 #[allow(dead_code)]
 pub enum ResponseType {
     // Success, the request is carried out
@@ -9,7 +10,6 @@ pub enum ResponseType {
     Other = 2,
 }
 
-#[dbus_proxy(interface = "org.freedesktop.portal.Request")]
 /// The Request interface is shared by all portal interfaces.
 /// When a portal method is called, the reply includes a handle (i.e. object path) for a Request object,
 /// which will stay alive for the duration of the user interaction related to the method call.
@@ -28,11 +28,20 @@ pub enum ResponseType {
 /// It is recommended that the caller should verify that the returned handle is what
 /// it expected, and update its signal subscription if it isn't.
 /// This ensures that applications will work with both old and new versions of xdg-desktop-portal.
-trait Request {
+pub struct RequestProxy<'a> {
+    proxy: DBusProxy<'a>,
+}
+
+impl<'a> RequestProxy<'a> {
+    pub fn new(connection: &Connection, handle: &'a str) -> Result<Self> {
+        let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/desktop")?;
+        Ok(Self { proxy })
+    }
+
     /// Closes the portal request to which this object refers and ends all related user interaction (dialogs, etc).
     /// A Response signal will not be emitted in this case.
-    fn close(&self) -> Result<()>;
-
-    // signal
-    //fn response(&self) -> Result<(ResponseType, HashMap<&str, Value>)>;
+    pub fn close(&self) -> Result<()> {
+        self.proxy.call("Close", &())?;
+        Ok(())
+    }
 }
