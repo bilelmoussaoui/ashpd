@@ -28,11 +28,28 @@ pub struct LocationAccessOptions {
     pub accuracy: Option<u32>,
 }
 
+impl Default for LocationAccessOptions {
+    fn default() -> Self {
+        Self {
+            session_handle_token: None,
+            distance_threshold: None,
+            time_threshold: None,
+            accuracy: None,
+        }
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for a location session start request.
 pub struct LocationStartOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
+}
+
+impl Default for LocationStartOptions {
+    fn default() -> Self {
+        Self { handle_token: None }
+    }
 }
 
 #[dbus_proxy(

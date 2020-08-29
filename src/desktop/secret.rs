@@ -9,6 +9,12 @@ pub struct ScecretOptions {
     pub token: Option<String>,
 }
 
+impl Default for ScecretOptions {
+    fn default() -> Self {
+        Self { token: None }
+    }
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Secret",
     default_service = "org.freedesktop.portal.Desktop",

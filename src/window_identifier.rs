@@ -11,3 +11,9 @@ impl WindowIdentifier {
         }
     }
 }
+
+impl Default for WindowIdentifier {
+    fn default() -> Self {
+        Self::new("")
+    }
+}

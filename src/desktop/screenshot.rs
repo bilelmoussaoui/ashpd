@@ -2,6 +2,7 @@ use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a screenshot request.
 pub struct ScreenshotOptions {

@@ -10,6 +10,12 @@ pub struct OpenDirOptions {
     pub handle_token: Option<String>,
 }
 
+impl Default for OpenDirOptions {
+    fn default() -> Self {
+        Self { handle_token: None }
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for an open file request.
 pub struct OpenFileOptions {
@@ -18,7 +24,7 @@ pub struct OpenFileOptions {
     /// Whether to allow the chosen application to write to the file.
     /// This key only takes effect the uri points to a local file that is exported in the document portal, and the chosen application is sandboxed itself.
     pub writeable: bool,
-    ///Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
+    /// Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
     pub ask: bool,
 }
 

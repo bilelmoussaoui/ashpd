@@ -74,7 +74,7 @@ trait FileTransfer {
     /// * `key` - A key returned by `start_transfer`
     fn stop_transfer(&self, key: &str) -> Result<()>;
 
-    // signal
+    // FIXME: signal
     // fn transfer_closed(&self, key: &str);
 
     /// version property

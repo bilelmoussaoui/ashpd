@@ -22,9 +22,9 @@ trait UpdateMonitor {
     /// has the same permissions (or less) than the currently installed version
     fn update(&self, parent_window: WindowIdentifier, options: UpdateOptions) -> Result<()>;
 
-    // signal
+    // FIXME signal
     // fn update_available(&self, update_info: HashMap<&str, Value>);
 
-    // signal
+    // FIXME signal
     // fn progress(&self, info: HashMap<&str, Value>);
 }

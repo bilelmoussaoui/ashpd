@@ -8,6 +8,14 @@ pub struct DeviceAccessOptions {
     pub handle_token: Option<String>,
 }
 
+impl Default for DeviceAccessOptions {
+    fn default() -> Self {
+        Self {
+            handle_token: None,
+        }
+    }
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Device",
     default_service = "org.freedesktop.portal.Desktop",

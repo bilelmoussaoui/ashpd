@@ -11,6 +11,14 @@ pub struct CameraAccessOptions {
     pub handle_token: Option<String>,
 }
 
+impl Default for CameraAccessOptions {
+    fn default() -> Self {
+        Self {
+            handle_token: None,
+        }
+    }
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Camera",
     default_service = "org.freedesktop.portal.Desktop",

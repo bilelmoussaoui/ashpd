@@ -13,6 +13,15 @@ pub struct CreateMonitorOptions {
     pub session_handle_token: Option<String>,
 }
 
+impl Default for CreateMonitorOptions {
+    fn default() -> Self {
+        Self {
+            handle_token: None,
+            session_handle_token: None,
+        }
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options of an inhibit request.
 pub struct InhibitOptions {
@@ -46,14 +55,14 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - The application window identifier
+    /// * `window` - The application window identifier
     /// * `options` - [`CreateMonitorOptions`]
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn create_monitor(
         &self,
-        parent_window: WindowIdentifier,
+        window: WindowIdentifier,
         options: CreateMonitorOptions,
     ) -> Result<OwnedObjectPath>;
 
@@ -63,7 +72,7 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - The application window identifier
+    /// * `window` - The application window identifier
     /// * `flags` - The flags determine what changes are inhibited
     /// * `options` - [`InhibitOptions`]
     ///
@@ -71,7 +80,7 @@ trait Inhibit {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn inhibit(
         &self,
-        parent_window: WindowIdentifier,
+        window: WindowIdentifier,
         flags: InhibitFlags,
         options: InhibitOptions,
     ) -> Result<OwnedObjectPath>;

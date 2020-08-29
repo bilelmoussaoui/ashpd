@@ -15,6 +15,15 @@ pub struct CreateSessionOptions {
     pub session_handle_token: Option<String>,
 }
 
+impl Default for CreateSessionOptions {
+    fn default() -> Self {
+        Self {
+            handle_token: None,
+            session_handle_token: None,
+        }
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
@@ -51,6 +60,12 @@ pub enum CursorMode {
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
+}
+
+impl Default for StartCastOptions {
+    fn default() -> Self {
+        Self { handle_token: None }
+    }
 }
 
 #[dbus_proxy(
