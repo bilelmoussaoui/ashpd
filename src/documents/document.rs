@@ -86,6 +86,7 @@ trait Documents {
     /// * `o_path_fd` - open file descriptor for the parent directory
     /// * `filename` - the basename for the file
     /// * `flags` - 1 == reuse_existing, 2 == persistent, 4 == as-needed-by-app, 8 = export directory
+    ///     FIXME: turn it to a proper enum
     /// * `app_id` - an application ID, or empty string
     /// * `permissions` - the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
     fn add_named_full(
@@ -151,6 +152,7 @@ trait Documents {
     /// * `doc_id` - The ID of the file in the document store
     /// * `app_id` - The ID of the application from which permissions are revoked
     /// * `permissions` - The permissions to revoke, possible values are 'read', 'write', 'grant-permissions' and 'delete'
+    /// FIXME: replace permissions with an enum
     fn revoke_permissions(&self, doc_id: &str, app_id: &str, permissions: &[&str]) -> Result<()>;
 
     /// version property

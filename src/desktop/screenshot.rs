@@ -9,17 +9,61 @@ pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: bool,
+    pub modal: Option<bool>,
     /// Hint whether the dialog should offer customization before taking a screenshot.
-    pub interactive: bool,
+    pub interactive: Option<bool>,
 }
 
 impl Default for ScreenshotOptions {
     fn default() -> Self {
         Self {
-            modal: true,
-            interactive: false,
+            modal: None,
+            interactive: None,
             handle_token: None,
+        }
+    }
+}
+
+pub struct ScreenshotOptionsBuilder {
+    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    pub handle_token: Option<String>,
+    /// Whether the dialog should be modal.
+    pub modal: Option<bool>,
+    /// Hint whether the dialog should offer customization before taking a screenshot.
+    pub interactive: Option<bool>,
+}
+
+impl Default for ScreenshotOptionsBuilder {
+    fn default() -> Self {
+        Self {
+            handle_token: None,
+            modal: None,
+            interactive: None,
+        }
+    }
+}
+
+impl ScreenshotOptionsBuilder {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn modal(mut self, modal: bool) -> Self {
+        self.modal = Some(modal);
+        self
+    }
+
+    pub fn interactive(mut self, interactive: bool) -> Self {
+        self.interactive = Some(interactive);
+        self
+    }
+
+    pub fn build(self) -> ScreenshotOptions {
+        ScreenshotOptions {
+            handle_token: self.handle_token,
+            interactive: self.interactive,
+            modal: self.modal,
         }
     }
 }
@@ -34,6 +78,29 @@ pub struct PickColorOptions {
 impl Default for PickColorOptions {
     fn default() -> Self {
         Self { handle_token: None }
+    }
+}
+pub struct PickColorOptionsBuilder {
+    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    pub handle_token: Option<String>,
+}
+
+impl Default for PickColorOptionsBuilder {
+    fn default() -> Self {
+        Self { handle_token: None }
+    }
+}
+
+impl PickColorOptionsBuilder {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn build(self) -> PickColorOptions {
+        PickColorOptions {
+            handle_token: self.handle_token,
+        }
     }
 }
 

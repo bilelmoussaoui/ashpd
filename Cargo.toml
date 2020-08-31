@@ -10,8 +10,8 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
 
 [dependencies]
-zbus = "1.1"
-zvariant = "2.1"
-zvariant_derive = "2.1"
+zbus = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
+zvariant = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
+zvariant_derive = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
 serde = "1.0"
 serde_repr = "0.1"

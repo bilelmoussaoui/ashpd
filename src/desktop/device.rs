@@ -1,4 +1,5 @@
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -10,8 +11,30 @@ pub struct DeviceAccessOptions {
 
 impl Default for DeviceAccessOptions {
     fn default() -> Self {
-        Self {
-            handle_token: None,
+        Self { handle_token: None }
+    }
+}
+
+pub struct DeviceAccessOptionsBuilder {
+    /// A string that will be used as the last element of the handle.
+    pub handle_token: Option<String>,
+}
+
+impl Default for DeviceAccessOptionsBuilder {
+    fn default() -> Self {
+        Self { handle_token: None }
+    }
+}
+
+impl DeviceAccessOptionsBuilder {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn build(self) -> DeviceAccessOptions {
+        DeviceAccessOptions {
+            handle_token: self.handle_token
         }
     }
 }
@@ -30,6 +53,7 @@ trait Device {
     ///
     /// * `pid` - The pid of the application on whose behalf the request is made
     /// * `devices` - A list of devices to request access to. Supported values are 'microphone', 'speakers', 'camera'. Asking for multiple devices at the same time may or may not be supported
+    ///     FIXME: convert to an enum
     /// * `options` - [`DeviceAccessOptions`]
     ///
     /// [`DeviceAccessOptions`]: ./struct.DeviceAccessOptions.html
@@ -38,7 +62,7 @@ trait Device {
         pid: u32,
         devices: &[&str],
         options: DeviceAccessOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

@@ -12,6 +12,7 @@ trait Trash {
     /// Applications are allowed to trash a file if they can open it in r/w mode.
     ///
     /// Returns 0 if trashing failed, 1 if trashing succeeded, other values may be returned in the future
+    /// FIXME: replace output with an enum
     ///
     /// # Arguments
     ///

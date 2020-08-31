@@ -15,6 +15,28 @@ impl Default for ScecretOptions {
     }
 }
 
+pub struct ScecretOptionsBuilder {
+    /// A string returned by a pervious call to `retrieve_secret`
+    pub token: Option<String>,
+}
+
+impl Default for ScecretOptionsBuilder {
+    fn default() -> Self {
+        Self { token: None }
+    }
+}
+
+impl ScecretOptionsBuilder {
+    pub fn token(mut self, token: &str) -> Self {
+        self.token = Some(token.to_string());
+        self
+    }
+
+    pub fn build(self) -> ScecretOptions {
+        ScecretOptions { token: self.token }
+    }
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Secret",
     default_service = "org.freedesktop.portal.Desktop",

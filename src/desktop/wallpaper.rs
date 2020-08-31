@@ -43,16 +43,52 @@ impl std::convert::TryFrom<zvariant::Value<'_>> for WallpaperSetOn {
 pub struct WallpaperOptions {
     /// Whether to show a preview of the picture
     /// Note that the portal may decide to show a preview even if this option is not set
-    pub show_preview: bool,
+    pub show_preview: Option<bool>,
     /// Where to set the wallpaper on
-    pub set_on: String,
+    pub set_on: Option<String>,
 }
 
 impl Default for WallpaperOptions {
     fn default() -> Self {
         Self {
-            show_preview: true,
-            set_on: "both".to_string(),
+            show_preview: None,
+            set_on: None,
+        }
+    }
+}
+
+pub struct WallpaperOptionsBuilder {
+    /// Whether to show a preview of the picture
+    /// Note that the portal may decide to show a preview even if this option is not set
+    pub show_preview: Option<bool>,
+    /// Where to set the wallpaper on
+    pub set_on: Option<String>,
+}
+
+impl Default for WallpaperOptionsBuilder {
+    fn default() -> Self {
+        Self {
+            show_preview: None,
+            set_on: None,
+        }
+    }
+}
+
+impl WallpaperOptionsBuilder {
+    pub fn show_preview(mut self, show_preview: bool) -> Self {
+        self.show_preview = Some(show_preview);
+        self
+    }
+
+    pub fn set_on(mut self, set_on: &str) -> Self {
+        self.set_on = Some(set_on.to_string());
+        self
+    }
+
+    pub fn build(self) -> WallpaperOptions {
+        WallpaperOptions {
+            set_on: self.set_on,
+            show_preview: self.show_preview,
         }
     }
 }

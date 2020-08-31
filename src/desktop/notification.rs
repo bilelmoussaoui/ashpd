@@ -11,6 +11,7 @@ pub struct Notification {
     // Serialized icon (e.g using gio::Icon::serialize)
     // icon: Option<String>,
     /// The priority for the notification. Supported values: low, normal, high, urgent.
+    /// FIXME convert to an enum
     pub priority: Option<String>,
     /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
     pub default_action: Option<String>,

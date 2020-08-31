@@ -11,12 +11,61 @@ pub struct BackgroundOptions {
     /// User-visible reason for the request.
     pub reason: String,
     /// `true` if the app also wants to be started automatically at login.
-    pub autostart: bool,
+    pub autostart: Option<bool>,
     /// if `true`, use D-Bus activation for autostart.
-    pub dbus_activatable: bool,
+    pub dbus_activatable: Option<bool>,
     //Commandline to use when autostarting at login. If this is not specified, the Exec line from the desktop file will be used.
     //commandline:  Vec<String>,
 }
+
+pub struct BackgroundOptionsBuilder {
+    /// A string that will be used as the last element of the handle.
+    pub handle_token: Option<String>,
+    /// User-visible reason for the request.
+    pub reason: String,
+    /// `true` if the app also wants to be started automatically at login.
+    pub autostart: Option<bool>,
+    /// if `true`, use D-Bus activation for autostart.
+    pub dbus_activatable: Option<bool>,
+    //Commandline to use when autostarting at login. If this is not specified, the Exec line from the desktop file will be used.
+    //commandline:  Vec<String>,
+}
+
+impl BackgroundOptionsBuilder {
+    pub fn new(reason: &str) -> Self {
+        Self {
+            reason: reason.to_string(),
+            handle_token: None,
+            autostart: None,
+            dbus_activatable: None,
+        }
+    }
+
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn autostart(mut self, autostart: bool) -> Self {
+        self.autostart = Some(autostart);
+        self
+    }
+
+    pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
+        self.dbus_activatable = Some(dbus_activatable);
+        self
+    }
+
+    pub fn build(self) -> BackgroundOptions {
+        BackgroundOptions {
+            handle_token: self.handle_token,
+            reason: self.reason,
+            autostart: self.autostart,
+            dbus_activatable: self.dbus_activatable,
+        }
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Result returned by the response signal after a background request.
 pub struct BackgroundResult {

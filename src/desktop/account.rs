@@ -12,6 +12,32 @@ pub struct UserInfoOptions {
     pub reason: String,
 }
 
+pub struct UserInfoOptionsBuilder {
+    pub handle_token: Option<String>,
+    pub reason: String,
+}
+
+impl UserInfoOptionsBuilder {
+    pub fn new(reason: &str) -> Self {
+        Self {
+            handle_token: None,
+            reason: reason.to_string(),
+        }
+    }
+
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn build(self) -> UserInfoOptions {
+        UserInfoOptions {
+            handle_token: self.handle_token,
+            reason: self.reason,
+        }
+    }
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Account",
     default_service = "org.freedesktop.portal.Desktop",

@@ -6,6 +6,24 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum SourceType {
+    Monitor = 1,
+    Window = 2,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum CursorMode {
+    /// The cursor is not part of the screen cast stream.
+    Hidden = 1,
+    /// The cursor is embedded as part of the stream buffers.
+    Embedded = 2,
+    /// The cursor is not part of the screen cast stream, but sent as PipeWire stream metadata.
+    Metadata = 4,
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a create a screencast session request.
 pub struct CreateSessionOptions {
@@ -30,29 +48,11 @@ pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
     /// What types of content to record.
-    pub types: u32,
+    pub types: Option<u32>,
     /// Whether to allow selecting multiple sources.
-    pub multiple: bool,
+    pub multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
-    pub cursor_mode: u32,
-}
-
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(u32)]
-pub enum SourceType {
-    Monitor = 1,
-    Window = 2,
-}
-
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(u32)]
-pub enum CursorMode {
-    /// The cursor is not part of the screen cast stream.
-    Hidden = 1,
-    /// The cursor is embedded as part of the stream buffers.
-    Embedded = 2,
-    /// The cursor is not part of the screen cast stream, but sent as PipeWire stream metadata.
-    Metadata = 4,
+    pub cursor_mode: Option<u32>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]

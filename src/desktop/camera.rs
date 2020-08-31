@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant::{Value, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -13,8 +13,30 @@ pub struct CameraAccessOptions {
 
 impl Default for CameraAccessOptions {
     fn default() -> Self {
-        Self {
-            handle_token: None,
+        Self { handle_token: None }
+    }
+}
+
+pub struct CameraAccessOptionsBuilder {
+    /// A string that will be used as the last element of the handle.
+    pub handle_token: Option<String>,
+}
+
+impl Default for CameraAccessOptionsBuilder {
+    fn default() -> Self {
+        Self { handle_token: None }
+    }
+}
+
+impl CameraAccessOptionsBuilder {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn build(self) -> CameraAccessOptions {
+        CameraAccessOptions {
+            handle_token: self.handle_token,
         }
     }
 }
@@ -33,7 +55,7 @@ trait Camera {
     /// * `options` - A [`CameraAccessOptions`]
     ///
     /// [`CameraAccessOptions`]: ./struct.CameraAccessOptions.html
-    fn access_camera(&self, options: CameraAccessOptions) -> Result<String>;
+    fn access_camera(&self, options: CameraAccessOptions) -> Result<OwnedObjectPath>;
 
     /// Open a file descriptor to the PipeWire remote where the camera nodes are available.
     ///
