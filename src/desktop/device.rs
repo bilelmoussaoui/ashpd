@@ -2,28 +2,17 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a device access request.
 pub struct DeviceAccessOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
 }
 
-impl Default for DeviceAccessOptions {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
-}
-
+#[derive(Debug, Default)]
 pub struct DeviceAccessOptionsBuilder {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
-}
-
-impl Default for DeviceAccessOptionsBuilder {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
 }
 
 impl DeviceAccessOptionsBuilder {

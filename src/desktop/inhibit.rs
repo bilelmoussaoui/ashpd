@@ -4,7 +4,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a create inhibit monitor request.
 pub struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
@@ -13,14 +13,6 @@ pub struct CreateMonitorOptions {
     pub session_handle_token: Option<String>,
 }
 
-impl Default for CreateMonitorOptions {
-    fn default() -> Self {
-        Self {
-            handle_token: None,
-            session_handle_token: None,
-        }
-    }
-}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options of an inhibit request.

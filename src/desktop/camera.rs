@@ -4,28 +4,17 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Value, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a camera access request.
 pub struct CameraAccessOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
 }
 
-impl Default for CameraAccessOptions {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
-}
-
+#[derive(Debug, Default)]
 pub struct CameraAccessOptionsBuilder {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
-}
-
-impl Default for CameraAccessOptionsBuilder {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
 }
 
 impl CameraAccessOptionsBuilder {

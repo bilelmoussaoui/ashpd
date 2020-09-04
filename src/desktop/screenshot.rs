@@ -3,7 +3,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a screenshot request.
 pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
@@ -14,16 +14,7 @@ pub struct ScreenshotOptions {
     pub interactive: Option<bool>,
 }
 
-impl Default for ScreenshotOptions {
-    fn default() -> Self {
-        Self {
-            modal: None,
-            interactive: None,
-            handle_token: None,
-        }
-    }
-}
-
+#[derive(Debug, Default)]
 pub struct ScreenshotOptionsBuilder {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
@@ -31,16 +22,6 @@ pub struct ScreenshotOptionsBuilder {
     pub modal: Option<bool>,
     /// Hint whether the dialog should offer customization before taking a screenshot.
     pub interactive: Option<bool>,
-}
-
-impl Default for ScreenshotOptionsBuilder {
-    fn default() -> Self {
-        Self {
-            handle_token: None,
-            modal: None,
-            interactive: None,
-        }
-    }
 }
 
 impl ScreenshotOptionsBuilder {
@@ -68,27 +49,17 @@ impl ScreenshotOptionsBuilder {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a pick color request.
 pub struct PickColorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
 }
 
-impl Default for PickColorOptions {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
-}
+#[derive(Default, Debug)]
 pub struct PickColorOptionsBuilder {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
-}
-
-impl Default for PickColorOptionsBuilder {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
 }
 
 impl PickColorOptionsBuilder {

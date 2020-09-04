@@ -3,17 +3,11 @@ use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for an open directory request.
 pub struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
-}
-
-impl Default for OpenDirOptions {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]

@@ -38,7 +38,7 @@ impl std::convert::TryFrom<zvariant::Value<'_>> for WallpaperSetOn {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a set wallpaper request.
 pub struct WallpaperOptions {
     /// Whether to show a preview of the picture
@@ -48,30 +48,13 @@ pub struct WallpaperOptions {
     pub set_on: Option<String>,
 }
 
-impl Default for WallpaperOptions {
-    fn default() -> Self {
-        Self {
-            show_preview: None,
-            set_on: None,
-        }
-    }
-}
-
+#[derive(Debug, Default)]
 pub struct WallpaperOptionsBuilder {
     /// Whether to show a preview of the picture
     /// Note that the portal may decide to show a preview even if this option is not set
     pub show_preview: Option<bool>,
     /// Where to set the wallpaper on
     pub set_on: Option<String>,
-}
-
-impl Default for WallpaperOptionsBuilder {
-    fn default() -> Self {
-        Self {
-            show_preview: None,
-            set_on: None,
-        }
-    }
 }
 
 impl WallpaperOptionsBuilder {

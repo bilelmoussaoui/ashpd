@@ -2,29 +2,19 @@ use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a retrieve secret request.
 pub struct ScecretOptions {
     /// A string returned by a pervious call to `retrieve_secret`
     pub token: Option<String>,
 }
 
-impl Default for ScecretOptions {
-    fn default() -> Self {
-        Self { token: None }
-    }
-}
-
+#[derive(Debug, Default)]
 pub struct ScecretOptionsBuilder {
     /// A string returned by a pervious call to `retrieve_secret`
     pub token: Option<String>,
 }
 
-impl Default for ScecretOptionsBuilder {
-    fn default() -> Self {
-        Self { token: None }
-    }
-}
 
 impl ScecretOptionsBuilder {
     pub fn token(mut self, token: &str) -> Self {

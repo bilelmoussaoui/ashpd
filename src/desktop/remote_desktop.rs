@@ -27,22 +27,13 @@ pub enum Axis {
     Horizontal = 1,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a create a remote session request.
 pub struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
     /// A string that will be used as the last element of the session handle.
     pub session_handle_token: Option<String>,
-}
-
-impl Default for CreateRemoteOptions {
-    fn default() -> Self {
-        Self {
-            handle_token: None,
-            session_handle_token: None,
-        }
-    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -54,17 +45,11 @@ pub struct SelectDevicesOptions {
     pub types: Option<u32>,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a start remote desktop request.
 pub struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
-}
-
-impl Default for StartRemoteOptions {
-    fn default() -> Self {
-        Self { handle_token: None }
-    }
 }
 
 #[dbus_proxy(
