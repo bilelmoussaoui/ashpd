@@ -23,7 +23,7 @@ impl DeviceAccessOptionsBuilder {
 
     pub fn build(self) -> DeviceAccessOptions {
         DeviceAccessOptions {
-            handle_token: self.handle_token
+            handle_token: self.handle_token,
         }
     }
 }

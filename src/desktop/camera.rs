@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Value, OwnedObjectPath};
+use zvariant::{OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]

@@ -13,7 +13,6 @@ pub struct CreateMonitorOptions {
     pub session_handle_token: Option<String>,
 }
 
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options of an inhibit request.
 pub struct InhibitOptions {

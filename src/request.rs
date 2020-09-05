@@ -1,6 +1,9 @@
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{fdo::DBusProxy, fdo::Result, Connection};
+use zvariant_derive::Type;
 
-#[allow(dead_code)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
 pub enum ResponseType {
     // Success, the request is carried out
     Success = 0,
@@ -39,18 +42,24 @@ impl<'a> RequestProxy<'a> {
         Ok(Self { proxy, connection })
     }
 
-    pub fn on_response(&self) -> Result<()> {
+    pub fn on_response<F, T>(&self, callback: F) -> Result<()>
+    where
+        F: FnOnce(T),
+        T: serde::de::DeserializeOwned + zvariant::Type,
+    {
         loop {
             let msg = self.connection.receive_message()?;
-            let msg_header =msg.header()?;
-            println!("{}", msg.body_signature()?);
-            println!("{:#?}", msg.body()?);
-
+            let msg_header = msg.header()?;
+            if msg_header.message_type()? == zbus::MessageType::Signal
+                && msg_header.member()? == Some("Response")
+            {
+                let response = msg.body::<T>()?;
+                callback(response);
+                break;
+            }
         }
-
         Ok(())
     }
-
 
     /// Closes the portal request to which this object refers and ends all related user interaction (dialogs, etc).
     /// A Response signal will not be emitted in this case.

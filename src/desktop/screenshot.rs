@@ -1,7 +1,8 @@
-use crate::WindowIdentifier;
+use crate::{ResponseType, WindowIdentifier};
+use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a screenshot request.
@@ -73,6 +74,16 @@ impl PickColorOptionsBuilder {
             handle_token: self.handle_token,
         }
     }
+}
+
+#[derive(Debug, Type, Deserialize)]
+pub struct ColorResponse(pub ResponseType, pub ColorResult);
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// Specified options on a screenshot request.
+pub struct ColorResult {
+    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    pub color: Vec<f64>,
 }
 
 #[dbus_proxy(

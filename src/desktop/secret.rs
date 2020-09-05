@@ -15,7 +15,6 @@ pub struct ScecretOptionsBuilder {
     pub token: Option<String>,
 }
 
-
 impl ScecretOptionsBuilder {
     pub fn token(mut self, token: &str) -> Self {
         self.token = Some(token.to_string());
