@@ -40,10 +40,11 @@ impl<'a> RequestProxy<'a> {
     }
 
     pub fn on_response(&self) -> Result<()> {
-        let msg = self.connection.receive_message()?;
-        let msg_header =msg.header()?;
-        if msg_header.message_type()? == zbus::MessageType::Signal {
+        loop {
+            let msg = self.connection.receive_message()?;
+            let msg_header =msg.header()?;
             println!("{}", msg.body_signature()?);
+
         }
 
         Ok(())
