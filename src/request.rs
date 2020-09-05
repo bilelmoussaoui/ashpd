@@ -44,6 +44,7 @@ impl<'a> RequestProxy<'a> {
             let msg = self.connection.receive_message()?;
             let msg_header =msg.header()?;
             println!("{}", msg.body_signature()?);
+            println!("{:#?}", msg.body()?);
 
         }
 
