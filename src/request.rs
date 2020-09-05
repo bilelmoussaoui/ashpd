@@ -30,13 +30,25 @@ pub enum ResponseType {
 /// This ensures that applications will work with both old and new versions of xdg-desktop-portal.
 pub struct RequestProxy<'a> {
     proxy: DBusProxy<'a>,
+    connection: &'a Connection,
 }
 
 impl<'a> RequestProxy<'a> {
-    pub fn new(connection: &Connection, handle: &'a str) -> Result<Self> {
+    pub fn new(connection: &'a Connection, handle: &'a str) -> Result<Self> {
         let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/desktop")?;
-        Ok(Self { proxy })
+        Ok(Self { proxy, connection })
     }
+
+    pub fn on_response(&self) -> Result<()> {
+        let msg = self.connection.receive_message()?;
+        let msg_header =msg.header()?;
+        if msg_header.message_type()? == zbus::MessageType::Signal {
+            println!("{}", msg.body_signature()?);
+        }
+
+        Ok(())
+    }
+
 
     /// Closes the portal request to which this object refers and ends all related user interaction (dialogs, etc).
     /// A Response signal will not be emitted in this case.
