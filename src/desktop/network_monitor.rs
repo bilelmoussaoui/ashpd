@@ -10,7 +10,7 @@ pub struct NetworkStatus {
     /// Whether the network is considered metered.
     pub metered: bool,
     /// More detailed information about the host's network connectivity
-    pub connectivity: u32,
+    pub connectivity: Connectivity,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]

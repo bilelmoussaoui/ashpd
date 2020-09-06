@@ -42,7 +42,7 @@ pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
     /// The device types to request remote controlling of. Default is all.
-    pub types: Option<u32>,
+    pub types: Option<DeviceType>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]

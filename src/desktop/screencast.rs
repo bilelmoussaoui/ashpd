@@ -39,11 +39,11 @@ pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
     /// What types of content to record.
-    pub types: Option<u32>,
+    pub types: Option<SourceType>,
     /// Whether to allow selecting multiple sources.
     pub multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
-    pub cursor_mode: Option<u32>,
+    pub cursor_mode: Option<CursorMode>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]

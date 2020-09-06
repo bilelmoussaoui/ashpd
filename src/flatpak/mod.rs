@@ -39,7 +39,7 @@ pub struct SpawnOptions {
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.
     pub sandbox_expose_fd_ro: Vec<RawFd>,
     /// Flags affecting the created sandbox.
-    pub sandbox_flags: Option<u32>,
+    pub sandbox_flags: Option<SandboxFlags>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]

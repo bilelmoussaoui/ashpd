@@ -25,7 +25,7 @@ pub struct LocationAccessOptions {
     /// Time threshold in seconds. Default is 0.
     pub time_threshold: Option<u32>,
     /// Requested accuracy. Default is `Accuracy::Exact`.
-    pub accuracy: Option<u32>,
+    pub accuracy: Option<Accuracy>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
