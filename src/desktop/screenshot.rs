@@ -1,5 +1,7 @@
 //! # Examples
 //!
+//! Taking a screenshot
+//!
 //! ```
 //! fn main() -> zbus::fdo::Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
@@ -20,6 +22,30 @@
 //!     Ok(())
 //! }
 //!```
+//!
+//! Picking a color
+//!```
+//!fn main() -> zbus::fdo::Result<()> {
+//!    let connection = zbus::Connection::new_session()?;
+//!    let proxy = ScreenshotProxy::new(&connection)?;
+//!
+//!    let request_handle = proxy.pick_color(
+//!             WindowIdentifier::default(),
+//!             PickColorOptions::default()
+//!    )?;
+//!
+//!    let req = RequestProxy::new(&connection, &request_handle)?;
+//!
+//!    req.on_response(|t: ColorResponse| {
+//!        if t.0 == ResponseType::Success {
+//!            let color: gdk::RGBA = t.1.color.into();
+//!            println!("{:#?}", color);
+//!        }
+//!    })?;
+//!
+//!    Ok(())
+//!}
+//! ```
 use crate::{ResponseType, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
@@ -111,7 +137,22 @@ pub struct ColorResponse(pub ResponseType, pub ColorResult);
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 pub struct ColorResult {
-    pub color: [f64; 3],
+    pub color: Color,
+}
+
+#[derive(Debug, Type, Serialize, Deserialize)]
+pub struct Color(pub [f64; 3]);
+
+#[cfg(feature = "gnome")]
+impl Into<gdk::RGBA> for Color {
+    fn into(self) -> gdk::RGBA {
+        gdk::RGBA {
+            red: self.0[0],
+            green: self.0[1],
+            blue: self.0[2],
+            alpha: 1_f64,
+        }
+    }
 }
 
 #[dbus_proxy(

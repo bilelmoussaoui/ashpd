@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for a background request.
 pub struct BackgroundOptions {
@@ -14,7 +15,8 @@ pub struct BackgroundOptions {
     pub autostart: Option<bool>,
     /// if `true`, use D-Bus activation for autostart.
     pub dbus_activatable: Option<bool>,
-    //Commandline to use when autostarting at login. If this is not specified, the Exec line from the desktop file will be used.
+    /// Commandline to use when autostarting at login.
+    /// If this is not specified, the Exec line from the desktop file will be used.
     pub commandline: Vec<String>,
 }
 
@@ -27,7 +29,7 @@ pub struct BackgroundOptionsBuilder {
     pub autostart: Option<bool>,
     /// if `true`, use D-Bus activation for autostart.
     pub dbus_activatable: Option<bool>,
-    //Commandline to use when autostarting at login. If this is not specified, the Exec line from the desktop file will be used.
+    /// Commandline to use when autostarting at login.
     commandline: Vec<String>,
 }
 

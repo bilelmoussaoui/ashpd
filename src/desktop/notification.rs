@@ -1,6 +1,6 @@
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedValue;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A notification
