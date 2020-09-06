@@ -1,4 +1,5 @@
 use crate::WindowIdentifier;
+use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -11,16 +12,17 @@ pub struct EmailOptions {
     /// The email address to send to
     pub address: Option<String>,
     // The email adresses to send to
-    // pub addresses: Vec<String>,
+    pub addresses: Vec<String>,
     // The email adresses to CC
-    // pub cc: Vec<String>,
+    pub cc: Vec<String>,
     // The email adresses to BCC
-    // pub bcc: Vec<String>,
+    pub bcc: Vec<String>,
     /// The subject of the email
     pub subject: Option<String>,
     /// The body of the email
-    pub body: Option<String>, // A list of file descriptors of files to attach
-                              // pub attachment_fds: Vec<RawFd>
+    pub body: Option<String>,
+    /// A list of file descriptors of files to attach
+    pub attachment_fds: Vec<RawFd>,
 }
 
 #[dbus_proxy(

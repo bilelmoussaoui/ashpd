@@ -1,3 +1,25 @@
+//! # Examples
+//!
+//! ```
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = ScreenshotProxy::new(&connection)?;
+//!     let request_handle = proxy.screenshot(
+//!         WindowIdentifier::default(),
+//!         ScreenshotOptionsBuilder::default()
+//!             .interactive(true)
+//!             .build()
+//!     )?;
+//!
+//!     let req = RequestProxy::new(&connection, &request_handle)?;
+//!     req.on_response(|t: ScreenshotResponse| {
+//!         if t.0 == ResponseType::Success {
+//!             println!("{:#?}", t.1.uri);
+//!         }
+//!     })?;
+//!     Ok(())
+//! }
+//!```
 use crate::{ResponseType, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
@@ -50,6 +72,14 @@ impl ScreenshotOptionsBuilder {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Type)]
+pub struct ScreenshotResponse(pub ResponseType, pub ScreenshotResult);
+
+#[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
+pub struct ScreenshotResult {
+    pub uri: String,
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a pick color request.
 pub struct PickColorOptions {
@@ -80,10 +110,8 @@ impl PickColorOptionsBuilder {
 pub struct ColorResponse(pub ResponseType, pub ColorResult);
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// Specified options on a screenshot request.
 pub struct ColorResult {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub color: Vec<f64>,
+    pub color: [f64; 3],
 }
 
 #[dbus_proxy(

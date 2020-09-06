@@ -1,8 +1,8 @@
-use crate::WindowIdentifier;
+use crate::{ResponseType, WindowIdentifier};
+use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for a background request.
 pub struct BackgroundOptions {
@@ -15,7 +15,7 @@ pub struct BackgroundOptions {
     /// if `true`, use D-Bus activation for autostart.
     pub dbus_activatable: Option<bool>,
     //Commandline to use when autostarting at login. If this is not specified, the Exec line from the desktop file will be used.
-    //commandline:  Vec<String>,
+    pub commandline: Vec<String>,
 }
 
 pub struct BackgroundOptionsBuilder {
@@ -28,7 +28,7 @@ pub struct BackgroundOptionsBuilder {
     /// if `true`, use D-Bus activation for autostart.
     pub dbus_activatable: Option<bool>,
     //Commandline to use when autostarting at login. If this is not specified, the Exec line from the desktop file will be used.
-    //commandline:  Vec<String>,
+    commandline: Vec<String>,
 }
 
 impl BackgroundOptionsBuilder {
@@ -38,6 +38,7 @@ impl BackgroundOptionsBuilder {
             handle_token: None,
             autostart: None,
             dbus_activatable: None,
+            commandline: vec![],
         }
     }
 
@@ -56,15 +57,24 @@ impl BackgroundOptionsBuilder {
         self
     }
 
+    pub fn commandline(mut self, command: Vec<String>) -> Self {
+        self.commandline = command;
+        self
+    }
+
     pub fn build(self) -> BackgroundOptions {
         BackgroundOptions {
             handle_token: self.handle_token,
             reason: self.reason,
             autostart: self.autostart,
             dbus_activatable: self.dbus_activatable,
+            commandline: self.commandline,
         }
     }
 }
+
+#[derive(Debug, Deserialize, Serialize, Type)]
+pub struct BackgroundResponse(pub ResponseType, pub BackgroundResult);
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Result returned by the response signal after a background request.

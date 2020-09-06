@@ -1,7 +1,8 @@
-use crate::WindowIdentifier;
+use crate::{ResponseType, WindowIdentifier};
+use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for a open file request.
@@ -62,6 +63,15 @@ pub struct SaveFilesOptions {
     pub current_folder: Vec<u8>,
     /// An array of file names to be saved.
     pub files: Vec<Vec<u8>>,
+}
+
+#[derive(Debug, Type, Serialize, Deserialize)]
+pub struct FileChooserResponse(pub ResponseType, pub FileChooserResult);
+
+#[derive(Debug, TypeDict, SerializeDict, DeserializeDict)]
+pub struct FileChooserResult {
+    pub uris: Vec<String>,
+    pub choices: Vec<(String, String)>,
 }
 
 #[dbus_proxy(

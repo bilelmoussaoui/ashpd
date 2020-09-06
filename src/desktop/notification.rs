@@ -1,4 +1,5 @@
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::OwnedValue;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -15,21 +16,21 @@ pub struct Notification {
     pub priority: Option<String>,
     /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
     pub default_action: Option<String>,
-    // Target parameter to send along when activating the default action.
-    //pub default_action_target: Option<OwnedValue>,
-    // Array of buttons to add to the notification.
-    // pub buttons: Vec<Button>,
+    /// Target parameter to send along when activating the default action.
+    pub default_action_target: Option<OwnedValue>,
+    /// Array of buttons to add to the notification.
+    pub buttons: Vec<Button>,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A notification button
 pub struct Button {
     /// User-visible label for the button. Mandatory.
     pub label: String,
     /// Name of an action that is exported by the application. The action will be activated when the user clicks on the button.
     pub action: String,
-    // Target parameter to send along when activating the action.
-    //pub target: Option<OwnedValue>,
+    /// Target parameter to send along when activating the action.
+    pub target: Option<OwnedValue>,
 }
 
 #[dbus_proxy(

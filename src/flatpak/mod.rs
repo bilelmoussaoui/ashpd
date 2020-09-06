@@ -28,12 +28,12 @@ pub enum SupportsFlags {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 pub struct SpawnOptions {
-    // A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
-    // Note that absolute paths or subdirectories are not allowed.
-    // pub sandbox_expose: Vec<String>,
-    // A list of filenames for files inside the sandbox that will be exposed to the new sandbox, readonly.
-    // Note that absolute paths or subdirectories are not allowed.
-    // pub sandbox_expose_ro: Vec<String>,
+    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
+    /// Note that absolute paths or subdirectories are not allowed.
+    pub sandbox_expose: Vec<String>,
+    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, readonly.
+    /// Note that absolute paths or subdirectories are not allowed.
+    pub sandbox_expose_ro: Vec<String>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     pub sandbox_expose_fd: Vec<RawFd>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.

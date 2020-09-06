@@ -1,7 +1,27 @@
-use crate::WindowIdentifier;
+//! # Examples
+//!
+//! ```
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = AccountProxy::new(&connection)?;
+//!     let request_handle = proxy.get_user_information(
+//!         WindowIdentifier::default(),
+//!         UserInfoOptionsBuilder::new("Fractal would like access to your information").build(),
+//!     )?;
+//!     let req = RequestProxy::new(&connection, &request_handle)?;
+//!     req.on_response(|t: UserInfoResponse| {
+//!         if t.0 == ResponseType::Success {
+//!             println!("{:#?}", t.1);
+//!         }
+//!     })?;
+//!     Ok(())
+//! }
+//!```
+use crate::{ResponseType, WindowIdentifier};
+use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified the options for a get user information request.
@@ -36,6 +56,19 @@ impl UserInfoOptionsBuilder {
             reason: self.reason,
         }
     }
+}
+
+#[derive(Debug, Type, Deserialize, Serialize)]
+pub struct UserInfoResponse(pub ResponseType, pub UserInfoResult);
+
+#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+pub struct UserInfoResult {
+    /// User identifier.
+    pub id: String,
+    /// User name.
+    pub name: String,
+    /// User image uri.
+    pub image: String,
 }
 
 #[dbus_proxy(
