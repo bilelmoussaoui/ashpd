@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
+use strum_macros::EnumString;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::Type;
-use strum_macros::EnumString;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
