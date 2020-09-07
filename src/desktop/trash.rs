@@ -1,5 +1,15 @@
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant_derive::Type;
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+#[non_exhaustive]
+pub enum TrashStatus {
+    Failed = 0,
+    Succeeded = 1,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Trash",

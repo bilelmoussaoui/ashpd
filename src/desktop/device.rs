@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a device access request.
@@ -28,6 +30,14 @@ impl DeviceAccessOptionsBuilder {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, EnumString, PartialEq, Eq, Type)]
+#[strum(serialize_all = "lowercase")]
+pub enum Device {
+    Microphone,
+    Speaker,
+    Camera,
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Device",
     default_service = "org.freedesktop.portal.Desktop",
@@ -41,15 +51,14 @@ trait Device {
     /// # Arguments
     ///
     /// * `pid` - The pid of the application on whose behalf the request is made
-    /// * `devices` - A list of devices to request access to. Supported values are 'microphone', 'speakers', 'camera'. Asking for multiple devices at the same time may or may not be supported
-    ///     FIXME: convert to an enum
+    /// * `devices` - A list of devices to request access to.
     /// * `options` - [`DeviceAccessOptions`]
     ///
     /// [`DeviceAccessOptions`]: ./struct.DeviceAccessOptions.html
     fn access_device(
         &self,
         pid: u32,
-        devices: &[&str],
+        devices: &[&Device],
         options: DeviceAccessOptions,
     ) -> Result<OwnedObjectPath>;
 

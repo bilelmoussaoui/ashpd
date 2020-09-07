@@ -1,9 +1,33 @@
+use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant_derive::Type;
+use strum_macros::EnumString;
 
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u32)]
+pub enum Flags {
+    ReuseExisting = 1,
+    Persistent = 2,
+    AsNeededByApp = 4,
+    ExportDirectory = 8,
+}
+
+/// * `flags` - 1 == reuse_existing, 2 == persistent, 4 == as-needed-by-app, 8 = export directory
 /// A `HashMap` mapping application IDs to the permissions for that application
 pub type Permissions = HashMap<String, Vec<String>>;
+
+#[derive(Debug, Clone, Serialize, Deserialize, EnumString, PartialEq, Eq, Type)]
+#[strum(serialize_all = "lowercase")]
+pub enum Permission {
+    Read,
+    Write,
+    #[strum(serialize = "grant-permissions")]
+    GrantPermissions,
+    Delte,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Documents",
@@ -46,15 +70,15 @@ trait Documents {
     /// # Arguments
     ///
     /// * `o_path_fds` - open file descriptors for the files to export
-    /// * `flags` - 1 == reuse_existing, 2 == persistent, 4 == as-needed-by-app, 8 = export directory
+    /// * `flags` - a `Flags` enum.
     /// * `app_id` - an application ID, or empty string
     /// * `permissions` - the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
     fn add_full(
         &self,
         o_path_fds: &[RawFd],
-        flags: u32,
+        flags: Flags,
         app_id: &str,
-        permissions: &[&str],
+        permissions: &[&Permission],
     ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>)>;
 
     /// Creates an entry in the document store for writing a new file.
@@ -85,17 +109,16 @@ trait Documents {
     ///
     /// * `o_path_fd` - open file descriptor for the parent directory
     /// * `filename` - the basename for the file
-    /// * `flags` - 1 == reuse_existing, 2 == persistent, 4 == as-needed-by-app, 8 = export directory
-    ///     FIXME: turn it to a proper enum
+    /// * `flags` - a `Flags`
     /// * `app_id` - an application ID, or empty string
-    /// * `permissions` - the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
+    /// * `permissions` - the permissions to grant.
     fn add_named_full(
         &self,
         o_path_fd: RawFd,
         filename: &[u8],
-        flags: u32,
+        flags: Flags,
         app_id: &str,
-        permissions: &[&str],
+        permissions: &[&Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>)>;
 
     /// Removes an entry from the document store. The file itself is not deleted.
@@ -112,7 +135,12 @@ trait Documents {
     fn get_mount_point(&self) -> Result<Vec<u8>>;
 
     /// GrantPermissions method
-    fn grant_permissions(&self, doc_id: &str, app_id: &str, permissions: &[&str]) -> Result<()>;
+    fn grant_permissions(
+        &self,
+        doc_id: &str,
+        app_id: &str,
+        permissions: &[&Permission],
+    ) -> Result<()>;
 
     /// Gets the filesystem path and application permissions for a document store entry.
     ///
@@ -151,9 +179,13 @@ trait Documents {
     ///
     /// * `doc_id` - The ID of the file in the document store
     /// * `app_id` - The ID of the application from which permissions are revoked
-    /// * `permissions` - The permissions to revoke, possible values are 'read', 'write', 'grant-permissions' and 'delete'
-    /// FIXME: replace permissions with an enum
-    fn revoke_permissions(&self, doc_id: &str, app_id: &str, permissions: &[&str]) -> Result<()>;
+    /// * `permissions` - The permissions to revoke.
+    fn revoke_permissions(
+        &self,
+        doc_id: &str,
+        app_id: &str,
+        permissions: &[&Permission],
+    ) -> Result<()>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

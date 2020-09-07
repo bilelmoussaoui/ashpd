@@ -1,9 +1,8 @@
 use crate::{ResponseType, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{ObjectPath, OwnedObjectPath, OwnedValue};
+use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -34,15 +33,12 @@ pub enum InhibitFlags {
 }
 
 #[derive(Serialize, Deserialize, Type, Debug)]
-pub struct InhibitMonitorResponse(pub ResponseType, pub HashMap<String, OwnedValue>);
+pub struct InhibitMonitorResponse(pub ResponseType, pub InhibitMonitorResult);
 
-/*
-FIXME: switch to this for the response once we can de an OwnedObjectPath
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
 pub struct InhibitMonitorResult {
     pub session_handle: OwnedObjectPath,
 }
-*/
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Inhibit",

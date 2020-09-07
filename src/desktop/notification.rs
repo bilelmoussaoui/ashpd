@@ -1,6 +1,17 @@
+use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedValue;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+#[derive(Debug, Clone, Serialize, Deserialize, EnumString, PartialEq, Eq, Type)]
+#[strum(serialize_all = "lowercase")]
+pub enum Priority {
+    Low,
+    Normal,
+    High,
+    Urgent,
+}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A notification
@@ -11,9 +22,8 @@ pub struct Notification {
     pub body: Option<String>,
     // Serialized icon (e.g using gio::Icon::serialize)
     // icon: Option<String>,
-    /// The priority for the notification. Supported values: low, normal, high, urgent.
-    /// FIXME convert to an enum
-    pub priority: Option<String>,
+    /// The priority for the notification.
+    pub priority: Option<Priority>,
     /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
     pub default_action: Option<String>,
     /// Target parameter to send along when activating the default action.

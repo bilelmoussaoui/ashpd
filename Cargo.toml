@@ -19,6 +19,8 @@ zvariant = { git="https://gitlab.freedesktop.org/elmarco/zbus", branch ="serde-v
 zvariant_derive = { git="https://gitlab.freedesktop.org/elmarco/zbus", branch = "serde-value" }
 serde = "1.0"
 serde_repr = "0.1"
+strum = "0.19"
+strum_macros = "0.19"
 
 
 [dependencies.gtk]
