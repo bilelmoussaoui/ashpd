@@ -34,7 +34,7 @@ impl DeviceAccessOptionsBuilder {
 #[strum(serialize_all = "lowercase")]
 pub enum Device {
     Microphone,
-    Speaker,
+    Speakers,
     Camera,
 }
 
