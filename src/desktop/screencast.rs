@@ -1,4 +1,5 @@
 use crate::WindowIdentifier;
+use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
@@ -6,14 +7,14 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
 pub enum SourceType {
     Monitor = 1,
     Window = 2,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type, BitFlags)]
 #[repr(u32)]
 pub enum CursorMode {
     /// The cursor is not part of the screen cast stream.
@@ -39,11 +40,11 @@ pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
     /// What types of content to record.
-    pub types: Option<SourceType>,
+    pub types: Option<BitFlags<SourceType>>,
     /// Whether to allow selecting multiple sources.
     pub multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
-    pub cursor_mode: Option<CursorMode>,
+    pub cursor_mode: Option<BitFlags<CursorMode>>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]

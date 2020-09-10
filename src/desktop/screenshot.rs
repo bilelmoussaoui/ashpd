@@ -170,7 +170,7 @@ pub struct Color(pub [f64; 3]);
 
 #[cfg(feature = "feature_gdk")]
 impl Into<gdk::RGBA> for &Color {
-    fn into(&self) -> gdk::RGBA {
+    fn into(self) -> gdk::RGBA {
         gdk::RGBA {
             red: self.0[0],
             green: self.0[1],

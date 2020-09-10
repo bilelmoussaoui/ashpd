@@ -15,12 +15,13 @@ feature_gdk = ["gdk"]
 
 [dependencies]
 zbus = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
-zvariant = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
+zvariant = { git="https://gitlab.freedesktop.org/zeenix/zbus",features= ["enumflags2"] }
 zvariant_derive = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
-serde = "1.0"
+serde = {version = "1.0", features = ["derive"] }
 serde_repr = "0.1"
 strum = "0.19"
 strum_macros = "0.19"
+enumflags2 = "*"
 
 [dependencies.gdk]
 version = "0.13"

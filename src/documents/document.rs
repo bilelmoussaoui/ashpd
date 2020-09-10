@@ -1,3 +1,4 @@
+use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
@@ -6,7 +7,7 @@ use strum_macros::EnumString;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::Type;
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
 pub enum Flags {
     ReuseExisting = 1,
@@ -76,7 +77,7 @@ trait Documents {
     fn add_full(
         &self,
         o_path_fds: &[RawFd],
-        flags: Flags,
+        flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[&Permission],
     ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>)>;
@@ -116,7 +117,7 @@ trait Documents {
         &self,
         o_path_fd: RawFd,
         filename: &[u8],
-        flags: Flags,
+        flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[&Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>)>;

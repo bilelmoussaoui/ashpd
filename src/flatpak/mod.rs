@@ -1,10 +1,11 @@
+use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
 pub enum SandboxFlags {
     /// Share the display access (X11, wayland) with the caller.
@@ -19,7 +20,7 @@ pub enum SandboxFlags {
     AccessibilityBusAccess = 16,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
 pub enum SupportsFlags {
     /// Supports the expose sandbox pids flag of Spawn.
@@ -39,7 +40,7 @@ pub struct SpawnOptions {
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.
     pub sandbox_expose_fd_ro: Vec<RawFd>,
     /// Flags affecting the created sandbox.
-    pub sandbox_flags: Option<SandboxFlags>,
+    pub sandbox_flags: Option<BitFlags<SandboxFlags>>,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -77,7 +78,7 @@ trait Flatpak {
         argv: &[&[u8]],
         fds: HashMap<u32, RawFd>,
         envs: HashMap<&str, &str>,
-        flags: u32,
+        flags: BitFlags<SandboxFlags>,
         options: SpawnOptions,
     ) -> Result<u32>;
 
