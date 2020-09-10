@@ -1,16 +1,61 @@
-use serde::{Deserialize, Serialize};
-use strum_macros::EnumString;
+//! # Examples
+//!
+//! ```
+//!  use libportal::desktop::notification::{
+//!     ButtonBuilder, NotificationBuilder, NotificationProxy, Priority,
+//! };
+//! use std::{thread, time};
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = NotificationProxy::new(&connection)?;
+//!
+//!     let notification_id = "org.gnome.design.Contrast";
+//!     proxy.add_notification(
+//!         notification_id,
+//!         NotificationBuilder::new("Contrast")
+//!             .default_action("close")
+//!             .body("color copied to clipboard")
+//!             .priority(Priority::High)
+//!             .button(ButtonBuilder::new("Copy", "copy").build())
+//!             .build(),
+//!     )?;
+//!
+//!     thread::sleep(time::Duration::from_secs(1));
+//!     proxy.remove_notification(notification_id)?;
+//!     Ok(())
+//! }
+//!```
+use serde::{self, Deserialize, Serialize, Serializer};
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedValue;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant::{OwnedValue, Signature};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(Debug, Clone, Serialize, Deserialize, EnumString, PartialEq, Eq, Type)]
+#[derive(
+    Debug, Clone, Deserialize, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq,
+)]
 #[strum(serialize_all = "lowercase")]
 pub enum Priority {
     Low,
     Normal,
     High,
     Urgent,
+}
+
+impl zvariant::Type for Priority {
+    fn signature() -> Signature<'static> {
+        String::signature()
+    }
+}
+
+impl Serialize for Priority {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        String::serialize(&self.to_string(), serializer)
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -20,8 +65,27 @@ pub struct Notification {
     pub title: String,
     /// User-visible string to display as the body.
     pub body: Option<String>,
+    /// Serialized icon (e.g using gio::Icon::serialize).
+    pub icon: Option<OwnedValue>,
+    /// The priority for the notification.
+    pub priority: Option<Priority>,
+    /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
+    #[zvariant(rename = "default-action")]
+    pub default_action: String,
+    /// Target parameter to send along when activating the default action.
+    #[zvariant(rename = "default-action-target")]
+    pub default_action_target: Option<OwnedValue>,
+    /// Array of buttons to add to the notification.
+    pub buttons: Vec<Button>,
+}
+
+pub struct NotificationBuilder {
+    /// User-visible string to display as the title.
+    pub title: String,
+    /// User-visible string to display as the body.
+    pub body: Option<String>,
     // Serialized icon (e.g using gio::Icon::serialize)
-    // icon: Option<String>,
+    pub icon: Option<OwnedValue>,
     /// The priority for the notification.
     pub priority: Option<Priority>,
     /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
@@ -30,6 +94,62 @@ pub struct Notification {
     pub default_action_target: Option<OwnedValue>,
     /// Array of buttons to add to the notification.
     pub buttons: Vec<Button>,
+}
+
+impl NotificationBuilder {
+    pub fn new(title: &str) -> Self {
+        Self {
+            title: title.to_string(),
+            body: None,
+            priority: None,
+            icon: None,
+            default_action: None,
+            default_action_target: None,
+            buttons: vec![],
+        }
+    }
+
+    pub fn body(mut self, body: &str) -> Self {
+        self.body = Some(body.to_string());
+        self
+    }
+
+    pub fn icon(mut self, icon: OwnedValue) -> Self {
+        self.icon = Some(icon);
+        self
+    }
+
+    pub fn priority(mut self, priority: Priority) -> Self {
+        self.priority = Some(priority);
+        self
+    }
+
+    pub fn default_action(mut self, default_action: &str) -> Self {
+        self.default_action = Some(default_action.to_string());
+        self
+    }
+
+    pub fn default_action_target(mut self, default_action_target: OwnedValue) -> Self {
+        self.default_action_target = Some(default_action_target);
+        self
+    }
+
+    pub fn button(mut self, button: Button) -> Self {
+        self.buttons.push(button);
+        self
+    }
+
+    pub fn build(self) -> Notification {
+        Notification {
+            title: self.title,
+            body: self.body,
+            icon: self.icon,
+            priority: self.priority,
+            default_action: self.default_action.unwrap_or_default(),
+            default_action_target: self.default_action_target,
+            buttons: self.buttons,
+        }
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -41,6 +161,38 @@ pub struct Button {
     pub action: String,
     /// Target parameter to send along when activating the action.
     pub target: Option<OwnedValue>,
+}
+
+pub struct ButtonBuilder {
+    /// User-visible label for the button. Mandatory.
+    pub label: String,
+    /// Name of an action that is exported by the application. The action will be activated when the user clicks on the button.
+    pub action: String,
+    /// Target parameter to send along when activating the action.
+    pub target: Option<OwnedValue>,
+}
+
+impl ButtonBuilder {
+    pub fn new(label: &str, action: &str) -> Self {
+        Self {
+            label: label.to_string(),
+            action: action.to_string(),
+            target: None,
+        }
+    }
+
+    pub fn target(mut self, target: OwnedValue) -> Self {
+        self.target = Some(target);
+        self
+    }
+
+    pub fn build(self) -> Button {
+        Button {
+            label: self.label,
+            action: self.action,
+            target: self.target,
+        }
+    }
 }
 
 #[dbus_proxy(
