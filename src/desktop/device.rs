@@ -1,41 +1,94 @@
-use serde::{Deserialize, Serialize};
-use strum_macros::EnumString;
+//! # Examples
+//!
+//! Access a [`Device`]
+//!
+//! ```
+//! use libportal::desktop::device::{DeviceProxy, AccessDeviceOptions, Device, AccessDeviceResponse};
+//! use libportal::RequestProxy;
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = DeviceProxy::new(&connection)?;
+//!     let request_handle = proxy.access_device(
+//!         6879,
+//!         &[Device::Speakers],
+//!         AccessDeviceOptions::default(),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|response: AccessDeviceResponse| {
+//!         println!("{}", response.is_success());
+//!     })?;
+//!     Ok(())
+//! }
+//! ```
+//! [`Device`]: ./enum.Device.html
+use crate::ResponseType;
+use serde::{Deserialize, Serialize, Serializer};
+use std::collections::HashMap;
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
+use zvariant::{OwnedObjectPath, OwnedValue, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a device access request.
-pub struct DeviceAccessOptions {
+pub struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
 }
 
 #[derive(Debug, Default)]
-pub struct DeviceAccessOptionsBuilder {
+pub struct AccessDeviceOptionsBuilder {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
 }
 
-impl DeviceAccessOptionsBuilder {
+impl AccessDeviceOptionsBuilder {
     pub fn handle_token(mut self, handle_token: &str) -> Self {
         self.handle_token = Some(handle_token.to_string());
         self
     }
 
-    pub fn build(self) -> DeviceAccessOptions {
-        DeviceAccessOptions {
+    pub fn build(self) -> AccessDeviceOptions {
+        AccessDeviceOptions {
             handle_token: self.handle_token,
         }
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, EnumString, PartialEq, Eq, Type)]
+#[derive(
+    Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
+)]
 #[strum(serialize_all = "lowercase")]
 pub enum Device {
     Microphone,
     Speakers,
     Camera,
+}
+
+impl zvariant::Type for Device {
+    fn signature() -> Signature<'static> {
+        String::signature()
+    }
+}
+
+impl Serialize for Device {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        String::serialize(&self.to_string(), serializer)
+    }
+}
+
+#[derive(Debug, Type, Deserialize, Serialize)]
+pub struct AccessDeviceResponse(pub ResponseType, HashMap<String, OwnedValue>);
+
+impl AccessDeviceResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
+    }
 }
 
 #[dbus_proxy(
@@ -48,18 +101,21 @@ pub enum Device {
 trait Device {
     /// Asks for access to a device.
     ///
+    /// Returns a [`RequestProxy`] handle.
+    ///
     /// # Arguments
     ///
     /// * `pid` - The pid of the application on whose behalf the request is made
     /// * `devices` - A list of devices to request access to.
-    /// * `options` - [`DeviceAccessOptions`]
+    /// * `options` - A [`AccessDeviceOptions`].
     ///
-    /// [`DeviceAccessOptions`]: ./struct.DeviceAccessOptions.html
+    /// [`AccessDeviceOptions`]: ./struct.AccessDeviceOptions.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     fn access_device(
         &self,
         pid: u32,
-        devices: &[&Device],
-        options: DeviceAccessOptions,
+        devices: &[Device],
+        options: AccessDeviceOptions,
     ) -> Result<OwnedObjectPath>;
 
     /// version property

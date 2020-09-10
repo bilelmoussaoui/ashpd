@@ -17,17 +17,34 @@ use zbus::{fdo::DBusProxy, fdo::Result, Connection};
 /// A client who started a session vanishing from the D-Bus is equivalent to closing all active sessions made by said client.
 pub struct SessionProxy<'a> {
     proxy: DBusProxy<'a>,
+    connection: &'a Connection,
 }
 
 impl<'a> SessionProxy<'a> {
-    pub fn new(connection: &Connection, handle: &'a str) -> Result<Self> {
+    pub fn new(connection: &'a Connection, handle: &'a str) -> Result<Self> {
         let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/desktop")?;
-        Ok(Self { proxy })
+        Ok(Self { proxy, connection })
     }
 
-    // FIXME signal
     /// Emitted when a session is closed.
-    //fn closed(&self) -> Result<HashMap<&str, Value>>;
+    pub fn on_closed<F, T>(&self, callback: F) -> Result<()>
+    where
+        F: FnOnce(T),
+        T: serde::de::DeserializeOwned + zvariant::Type,
+    {
+        loop {
+            let msg = self.connection.receive_message()?;
+            let msg_header = msg.header()?;
+            if msg_header.message_type()? == zbus::MessageType::Signal
+                && msg_header.member()? == Some("Closed")
+            {
+                let response = msg.body::<T>()?;
+                callback(response);
+                break;
+            }
+        }
+        Ok(())
+    }
 
     /// Closes the portal session to which this object refers and ends all related user interaction (dialogs, etc).
     pub fn close(&self) -> Result<()> {

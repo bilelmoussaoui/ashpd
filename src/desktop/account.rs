@@ -1,6 +1,8 @@
 //! # Examples
 //!
 //! ```
+//! use libportal::desktop::account::{AccountProxy, UserInfoOptionsBuilder, UserInfoResponse};
+//! use libportal::{RequestProxy, WindowIdentifier};
 //! fn main() -> zbus::fdo::Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = AccountProxy::new(&connection)?;
@@ -9,9 +11,9 @@
 //!         UserInfoOptionsBuilder::new("Fractal would like access to your information").build(),
 //!     )?;
 //!     let req = RequestProxy::new(&connection, &request_handle)?;
-//!     req.on_response(|t: UserInfoResponse| {
-//!         if t.0 == ResponseType::Success {
-//!             println!("{:#?}", t.1);
+//!     req.on_response(|response: UserInfoResponse| {
+//!         if response.is_success() {
+//!             println!("{:#?}", response.user_information());
 //!         }
 //!     })?;
 //!     Ok(())
@@ -59,10 +61,20 @@ impl UserInfoOptionsBuilder {
 }
 
 #[derive(Debug, Type, Deserialize, Serialize)]
-pub struct UserInfoResponse(pub ResponseType, pub UserInfoResult);
+pub struct UserInfoResponse(pub ResponseType, pub UserInfo);
+
+impl UserInfoResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
+    }
+
+    pub fn user_information(&self) -> &UserInfo {
+        &self.1
+    }
+}
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-pub struct UserInfoResult {
+pub struct UserInfo {
     /// User identifier.
     pub id: String,
     /// User name.
@@ -83,12 +95,15 @@ pub struct UserInfoResult {
 trait Account {
     /// Gets information about the user.
     ///
+    /// Returns a [`RequestProxy`] handle.
+    ///
     /// # Arguments
     ///
     /// * `window` - Identifier for the window
     /// * `options` - A [`UserInfoOptions`]
     ///
     /// [`UserInfoOptions`]: ./struct.UserInfoOptions.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     fn get_user_information(
         &self,
         window: WindowIdentifier,

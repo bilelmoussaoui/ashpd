@@ -97,12 +97,15 @@ pub struct BackgroundResult {
 trait Background {
     /// Requests that the application is allowed to run in the background.
     ///
+    /// Returns a [`RequestProxy`] object path.
+    ///
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window
     /// * `options` - [`BackgroundOptions`]
     ///
     /// [`BackgroundOptions`]: ./struct.BackgroundOptions.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     fn request_background(
         &self,
         parent_window: WindowIdentifier,

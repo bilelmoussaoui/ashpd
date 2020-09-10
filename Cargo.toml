@@ -10,22 +10,17 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
 
 [features]
-gnome = ["gtk", "gdk"]
+feature_gdk = ["gdk"]
 
 
 [dependencies]
-zbus = { git="https://gitlab.freedesktop.org/elmarco/zbus", branch = "serde-value" }
-zvariant = { git="https://gitlab.freedesktop.org/elmarco/zbus", branch ="serde-value" }
-zvariant_derive = { git="https://gitlab.freedesktop.org/elmarco/zbus", branch = "serde-value" }
+zbus = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
+zvariant = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
+zvariant_derive = { git="https://gitlab.freedesktop.org/zeenix/zbus" }
 serde = "1.0"
 serde_repr = "0.1"
 strum = "0.19"
 strum_macros = "0.19"
-
-
-[dependencies.gtk]
-version = "0.9"
-optional = true
 
 [dependencies.gdk]
 version = "0.13"

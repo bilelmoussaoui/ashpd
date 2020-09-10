@@ -3,6 +3,9 @@
 //! Taking a screenshot
 //!
 //! ```
+//! use libportal::desktop::screenshot::{ScreenshotResponse, ScreenshotOptionsBuilder, ScreenshotProxy};
+//! use libportal::{RequestProxy, WindowIdentifier};
+//!
 //! fn main() -> zbus::fdo::Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = ScreenshotProxy::new(&connection)?;
@@ -13,10 +16,10 @@
 //!             .build()
 //!     )?;
 //!
-//!     let req = RequestProxy::new(&connection, &request_handle)?;
-//!     req.on_response(|t: ScreenshotResponse| {
-//!         if t.0 == ResponseType::Success {
-//!             println!("{:#?}", t.1.uri);
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|response: ScreenshotResponse| {
+//!         if response.is_success() {
+//!             println!("{}", response.uri());
 //!         }
 //!     })?;
 //!     Ok(())
@@ -25,7 +28,10 @@
 //!
 //! Picking a color
 //!```
-//!fn main() -> zbus::fdo::Result<()> {
+//! use libportal::desktop::screenshot::{ColorResponse, PickColorOptions, ScreenshotProxy};
+//! use libportal::{RequestProxy, WindowIdentifier};
+//!
+//! fn main() -> zbus::fdo::Result<()> {
 //!    let connection = zbus::Connection::new_session()?;
 //!    let proxy = ScreenshotProxy::new(&connection)?;
 //!
@@ -34,12 +40,11 @@
 //!             PickColorOptions::default()
 //!    )?;
 //!
-//!    let req = RequestProxy::new(&connection, &request_handle)?;
+//!    let request = RequestProxy::new(&connection, &request_handle)?;
 //!
-//!    req.on_response(|t: ColorResponse| {
-//!        if t.0 == ResponseType::Success {
-//!            let color: gdk::RGBA = t.1.color.into();
-//!            println!("{:#?}", color);
+//!    request.on_response(|response: ColorResponse| {
+//!        if response.is_success() {
+//!            println!("{:#?}", response.color());
 //!        }
 //!    })?;
 //!
@@ -101,6 +106,16 @@ impl ScreenshotOptionsBuilder {
 #[derive(Serialize, Deserialize, Debug, Type)]
 pub struct ScreenshotResponse(pub ResponseType, pub ScreenshotResult);
 
+impl ScreenshotResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
+    }
+
+    pub fn uri(&self) -> &str {
+        &self.1.uri
+    }
+}
+
 #[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
 pub struct ScreenshotResult {
     pub uri: String,
@@ -135,6 +150,16 @@ impl PickColorOptionsBuilder {
 #[derive(Debug, Type, Deserialize)]
 pub struct ColorResponse(pub ResponseType, pub ColorResult);
 
+impl ColorResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
+    }
+
+    pub fn color(&self) -> &Color {
+        &self.1.color
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 pub struct ColorResult {
     pub color: Color,
@@ -143,9 +168,9 @@ pub struct ColorResult {
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct Color(pub [f64; 3]);
 
-#[cfg(feature = "gnome")]
-impl Into<gdk::RGBA> for Color {
-    fn into(self) -> gdk::RGBA {
+#[cfg(feature = "feature_gdk")]
+impl Into<gdk::RGBA> for &Color {
+    fn into(&self) -> gdk::RGBA {
         gdk::RGBA {
             red: self.0[0],
             green: self.0[1],
@@ -164,7 +189,7 @@ impl Into<gdk::RGBA> for Color {
 trait Screenshot {
     /// Obtains the color of a single pixel.
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] handle.
     ///
     /// # Arguments
     ///
@@ -172,7 +197,7 @@ trait Screenshot {
     /// * `options` - A [`PickColorOptions`]
     ///
     /// [`PickColorOptions`]: ./struct.PickColorOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     fn pick_color(
         &self,
         parent_window: WindowIdentifier,
