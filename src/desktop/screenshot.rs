@@ -135,15 +135,29 @@ struct ColorResult {
 }
 
 #[derive(Debug, Type, Serialize, Deserialize)]
-pub struct Color(pub [f64; 3]);
+pub struct Color([f64; 3]);
+
+impl Color {
+    pub fn red(&self) -> f64 {
+        self.0[0]
+    }
+
+    pub fn green(&self) -> f64 {
+        self.0[1]
+    }
+
+    pub fn blue(&self) -> f64 {
+        self.0[2]
+    }
+}
 
 #[cfg(feature = "feature_gdk")]
 impl Into<gdk::RGBA> for &Color {
     fn into(self) -> gdk::RGBA {
         gdk::RGBA {
-            red: self.0[0],
-            green: self.0[1],
-            blue: self.0[2],
+            red: self.red(),
+            green: self.green(),
+            blue: self.blue(),
             alpha: 1_f64,
         }
     }
