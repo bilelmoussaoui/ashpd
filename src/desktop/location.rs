@@ -28,11 +28,40 @@ pub struct LocationAccessOptions {
     pub accuracy: Option<Accuracy>,
 }
 
+impl LocationAccessOptions {
+    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
+        self.session_handle_token = Some(session_handle_token.to_string());
+        self
+    }
+
+    pub fn distance_threshold(mut self, distance_threshold: u32) -> Self {
+        self.distance_threshold = Some(distance_threshold);
+        self
+    }
+
+    pub fn time_threshold(mut self, time_threshold: u32) -> Self {
+        self.time_threshold = Some(time_threshold);
+        self
+    }
+
+    pub fn accuracy(mut self, accuracy: Accuracy) -> Self {
+        self.accuracy = Some(accuracy);
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a location session start request.
 pub struct LocationStartOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
+}
+
+impl LocationStartOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
 }
 
 #[dbus_proxy(

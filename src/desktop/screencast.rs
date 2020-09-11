@@ -34,6 +34,18 @@ pub struct CreateSessionOptions {
     pub session_handle_token: Option<String>,
 }
 
+impl CreateSessionOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
+        self.session_handle_token = Some(session_handle_token.to_string());
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
@@ -47,11 +59,40 @@ pub struct SelectSourcesOptions {
     pub cursor_mode: Option<BitFlags<CursorMode>>,
 }
 
+impl SelectSourcesOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn multiple(mut self, multiple: bool) -> Self {
+        self.multiple = Some(multiple);
+        self
+    }
+
+    pub fn cursor_mode(mut self, cursor_mode: BitFlags<CursorMode>) -> Self {
+        self.cursor_mode = Some(cursor_mode);
+        self
+    }
+
+    pub fn types(mut self, types: BitFlags<SourceType>) -> Self {
+        self.types = Some(types);
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a start screencast request.
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
+}
+
+impl StartCastOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
 }
 
 #[dbus_proxy(

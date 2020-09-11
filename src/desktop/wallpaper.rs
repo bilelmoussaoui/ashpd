@@ -3,9 +3,7 @@
 //! Set a wallpaper from a URI:
 //!
 //! ```no_run
-//! use libportal::desktop::wallpaper::{
-//!     WallpaperOptionsBuilder, WallpaperProxy, SetOn, WallpaperResponse
-//! };
+//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
 //! use libportal::{RequestProxy, WindowIdentifier};
 //!
 //! fn main() -> zbus::fdo::Result<()> {
@@ -15,10 +13,9 @@
 //!     let request_handle = proxy.set_wallpaper_uri(
 //!         WindowIdentifier::default(),
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!         WallpaperOptionsBuilder::default()
+//!         WallpaperOptions::default()
 //!             .show_preview(true)
-//!             .set_on(SetOn::Both)
-//!             .build(),
+//!             .set_on(SetOn::Both),
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
@@ -76,25 +73,7 @@ pub struct WallpaperOptions {
     pub set_on: Option<SetOn>,
 }
 
-#[derive(Debug, Default)]
-pub struct WallpaperOptionsBuilder {
-    /// Whether to show a preview of the picture
-    /// Note that the portal may decide to show a preview even if this option is not set
-    pub show_preview: Option<bool>,
-    /// Where to set the wallpaper on
-    pub set_on: Option<SetOn>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Type)]
-pub struct WallpaperResponse(pub ResponseType, pub HashMap<String, OwnedValue>);
-
-impl WallpaperResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
-    }
-}
-
-impl WallpaperOptionsBuilder {
+impl WallpaperOptions {
     pub fn show_preview(mut self, show_preview: bool) -> Self {
         self.show_preview = Some(show_preview);
         self
@@ -104,12 +83,14 @@ impl WallpaperOptionsBuilder {
         self.set_on = Some(set_on);
         self
     }
+}
 
-    pub fn build(self) -> WallpaperOptions {
-        WallpaperOptions {
-            set_on: self.set_on,
-            show_preview: self.show_preview,
-        }
+#[derive(Debug, Serialize, Deserialize, Type)]
+pub struct WallpaperResponse(pub ResponseType, pub HashMap<String, OwnedValue>);
+
+impl WallpaperResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
     }
 }
 

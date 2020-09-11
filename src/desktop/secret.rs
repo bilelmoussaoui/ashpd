@@ -9,20 +9,10 @@ pub struct ScecretOptions {
     pub token: Option<String>,
 }
 
-#[derive(Debug, Default)]
-pub struct ScecretOptionsBuilder {
-    /// A string returned by a pervious call to `retrieve_secret`
-    pub token: Option<String>,
-}
-
-impl ScecretOptionsBuilder {
+impl ScecretOptions {
     pub fn token(mut self, token: &str) -> Self {
         self.token = Some(token.to_string());
         self
-    }
-
-    pub fn build(self) -> ScecretOptions {
-        ScecretOptions { token: self.token }
     }
 }
 

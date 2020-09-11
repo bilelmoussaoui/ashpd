@@ -1,16 +1,15 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::account::{AccountProxy, UserInfoOptionsBuilder, UserInfoResponse};
+//! use libportal::desktop::account::{AccountProxy, UserInfoOptions, UserInfoResponse};
 //! use libportal::{RequestProxy, WindowIdentifier};
 //! fn main() -> zbus::fdo::Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = AccountProxy::new(&connection)?;
 //!     let request_handle = proxy.get_user_information(
 //!         WindowIdentifier::default(),
-//!         UserInfoOptionsBuilder::default()
-//!             .reason("Fractal would like access to your information")
-//!             .build(),
+//!         UserInfoOptions::default()
+//!             .reason("Fractal would like access to your information"),
 //!     )?;
 //!     let req = RequestProxy::new(&connection, &request_handle)?;
 //!     req.on_response(|response: UserInfoResponse| {
@@ -27,7 +26,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified the options for a get user information request.
 pub struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
@@ -36,13 +35,7 @@ pub struct UserInfoOptions {
     pub reason: Option<String>,
 }
 
-#[derive(Default)]
-pub struct UserInfoOptionsBuilder {
-    handle_token: Option<String>,
-    reason: Option<String>,
-}
-
-impl UserInfoOptionsBuilder {
+impl UserInfoOptions {
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
@@ -51,13 +44,6 @@ impl UserInfoOptionsBuilder {
     pub fn handle_token(mut self, handle_token: &str) -> Self {
         self.handle_token = Some(handle_token.to_string());
         self
-    }
-
-    pub fn build(self) -> UserInfoOptions {
-        UserInfoOptions {
-            handle_token: self.handle_token,
-            reason: self.reason,
-        }
     }
 }
 

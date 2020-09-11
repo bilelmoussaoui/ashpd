@@ -36,6 +36,18 @@ pub struct CreateRemoteOptions {
     pub session_handle_token: Option<String>,
 }
 
+impl CreateRemoteOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
+        self.session_handle_token = Some(session_handle_token.to_string());
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options on a select devices request.
 pub struct SelectDevicesOptions {
@@ -45,11 +57,30 @@ pub struct SelectDevicesOptions {
     pub types: Option<DeviceType>,
 }
 
+impl SelectDevicesOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn types(mut self, types: DeviceType) -> Self {
+        self.types = Some(types);
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a start remote desktop request.
 pub struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
+}
+
+impl StartRemoteOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
 }
 
 #[dbus_proxy(

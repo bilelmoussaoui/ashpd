@@ -1,8 +1,8 @@
 //! # Examples
 //!
-//! ```
+//! ```no_run
 //!  use libportal::desktop::notification::{
-//!     ButtonBuilder, NotificationBuilder, NotificationProxy, Priority,
+//!     Button, Notification, NotificationProxy, Priority,
 //! };
 //! use std::{thread, time};
 //!
@@ -13,12 +13,10 @@
 //!     let notification_id = "org.gnome.design.Contrast";
 //!     proxy.add_notification(
 //!         notification_id,
-//!         NotificationBuilder::new("Contrast")
-//!             .default_action("close")
+//!         Notification::new("Contrast", "close")
 //!             .body("color copied to clipboard")
 //!             .priority(Priority::High)
-//!             .button(ButtonBuilder::new("Copy", "copy").build())
-//!             .build(),
+//!             .button(Button::new("Copy", "copy")),
 //!     )?;
 //!
 //!     thread::sleep(time::Duration::from_secs(1));
@@ -79,31 +77,14 @@ pub struct Notification {
     pub buttons: Vec<Button>,
 }
 
-pub struct NotificationBuilder {
-    /// User-visible string to display as the title.
-    pub title: String,
-    /// User-visible string to display as the body.
-    pub body: Option<String>,
-    // Serialized icon (e.g using gio::Icon::serialize)
-    pub icon: Option<OwnedValue>,
-    /// The priority for the notification.
-    pub priority: Option<Priority>,
-    /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
-    pub default_action: Option<String>,
-    /// Target parameter to send along when activating the default action.
-    pub default_action_target: Option<OwnedValue>,
-    /// Array of buttons to add to the notification.
-    pub buttons: Vec<Button>,
-}
-
-impl NotificationBuilder {
-    pub fn new(title: &str) -> Self {
+impl Notification {
+    pub fn new(title: &str, default_action: &str) -> Self {
         Self {
             title: title.to_string(),
             body: None,
             priority: None,
             icon: None,
-            default_action: None,
+            default_action: default_action.to_string(),
             default_action_target: None,
             buttons: vec![],
         }
@@ -124,11 +105,6 @@ impl NotificationBuilder {
         self
     }
 
-    pub fn default_action(mut self, default_action: &str) -> Self {
-        self.default_action = Some(default_action.to_string());
-        self
-    }
-
     pub fn default_action_target(mut self, default_action_target: OwnedValue) -> Self {
         self.default_action_target = Some(default_action_target);
         self
@@ -137,18 +113,6 @@ impl NotificationBuilder {
     pub fn button(mut self, button: Button) -> Self {
         self.buttons.push(button);
         self
-    }
-
-    pub fn build(self) -> Notification {
-        Notification {
-            title: self.title,
-            body: self.body,
-            icon: self.icon,
-            priority: self.priority,
-            default_action: self.default_action.unwrap_or_default(),
-            default_action_target: self.default_action_target,
-            buttons: self.buttons,
-        }
     }
 }
 
@@ -163,16 +127,7 @@ pub struct Button {
     pub target: Option<OwnedValue>,
 }
 
-pub struct ButtonBuilder {
-    /// User-visible label for the button. Mandatory.
-    pub label: String,
-    /// Name of an action that is exported by the application. The action will be activated when the user clicks on the button.
-    pub action: String,
-    /// Target parameter to send along when activating the action.
-    pub target: Option<OwnedValue>,
-}
-
-impl ButtonBuilder {
+impl Button {
     pub fn new(label: &str, action: &str) -> Self {
         Self {
             label: label.to_string(),
@@ -184,14 +139,6 @@ impl ButtonBuilder {
     pub fn target(mut self, target: OwnedValue) -> Self {
         self.target = Some(target);
         self
-    }
-
-    pub fn build(self) -> Button {
-        Button {
-            label: self.label,
-            action: self.action,
-            target: self.target,
-        }
     }
 }
 

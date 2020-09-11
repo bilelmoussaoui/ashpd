@@ -14,6 +14,18 @@ pub struct CreateMonitorOptions {
     pub session_handle_token: Option<String>,
 }
 
+impl CreateMonitorOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
+        self.session_handle_token = Some(session_handle_token.to_string());
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options of an inhibit request.
 pub struct InhibitOptions {
@@ -21,6 +33,18 @@ pub struct InhibitOptions {
     pub handle_token: Option<String>,
     /// User-visible reason for the inhibition.
     pub reason: Option<String>,
+}
+
+impl InhibitOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn reason(mut self, reason: &str) -> Self {
+        self.reason = Some(reason.to_string());
+        self
+    }
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]

@@ -38,22 +38,10 @@ pub struct AccessDeviceOptions {
     pub handle_token: Option<String>,
 }
 
-#[derive(Debug, Default)]
-pub struct AccessDeviceOptionsBuilder {
-    /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
-}
-
-impl AccessDeviceOptionsBuilder {
+impl AccessDeviceOptions {
     pub fn handle_token(mut self, handle_token: &str) -> Self {
         self.handle_token = Some(handle_token.to_string());
         self
-    }
-
-    pub fn build(self) -> AccessDeviceOptions {
-        AccessDeviceOptions {
-            handle_token: self.handle_token,
-        }
     }
 }
 

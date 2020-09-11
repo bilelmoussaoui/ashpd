@@ -27,7 +27,7 @@ pub enum SupportsFlags {
     ExposePids = 1,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     /// Note that absolute paths or subdirectories are not allowed.
@@ -41,6 +41,33 @@ pub struct SpawnOptions {
     pub sandbox_expose_fd_ro: Option<Vec<RawFd>>,
     /// Flags affecting the created sandbox.
     pub sandbox_flags: Option<BitFlags<SandboxFlags>>,
+}
+
+impl SpawnOptions {
+    pub fn sandbox_expose(mut self, sandbox_expose: Vec<String>) -> Self {
+        self.sandbox_expose = Some(sandbox_expose);
+        self
+    }
+
+    pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: Vec<String>) -> Self {
+        self.sandbox_expose_ro = Some(sandbox_expose_ro);
+        self
+    }
+
+    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: Vec<RawFd>) -> Self {
+        self.sandbox_expose_fd = Some(sandbox_expose_fd);
+        self
+    }
+
+    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: Vec<RawFd>) -> Self {
+        self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro);
+        self
+    }
+
+    pub fn sandbox_flags(mut self, sandbox_flags: BitFlags<SandboxFlags>) -> Self {
+        self.sandbox_flags = Some(sandbox_flags);
+        self
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]

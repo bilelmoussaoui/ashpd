@@ -10,6 +10,13 @@ pub struct OpenDirOptions {
     pub handle_token: Option<String>,
 }
 
+impl OpenDirOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for an open file request.
 pub struct OpenFileOptions {
@@ -20,6 +27,23 @@ pub struct OpenFileOptions {
     pub writeable: Option<bool>,
     /// Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
     pub ask: Option<bool>,
+}
+
+impl OpenFileOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn writeable(mut self, writeable: bool) -> Self {
+        self.writeable = Some(writeable);
+        self
+    }
+
+    pub fn ask(mut self, ask: bool) -> Self {
+        self.ask = Some(ask);
+        self
+    }
 }
 
 #[dbus_proxy(

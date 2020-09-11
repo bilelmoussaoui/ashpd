@@ -2,7 +2,7 @@ use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 pub struct UpdateOptions {}
 
 #[dbus_proxy(

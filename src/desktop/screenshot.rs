@@ -3,7 +3,7 @@
 //! Taking a screenshot
 //!
 //! ```no_run
-//! use libportal::desktop::screenshot::{ScreenshotResponse, ScreenshotOptionsBuilder, ScreenshotProxy};
+//! use libportal::desktop::screenshot::{ScreenshotResponse, ScreenshotOptions, ScreenshotProxy};
 //! use libportal::{RequestProxy, WindowIdentifier};
 //!
 //! fn main() -> zbus::fdo::Result<()> {
@@ -11,9 +11,8 @@
 //!     let proxy = ScreenshotProxy::new(&connection)?;
 //!     let request_handle = proxy.screenshot(
 //!         WindowIdentifier::default(),
-//!         ScreenshotOptionsBuilder::default()
+//!         ScreenshotOptions::default()
 //!             .interactive(true)
-//!             .build()
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
@@ -68,17 +67,7 @@ pub struct ScreenshotOptions {
     pub interactive: Option<bool>,
 }
 
-#[derive(Debug, Default)]
-pub struct ScreenshotOptionsBuilder {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
-    /// Whether the dialog should be modal.
-    pub modal: Option<bool>,
-    /// Hint whether the dialog should offer customization before taking a screenshot.
-    pub interactive: Option<bool>,
-}
-
-impl ScreenshotOptionsBuilder {
+impl ScreenshotOptions {
     pub fn handle_token(mut self, handle_token: &str) -> Self {
         self.handle_token = Some(handle_token.to_string());
         self
@@ -92,14 +81,6 @@ impl ScreenshotOptionsBuilder {
     pub fn interactive(mut self, interactive: bool) -> Self {
         self.interactive = Some(interactive);
         self
-    }
-
-    pub fn build(self) -> ScreenshotOptions {
-        ScreenshotOptions {
-            handle_token: self.handle_token,
-            interactive: self.interactive,
-            modal: self.modal,
-        }
     }
 }
 
@@ -128,22 +109,10 @@ pub struct PickColorOptions {
     pub handle_token: Option<String>,
 }
 
-#[derive(Default, Debug)]
-pub struct PickColorOptionsBuilder {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
-}
-
-impl PickColorOptionsBuilder {
+impl PickColorOptions {
     pub fn handle_token(mut self, handle_token: &str) -> Self {
         self.handle_token = Some(handle_token.to_string());
         self
-    }
-
-    pub fn build(self) -> PickColorOptions {
-        PickColorOptions {
-            handle_token: self.handle_token,
-        }
     }
 }
 

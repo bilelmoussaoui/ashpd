@@ -4,20 +4,23 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Value;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 pub struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
-    pub writable: Option<bool>,
+    pub writeable: Option<bool>,
     /// Whether to stop the transfer automatically after the first `retrieve_files` call.
     pub autostop: Option<bool>,
 }
 
-impl Default for TransferOptions {
-    fn default() -> Self {
-        Self {
-            writable: Some(false),
-            autostop: Some(true),
-        }
+impl TransferOptions {
+    pub fn writeable(mut self, writeable: bool) -> Self {
+        self.writeable = Some(writeable);
+        self
+    }
+
+    pub fn autostop(mut self, autostop: bool) -> Self {
+        self.autostop = Some(autostop);
+        self
     }
 }
 

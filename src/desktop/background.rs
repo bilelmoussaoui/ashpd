@@ -2,7 +2,7 @@
 //!
 //! ```no_run
 //! use libportal::desktop::background::{
-//!     BackgroundOptionsBuilder, BackgroundProxy, BackgroundResponse,
+//!     BackgroundOptions, BackgroundProxy, BackgroundResponse,
 //! };
 //! use libportal::{RequestProxy, WindowIdentifier};
 //!
@@ -12,11 +12,10 @@
 //!
 //!     let request_handle = proxy.request_background(
 //!         WindowIdentifier::default(),
-//!         BackgroundOptionsBuilder::default()
+//!         BackgroundOptions::default()
 //!             .autostart(true)
 //!             .commandline(vec!["geary".to_string()])
-//!             .reason("Automatically fetch your latest mails.")
-//!             .build(),
+//!             .reason("Automatically fetch your latest mails."),
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
@@ -52,21 +51,7 @@ pub struct BackgroundOptions {
     pub commandline: Option<Vec<String>>,
 }
 
-#[derive(Default)]
-pub struct BackgroundOptionsBuilder {
-    /// A string that will be used as the last element of the handle.
-    handle_token: Option<String>,
-    /// User-visible reason for the request.
-    reason: Option<String>,
-    /// `true` if the app also wants to be started automatically at login.
-    autostart: Option<bool>,
-    /// if `true`, use D-Bus activation for autostart.
-    dbus_activatable: Option<bool>,
-    /// Commandline to use when autostarting at login.
-    commandline: Option<Vec<String>>,
-}
-
-impl BackgroundOptionsBuilder {
+impl BackgroundOptions {
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
@@ -90,16 +75,6 @@ impl BackgroundOptionsBuilder {
     pub fn commandline(mut self, command: Vec<String>) -> Self {
         self.commandline = Some(command);
         self
-    }
-
-    pub fn build(self) -> BackgroundOptions {
-        BackgroundOptions {
-            handle_token: self.handle_token,
-            reason: self.reason,
-            autostart: self.autostart,
-            dbus_activatable: self.dbus_activatable,
-            commandline: self.commandline,
-        }
     }
 }
 
