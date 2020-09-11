@@ -31,14 +31,14 @@ pub enum SupportsFlags {
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     /// Note that absolute paths or subdirectories are not allowed.
-    pub sandbox_expose: Vec<String>,
+    pub sandbox_expose: Option<Vec<String>>,
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, readonly.
     /// Note that absolute paths or subdirectories are not allowed.
-    pub sandbox_expose_ro: Vec<String>,
+    pub sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
-    pub sandbox_expose_fd: Vec<RawFd>,
+    pub sandbox_expose_fd: Option<Vec<RawFd>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.
-    pub sandbox_expose_fd_ro: Vec<RawFd>,
+    pub sandbox_expose_fd_ro: Option<Vec<RawFd>>,
     /// Flags affecting the created sandbox.
     pub sandbox_flags: Option<BitFlags<SandboxFlags>>,
 }

@@ -1,4 +1,5 @@
 use crate::{ResponseType, WindowIdentifier};
+use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
@@ -20,10 +21,10 @@ pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
     /// User-visible reason for the inhibition.
-    pub reason: String,
+    pub reason: Option<String>,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, BitFlags, Debug, Type)]
 #[repr(u32)]
 pub enum InhibitFlags {
     Logout = 1,
@@ -81,7 +82,7 @@ trait Inhibit {
     fn inhibit(
         &self,
         window: WindowIdentifier,
-        flags: InhibitFlags,
+        flags: BitFlags<InhibitFlags>,
         options: InhibitOptions,
     ) -> Result<OwnedObjectPath>;
 

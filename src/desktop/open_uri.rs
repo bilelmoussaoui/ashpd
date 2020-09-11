@@ -17,9 +17,9 @@ pub struct OpenFileOptions {
     pub handle_token: Option<String>,
     /// Whether to allow the chosen application to write to the file.
     /// This key only takes effect the uri points to a local file that is exported in the document portal, and the chosen application is sandboxed itself.
-    pub writeable: bool,
+    pub writeable: Option<bool>,
     /// Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
-    pub ask: bool,
+    pub ask: Option<bool>,
 }
 
 #[dbus_proxy(

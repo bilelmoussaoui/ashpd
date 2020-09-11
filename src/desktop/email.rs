@@ -12,17 +12,17 @@ pub struct EmailOptions {
     /// The email address to send to
     pub address: Option<String>,
     // The email adresses to send to
-    pub addresses: Vec<String>,
+    pub addresses: Option<Vec<String>>,
     // The email adresses to CC
-    pub cc: Vec<String>,
+    pub cc: Option<Vec<String>>,
     // The email adresses to BCC
-    pub bcc: Vec<String>,
+    pub bcc: Option<Vec<String>>,
     /// The subject of the email
     pub subject: Option<String>,
     /// The body of the email
     pub body: Option<String>,
     /// A list of file descriptors of files to attach
-    pub attachment_fds: Vec<RawFd>,
+    pub attachment_fds: Option<Vec<RawFd>>,
 }
 
 #[dbus_proxy(

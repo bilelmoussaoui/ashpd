@@ -7,16 +7,16 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 pub struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
-    pub writable: bool,
+    pub writable: Option<bool>,
     /// Whether to stop the transfer automatically after the first `retrieve_files` call.
-    pub autostop: bool,
+    pub autostop: Option<bool>,
 }
 
 impl Default for TransferOptions {
     fn default() -> Self {
         Self {
-            writable: false,
-            autostop: true,
+            writable: Some(false),
+            autostop: Some(true),
         }
     }
 }

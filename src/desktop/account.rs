@@ -8,7 +8,9 @@
 //!     let proxy = AccountProxy::new(&connection)?;
 //!     let request_handle = proxy.get_user_information(
 //!         WindowIdentifier::default(),
-//!         UserInfoOptionsBuilder::new("Fractal would like access to your information").build(),
+//!         UserInfoOptionsBuilder::default()
+//!             .reason("Fractal would like access to your information")
+//!             .build(),
 //!     )?;
 //!     let req = RequestProxy::new(&connection, &request_handle)?;
 //!     req.on_response(|response: UserInfoResponse| {
@@ -31,20 +33,19 @@ pub struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
     /// Shown in the dialog to explain why the information is needed.
-    pub reason: String,
+    pub reason: Option<String>,
 }
 
+#[derive(Default)]
 pub struct UserInfoOptionsBuilder {
-    pub handle_token: Option<String>,
-    pub reason: String,
+    handle_token: Option<String>,
+    reason: Option<String>,
 }
 
 impl UserInfoOptionsBuilder {
-    pub fn new(reason: &str) -> Self {
-        Self {
-            handle_token: None,
-            reason: reason.to_string(),
-        }
+    pub fn reason(mut self, reason: &str) -> Self {
+        self.reason = Some(reason.to_string());
+        self
     }
 
     pub fn handle_token(mut self, handle_token: &str) -> Self {
