@@ -6,15 +6,15 @@
 //! };
 //! use libportal::{
 //!     zbus::{self, fdo::Result},
-//!     RequestProxy, WindowIdentifier, Response
+//!     RequestProxy, Response, WindowIdentifier,
 //! };
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = LocationProxy::new(&connection)?;
 //!
 //!     let options = LocationAccessOptions::default()
-//!                 .session_handle_token("test");
+//!                     .session_handle_token("token");
 //!
 //!     let session_handle = proxy.create_session(options)?;
 //!
@@ -27,10 +27,11 @@
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
 //!     request.on_response(move |response: Response| -> Result<()> {
 //!         if response.is_success() {
-//!             proxy.on_location_updated(|location: LocationResponse| {
+//!             proxy.on_location_updated(move |location: LocationResponse| -> Result<()> {
 //!                 println!("{}", location.accuracy());
 //!                 println!("{}", location.longitude());
 //!                 println!("{}", location.latitude());
+//!                 Ok(())
 //!             })?;
 //!         }
 //!         Ok(())
@@ -38,11 +39,11 @@
 //!
 //!     Ok(())
 //! }
-//!```
+//! ```
 use crate::WindowIdentifier;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{Connection, Proxy, Result};
+use zbus::{fdo::Result, Connection, Proxy};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -110,6 +111,10 @@ impl LocationStartOptions {
 pub struct LocationResponse(OwnedObjectPath, Location);
 
 impl LocationResponse {
+    pub fn session_handle<'a>(&self) -> &'a ObjectPath {
+        &self.0
+    }
+
     /// The accuracy, in meters.
     pub fn accuracy(&self) -> f64 {
         self.1.accuracy
@@ -188,7 +193,7 @@ impl<'a> LocationProxy<'a> {
 
     pub fn on_location_updated<F, T>(&self, callback: F) -> Result<()>
     where
-        F: FnOnce(T),
+        F: FnOnce(T) -> Result<()>,
         T: serde::de::DeserializeOwned + zvariant::Type,
     {
         loop {
@@ -198,7 +203,7 @@ impl<'a> LocationProxy<'a> {
                 && msg_header.member()? == Some("LocationUpdated")
             {
                 let response = msg.body::<T>()?;
-                callback(response);
+                callback(response)?;
                 break;
             }
         }
@@ -215,7 +220,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// [`LocationAccessOptions`]: ./struct.LocationAccessOptions.html
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
-    pub fn create_session(&self, options: LocationAccessOptions) -> Result<OwnedObjectPath> {
+    pub fn create_session(&self, options: LocationAccessOptions) -> zbus::Result<OwnedObjectPath> {
         self.proxy.call("CreateSession", &(options))
     }
 
@@ -236,13 +241,13 @@ impl<'a> LocationProxy<'a> {
         session_handle: ObjectPath,
         parent_window: WindowIdentifier,
         options: LocationStartOptions,
-    ) -> Result<OwnedObjectPath> {
+    ) -> zbus::Result<OwnedObjectPath> {
         self.proxy
             .call("Start", &(session_handle, parent_window, options))
     }
 
     /// version property
-    pub fn version(&self) -> zbus::fdo::Result<u32> {
+    pub fn version(&self) -> Result<u32> {
         self.proxy.get_property::<u32>("version")
     }
 }
