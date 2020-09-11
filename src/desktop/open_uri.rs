@@ -1,6 +1,34 @@
+//! # Examples
+//!
+//! ```no_run
+//! use libportal::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
+//! use libportal::zbus;
+//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use zbus::fdo::Result;
+//!
+//! fn main() -> Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = OpenURIProxy::new(&connection)?;
+//!
+//!     let request_handle = proxy.open_uri(
+//!         WindowIdentifier::default(),
+//!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
+//!         OpenFileOptions::default(),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|response: Response| -> Result<()> {
+//!         println!("{}", response.is_success());
+//!         Ok(())
+//!     })?;
+//!
+//!     Ok(())
+//! }
+//! ```
 use crate::WindowIdentifier;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -17,7 +45,7 @@ impl OpenDirOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for an open file request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
@@ -56,6 +84,8 @@ impl OpenFileOptions {
 trait OpenURI {
     /// Asks to open the directory containing a local file in the file browser.
     ///
+    /// Returns a [`RequestPrxoy`] object path.
+    ///
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window
@@ -63,14 +93,17 @@ trait OpenURI {
     /// * `options` - [`OpenDirOptions`]
     ///
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
+    /// [`RequestPrxoy`]: ../request/struct.RequestProxy.html
     fn open_directory(
         &self,
         parent_window: WindowIdentifier,
         fd: RawFd,
         options: OpenDirOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Asks to open a local file.
+    ///
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -79,14 +112,17 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
+    /// [`RequestPrxoy`]: ../request/struct.RequestProxy.html
     fn open_file(
         &self,
         parent_window: WindowIdentifier,
         fd: RawFd,
         options: OpenFileOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Asks to open a local file.
+    ///
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -95,12 +131,14 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    #[dbus_proxy(name = "OpenURI")]
     fn open_uri(
         &self,
         parent_window: WindowIdentifier,
         uri: &str,
         options: OpenFileOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]
