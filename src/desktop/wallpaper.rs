@@ -1,5 +1,34 @@
 //! # Examples
 //!
+//! //! Set a wallpaper from a file:
+//!
+//! ```no_run
+//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
+//! use libportal::{RequestProxy, WindowIdentifier};
+//! use std::fs::File;
+//! use std::os::unix::io::AsRawFd;
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = WallpaperProxy::new(&connection)?;
+//!
+//!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
+//!
+//!     let request_handle = proxy.set_wallpaper_file(
+//!         WindowIdentifier::default(),
+//!         wallpaper.as_raw_fd(),
+//!         WallpaperOptions::default()
+//!             .set_on(SetOn::Background),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|response: WallpaperResponse| {
+//!         println!("{}", response.is_success() );
+//!     })?;
+//!     Ok(())
+//! }
+//! ```
+//!
 //! Set a wallpaper from a URI:
 //!
 //! ```no_run
