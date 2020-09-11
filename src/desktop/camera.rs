@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```
+//! ```no_run
 //! use libportal::desktop::camera::{CameraProxy, CameraAccessOptions, AccessCameraResponse};
 //! use libportal::RequestProxy;
 //!

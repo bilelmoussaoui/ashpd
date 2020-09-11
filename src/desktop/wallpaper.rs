@@ -2,11 +2,11 @@
 //!
 //! Set a wallpaper from a URI:
 //!
-//! ```
+//! ```no_run
 //! use libportal::desktop::wallpaper::{
 //!     WallpaperOptionsBuilder, WallpaperProxy, SetOn, WallpaperResponse
 //! };
-//! use libportal::{zbus, RequestProxy, WindowIdentifier};
+//! use libportal::{RequestProxy, WindowIdentifier};
 //!
 //! fn main() -> zbus::fdo::Result<()> {
 //!     let connection = zbus::Connection::new_session()?;

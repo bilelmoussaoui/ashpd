@@ -2,7 +2,7 @@
 //!
 //! Taking a screenshot
 //!
-//! ```
+//! ```no_run
 //! use libportal::desktop::screenshot::{ScreenshotResponse, ScreenshotOptionsBuilder, ScreenshotProxy};
 //! use libportal::{RequestProxy, WindowIdentifier};
 //!
@@ -27,7 +27,7 @@
 //!```
 //!
 //! Picking a color
-//!```
+//!```no_run
 //! use libportal::desktop::screenshot::{ColorResponse, PickColorOptions, ScreenshotProxy};
 //! use libportal::{RequestProxy, WindowIdentifier};
 //!

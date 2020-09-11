@@ -2,7 +2,7 @@
 //!
 //! Access a [`Device`]
 //!
-//! ```
+//! ```no_run
 //! use libportal::desktop::device::{DeviceProxy, AccessDeviceOptions, Device, AccessDeviceResponse};
 //! use libportal::RequestProxy;
 //!

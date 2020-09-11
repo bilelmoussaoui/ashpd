@@ -1,5 +1,5 @@
 //! libportal, the portal gun getting oxedized, the Rust wrapper for the XDG portals DBus interfaces.
-//! ```
+//! ```no_run
 //! use libportal::desktop::screenshot::{ScreenshotProxy, PickColorOptions};
 //! use libportal::WindowIdentifier;
 //!

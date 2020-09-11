@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```
+//! ```no_run
 //! use libportal::desktop::background::{
 //!     BackgroundOptionsBuilder, BackgroundProxy, BackgroundResponse,
 //! };

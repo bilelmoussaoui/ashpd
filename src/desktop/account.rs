@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```
+//! ```no_run
 //! use libportal::desktop::account::{AccountProxy, UserInfoOptionsBuilder, UserInfoResponse};
 //! use libportal::{RequestProxy, WindowIdentifier};
 //! fn main() -> zbus::fdo::Result<()> {
