@@ -60,8 +60,8 @@ pub enum InhibitFlags {
 pub struct InhibitMonitorResponse(ResponseType, InhibitMonitorResult);
 
 impl InhibitMonitorResponse {
-    pub fn session_handle(&self) -> OwnedObjectPath {
-        self.1.session_handle
+    pub fn session_handle<'a>(&self) -> &'a ObjectPath {
+        &self.1.session_handle
     }
 }
 
