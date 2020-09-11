@@ -7,8 +7,9 @@
 //! use libportal::{RequestProxy, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = WallpaperProxy::new(&connection)?;
 //!
@@ -22,8 +23,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: WallpaperResponse| {
+//!     request.on_response(|response: WallpaperResponse| -> Result<()> {
 //!         println!("{}", response.is_success() );
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -34,6 +36,7 @@
 //! ```no_run
 //! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
 //! use libportal::{RequestProxy, WindowIdentifier};
+//! use zbus::fdo::Result;
 //!
 //! fn main() -> zbus::fdo::Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
@@ -48,8 +51,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: WallpaperResponse| {
+//!     request.on_response(|response: WallpaperResponse| -> Result<()> {
 //!         println!("{}", response.is_success() );
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

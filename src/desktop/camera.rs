@@ -3,8 +3,9 @@
 //! ```no_run
 //! use libportal::desktop::camera::{CameraProxy, CameraAccessOptions, AccessCameraResponse};
 //! use libportal::RequestProxy;
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = CameraProxy::new(&connection)?;
 //!
@@ -13,13 +14,14 @@
 //!     let request_handle = proxy.access_camera(CameraAccessOptions::default())?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(move |response: AccessCameraResponse| {
+//!     request.on_response(move |response: AccessCameraResponse| -> Result<()> {
 //!         if response.is_success() {
 //!             //let options: HashMap<&str, zvariant::Value> = HashMap::new();
 //!             //FIXME: update this once we know which kind of options it takes
 //!             //let req = proxy.open_pipe_wire_remote(options).unwrap();
 //!             //println!("{:#?}", req);
 //!         }
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

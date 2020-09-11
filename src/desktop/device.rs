@@ -5,8 +5,9 @@
 //! ```no_run
 //! use libportal::desktop::device::{DeviceProxy, AccessDeviceOptions, Device, AccessDeviceResponse};
 //! use libportal::RequestProxy;
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = DeviceProxy::new(&connection)?;
 //!     let request_handle = proxy.access_device(
@@ -16,8 +17,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: AccessDeviceResponse| {
+//!     request.on_response(|response: AccessDeviceResponse| -> Result<()> {
 //!         println!("{}", response.is_success());
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

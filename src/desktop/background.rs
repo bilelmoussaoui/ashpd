@@ -5,8 +5,9 @@
 //!     BackgroundOptions, BackgroundProxy, BackgroundResponse,
 //! };
 //! use libportal::{RequestProxy, WindowIdentifier};
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = BackgroundProxy::new(&connection)?;
 //!
@@ -19,11 +20,12 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: BackgroundResponse| {
+//!     request.on_response(|response: BackgroundResponse| -> Result<()>{
 //!         if response.is_success() {
 //!             println!("{}", response.autostart());
 //!             println!("{}", response.background());
 //!         }
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

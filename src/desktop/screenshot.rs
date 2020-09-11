@@ -5,6 +5,7 @@
 //! ```no_run
 //! use libportal::desktop::screenshot::{ScreenshotResponse, ScreenshotOptions, ScreenshotProxy};
 //! use libportal::{RequestProxy, WindowIdentifier};
+//! use zbus::fdo::Result;
 //!
 //! fn main() -> zbus::fdo::Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
@@ -16,10 +17,11 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: ScreenshotResponse| {
+//!     request.on_response(|response: ScreenshotResponse| -> Result<()> {
 //!         if response.is_success() {
 //!             println!("{}", response.uri());
 //!         }
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -29,8 +31,9 @@
 //!```no_run
 //! use libportal::desktop::screenshot::{ColorResponse, PickColorOptions, ScreenshotProxy};
 //! use libportal::{RequestProxy, WindowIdentifier};
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!    let connection = zbus::Connection::new_session()?;
 //!    let proxy = ScreenshotProxy::new(&connection)?;
 //!
@@ -41,10 +44,11 @@
 //!
 //!    let request = RequestProxy::new(&connection, &request_handle)?;
 //!
-//!    request.on_response(|response: ColorResponse| {
-//!        if response.is_success() {
-//!            println!("{:#?}", response.color());
-//!        }
+//!     request.on_response(|response: ColorResponse| -> Result<()>{
+//!         if response.is_success() {
+//!             println!("{:#?}", response.color());
+//!         }
+//!         Ok(())
 //!    })?;
 //!
 //!    Ok(())

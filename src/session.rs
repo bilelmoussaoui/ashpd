@@ -29,7 +29,7 @@ impl<'a> SessionProxy<'a> {
     /// Emitted when a session is closed.
     pub fn on_closed<F, T>(&self, callback: F) -> Result<()>
     where
-        F: FnOnce(T),
+        F: FnOnce(T) -> Result<()>,
         T: serde::de::DeserializeOwned + zvariant::Type,
     {
         loop {
@@ -39,7 +39,7 @@ impl<'a> SessionProxy<'a> {
                 && msg_header.member()? == Some("Closed")
             {
                 let response = msg.body::<T>()?;
-                callback(response);
+                callback(response)?;
                 break;
             }
         }

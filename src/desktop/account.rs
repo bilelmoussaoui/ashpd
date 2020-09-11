@@ -3,7 +3,9 @@
 //! ```no_run
 //! use libportal::desktop::account::{AccountProxy, UserInfoOptions, UserInfoResponse};
 //! use libportal::{RequestProxy, WindowIdentifier};
-//! fn main() -> zbus::fdo::Result<()> {
+//! use zbus::fdo::Result;
+//!
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = AccountProxy::new(&connection)?;
 //!     let request_handle = proxy.get_user_information(
@@ -12,10 +14,11 @@
 //!             .reason("Fractal would like access to your information"),
 //!     )?;
 //!     let req = RequestProxy::new(&connection, &request_handle)?;
-//!     req.on_response(|response: UserInfoResponse| {
+//!     req.on_response(|response: UserInfoResponse| -> Result<()> {
 //!         if response.is_success() {
 //!             println!("{:#?}", response.user_information());
 //!         }
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

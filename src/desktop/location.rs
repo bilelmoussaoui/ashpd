@@ -1,6 +1,48 @@
+//! # Examples
+//!
+//! ```no_run
+//! use libportal::desktop::location::{
+//!     LocationAccessOptions, LocationProxy, LocationResponse, LocationStartOptions,
+//! };
+//! use libportal::{
+//!     zbus::{self, fdo::Result},
+//!     RequestProxy, WindowIdentifier, Response
+//! };
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = LocationProxy::new(&connection)?;
+//!
+//!     let options = LocationAccessOptions::default()
+//!                 .session_handle_token("test");
+//!
+//!     let session_handle = proxy.create_session(options)?;
+//!
+//!     let request_handle = proxy.start(
+//!         session_handle.into(),
+//!         WindowIdentifier::default(),
+//!         LocationStartOptions::default(),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(move |response: Response| -> Result<()> {
+//!         if response.is_success() {
+//!             proxy.on_location_updated(|location: LocationResponse| {
+//!                 println!("{}", location.accuracy());
+//!                 println!("{}", location.longitude());
+//!                 println!("{}", location.latitude());
+//!             })?;
+//!         }
+//!         Ok(())
+//!     })?;
+//!
+//!     Ok(())
+//! }
+//!```
 use crate::WindowIdentifier;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
+use zbus::{Connection, Proxy, Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -64,48 +106,143 @@ impl LocationStartOptions {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Location",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
-/// The interface lets sandboxed applications query basic information about the location.
-trait Location {
+#[derive(Debug, Serialize, Deserialize, Type)]
+pub struct LocationResponse(OwnedObjectPath, Location);
+
+impl LocationResponse {
+    /// The accuracy, in meters.
+    pub fn accuracy(&self) -> f64 {
+        self.1.accuracy
+    }
+
+    /// The altitude, in meters.
+    pub fn altitude(&self) -> f64 {
+        self.1.altitude
+    }
+
+    /// The speed, in meters per second.
+    pub fn speed(&self) -> f64 {
+        self.1.speed
+    }
+
+    /// The heading, in degrees, going clockwise. North 0, East 90, South 180, West 270.
+    pub fn heading(&self) -> f64 {
+        self.1.heading
+    }
+
+    pub fn description(&self) -> String {
+        self.1.description.clone()
+    }
+
+    /// The latitude, in degrees.
+    pub fn latitude(&self) -> f64 {
+        self.1.latitude
+    }
+
+    /// The longitude, in degrees.
+    pub fn longitude(&self) -> f64 {
+        self.1.longitude
+    }
+
+    /// The timestamp, as seconds.
+    pub fn timestamp(&self) -> u64 {
+        self.1.timestamp.0
+    }
+}
+
+#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+struct Location {
+    #[zvariant(rename = "Accuracy")]
+    accuracy: f64,
+    #[zvariant(rename = "Altitude")]
+    altitude: f64,
+    #[zvariant(rename = "Speed")]
+    speed: f64,
+    #[zvariant(rename = "Heading")]
+    heading: f64,
+    #[zvariant(rename = "Description")]
+    description: String,
+    #[zvariant(rename = "Latitude")]
+    latitude: f64,
+    #[zvariant(rename = "Longitude")]
+    longitude: f64,
+    #[zvariant(rename = "Timestamp")]
+    timestamp: (u64, u64),
+}
+
+pub struct LocationProxy<'a> {
+    proxy: Proxy<'a>,
+    connection: &'a Connection,
+}
+
+impl<'a> LocationProxy<'a> {
+    pub fn new(connection: &'a Connection) -> Result<Self> {
+        let proxy = Proxy::new(
+            connection,
+            "org.freedesktop.portal.Desktop",
+            "/org/freedesktop/portal/desktop",
+            "org.freedesktop.portal.Location",
+        )?;
+        Ok(Self { proxy, connection })
+    }
+
+    pub fn on_location_updated<F, T>(&self, callback: F) -> Result<()>
+    where
+        F: FnOnce(T),
+        T: serde::de::DeserializeOwned + zvariant::Type,
+    {
+        loop {
+            let msg = self.connection.receive_message()?;
+            let msg_header = msg.header()?;
+            if msg_header.message_type()? == zbus::MessageType::Signal
+                && msg_header.member()? == Some("LocationUpdated")
+            {
+                let response = msg.body::<T>()?;
+                callback(response);
+                break;
+            }
+        }
+        Ok(())
+    }
+
     /// Create a location session.
     ///
-    /// Returns a [`Session`] handle
+    /// Returns a [`SessionProxy`] object path.
     ///
     /// # Arguments
     ///
     /// * `options` - A [`LocationAccessOptions`]
     ///
     /// [`LocationAccessOptions`]: ./struct.LocationAccessOptions.html
-    /// [`Session`]: ../session/struct.SessionProxy.html
-    fn create_session(&self, options: LocationAccessOptions) -> Result<OwnedObjectPath>;
+    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    pub fn create_session(&self, options: LocationAccessOptions) -> Result<OwnedObjectPath> {
+        self.proxy.call("CreateSession", &(options))
+    }
 
     /// Start the location session.
     /// An application can only attempt start a session once.
     ///
-    /// Returns a [`Session`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path of the [`Session`] object
+    /// * `session_handle` - Object path returned by `create_session`
     /// * `parent_window` - Identifier for the application window
     /// * `options` - A `LocationStartOptions`
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
-    fn start(
+    /// [`RequestProxy`]: ../session/struct.RequestProxy.html
+    pub fn start(
         &self,
         session_handle: ObjectPath,
         parent_window: WindowIdentifier,
         options: LocationStartOptions,
-    ) -> Result<OwnedObjectPath>;
-
-    // signal
-    // fn location_updated(&self, session_handle: ObjectPath, location: HashMap<&str, Value>);
+    ) -> Result<OwnedObjectPath> {
+        self.proxy
+            .call("Start", &(session_handle, parent_window, options))
+    }
 
     /// version property
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub fn version(&self) -> zbus::fdo::Result<u32> {
+        self.proxy.get_property::<u32>("version")
+    }
 }

@@ -1,3 +1,25 @@
+//! # Examples
+//!
+//! ```no_run
+//! use libportal::desktop::network_monitor::NetworkMonitorProxy;
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = NetworkMonitorProxy::new(&connection)?;
+//!
+//!     println!("{}", proxy.can_reach("www.google.com", 80)?);
+//!
+//!     println!("{}", proxy.get_available()?);
+//!
+//!     println!("{:#?}", proxy.get_connectivity()?);
+//!
+//!     println!("{}", proxy.get_metered()?);
+//!
+//!     println!("{:#?}", proxy.get_status()?);
+//!
+//!     Ok(())
+//! }
+//! ```
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};

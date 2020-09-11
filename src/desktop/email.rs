@@ -4,7 +4,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a compose email request.
 pub struct EmailOptions {
     /// A string that will be used as the last element of the handle.
@@ -23,6 +23,23 @@ pub struct EmailOptions {
     pub body: Option<String>,
     /// A list of file descriptors of files to attach
     pub attachment_fds: Option<Vec<RawFd>>,
+}
+
+impl EmailOptions {
+    pub fn address(mut self, address: &str) -> Self {
+        self.address = Some(address.to_string());
+        self
+    }
+
+    pub fn subject(mut self, subject: &str) -> Self {
+        self.subject = Some(subject.to_string());
+        self
+    }
+
+    pub fn body(mut self, body: &str) -> Self {
+        self.body = Some(body.to_string());
+        self
+    }
 }
 
 #[dbus_proxy(

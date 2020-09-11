@@ -1,6 +1,18 @@
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::collections::HashMap;
 use zbus::{fdo::DBusProxy, fdo::Result, Connection};
+use zvariant::OwnedValue;
 use zvariant_derive::Type;
+
+#[derive(Debug, Type, Serialize, Deserialize)]
+pub struct Response(ResponseType, HashMap<String, OwnedValue>);
+
+impl Response {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
+    }
+}
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -44,7 +56,7 @@ impl<'a> RequestProxy<'a> {
 
     pub fn on_response<F, T>(&self, callback: F) -> Result<()>
     where
-        F: FnOnce(T),
+        F: FnOnce(T) -> Result<()>,
         T: serde::de::DeserializeOwned + zvariant::Type,
     {
         loop {
@@ -54,7 +66,7 @@ impl<'a> RequestProxy<'a> {
                 && msg_header.member()? == Some("Response")
             {
                 let response = msg.body::<T>()?;
-                callback(response);
+                callback(response)?;
                 break;
             }
         }
