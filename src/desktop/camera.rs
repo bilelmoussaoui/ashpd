@@ -47,7 +47,7 @@ impl CameraAccessOptions {
 }
 
 #[derive(Debug, Type, Deserialize, Serialize)]
-pub struct AccessCameraResponse(pub ResponseType, HashMap<String, OwnedValue>);
+pub struct AccessCameraResponse(ResponseType, HashMap<String, OwnedValue>);
 
 impl AccessCameraResponse {
     pub fn is_success(&self) -> bool {

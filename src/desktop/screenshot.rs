@@ -85,7 +85,7 @@ impl ScreenshotOptions {
 }
 
 #[derive(Serialize, Deserialize, Debug, Type)]
-pub struct ScreenshotResponse(pub ResponseType, pub ScreenshotResult);
+pub struct ScreenshotResponse(ResponseType, ScreenshotResult);
 
 impl ScreenshotResponse {
     pub fn is_success(&self) -> bool {
@@ -98,7 +98,7 @@ impl ScreenshotResponse {
 }
 
 #[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
-pub struct ScreenshotResult {
+struct ScreenshotResult {
     pub uri: String,
 }
 
@@ -117,7 +117,7 @@ impl PickColorOptions {
 }
 
 #[derive(Debug, Type, Deserialize)]
-pub struct ColorResponse(pub ResponseType, pub ColorResult);
+pub struct ColorResponse(ResponseType, ColorResult);
 
 impl ColorResponse {
     pub fn is_success(&self) -> bool {
@@ -130,7 +130,7 @@ impl ColorResponse {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-pub struct ColorResult {
+struct ColorResult {
     pub color: Color,
 }
 

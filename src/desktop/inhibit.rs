@@ -57,10 +57,16 @@ pub enum InhibitFlags {
 }
 
 #[derive(Serialize, Deserialize, Type, Debug)]
-pub struct InhibitMonitorResponse(pub ResponseType, pub InhibitMonitorResult);
+pub struct InhibitMonitorResponse(ResponseType, InhibitMonitorResult);
+
+impl InhibitMonitorResponse {
+    pub fn session_handle(&self) -> OwnedObjectPath {
+        self.1.session_handle
+    }
+}
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-pub struct InhibitMonitorResult {
+struct InhibitMonitorResult {
     pub session_handle: OwnedObjectPath,
 }
 

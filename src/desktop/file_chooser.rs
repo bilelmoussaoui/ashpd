@@ -66,10 +66,20 @@ pub struct SaveFilesOptions {
 }
 
 #[derive(Debug, Type, Serialize, Deserialize)]
-pub struct FileChooserResponse(pub ResponseType, pub FileChooserResult);
+pub struct FileChooserResponse(ResponseType, FileChooserResult);
+
+impl FileChooserResponse {
+    pub fn uris(&self) -> Vec<String> {
+        self.1.uris.clone()
+    }
+
+    pub fn choices(&self) -> Vec<(String, String)> {
+        self.1.choices.clone()
+    }
+}
 
 #[derive(Debug, TypeDict, SerializeDict, DeserializeDict)]
-pub struct FileChooserResult {
+struct FileChooserResult {
     pub uris: Vec<String>,
     pub choices: Vec<(String, String)>,
 }

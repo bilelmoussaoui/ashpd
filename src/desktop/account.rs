@@ -48,7 +48,7 @@ impl UserInfoOptions {
 }
 
 #[derive(Debug, Type, Deserialize, Serialize)]
-pub struct UserInfoResponse(pub ResponseType, pub UserInfo);
+pub struct UserInfoResponse(ResponseType, UserInfo);
 
 impl UserInfoResponse {
     pub fn is_success(&self) -> bool {

@@ -71,7 +71,7 @@ impl Serialize for Device {
 }
 
 #[derive(Debug, Type, Deserialize, Serialize)]
-pub struct AccessDeviceResponse(pub ResponseType, HashMap<String, OwnedValue>);
+pub struct AccessDeviceResponse(ResponseType, HashMap<String, OwnedValue>);
 
 impl AccessDeviceResponse {
     pub fn is_success(&self) -> bool {

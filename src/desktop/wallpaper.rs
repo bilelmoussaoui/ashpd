@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! //! Set a wallpaper from a file:
+//! Sets a wallpaper from a file:
 //!
 //! ```no_run
 //! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
@@ -29,7 +29,7 @@
 //! }
 //! ```
 //!
-//! Set a wallpaper from a URI:
+//! Sets a wallpaper from a URI:
 //!
 //! ```no_run
 //! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
@@ -115,7 +115,7 @@ impl WallpaperOptions {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
-pub struct WallpaperResponse(pub ResponseType, pub HashMap<String, OwnedValue>);
+pub struct WallpaperResponse(ResponseType, HashMap<String, OwnedValue>);
 
 impl WallpaperResponse {
     pub fn is_success(&self) -> bool {

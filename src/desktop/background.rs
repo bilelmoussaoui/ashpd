@@ -79,7 +79,7 @@ impl BackgroundOptions {
 }
 
 #[derive(Debug, Deserialize, Serialize, Type)]
-pub struct BackgroundResponse(pub ResponseType, pub BackgroundResult);
+pub struct BackgroundResponse(ResponseType, BackgroundResult);
 
 impl BackgroundResponse {
     pub fn is_success(&self) -> bool {
@@ -97,7 +97,7 @@ impl BackgroundResponse {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Result returned by the response signal after a background request.
-pub struct BackgroundResult {
+struct BackgroundResult {
     /// if the application is allowed to run in the background
     pub background: bool,
     /// if the application is will be autostarted.
