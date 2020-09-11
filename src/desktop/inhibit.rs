@@ -1,9 +1,11 @@
-use crate::WindowIdentifier;
+use crate::{ResponseType, WindowIdentifier};
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a create inhibit monitor request.
 pub struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
@@ -12,13 +14,37 @@ pub struct CreateMonitorOptions {
     pub session_handle_token: Option<String>,
 }
 
+impl CreateMonitorOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
+        self.session_handle_token = Some(session_handle_token.to_string());
+        self
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options of an inhibit request.
 pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
     /// User-visible reason for the inhibition.
-    pub reason: String,
+    pub reason: Option<String>,
+}
+
+impl InhibitOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn reason(mut self, reason: &str) -> Self {
+        self.reason = Some(reason.to_string());
+        self
+    }
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -28,6 +54,14 @@ pub enum InhibitFlags {
     UserSwitch = 2,
     Suspend = 3,
     Idle = 4,
+}
+
+#[derive(Serialize, Deserialize, Type, Debug)]
+pub struct InhibitMonitorResponse(pub ResponseType, pub InhibitMonitorResult);
+
+#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+pub struct InhibitMonitorResult {
+    pub session_handle: OwnedObjectPath,
 }
 
 #[dbus_proxy(
@@ -45,16 +79,16 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - The application window identifier
+    /// * `window` - The application window identifier
     /// * `options` - [`CreateMonitorOptions`]
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn create_monitor(
         &self,
-        parent_window: WindowIdentifier,
+        window: WindowIdentifier,
         options: CreateMonitorOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Inhibits a session status changes.
     ///
@@ -62,7 +96,7 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - The application window identifier
+    /// * `window` - The application window identifier
     /// * `flags` - The flags determine what changes are inhibited
     /// * `options` - [`InhibitOptions`]
     ///
@@ -70,16 +104,16 @@ trait Inhibit {
     /// [`Request`]: ../request/struct.RequestProxy.html
     fn inhibit(
         &self,
-        parent_window: WindowIdentifier,
+        window: WindowIdentifier,
         flags: InhibitFlags,
         options: InhibitOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// QueryEndResponse method
-    fn query_end_response(&self, session_handle: &str) -> Result<()>;
+    fn query_end_response(&self, session_handle: ObjectPath) -> Result<()>;
 
     // signal
-    // fn state_changed(&self, session_handle: &str, )
+    // fn state_changed(&self, session_handle: ObjectPath, )
 
     /// version property
     #[dbus_proxy(property, name = "version")]

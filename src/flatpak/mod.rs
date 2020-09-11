@@ -1,10 +1,11 @@
+use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
 pub enum SandboxFlags {
     /// Share the display access (X11, wayland) with the caller.
@@ -19,27 +20,54 @@ pub enum SandboxFlags {
     AccessibilityBusAccess = 16,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
 pub enum SupportsFlags {
     /// Supports the expose sandbox pids flag of Spawn.
     ExposePids = 1,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 pub struct SpawnOptions {
-    // A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
-    // Note that absolute paths or subdirectories are not allowed.
-    // pub sandbox_expose: Vec<String>,
-    // A list of filenames for files inside the sandbox that will be exposed to the new sandbox, readonly.
-    // Note that absolute paths or subdirectories are not allowed.
-    // pub sandbox_expose_ro: Vec<String>,
+    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
+    /// Note that absolute paths or subdirectories are not allowed.
+    pub sandbox_expose: Option<Vec<String>>,
+    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, readonly.
+    /// Note that absolute paths or subdirectories are not allowed.
+    pub sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
-    pub sandbox_expose_fd: Vec<RawFd>,
+    pub sandbox_expose_fd: Option<Vec<RawFd>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.
-    pub sandbox_expose_fd_ro: Vec<RawFd>,
+    pub sandbox_expose_fd_ro: Option<Vec<RawFd>>,
     /// Flags affecting the created sandbox.
-    pub sandbox_flags: Option<u32>,
+    pub sandbox_flags: Option<BitFlags<SandboxFlags>>,
+}
+
+impl SpawnOptions {
+    pub fn sandbox_expose(mut self, sandbox_expose: Vec<String>) -> Self {
+        self.sandbox_expose = Some(sandbox_expose);
+        self
+    }
+
+    pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: Vec<String>) -> Self {
+        self.sandbox_expose_ro = Some(sandbox_expose_ro);
+        self
+    }
+
+    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: Vec<RawFd>) -> Self {
+        self.sandbox_expose_fd = Some(sandbox_expose_fd);
+        self
+    }
+
+    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: Vec<RawFd>) -> Self {
+        self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro);
+        self
+    }
+
+    pub fn sandbox_flags(mut self, sandbox_flags: BitFlags<SandboxFlags>) -> Self {
+        self.sandbox_flags = Some(sandbox_flags);
+        self
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -77,7 +105,7 @@ trait Flatpak {
         argv: &[&[u8]],
         fds: HashMap<u32, RawFd>,
         envs: HashMap<&str, &str>,
-        flags: u32,
+        flags: BitFlags<SandboxFlags>,
         options: SpawnOptions,
     ) -> Result<u32>;
 

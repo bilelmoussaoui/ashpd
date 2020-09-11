@@ -2,11 +2,18 @@ use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a retrieve secret request.
 pub struct ScecretOptions {
     /// A string returned by a pervious call to `retrieve_secret`
     pub token: Option<String>,
+}
+
+impl ScecretOptions {
+    pub fn token(mut self, token: &str) -> Self {
+        self.token = Some(token.to_string());
+        self
+    }
 }
 
 #[dbus_proxy(

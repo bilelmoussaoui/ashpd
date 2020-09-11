@@ -1,38 +1,151 @@
-use crate::WindowIdentifier;
+//! # Examples
+//!
+//! Taking a screenshot
+//!
+//! ```no_run
+//! use libportal::desktop::screenshot::{ScreenshotResponse, ScreenshotOptions, ScreenshotProxy};
+//! use libportal::{RequestProxy, WindowIdentifier};
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = ScreenshotProxy::new(&connection)?;
+//!     let request_handle = proxy.screenshot(
+//!         WindowIdentifier::default(),
+//!         ScreenshotOptions::default()
+//!             .interactive(true)
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|response: ScreenshotResponse| {
+//!         if response.is_success() {
+//!             println!("{}", response.uri());
+//!         }
+//!     })?;
+//!     Ok(())
+//! }
+//!```
+//!
+//! Picking a color
+//!```no_run
+//! use libportal::desktop::screenshot::{ColorResponse, PickColorOptions, ScreenshotProxy};
+//! use libportal::{RequestProxy, WindowIdentifier};
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!    let connection = zbus::Connection::new_session()?;
+//!    let proxy = ScreenshotProxy::new(&connection)?;
+//!
+//!    let request_handle = proxy.pick_color(
+//!             WindowIdentifier::default(),
+//!             PickColorOptions::default()
+//!    )?;
+//!
+//!    let request = RequestProxy::new(&connection, &request_handle)?;
+//!
+//!    request.on_response(|response: ColorResponse| {
+//!        if response.is_success() {
+//!            println!("{:#?}", response.color());
+//!        }
+//!    })?;
+//!
+//!    Ok(())
+//!}
+//! ```
+use crate::{ResponseType, WindowIdentifier};
+use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant::OwnedObjectPath;
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a screenshot request.
 pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: bool,
+    pub modal: Option<bool>,
     /// Hint whether the dialog should offer customization before taking a screenshot.
-    pub interactive: bool,
+    pub interactive: Option<bool>,
 }
 
-impl Default for ScreenshotOptions {
-    fn default() -> Self {
-        Self {
-            modal: true,
-            interactive: false,
-            handle_token: None,
-        }
+impl ScreenshotOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn modal(mut self, modal: bool) -> Self {
+        self.modal = Some(modal);
+        self
+    }
+
+    pub fn interactive(mut self, interactive: bool) -> Self {
+        self.interactive = Some(interactive);
+        self
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(Serialize, Deserialize, Debug, Type)]
+pub struct ScreenshotResponse(pub ResponseType, pub ScreenshotResult);
+
+impl ScreenshotResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
+    }
+
+    pub fn uri(&self) -> &str {
+        &self.1.uri
+    }
+}
+
+#[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
+pub struct ScreenshotResult {
+    pub uri: String,
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a pick color request.
 pub struct PickColorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
     pub handle_token: Option<String>,
 }
 
-impl Default for PickColorOptions {
-    fn default() -> Self {
-        Self { handle_token: None }
+impl PickColorOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+}
+
+#[derive(Debug, Type, Deserialize)]
+pub struct ColorResponse(pub ResponseType, pub ColorResult);
+
+impl ColorResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
+    }
+
+    pub fn color(&self) -> &Color {
+        &self.1.color
+    }
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+pub struct ColorResult {
+    pub color: Color,
+}
+
+#[derive(Debug, Type, Serialize, Deserialize)]
+pub struct Color(pub [f64; 3]);
+
+#[cfg(feature = "feature_gdk")]
+impl Into<gdk::RGBA> for &Color {
+    fn into(self) -> gdk::RGBA {
+        gdk::RGBA {
+            red: self.0[0],
+            green: self.0[1],
+            blue: self.0[2],
+            alpha: 1_f64,
+        }
     }
 }
 
@@ -45,7 +158,7 @@ impl Default for PickColorOptions {
 trait Screenshot {
     /// Obtains the color of a single pixel.
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] handle.
     ///
     /// # Arguments
     ///
@@ -53,12 +166,12 @@ trait Screenshot {
     /// * `options` - A [`PickColorOptions`]
     ///
     /// [`PickColorOptions`]: ./struct.PickColorOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     fn pick_color(
         &self,
         parent_window: WindowIdentifier,
         options: PickColorOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Takes a screenshot
     ///
@@ -75,7 +188,7 @@ trait Screenshot {
         &self,
         parent_window: WindowIdentifier,
         options: ScreenshotOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

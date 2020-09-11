@@ -1,6 +1,5 @@
-use zbus::{dbus_proxy, fdo::Result};
+use zbus::{fdo::DBusProxy, fdo::Result, Connection};
 
-#[dbus_proxy(interface = "org.freedesktop.portal.Session")]
 /// The Session interface is shared by all portal interfaces that involve long lived sessions.
 /// When a method that creates a session is called, if successful, the reply will include a session handle (i.e. object path) for a Session object, which will stay alive for the duration of the session.
 ///
@@ -16,15 +15,45 @@ use zbus::{dbus_proxy, fdo::Result};
 /// To avoid clashes with calls made from unrelated libraries, it is a good idea to use a per-library prefix combined with a random number.
 ///
 /// A client who started a session vanishing from the D-Bus is equivalent to closing all active sessions made by said client.
-trait Session {
-    /// Closes the portal session to which this object refers and ends all related user interaction (dialogs, etc).
-    fn close(&self) -> Result<()>;
+pub struct SessionProxy<'a> {
+    proxy: DBusProxy<'a>,
+    connection: &'a Connection,
+}
 
-    // signal
+impl<'a> SessionProxy<'a> {
+    pub fn new(connection: &'a Connection, handle: &'a str) -> Result<Self> {
+        let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/desktop")?;
+        Ok(Self { proxy, connection })
+    }
+
     /// Emitted when a session is closed.
-    //fn closed(&self) -> Result<HashMap<&str, Value>>;
+    pub fn on_closed<F, T>(&self, callback: F) -> Result<()>
+    where
+        F: FnOnce(T),
+        T: serde::de::DeserializeOwned + zvariant::Type,
+    {
+        loop {
+            let msg = self.connection.receive_message()?;
+            let msg_header = msg.header()?;
+            if msg_header.message_type()? == zbus::MessageType::Signal
+                && msg_header.member()? == Some("Closed")
+            {
+                let response = msg.body::<T>()?;
+                callback(response);
+                break;
+            }
+        }
+        Ok(())
+    }
+
+    /// Closes the portal session to which this object refers and ends all related user interaction (dialogs, etc).
+    pub fn close(&self) -> Result<()> {
+        self.proxy.call("Close", &())?;
+        Ok(())
+    }
 
     /// version property
-    #[dbus_proxy(property)]
-    fn version(&self) -> Result<u32>;
+    pub fn version(&self) -> Result<u32> {
+        self.proxy.get_property::<u32>("version")
+    }
 }

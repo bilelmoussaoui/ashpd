@@ -1,14 +1,43 @@
-use crate::WindowIdentifier;
-use serde::{self, Deserialize, Serialize};
+//! # Examples
+//!
+//! Set a wallpaper from a URI:
+//!
+//! ```no_run
+//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
+//! use libportal::{RequestProxy, WindowIdentifier};
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = WallpaperProxy::new(&connection)?;
+//!
+//!     let request_handle = proxy.set_wallpaper_uri(
+//!         WindowIdentifier::default(),
+//!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
+//!         WallpaperOptions::default()
+//!             .show_preview(true)
+//!             .set_on(SetOn::Both),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|response: WallpaperResponse| {
+//!         println!("{}", response.is_success() );
+//!     })?;
+//!     Ok(())
+//! }
+//! ```
+use crate::{ResponseType, WindowIdentifier};
+use serde::{self, Deserialize, Serialize, Serializer};
+use std::collections::HashMap;
 use std::os::unix::io::RawFd;
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Signature, Type};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant::{OwnedObjectPath, OwnedValue, Signature};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, AsRefStr, EnumString, IntoStaticStr, ToString)]
 #[serde(rename = "lowercase")]
 /// Where to set the wallpaper on.
-pub enum WallpaperSetOn {
+pub enum SetOn {
     /// Set the wallpaper only on the lockscreen.
     Lockscreen,
     /// Set the wallpaper only on the background.
@@ -17,43 +46,51 @@ pub enum WallpaperSetOn {
     Both,
 }
 
-impl Type for WallpaperSetOn {
+impl zvariant::Type for SetOn {
     fn signature() -> Signature<'static> {
         Signature::from_string_unchecked("s".to_string())
     }
 }
 
-impl std::convert::TryFrom<zvariant::Value<'_>> for WallpaperSetOn {
-    type Error = zvariant::Error;
-    fn try_from(v: zvariant::Value<'_>) -> std::result::Result<Self, Self::Error> {
-        match v {
-            zvariant::Value::Str(s) => match s.as_str() {
-                "lockscreen" => Ok(WallpaperSetOn::Lockscreen),
-                "background" => Ok(WallpaperSetOn::Background),
-                "both" => Ok(WallpaperSetOn::Both),
-                _ => Err(zvariant::Error::Message("invalid value".to_string())),
-            },
-            _ => Err(zvariant::Error::IncorrectType),
-        }
+impl Serialize for SetOn {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        String::serialize(&self.to_string(), serializer)
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a set wallpaper request.
 pub struct WallpaperOptions {
     /// Whether to show a preview of the picture
     /// Note that the portal may decide to show a preview even if this option is not set
-    pub show_preview: bool,
+    #[zvariant(rename = "show-preview")]
+    pub show_preview: Option<bool>,
     /// Where to set the wallpaper on
-    pub set_on: String,
+    #[zvariant(rename = "set-on")]
+    pub set_on: Option<SetOn>,
 }
 
-impl Default for WallpaperOptions {
-    fn default() -> Self {
-        Self {
-            show_preview: true,
-            set_on: "both".to_string(),
-        }
+impl WallpaperOptions {
+    pub fn show_preview(mut self, show_preview: bool) -> Self {
+        self.show_preview = Some(show_preview);
+        self
+    }
+
+    pub fn set_on(mut self, set_on: SetOn) -> Self {
+        self.set_on = Some(set_on);
+        self
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Type)]
+pub struct WallpaperResponse(pub ResponseType, pub HashMap<String, OwnedValue>);
+
+impl WallpaperResponse {
+    pub fn is_success(&self) -> bool {
+        self.0 == ResponseType::Success
     }
 }
 
@@ -81,7 +118,7 @@ trait Wallpaper {
         parent_window: WindowIdentifier,
         fd: RawFd,
         options: WallpaperOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Sets the lockscreen, background or both wallapers from an URI
     ///
@@ -95,12 +132,13 @@ trait Wallpaper {
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
     /// [`Request`]: ../request/struct.RequestProxy.html
+    #[dbus_proxy(name = "SetWallpaperURI")]
     fn set_wallpaper_uri(
         &self,
         parent_window: WindowIdentifier,
         uri: &str,
         options: WallpaperOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

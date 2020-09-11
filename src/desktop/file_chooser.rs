@@ -1,6 +1,8 @@
-use crate::WindowIdentifier;
+use crate::{ResponseType, WindowIdentifier};
+use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zvariant::OwnedObjectPath;
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Specified options for a open file request.
@@ -10,11 +12,11 @@ pub struct OpenFileOptions {
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: bool,
+    pub modal: Option<bool>,
     /// Whether multiple files can be selected or not.
-    pub multiple: bool,
+    pub multiple: Option<bool>,
     /// Whether to select for folders instead of files.
-    pub directory: bool,
+    pub directory: Option<bool>,
     // List of serialized file filters.
     // pub filters:
     // Request that this filter be set by default at dialog creation.
@@ -31,13 +33,13 @@ pub struct SaveFileOptions {
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: bool,
+    pub modal: Option<bool>,
     /// Suggested filename.
     pub current_name: Option<String>,
     /// Suggested folder to save the file in.
-    pub current_folder: Vec<u8>,
+    pub current_folder: Option<Vec<u8>>,
     /// The current file (when saving an existing file).
-    pub current_file: Vec<u8>,
+    pub current_file: Option<Vec<u8>>,
     // List of serialized file filters.
     // pub filters:
     // Request that this filter be set by default at dialog creation.
@@ -54,13 +56,22 @@ pub struct SaveFilesOptions {
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: bool,
+    pub modal: Option<bool>,
     // List of serialized combo boxes to add to the file chooser
     // pub choices:
     /// Suggested folder to save the file in.
-    pub current_folder: Vec<u8>,
+    pub current_folder: Option<Vec<u8>>,
     /// An array of file names to be saved.
-    pub files: Vec<Vec<u8>>,
+    pub files: Option<Vec<Vec<u8>>>,
+}
+
+#[derive(Debug, Type, Serialize, Deserialize)]
+pub struct FileChooserResponse(pub ResponseType, pub FileChooserResult);
+
+#[derive(Debug, TypeDict, SerializeDict, DeserializeDict)]
+pub struct FileChooserResult {
+    pub uris: Vec<String>,
+    pub choices: Vec<(String, String)>,
 }
 
 #[dbus_proxy(
@@ -88,7 +99,7 @@ trait FileChooser {
         parent_window: WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Asks for a location to save a file.
     ///
@@ -107,7 +118,7 @@ trait FileChooser {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// Asks for a folder as a location to save one or more files.
     /// The names of the files will be used as-is and appended to the
@@ -131,7 +142,7 @@ trait FileChooser {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
-    ) -> Result<String>;
+    ) -> Result<OwnedObjectPath>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

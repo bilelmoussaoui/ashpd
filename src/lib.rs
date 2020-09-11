@@ -1,8 +1,14 @@
 //! libportal, the portal gun getting oxedized, the Rust wrapper for the XDG portals DBus interfaces.
-//! ```ignore
-//! let connection = zbus::Connection::new_session()?;
-//! let proxy = ScreenshotProxy::new(&connection)?;
-//! let request = proxy.pick_color("handle", PickColorOptions::default())?;
+//! ```no_run
+//! use libportal::desktop::screenshot::{ScreenshotProxy, PickColorOptions};
+//! use libportal::WindowIdentifier;
+//!
+//! fn main() -> zbus::fdo::Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = ScreenshotProxy::new(&connection)?;
+//!     let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
+//!     Ok(())
+//! }
 //! ```
 
 /// Implementation of the various portals under `/org/freedesktop/portal/desktop`

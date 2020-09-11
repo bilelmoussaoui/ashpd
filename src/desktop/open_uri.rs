@@ -3,11 +3,18 @@ use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for an open directory request.
 pub struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
+}
+
+impl OpenDirOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -17,9 +24,26 @@ pub struct OpenFileOptions {
     pub handle_token: Option<String>,
     /// Whether to allow the chosen application to write to the file.
     /// This key only takes effect the uri points to a local file that is exported in the document portal, and the chosen application is sandboxed itself.
-    pub writeable: bool,
-    ///Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
-    pub ask: bool,
+    pub writeable: Option<bool>,
+    /// Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
+    pub ask: Option<bool>,
+}
+
+impl OpenFileOptions {
+    pub fn handle_token(mut self, handle_token: &str) -> Self {
+        self.handle_token = Some(handle_token.to_string());
+        self
+    }
+
+    pub fn writeable(mut self, writeable: bool) -> Self {
+        self.writeable = Some(writeable);
+        self
+    }
+
+    pub fn ask(mut self, ask: bool) -> Self {
+        self.ask = Some(ask);
+        self
+    }
 }
 
 #[dbus_proxy(
