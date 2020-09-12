@@ -1,5 +1,57 @@
+//! ```no_run
+//! use libportal::desktop::game_mode::{GameModeProxy, GameModeStatus};
+//! use zbus::{self, fdo::Result};
+//!
+//! fn main() -> Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = GameModeProxy::new(&connection)?;
+//!
+//!     println!("{:#?}", proxy.register_game(246612)?);
+//!
+//!     println!("{:#?}", proxy.query_status(246612)?);
+//!
+//!     println!("{:#?}", proxy.unregister_game(246612)?);
+//!
+//!     println!("{:#?}", proxy.query_status(246612)?);
+//!
+//!     Ok(())
+//! }
+//! ```
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
+use zvariant_derive::Type;
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(i32)]
+pub enum GameModeStatus {
+    /// GameMode is inactive.
+    Inactive = 0,
+    /// GameMode is active.
+    Active = 1,
+    /// GameMode is active and `pid` is registered.
+    Registered = 2,
+    /// The query failed inside GameMode.
+    Rejected = -1,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(i32)]
+pub enum RegisterStatus {
+    /// If the game was successfully registered.
+    Success = 0,
+    /// If the request was rejected by GameMode.
+    Rejected = -1,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(i32)]
+pub enum UnregisterStatus {
+    /// If the game was successfully registered.
+    Success = 0,
+    /// If the request was rejected by GameMode.
+    Rejected = -1,
+}
 
 #[dbus_proxy(
     interface = "org.freedesktop.portal.GameMode",
@@ -26,32 +78,85 @@ use zvariant::Fd;
 /// without a call to the 'UnregisterGame' method, GameMode will automatically
 /// un-register the client. This might happen with a (small) delay.
 trait GameMode {
-    /// QueryStatus method
-    fn query_status(&self, pid: i32) -> Result<i32>;
+    /// Query the GameMode status for a process.
+    /// If the caller is running inside a sandbox with pid namespace isolation,
+    /// the pid will be translated to the respective host pid.
+    ///
+    /// # Arguments
+    ///
+    /// * `pid` - Process id to query the GameMode status of.
+    fn query_status(&self, pid: i32) -> Result<GameModeStatus>;
 
-    /// QueryStatusByPIDFd method
-    fn query_status_by_pidfd(&self, target: Fd, requester: Fd) -> Result<i32>;
+    /// Query the GameMode status for a process.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Pid file descriptor to query the GameMode status of.
+    /// * `requester` - Pid file descriptor of the process requesting the information.
+    #[dbus_proxy(name = "QueryStatusByPIDFd")]
+    fn query_status_by_pidfd(&self, target: Fd, requester: Fd) -> Result<GameModeStatus>;
 
-    /// QueryStatusByPid method
-    fn query_status_by_pid(&self, target: i32, requester: i32) -> Result<i32>;
+    /// Query the GameMode status for a process.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Process id to query the GameMode status of.
+    /// * `requester` - Process id of the process requesting the information.
+    fn query_status_by_pid(&self, target: i32, requester: i32) -> Result<GameModeStatus>;
 
-    /// RegisterGame method
-    fn register_game(&self, pid: i32) -> Result<i32>;
+    /// Register a game with GameMode and thus request GameMode to be activated.
+    /// If the caller is running inside a sandbox with pid namespace isolation,
+    /// the pid will be translated to the respective host pid. See the general introduction for details.
+    /// If the GameMode has already been requested for pid before, this call will fail, i.e. result will be `RegisterStatus::Rejected`
+    ///
+    /// # Arguments
+    ///
+    /// * `pid` - Process id of the game to register.
+    fn register_game(&self, pid: i32) -> Result<RegisterStatus>;
 
-    /// RegisterGameByPIDFd method
-    fn register_game_by_pidfd(&self, target: Fd, requester: Fd) -> Result<i32>;
+    /// Register a game with GameMode.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Proccess file descriptor of the game to register.
+    /// * `requester` - Process file descriptor of the process requesting the registration.
+    #[dbus_proxy(name = "RegisterGameByPIDFd")]
+    fn register_game_by_pidfd(&self, target: Fd, requester: Fd) -> Result<RegisterStatus>;
 
-    /// RegisterGameByPid method
-    fn register_game_by_pid(&self, target: i32, requester: i32) -> Result<i32>;
+    /// Register a game with GameMode.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Process id of the game to register.
+    /// * `requester` - Process id of the process requesting the registration.
+    fn register_game_by_pid(&self, target: i32, requester: i32) -> Result<RegisterStatus>;
 
-    /// UnregisterGame method
-    fn unregister_game(&self, pid: i32) -> Result<i32>;
+    /// Un-register a game from GameMode.
+    /// if the call is successful and there are no other games or clients registered, GameMode will be deactivated.
+    /// If the caller is running inside a sandbox with pid namespace isolation,
+    /// the pid will be translated to the respective host pid.
+    ///
+    /// # Arguments
+    ///
+    /// `pid` - Process id of the game to un-register.
+    fn unregister_game(&self, pid: i32) -> Result<UnregisterStatus>;
 
-    /// UnregisterGameByPIDFd method
-    fn unregister_game_by_pidfd(&self, target: Fd, requester: Fd) -> Result<i32>;
+    /// Un-register a game from GameMode.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Pid file descriptor of the game to un-register.
+    /// * `requester` - Pid file descriptor of the process requesting the un-registration.
+    #[dbus_proxy(name = "UnregisterGameByPIDFd")]
+    fn unregister_game_by_pidfd(&self, target: Fd, requester: Fd) -> Result<UnregisterStatus>;
 
-    /// UnregisterGameByPid method
-    fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<i32>;
+    /// Un-register a game from GameMode.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Process id of the game to un-register.
+    /// * `requester` - Process id of the process requesting the un-registration.
+    fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<UnregisterStatus>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]
