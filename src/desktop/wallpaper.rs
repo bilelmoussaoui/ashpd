@@ -8,6 +8,7 @@
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zbus::fdo::Result;
+//! use zvariant::Fd;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
@@ -17,7 +18,7 @@
 //!
 //!     let request_handle = proxy.set_wallpaper_file(
 //!         WindowIdentifier::default(),
-//!         wallpaper.as_raw_fd(),
+//!         Fd::from(wallpaper.as_raw_fd()),
 //!         WallpaperOptions::default()
 //!             .set_on(SetOn::Background),
 //!     )?;
@@ -61,10 +62,9 @@
 use crate::{ResponseType, WindowIdentifier};
 use serde::{self, Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
-use std::os::unix::io::RawFd;
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{OwnedObjectPath, OwnedValue, Signature};
+use zvariant::{Fd, OwnedObjectPath, OwnedValue, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Deserialize, Debug, Clone, Copy, AsRefStr, EnumString, IntoStaticStr, ToString)]
@@ -149,7 +149,7 @@ trait Wallpaper {
     fn set_wallpaper_file(
         &self,
         parent_window: WindowIdentifier,
-        fd: RawFd,
+        fd: Fd,
         options: WallpaperOptions,
     ) -> Result<OwnedObjectPath>;
 
