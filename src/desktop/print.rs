@@ -1,7 +1,6 @@
 use crate::WindowIdentifier;
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
+use zvariant::{Fd, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -159,7 +158,7 @@ trait Print {
         &self,
         parent_window: WindowIdentifier,
         title: &str,
-        fd: RawFd,
+        fd: Fd,
         options: PrintOptions,
     ) -> Result<OwnedObjectPath>;
 

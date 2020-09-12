@@ -1,5 +1,39 @@
 //! # Examples
 //!
+//! Open a file
+//!
+//! ```no_run
+//! use libportal::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
+//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use zbus::{self, fdo::Result};
+//! use zvariant::Fd;
+//! use std::fs::File;
+//! use std::os::unix::io::AsRawFd;
+//!
+//! fn main() -> Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = OpenURIProxy::new(&connection)?;
+//!
+//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!
+//!     let request_handle = proxy.open_file(
+//!         WindowIdentifier::default(),
+//!         Fd::from(file.as_raw_fd()),
+//!         OpenFileOptions::default(),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|response: Response| -> Result<()> {
+//!         println!("{}", response.is_success());
+//!         Ok(())
+//!     })?;
+//!
+//!     Ok(())
+//! }
+//!```
+//!
+//! Open a file from a URI
+//!
 //! ```no_run
 //! use libportal::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
 //! use libportal::zbus;
@@ -26,9 +60,8 @@
 //! }
 //! ```
 use crate::WindowIdentifier;
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
+use zvariant::{Fd, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -97,7 +130,7 @@ trait OpenURI {
     fn open_directory(
         &self,
         parent_window: WindowIdentifier,
-        fd: RawFd,
+        fd: Fd,
         options: OpenDirOptions,
     ) -> Result<OwnedObjectPath>;
 
@@ -116,7 +149,7 @@ trait OpenURI {
     fn open_file(
         &self,
         parent_window: WindowIdentifier,
-        fd: RawFd,
+        fd: Fd,
         options: OpenFileOptions,
     ) -> Result<OwnedObjectPath>;
 

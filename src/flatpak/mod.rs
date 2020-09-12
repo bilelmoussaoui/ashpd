@@ -1,8 +1,8 @@
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -36,9 +36,9 @@ pub struct SpawnOptions {
     /// Note that absolute paths or subdirectories are not allowed.
     pub sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
-    pub sandbox_expose_fd: Option<Vec<RawFd>>,
+    pub sandbox_expose_fd: Option<Vec<Fd>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.
-    pub sandbox_expose_fd_ro: Option<Vec<RawFd>>,
+    pub sandbox_expose_fd_ro: Option<Vec<Fd>>,
     /// Flags affecting the created sandbox.
     pub sandbox_flags: Option<BitFlags<SandboxFlags>>,
 }
@@ -54,12 +54,12 @@ impl SpawnOptions {
         self
     }
 
-    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: Vec<RawFd>) -> Self {
+    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: Vec<Fd>) -> Self {
         self.sandbox_expose_fd = Some(sandbox_expose_fd);
         self
     }
 
-    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: Vec<RawFd>) -> Self {
+    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: Vec<Fd>) -> Self {
         self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro);
         self
     }
@@ -103,7 +103,7 @@ trait Flatpak {
         &self,
         cwd_path: &[u8],
         argv: &[&[u8]],
-        fds: HashMap<u32, RawFd>,
+        fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SandboxFlags>,
         options: SpawnOptions,

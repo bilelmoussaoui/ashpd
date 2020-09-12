@@ -1,7 +1,6 @@
 use crate::WindowIdentifier;
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
+use zvariant::{Fd, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -22,7 +21,7 @@ pub struct EmailOptions {
     /// The body of the email
     pub body: Option<String>,
     /// A list of file descriptors of files to attach
-    pub attachment_fds: Option<Vec<RawFd>>,
+    pub attachment_fds: Option<Vec<Fd>>,
 }
 
 impl EmailOptions {

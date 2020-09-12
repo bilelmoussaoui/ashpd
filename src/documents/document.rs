@@ -2,9 +2,9 @@ use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
-use std::os::unix::io::RawFd;
 use strum_macros::EnumString;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Fd;
 use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -60,7 +60,7 @@ trait Documents {
     /// * `o_path_fd` - open file descriptor for the file to add
     /// * `reuse_existing` - whether to reuse an existing document store entry for the file
     /// * `persistent` - whether to add the file only for this session or permanently
-    fn add(&self, o_path_fd: RawFd, reuse_existing: bool, persistent: bool) -> Result<String>;
+    fn add(&self, o_path_fd: Fd, reuse_existing: bool, persistent: bool) -> Result<String>;
 
     /// Adds multiple files to the document store.
     /// The files are passed in the form of an open file descriptor
@@ -76,7 +76,7 @@ trait Documents {
     /// * `permissions` - the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
     fn add_full(
         &self,
-        o_path_fds: &[RawFd],
+        o_path_fds: &[Fd],
         flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[&Permission],
@@ -94,7 +94,7 @@ trait Documents {
     /// * `persistent` - whether to add the file only for this session or permanently
     fn add_named(
         &self,
-        o_path_parent_fd: RawFd,
+        o_path_parent_fd: Fd,
         filename: &[u8],
         reuse_existing: bool,
         persistent: bool,
@@ -115,7 +115,7 @@ trait Documents {
     /// * `permissions` - the permissions to grant.
     fn add_named_full(
         &self,
-        o_path_fd: RawFd,
+        o_path_fd: Fd,
         filename: &[u8],
         flags: BitFlags<Flags>,
         app_id: &str,

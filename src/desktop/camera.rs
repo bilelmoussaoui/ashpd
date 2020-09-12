@@ -29,9 +29,8 @@
 use crate::ResponseType;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{OwnedObjectPath, OwnedValue, Value};
+use zvariant::{Fd, OwnedObjectPath, OwnedValue, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -84,7 +83,7 @@ trait Camera {
     ///
     /// * `options` - ?
     /// FIXME: figure out what are the possible options
-    fn open_pipe_wire_remote(&self, options: HashMap<&str, Value>) -> Result<RawFd>;
+    fn open_pipe_wire_remote(&self, options: HashMap<&str, Value>) -> Result<Fd>;
 
     /// A boolean stating whether there is any cameras available.
     #[dbus_proxy(property)]

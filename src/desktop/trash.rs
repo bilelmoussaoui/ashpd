@@ -11,7 +11,6 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let c = connection.clone();
 //!     let proxy = TrashProxy::new(&connection)?;
 //!
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night(1).jpg").unwrap();

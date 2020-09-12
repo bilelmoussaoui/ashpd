@@ -1,5 +1,5 @@
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -25,7 +25,7 @@ impl ScecretOptions {
 /// The secret can then be used for encrypting confidential data inside the sandbox.
 trait Secret {
     /// RetrieveSecret method
-    fn retrieve_secret(&self, fd: RawFd, options: ScecretOptions) -> Result<String>;
+    fn retrieve_secret(&self, fd: Fd, options: ScecretOptions) -> Result<String>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

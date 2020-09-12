@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Value;
+use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -49,7 +48,7 @@ trait FileTransfer {
     /// * `key` - a key returned by `start_transfer`
     /// * `fds` - a list of file descriptors of the files to register
     /// * `options` - ?
-    fn add_files(&self, key: &str, fds: &[RawFd], options: HashMap<&str, Value>) -> Result<()>;
+    fn add_files(&self, key: &str, fds: &[Fd], options: HashMap<&str, Value>) -> Result<()>;
 
     /// Retrieves files that were previously added to the session with `add_files`.
     /// The files will be exported in the document portal as-needed for the caller,

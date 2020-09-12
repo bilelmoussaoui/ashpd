@@ -2,9 +2,8 @@ use crate::WindowIdentifier;
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{ObjectPath, OwnedObjectPath, Value};
+use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
@@ -123,7 +122,7 @@ trait ScreenCast {
         &self,
         session_handle: ObjectPath,
         options: HashMap<&str, Value>,
-    ) -> Result<RawFd>;
+    ) -> Result<Fd>;
 
     /// Configure what the screen cast session should record.
     /// This method must be called before starting the session.
