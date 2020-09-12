@@ -2,7 +2,7 @@
 //!
 //! ```no_run
 //! use libportal::desktop::location::{
-//!     LocationAccessOptions, LocationProxy, LocationResponse, LocationStartOptions,
+//!     LocationAccessOptions, LocationProxy, LocationStartOptions,
 //! };
 //! use libportal::{
 //!     zbus::{self, fdo::Result},
@@ -27,7 +27,7 @@
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
 //!     request.on_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
-//!             proxy.on_location_updated(move |location: LocationResponse| {
+//!             proxy.on_location_updated(move |location| {
 //!                 println!("{}", location.accuracy());
 //!                 println!("{}", location.longitude());
 //!                 println!("{}", location.latitude());
@@ -189,9 +189,9 @@ impl<'a> LocationProxy<'a> {
         Ok(Self { proxy, connection })
     }
 
-    pub fn on_location_updated<F, T>(&self, callback: F) -> Result<()>
+    pub fn on_location_updated<F>(&self, callback: F) -> Result<()>
     where
-        F: FnOnce(T),
+        F: FnOnce(LocationResponse),
         T: serde::de::DeserializeOwned + zvariant::Type,
     {
         loop {
@@ -200,7 +200,7 @@ impl<'a> LocationProxy<'a> {
             if msg_header.message_type()? == zbus::MessageType::Signal
                 && msg_header.member()? == Some("LocationUpdated")
             {
-                let response = msg.body::<T>()?;
+                let response = msg.body::<LocationResponse>()?;
                 callback(response);
                 break;
             }
