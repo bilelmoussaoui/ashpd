@@ -30,6 +30,21 @@ impl EmailOptions {
         self
     }
 
+    pub fn addresses(mut self, addresses: Vec<String>) -> Self {
+        self.addresses = Some(addresses);
+        self
+    }
+
+    pub fn bcc(mut self, bcc: Vec<String>) -> Self {
+        self.bcc = Some(bcc);
+        self
+    }
+
+    pub fn cc(mut self, cc: Vec<String>) -> Self {
+        self.cc = Some(cc);
+        self
+    }
+
     pub fn subject(mut self, subject: &str) -> Self {
         self.subject = Some(subject.to_string());
         self
@@ -37,6 +52,16 @@ impl EmailOptions {
 
     pub fn body(mut self, body: &str) -> Self {
         self.body = Some(body.to_string());
+        self
+    }
+
+    pub fn attach(mut self, attachement: Fd) -> Self {
+        match self.attachment_fds {
+            Some(ref mut attachements) => attachements.push(attachement),
+            None => {
+                self.attachment_fds.replace(vec![attachement]);
+            }
+        };
         self
     }
 }
