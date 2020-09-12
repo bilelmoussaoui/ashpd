@@ -1,4 +1,5 @@
 use crate::WindowIdentifier;
+use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
@@ -12,7 +13,7 @@ pub enum KeyState {
     Released = 1,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, BitFlags, Clone, Copy, Type)]
 #[repr(u32)]
 pub enum DeviceType {
     Keyboard = 1,
@@ -54,7 +55,7 @@ pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<String>,
     /// The device types to request remote controlling of. Default is all.
-    pub types: Option<DeviceType>,
+    pub types: Option<BitFlags<DeviceType>>,
 }
 
 impl SelectDevicesOptions {
@@ -63,7 +64,7 @@ impl SelectDevicesOptions {
         self
     }
 
-    pub fn types(mut self, types: DeviceType) -> Self {
+    pub fn types(mut self, types: BitFlags<DeviceType>) -> Self {
         self.types = Some(types);
         self
     }
