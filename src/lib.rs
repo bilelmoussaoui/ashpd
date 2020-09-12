@@ -29,6 +29,5 @@ mod window_identifier;
 pub use self::request::{RequestProxy, Response, ResponseType};
 pub use self::session::SessionProxy;
 pub use self::window_identifier::WindowIdentifier;
-pub use serde;
 pub use zbus;
 pub use zvariant;
