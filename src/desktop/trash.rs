@@ -1,6 +1,33 @@
+//! # Examples
+//!
+//! ```no_run
+//! use zbus;
+//! use zvariant::Fd;
+//! use libportal::desktop::trash::{TrashProxy, TrashStatus};
+//! use zbus::fdo::Result;
+//! use std::fs::File;
+//! use std::os::unix::io::AsRawFd;
+//!
+//!
+//! fn main() -> Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let c = connection.clone();
+//!     let proxy = TrashProxy::new(&connection)?;
+//!
+//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night(1).jpg").unwrap();
+//!
+//!     match proxy.trash_file(Fd::from(file.as_raw_fd()))? {
+//!         TrashStatus::Succeeded => println!("hey world"),
+//!         TrashStatus::Failed => println!("tfo"),
+//!         _ => println!("something else happenned"),
+//!     };
+//!
+//!     Ok(())
+//! }
+//! ```
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::os::unix::io::RawFd;
 use zbus::{dbus_proxy, fdo::Result};
+use zvariant::Fd;
 use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -21,13 +48,10 @@ trait Trash {
     /// Sends a file to the trashcan.
     /// Applications are allowed to trash a file if they can open it in r/w mode.
     ///
-    /// Returns 0 if trashing failed, 1 if trashing succeeded, other values may be returned in the future
-    /// FIXME: replace output with an enum
-    ///
     /// # Arguments
     ///
     /// * `fd` - the file descriptor
-    fn trash_file(&self, fd: RawFd) -> Result<u32>;
+    fn trash_file(&self, fd: Fd) -> Result<TrashStatus>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]
