@@ -192,7 +192,6 @@ impl<'a> LocationProxy<'a> {
     pub fn on_location_updated<F>(&self, callback: F) -> Result<()>
     where
         F: FnOnce(LocationResponse),
-        T: serde::de::DeserializeOwned + zvariant::Type,
     {
         loop {
             let msg = self.connection.receive_message()?;

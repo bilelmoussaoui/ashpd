@@ -1,4 +1,8 @@
+use std::collections::HashMap;
 use zbus::{fdo::DBusProxy, fdo::Result, Connection};
+use zvariant::OwnedValue;
+
+pub type SessionDetails = HashMap<String, OwnedValue>;
 
 /// The Session interface is shared by all portal interfaces that involve long lived sessions.
 /// When a method that creates a session is called, if successful, the reply will include a session handle (i.e. object path) for a Session object, which will stay alive for the duration of the session.
@@ -27,10 +31,9 @@ impl<'a> SessionProxy<'a> {
     }
 
     /// Emitted when a session is closed.
-    pub fn on_closed<F, T>(&self, callback: F) -> Result<()>
+    pub fn on_closed<F>(&self, callback: F) -> Result<()>
     where
-        F: FnOnce(T) -> Result<()>,
-        T: serde::de::DeserializeOwned + zvariant::Type,
+        F: FnOnce(SessionDetails) -> Result<()>,
     {
         loop {
             let msg = self.connection.receive_message()?;
@@ -38,7 +41,7 @@ impl<'a> SessionProxy<'a> {
             if msg_header.message_type()? == zbus::MessageType::Signal
                 && msg_header.member()? == Some("Closed")
             {
-                let response = msg.body::<T>()?;
+                let response = msg.body::<SessionDetails>()?;
                 callback(response)?;
                 break;
             }
