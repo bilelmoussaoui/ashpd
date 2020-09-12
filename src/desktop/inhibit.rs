@@ -1,4 +1,4 @@
-use crate::{ResponseType, WindowIdentifier};
+use crate::WindowIdentifier;
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -57,17 +57,8 @@ pub enum InhibitFlags {
     Idle = 8,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug)]
-pub struct InhibitMonitorResponse(ResponseType, InhibitMonitorResult);
-
-impl InhibitMonitorResponse {
-    pub fn session_handle<'a>(&self) -> &'a ObjectPath {
-        &self.1.session_handle
-    }
-}
-
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-struct InhibitMonitorResult {
+struct InhibitMonitorResponse {
     pub session_handle: OwnedObjectPath,
 }
 

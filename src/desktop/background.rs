@@ -2,9 +2,9 @@
 //!
 //! ```no_run
 //! use libportal::desktop::background::{
-//!     BackgroundOptions, BackgroundProxy, BackgroundResponse,
+//!     BackgroundOptions, BackgroundProxy, Background,
 //! };
-//! use libportal::{RequestProxy, WindowIdentifier};
+//! use libportal::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -20,21 +20,19 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: BackgroundResponse| -> Result<()>{
-//!         if response.is_success() {
-//!             println!("{}", response.autostart());
-//!             println!("{}", response.background());
+//!     request.on_response(|response: Response<Background>| {
+//!         if let Ok(bg) = response {
+//!             println!("{}", bg.autostart);
+//!             println!("{}", bg.background);
 //!         }
-//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
 //! ```
-use crate::{ResponseType, WindowIdentifier};
-use serde::{Deserialize, Serialize};
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a background request.
@@ -80,26 +78,9 @@ impl BackgroundOptions {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Type)]
-pub struct BackgroundResponse(ResponseType, BackgroundResult);
-
-impl BackgroundResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
-    }
-
-    pub fn autostart(&self) -> bool {
-        self.1.autostart
-    }
-
-    pub fn background(&self) -> bool {
-        self.1.background
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// Result returned by the response signal after a background request.
-struct BackgroundResult {
+pub struct Background {
     /// if the application is allowed to run in the background
     pub background: bool,
     /// if the application is will be autostarted.

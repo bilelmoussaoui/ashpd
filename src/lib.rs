@@ -26,7 +26,7 @@ pub mod flatpak;
 mod request;
 mod session;
 mod window_identifier;
-pub use self::request::{RequestProxy, Response, ResponseType};
+pub use self::request::{BasicResponse, RequestProxy, Response};
 pub use self::session::SessionProxy;
 pub use self::window_identifier::WindowIdentifier;
 pub use zbus;

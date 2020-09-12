@@ -6,7 +6,7 @@
 //! };
 //! use libportal::{
 //!     zbus::{self, fdo::Result},
-//!     RequestProxy, Response, WindowIdentifier,
+//!     RequestProxy, Response, BasicResponse as Basic, WindowIdentifier,
 //! };
 //!
 //! fn main() -> Result<()> {
@@ -25,16 +25,14 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(move |response: Response| -> Result<()> {
-//!         if response.is_success() {
-//!             proxy.on_location_updated(move |location: LocationResponse| -> Result<()> {
+//!     request.on_response(move |response: Response<Basic>| {
+//!         if response.is_ok() {
+//!             proxy.on_location_updated(move |location: LocationResponse| {
 //!                 println!("{}", location.accuracy());
 //!                 println!("{}", location.longitude());
 //!                 println!("{}", location.latitude());
-//!                 Ok(())
-//!             })?;
+//!             });
 //!         }
-//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -193,7 +191,7 @@ impl<'a> LocationProxy<'a> {
 
     pub fn on_location_updated<F, T>(&self, callback: F) -> Result<()>
     where
-        F: FnOnce(T) -> Result<()>,
+        F: FnOnce(T),
         T: serde::de::DeserializeOwned + zvariant::Type,
     {
         loop {
@@ -203,7 +201,7 @@ impl<'a> LocationProxy<'a> {
                 && msg_header.member()? == Some("LocationUpdated")
             {
                 let response = msg.body::<T>()?;
-                callback(response)?;
+                callback(response);
                 break;
             }
         }

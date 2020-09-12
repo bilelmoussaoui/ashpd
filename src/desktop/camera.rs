@@ -1,8 +1,8 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::camera::{CameraProxy, CameraAccessOptions, AccessCameraResponse};
-//! use libportal::RequestProxy;
+//! use libportal::desktop::camera::{CameraProxy, CameraAccessOptions};
+//! use libportal::{BasicResponse as Basic, Response, RequestProxy};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -14,24 +14,21 @@
 //!     let request_handle = proxy.access_camera(CameraAccessOptions::default())?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(move |response: AccessCameraResponse| -> Result<()> {
-//!         if response.is_success() {
+//!     request.on_response(move |response: Response<Basic>| {
+//!         if response.is_ok() {
 //!             //let options: HashMap<&str, zvariant::Value> = HashMap::new();
 //!             //FIXME: update this once we know which kind of options it takes
 //!             //let req = proxy.open_pipe_wire_remote(options).unwrap();
 //!             //println!("{:#?}", req);
 //!         }
-//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
 //! ```
-use crate::ResponseType;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath, OwnedValue, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant::{Fd, OwnedObjectPath, Value};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a camera access request.
@@ -44,15 +41,6 @@ impl CameraAccessOptions {
     pub fn handle_token(mut self, handle_token: &str) -> Self {
         self.handle_token = Some(handle_token.to_string());
         self
-    }
-}
-
-#[derive(Debug, Type, Deserialize, Serialize)]
-pub struct AccessCameraResponse(ResponseType, HashMap<String, OwnedValue>);
-
-impl AccessCameraResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
     }
 }
 

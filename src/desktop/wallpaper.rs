@@ -3,8 +3,8 @@
 //! Sets a wallpaper from a file:
 //!
 //! ```no_run
-//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
-//! use libportal::{RequestProxy, WindowIdentifier};
+//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
+//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zbus::fdo::Result;
@@ -24,9 +24,8 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: WallpaperResponse| -> Result<()> {
-//!         println!("{}", response.is_success() );
-//!         Ok(())
+//!     request.on_response(|response: Response<Basic>| {
+//!         println!("{}", response.is_ok() );
 //!     })?;
 //!     Ok(())
 //! }
@@ -35,8 +34,8 @@
 //! Sets a wallpaper from a URI:
 //!
 //! ```no_run
-//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn, WallpaperResponse};
-//! use libportal::{RequestProxy, WindowIdentifier};
+//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
+//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> zbus::fdo::Result<()> {
@@ -52,20 +51,18 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: WallpaperResponse| -> Result<()> {
-//!         println!("{}", response.is_success() );
-//!         Ok(())
+//!     request.on_response(|response: Response<Basic>| {
+//!         println!("{}", response.is_ok() );
 //!     })?;
 //!     Ok(())
 //! }
 //! ```
-use crate::{ResponseType, WindowIdentifier};
+use crate::WindowIdentifier;
 use serde::{self, Deserialize, Serialize, Serializer};
-use std::collections::HashMap;
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath, OwnedValue, Signature};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant::{Fd, OwnedObjectPath, Signature};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(Deserialize, Debug, Clone, Copy, AsRefStr, EnumString, IntoStaticStr, ToString)]
 #[serde(rename = "lowercase")]
@@ -115,15 +112,6 @@ impl WallpaperOptions {
     pub fn set_on(mut self, set_on: SetOn) -> Self {
         self.set_on = Some(set_on);
         self
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Type)]
-pub struct WallpaperResponse(ResponseType, HashMap<String, OwnedValue>);
-
-impl WallpaperResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
     }
 }
 

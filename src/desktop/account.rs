@@ -1,8 +1,8 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::account::{AccountProxy, UserInfoOptions, UserInfoResponse};
-//! use libportal::{RequestProxy, WindowIdentifier};
+//! use libportal::desktop::account::{AccountProxy, UserInfoOptions, UserInfo};
+//! use libportal::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -14,20 +14,20 @@
 //!             .reason("Fractal would like access to your information"),
 //!     )?;
 //!     let req = RequestProxy::new(&connection, &request_handle)?;
-//!     req.on_response(|response: UserInfoResponse| -> Result<()> {
-//!         if response.is_success() {
-//!             println!("{:#?}", response.user_information());
+//!     req.on_response(|response: Response<UserInfo>| {
+//!         if let Ok(user_info) = response {
+//!             println!("{}", user_info.id);
+//!             println!("{}", user_info.name);
+//!             println!("{}", user_info.image);
 //!         }
-//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
 //!```
-use crate::{ResponseType, WindowIdentifier};
-use serde::{Deserialize, Serialize};
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified the options for a get user information request.
@@ -47,19 +47,6 @@ impl UserInfoOptions {
     pub fn handle_token(mut self, handle_token: &str) -> Self {
         self.handle_token = Some(handle_token.to_string());
         self
-    }
-}
-
-#[derive(Debug, Type, Deserialize, Serialize)]
-pub struct UserInfoResponse(ResponseType, UserInfo);
-
-impl UserInfoResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
-    }
-
-    pub fn user_information(&self) -> &UserInfo {
-        &self.1
     }
 }
 

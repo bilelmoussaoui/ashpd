@@ -3,8 +3,8 @@
 //! Access a [`Device`]
 //!
 //! ```no_run
-//! use libportal::desktop::device::{DeviceProxy, AccessDeviceOptions, Device, AccessDeviceResponse};
-//! use libportal::RequestProxy;
+//! use libportal::desktop::device::{DeviceProxy, AccessDeviceOptions, Device};
+//! use libportal::{RequestProxy, BasicResponse as Basic, Response};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -17,21 +17,18 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: AccessDeviceResponse| -> Result<()> {
-//!         println!("{}", response.is_success());
-//!         Ok(())
+//!     request.on_response(|response: Response<Basic>| {
+//!         println!("{}", response.is_ok());
 //!     })?;
 //!     Ok(())
 //! }
 //! ```
 //! [`Device`]: ./enum.Device.html
-use crate::ResponseType;
 use serde::{Deserialize, Serialize, Serializer};
-use std::collections::HashMap;
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{OwnedObjectPath, OwnedValue, Signature};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant::{OwnedObjectPath, Signature};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a device access request.
@@ -69,15 +66,6 @@ impl Serialize for Device {
         S: Serializer,
     {
         String::serialize(&self.to_string(), serializer)
-    }
-}
-
-#[derive(Debug, Type, Deserialize, Serialize)]
-pub struct AccessDeviceResponse(ResponseType, HashMap<String, OwnedValue>);
-
-impl AccessDeviceResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
     }
 }
 

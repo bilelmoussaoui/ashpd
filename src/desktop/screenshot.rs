@@ -3,8 +3,8 @@
 //! Taking a screenshot
 //!
 //! ```no_run
-//! use libportal::desktop::screenshot::{ScreenshotResponse, ScreenshotOptions, ScreenshotProxy};
-//! use libportal::{RequestProxy, WindowIdentifier};
+//! use libportal::desktop::screenshot::{Screenshot, ScreenshotOptions, ScreenshotProxy};
+//! use libportal::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> zbus::fdo::Result<()> {
@@ -17,11 +17,8 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: ScreenshotResponse| -> Result<()> {
-//!         if response.is_success() {
-//!             println!("{}", response.uri());
-//!         }
-//!         Ok(())
+//!     request.on_response(|response: Response<Screenshot>| {
+//!         println!("{}", response.unwrap().uri);
 //!     })?;
 //!     Ok(())
 //! }
@@ -29,8 +26,8 @@
 //!
 //! Picking a color
 //!```no_run
-//! use libportal::desktop::screenshot::{ColorResponse, PickColorOptions, ScreenshotProxy};
-//! use libportal::{RequestProxy, WindowIdentifier};
+//! use libportal::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
+//! use libportal::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -44,21 +41,19 @@
 //!
 //!    let request = RequestProxy::new(&connection, &request_handle)?;
 //!
-//!     request.on_response(|response: ColorResponse| -> Result<()>{
-//!         if response.is_success() {
-//!             println!("{:#?}", response.color());
+//!     request.on_response(|response: Response<Color>| {
+//!         if let Ok(color) = response {
+//!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!         }
-//!         Ok(())
 //!    })?;
 //!
 //!    Ok(())
 //!}
 //! ```
-use crate::{ResponseType, WindowIdentifier};
-use serde::{Deserialize, Serialize};
+use crate::WindowIdentifier;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a screenshot request.
@@ -88,21 +83,8 @@ impl ScreenshotOptions {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Type)]
-pub struct ScreenshotResponse(ResponseType, ScreenshotResult);
-
-impl ScreenshotResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
-    }
-
-    pub fn uri(&self) -> &str {
-        &self.1.uri
-    }
-}
-
 #[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
-struct ScreenshotResult {
+pub struct Screenshot {
     pub uri: String,
 }
 
@@ -120,38 +102,22 @@ impl PickColorOptions {
     }
 }
 
-#[derive(Debug, Type, Deserialize)]
-pub struct ColorResponse(ResponseType, ColorResult);
-
-impl ColorResponse {
-    pub fn is_success(&self) -> bool {
-        self.0 == ResponseType::Success
-    }
-
-    pub fn color(&self) -> &Color {
-        &self.1.color
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-struct ColorResult {
-    pub color: Color,
+pub struct Color {
+    color: ([f64; 3]),
 }
-
-#[derive(Debug, Type, Serialize, Deserialize)]
-pub struct Color([f64; 3]);
 
 impl Color {
     pub fn red(&self) -> f64 {
-        self.0[0]
+        self.color[0]
     }
 
     pub fn green(&self) -> f64 {
-        self.0[1]
+        self.color[1]
     }
 
     pub fn blue(&self) -> f64 {
-        self.0[2]
+        self.color[2]
     }
 }
 

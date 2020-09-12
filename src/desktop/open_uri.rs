@@ -4,7 +4,7 @@
 //!
 //! ```no_run
 //! use libportal::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use zbus::{self, fdo::Result};
 //! use zvariant::Fd;
 //! use std::fs::File;
@@ -23,9 +23,8 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: Response| -> Result<()> {
-//!         println!("{}", response.is_success());
-//!         Ok(())
+//!     request.on_response(|response: Response<Basic>| {
+//!         println!("{}", response.is_ok());
 //!     })?;
 //!
 //!     Ok(())
@@ -37,7 +36,7 @@
 //! ```no_run
 //! use libportal::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
 //! use libportal::zbus;
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -51,9 +50,8 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: Response| -> Result<()> {
-//!         println!("{}", response.is_success());
-//!         Ok(())
+//!     request.on_response(|response: Response<Basic>| {
+//!         println!("{}", response.is_ok());
 //!     })?;
 //!
 //!     Ok(())
