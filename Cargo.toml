@@ -10,19 +10,17 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
 
 [features]
-feature_gdk = ["gdk"]
+color = ["gdk"]
 
 
 [dependencies]
-zbus = { git="https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch ="patch-3" }
-zvariant = { git="https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch ="patch-3",features= ["enumflags2"] }
-zvariant_derive = { git="https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch ="patch-3" }
+zbus = { git = "https://gitlab.freedesktop.org/zeenix/zbus" }
+zvariant = { git = "https://gitlab.freedesktop.org/zeenix/zbus", features = ["enumflags2"] }
+zvariant_derive = { git = "https://gitlab.freedesktop.org/zeenix/zbus" }
 serde = {version = "1.0", features = ["derive"] }
 serde_repr = "0.1"
 strum = "0.19"
 strum_macros = "0.19"
-enumflags2 = "*"
+enumflags2 = "0.6"
+gdk = {version = "0.13", optional = true}
 
-[dependencies.gdk]
-version = "0.13"
-optional = true
