@@ -1,5 +1,81 @@
+//! # Examples
+//!
+//! How to create a screen cast session & start it.
+//! The portal is currently useless without pipewire & rust support.
+//!
+//! ```no_run
+//! use libportal::desktop::screencast::{
+//!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
+//!     SourceType, StartCastOptions, Streams,
+//! };
+//! use libportal::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
+//! use zbus::{self, fdo::Result};
+//! use zvariant::ObjectPath;
+//! use enumflags2::BitFlags;
+//!
+//! fn select_sources(
+//!     session_handle: ObjectPath,
+//!     proxy: &ScreenCastProxy,
+//!     connection: &zbus::Connection,
+//! ) -> Result<()> {
+//!     let request_handle = proxy.select_sources(
+//!         session_handle.clone(),
+//!         SelectSourcesOptions::default()
+//!             .multiple(true)
+//!            .cursor_mode(BitFlags::from(CursorMode::Metadata))
+//!             .types(SourceType::Monitor | SourceType::Window),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(move |response: Response<Basic>| {
+//!         if response.is_ok() {
+//!             start_cast(session_handle, proxy, connection).unwrap();
+//!         }
+//!     })?;
+//!     Ok(())
+//! }
+//!
+//! fn start_cast(
+//!     session_handle: ObjectPath,
+//!     proxy: &ScreenCastProxy,
+//!     connection: &zbus::Connection,
+//! ) -> Result<()> {
+//!     let request_handle = proxy.start(
+//!         session_handle,
+//!         WindowIdentifier::default(),
+//!         StartCastOptions::default(),
+//!     )?;
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(move |r: Response<Streams>| {
+//!         r.unwrap().streams().iter().for_each(|stream| {
+//!             println!("{}", stream.pipewire_node_id());
+//!             println!("{:#?}", stream.properties());
+//!         });
+//!     })?;
+//!     Ok(())
+//! }
+//!
+//! fn main() -> Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = ScreenCastProxy::new(&connection)?;
+//!
+//!     let request_handle =
+//!         proxy.create_session(CreateSessionOptions::default().session_handle_token("token"))?;
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!
+//!     request.on_response(|r: Response<CreateSession>| {
+//!         match r {
+//!             Ok(session) => select_sources(session.handle(), &proxy, &connection).unwrap(),
+//!             Err(_) => println!("hello!"),
+//!         };
+//!     })?;
+//!     Ok(())
+//! }
+//! ```
 use crate::WindowIdentifier;
+use core::convert::TryFrom;
 use enumflags2::BitFlags;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
@@ -45,7 +121,7 @@ impl CreateSessionOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
@@ -92,6 +168,55 @@ impl StartCastOptions {
         self.handle_token = Some(handle_token.to_string());
         self
     }
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+pub struct CreateSession {
+    /// A string that will be used as the last element of the session handle.
+    session_handle: String,
+}
+
+impl CreateSession {
+    pub fn handle(&self) -> ObjectPath {
+        ObjectPath::try_from(self.session_handle.clone()).unwrap()
+    }
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+pub struct Streams {
+    streams: Vec<Stream>,
+}
+
+impl Streams {
+    pub fn streams(&self) -> &Vec<Stream> {
+        &self.streams
+    }
+}
+
+#[derive(Serialize, Deserialize, Type, Debug)]
+pub struct Stream(u32, StreamProperties);
+
+impl Stream {
+    pub fn pipewire_node_id(&self) -> u32 {
+        self.0
+    }
+
+    pub fn properties(&self) -> &StreamProperties {
+        &self.1
+    }
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+pub struct StreamProperties {
+    /// A tuple consisting of the position (x, y) in the compositor coordinate space.
+    /// Note that the position may not be equivalent to a position in a pixel coordinate space.
+    /// Only available for monitor streams.
+    pub position: Option<(i32, i32)>,
+    /// A tuple consisting of (width, height).
+    /// The size represents the size of the stream as it is displayed in the compositor coordinate space.
+    /// Note that this size may not be equivalent to a size in a pixel coordinate space.
+    /// The size may differ from the size of the stream.
+    pub size: (i32, i32),
 }
 
 #[dbus_proxy(
