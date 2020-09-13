@@ -1,4 +1,4 @@
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
@@ -32,19 +32,19 @@ pub enum Axis {
 /// Specified options on a create a remote session request.
 pub struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<String>,
+    pub session_handle_token: Option<HandleToken>,
 }
 
 impl CreateRemoteOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
-    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
-        self.session_handle_token = Some(session_handle_token.to_string());
+    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
+        self.session_handle_token = Some(session_handle_token);
         self
     }
 }
@@ -53,14 +53,14 @@ impl CreateRemoteOptions {
 /// Specified options on a select devices request.
 pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// The device types to request remote controlling of. Default is all.
     pub types: Option<BitFlags<DeviceType>>,
 }
 
 impl SelectDevicesOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
@@ -74,12 +74,12 @@ impl SelectDevicesOptions {
 /// Specified options on a start remote desktop request.
 pub struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
 }
 
 impl StartRemoteOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }

@@ -5,16 +5,18 @@
 //!     LocationAccessOptions, LocationProxy, LocationStartOptions,
 //! };
 //! use libportal::{
-//!     zbus::{self, fdo::Result},
-//!     RequestProxy, Response, BasicResponse as Basic, WindowIdentifier,
+//!     HandleToken, RequestProxy, Response,
+//!     BasicResponse as Basic, WindowIdentifier,
 //! };
+//! use std::convert::TryFrom;
+//! use zbus::{self, fdo::Result};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = LocationProxy::new(&connection)?;
 //!
 //!     let options = LocationAccessOptions::default()
-//!                     .session_handle_token("token");
+//!                     .session_handle_token(HandleToken::try_from("token").unwrap());
 //!
 //!     let session_handle = proxy.create_session(options)?;
 //!
@@ -38,7 +40,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{fdo::Result, Connection, Proxy};
@@ -60,7 +62,7 @@ pub enum Accuracy {
 /// Specified options for a location access request.
 pub struct LocationAccessOptions {
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<String>,
+    pub session_handle_token: Option<HandleToken>,
     /// Distance threshold in meters. Default is 0.
     pub distance_threshold: Option<u32>,
     /// Time threshold in seconds. Default is 0.
@@ -70,8 +72,8 @@ pub struct LocationAccessOptions {
 }
 
 impl LocationAccessOptions {
-    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
-        self.session_handle_token = Some(session_handle_token.to_string());
+    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
+        self.session_handle_token = Some(session_handle_token);
         self
     }
 
@@ -95,12 +97,12 @@ impl LocationAccessOptions {
 /// Specified options for a location session start request.
 pub struct LocationStartOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
 }
 
 impl LocationStartOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }

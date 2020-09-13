@@ -25,6 +25,7 @@
 //!     Ok(())
 //! }
 //! ```
+use crate::HandleToken;
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, OwnedObjectPath, Value};
@@ -34,12 +35,12 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified options for a camera access request.
 pub struct CameraAccessOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
 }
 
 impl CameraAccessOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }

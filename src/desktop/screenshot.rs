@@ -50,7 +50,7 @@
 //!    Ok(())
 //!}
 //! ```
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -59,7 +59,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified options on a screenshot request.
 pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Whether the dialog should be modal.
     pub modal: Option<bool>,
     /// Hint whether the dialog should offer customization before taking a screenshot.
@@ -67,8 +67,8 @@ pub struct ScreenshotOptions {
 }
 
 impl ScreenshotOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
@@ -92,12 +92,12 @@ pub struct Screenshot {
 /// Specified options on a pick color request.
 pub struct PickColorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
 }
 
 impl PickColorOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }

@@ -98,8 +98,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::NString;
-use crate::WindowIdentifier;
+use crate::{HandleToken, NString, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
@@ -162,7 +161,7 @@ impl Choice {
 /// Specified options for a open file request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
     /// Whether the dialog should be modal.
@@ -180,8 +179,8 @@ pub struct OpenFileOptions {
 }
 
 impl OpenFileOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
@@ -225,7 +224,7 @@ impl OpenFileOptions {
 /// Specified options for a save file request.
 pub struct SaveFileOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
     /// Whether the dialog should be modal.
@@ -245,8 +244,8 @@ pub struct SaveFileOptions {
 }
 
 impl SaveFileOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
@@ -295,7 +294,7 @@ impl SaveFileOptions {
 /// Specified options for a save files request.
 pub struct SaveFilesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
     /// Whether the dialog should be modal.
@@ -309,8 +308,8 @@ pub struct SaveFilesOptions {
 }
 
 impl SaveFilesOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 

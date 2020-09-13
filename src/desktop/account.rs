@@ -24,7 +24,7 @@
 //!     Ok(())
 //! }
 //!```
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -33,7 +33,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified the options for a get user information request.
 pub struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Shown in the dialog to explain why the information is needed.
     pub reason: Option<String>,
 }
@@ -44,8 +44,8 @@ impl UserInfoOptions {
         self
     }
 
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }

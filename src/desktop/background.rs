@@ -29,7 +29,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -38,7 +38,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified options for a background request.
 pub struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// User-visible reason for the request.
     pub reason: Option<String>,
     /// `true` if the app also wants to be started automatically at login.
@@ -57,8 +57,8 @@ impl BackgroundOptions {
         self
     }
 
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 

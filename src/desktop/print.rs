@@ -34,7 +34,7 @@
 //! }
 //! ```
 
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -341,14 +341,14 @@ impl PageSetup {
 /// Specified options on a prepare print request.
 pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Whether to make the dialog modal.
     pub modal: Option<bool>,
 }
 
 impl PreparePrintOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
@@ -362,7 +362,7 @@ impl PreparePrintOptions {
 /// Specified options on a print request.
 pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Whether to make the dialog modal.
     pub modal: Option<bool>,
     /// Token that was returned by a previous `prepare_print` call.
@@ -380,8 +380,8 @@ impl PrintOptions {
         self
     }
 
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }

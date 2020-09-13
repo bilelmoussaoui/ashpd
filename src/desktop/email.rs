@@ -1,4 +1,4 @@
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -7,7 +7,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified options for a compose email request.
 pub struct EmailOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// The email address to send to
     pub address: Option<String>,
     // The email adresses to send to
@@ -25,6 +25,11 @@ pub struct EmailOptions {
 }
 
 impl EmailOptions {
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
+        self
+    }
+
     pub fn address(mut self, address: &str) -> Self {
         self.address = Some(address.to_string());
         self

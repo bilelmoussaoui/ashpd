@@ -8,10 +8,11 @@
 //!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
 //! };
-//! use libportal::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
+//! use libportal::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
 //! use zbus::{self, fdo::Result};
 //! use zvariant::ObjectPath;
 //! use enumflags2::BitFlags;
+//! use std::convert::TryFrom;
 //!
 //! fn select_sources(
 //!     session_handle: ObjectPath,
@@ -60,7 +61,7 @@
 //!     let proxy = ScreenCastProxy::new(&connection)?;
 //!
 //!     let request_handle =
-//!         proxy.create_session(CreateSessionOptions::default().session_handle_token("token"))?;
+//!         proxy.create_session(CreateSessionOptions::default().session_handle_token(HandleToken::try_from("token").unwrap()))?;
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
 //!
 //!     request.on_response(|r: Response<CreateSession>| {
@@ -72,7 +73,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use core::convert::TryFrom;
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
@@ -104,19 +105,19 @@ pub enum CursorMode {
 /// Specified options on a create a screencast session request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<String>,
+    pub session_handle_token: Option<HandleToken>,
 }
 
 impl CreateSessionOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
-    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
-        self.session_handle_token = Some(session_handle_token.to_string());
+    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
+        self.session_handle_token = Some(session_handle_token);
         self
     }
 }
@@ -125,7 +126,7 @@ impl CreateSessionOptions {
 /// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// What types of content to record.
     pub types: Option<BitFlags<SourceType>>,
     /// Whether to allow selecting multiple sources.
@@ -135,8 +136,8 @@ pub struct SelectSourcesOptions {
 }
 
 impl SelectSourcesOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
@@ -160,12 +161,12 @@ impl SelectSourcesOptions {
 /// Specified options on a start screencast request.
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
 }
 
 impl StartCastOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }

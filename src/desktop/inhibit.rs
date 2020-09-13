@@ -1,4 +1,4 @@
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -10,19 +10,19 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 /// Specified options for a create inhibit monitor request.
 pub struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<String>,
+    pub session_handle_token: Option<HandleToken>,
 }
 
 impl CreateMonitorOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
-    pub fn session_handle_token(mut self, session_handle_token: &str) -> Self {
-        self.session_handle_token = Some(session_handle_token.to_string());
+    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
+        self.session_handle_token = Some(session_handle_token);
         self
     }
 }
@@ -31,14 +31,14 @@ impl CreateMonitorOptions {
 /// Specified options of an inhibit request.
 pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle. Must be a valid object path element.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// User-visible reason for the inhibition.
     pub reason: Option<String>,
 }
 
 impl InhibitOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 

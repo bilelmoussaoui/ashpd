@@ -57,7 +57,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::WindowIdentifier;
+use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -66,12 +66,12 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified options for an open directory request.
 pub struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
 }
 
 impl OpenDirOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 }
@@ -80,7 +80,7 @@ impl OpenDirOptions {
 /// Specified options for an open file request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<String>,
+    pub handle_token: Option<HandleToken>,
     /// Whether to allow the chosen application to write to the file.
     /// This key only takes effect the uri points to a local file that is exported in the document portal, and the chosen application is sandboxed itself.
     pub writeable: Option<bool>,
@@ -89,8 +89,8 @@ pub struct OpenFileOptions {
 }
 
 impl OpenFileOptions {
-    pub fn handle_token(mut self, handle_token: &str) -> Self {
-        self.handle_token = Some(handle_token.to_string());
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = Some(handle_token);
         self
     }
 
