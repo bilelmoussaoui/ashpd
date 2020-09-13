@@ -6,6 +6,8 @@ use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
 /// A typical response returned by the `on_response` signal of a `RequestProxy`.
+///
+/// [`RequestProxy`]: ./struct.RequestProxy.html
 pub type Response<T> = std::result::Result<T, ResponseError>;
 
 #[derive(Debug, Serialize, Deserialize, Type)]
