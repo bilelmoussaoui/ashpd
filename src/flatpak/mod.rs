@@ -1,3 +1,29 @@
+//! # Examples
+//!
+//! Spawn a process outside of the sandbox, only works in a Flatpak.
+//!
+//! ```no_run
+//! use enumflags2::BitFlags;
+//! use libportal::flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions};
+//! use libportal::zbus::{fdo::Result, Connection};
+//! use std::collections::HashMap;
+//!
+//! fn main() -> Result<()> {
+//!     let connection = Connection::new_session()?;
+//!     let proxy = FlatpakProxy::new(&connection)?;
+//!
+//!     proxy.spawn(
+//!         "contrast".into(),
+//!         vec!["".into()],
+//!         HashMap::new(),
+//!         HashMap::new(),
+//!         SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
+//!         SpawnOptions::default(),
+//!     )?;
+//!
+//!     Ok(())
+//! }
+//! ```
 use crate::NString;
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -19,6 +45,25 @@ pub enum SandboxFlags {
     SessionBusAccess = 8,
     /// Allow sandbox access to accessibility bus.
     AccessibilityBusAccess = 16,
+}
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
+#[repr(u32)]
+pub enum SpawnFlags {
+    /// Clear the environment.
+    ClearEnv = 1,
+    /// Spawn the latest version of the app.
+    Latest = 2,
+    /// Spawn in a sandbox (equivalent of the sandbox option of flatpak run).
+    Sandbox = 4,
+    /// Spawn without network (equivalent of the unshare=network option of flatpak run).
+    NoNetwork = 8,
+    /// Kill the sandbox when the caller disappears from the session bus.
+    Kill = 16,
+    /// Expose the sandbox pids in the callers sandbox, only supported if using user namespaces for containers (not setuid), see the support property.
+    Expose = 32,
+    /// Emit a SpawnStarted signal once the sandboxed process has been fully started.
+    Emit = 64,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -103,10 +148,10 @@ trait Flatpak {
     fn spawn(
         &self,
         cwd_path: NString,
-        argv: NString,
+        argv: Vec<NString>,
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
-        flags: BitFlags<SandboxFlags>,
+        flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
     ) -> Result<u32>;
 
