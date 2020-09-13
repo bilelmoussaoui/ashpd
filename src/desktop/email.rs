@@ -1,3 +1,38 @@
+//! # Examples
+//!
+//! Compose an email
+//!
+//! ```no_run
+//! use ashpd::desktop::email::{EmailProxy, EmailOptions};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier, BasicResponse as Basic};
+//! use zbus::{fdo::Result, Connection};
+//! use zvariant::Fd;
+//! use std::fs::File;
+//! use std::os::unix::io::AsRawFd;
+//!
+//! fn main() -> Result<()> {
+//!     let connection = Connection::new_session()?;
+//!     let proxy = EmailProxy::new(&connection)?;
+//!
+//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!
+//!     let handle = proxy.compose_email(
+//!         WindowIdentifier::default(),
+//!         EmailOptions::default()
+//!             .address("test@gmail.com")
+//!             .subject("email subject")
+//!             .body("the pre-filled email body")
+//!             .attach(Fd::from(file.as_raw_fd()))
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &handle)?;
+//!     request.on_response(|r: Response<Basic>| {
+//!         println!("{}", r.is_ok());
+//!     })?;
+//!
+//!     Ok(())
+//! }
+//! ```
 use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, OwnedObjectPath};
@@ -82,7 +117,7 @@ trait Email {
     ///
     /// Note that the default email client for the host will need to support mailto: URIs following RFC 2368
     ///
-    /// Returns a `Request` handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -90,6 +125,7 @@ trait Email {
     /// * `options` - [`EmailOptions`]
     ///
     /// [`EmailOptions`]: ./struct.EmailOptions.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     fn compose_email(
         &self,
         parent_window: WindowIdentifier,
