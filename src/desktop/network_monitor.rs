@@ -2,8 +2,9 @@
 //!
 //! ```no_run
 //! use libportal::desktop::network_monitor::NetworkMonitorProxy;
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = NetworkMonitorProxy::new(&connection)?;
 //!

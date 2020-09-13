@@ -6,7 +6,7 @@
 //! use libportal::zvariant::Value;
 //! use std::{thread, time};
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = NotificationProxy::new(&connection)?;
 //!

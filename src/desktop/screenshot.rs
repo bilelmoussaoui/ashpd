@@ -7,7 +7,7 @@
 //! use libportal::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = ScreenshotProxy::new(&connection)?;
 //!     let request_handle = proxy.screenshot(

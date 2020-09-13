@@ -2,8 +2,9 @@
 //! ```no_run
 //! use libportal::desktop::screenshot::{ScreenshotProxy, PickColorOptions};
 //! use libportal::WindowIdentifier;
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = ScreenshotProxy::new(&connection)?;
 //!     let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;

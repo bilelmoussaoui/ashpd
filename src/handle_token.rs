@@ -3,7 +3,7 @@ use zvariant_derive::Type;
 
 #[derive(Debug, Serialize, Deserialize, Type)]
 /// A handle token is a DBus Object Path element, specified in the [`RequestProxy`] or [`SessionProxy`]
-/// object path following this format ` /org/freedesktop/portal/desktop/request/SENDER/TOKEN`
+/// object path following this format `/org/freedesktop/portal/desktop/request/SENDER/TOKEN`
 /// where sender is the caller's unique name and token is the HandleToken.
 ///
 /// A valid object path element must only contain the ASCII characters "[A-Z][a-z][0-9]_"
@@ -18,6 +18,9 @@ use zvariant_derive::Type;
 ///
 /// assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
 /// ```
+///
+/// [`SessionProxy`]: ../session/struct.SessionProxy.html
+/// [`RequestProxy`]: ../request/struct.RequestProxy.html
 pub struct HandleToken(String);
 
 #[derive(Debug)]

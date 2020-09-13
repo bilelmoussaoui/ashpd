@@ -38,7 +38,7 @@
 //! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
-//! fn main() -> zbus::fdo::Result<()> {
+//! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = WallpaperProxy::new(&connection)?;
 //!
