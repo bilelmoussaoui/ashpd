@@ -1,3 +1,34 @@
+//! # Examples
+//!
+//! ```
+//! use libportal::documents::file_transfer::{FileTransferProxy, TransferOptions};
+//! use zbus::{fdo::Result, Connection};
+//! use std::collections::HashMap;
+//! use zvariant::Fd;
+//! use std::fs::File;
+//! use std::os::unix::io::AsRawFd;
+//!
+//! fn main() -> Result<()> {
+//!     let connection = Connection::new_session()?;
+//!     let proxy = FileTransferProxy::new(&connection)?;
+//!
+//!     let key = proxy.start_transfer(
+//!         TransferOptions::default()
+//!             .writeable(true)
+//!             .autostop(true)
+//!     )?;
+//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     proxy.add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new())?;
+//!
+//!     // The files would be retrieved by another process
+//!     let files = proxy.retrieve_files(&key, HashMap::new())?;
+//!     println!("{:#?}", files);
+//!
+//!     proxy.stop_transfer(&key)?;
+//!
+//!     Ok(())
+//! }
+//! ```
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Value};
