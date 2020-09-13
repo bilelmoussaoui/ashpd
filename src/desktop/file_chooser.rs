@@ -3,7 +3,7 @@
 //! Opening a file
 //! ```no_run
 //! use ashpd::desktop::file_chooser::{
-//!     Choice, FileChooserProxy, FileFilter, FilterType, SelectedFiles, OpenFileOptions,
+//!     Choice, FileChooserProxy, FileFilter, SelectedFiles, OpenFileOptions,
 //! };
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
@@ -21,12 +21,12 @@
 //!             .multiple(true)
 //!             .choice(
 //!                 Choice::new("encoding", "Encoding", "latin15")
-//!                     .add("utf8", "Unicode (UTF-8)")
-//!                     .add("latin15", "Western"),
+//!                     .insert("utf8", "Unicode (UTF-8)")
+//!                     .insert("latin15", "Western"),
 //!             )
 //!             // A trick to have a checkbox
 //!             .choice(Choice::new("re-encode", "Re-encode", "false"))
-//!             .filter(FileFilter::new("SVG Image").add(FilterType::MimeType, "image/svg+xml")),
+//!             .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
@@ -42,7 +42,7 @@
 //!
 //! ```no_run
 //! use ashpd::desktop::file_chooser::{
-//!     FileChooserProxy, FileFilter, FilterType, SelectedFiles, SaveFileOptions,
+//!     FileChooserProxy, FileFilter, SelectedFiles, SaveFileOptions,
 //! };
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
@@ -58,7 +58,7 @@
 //!             .accept_label("write")
 //!             .current_name("image.jpg")
 //!             .modal(true)
-//!             .filter(FileFilter::new("JPEG Image").add(FilterType::GlobPattern, "*.jpg")),
+//!             .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
@@ -110,7 +110,7 @@ pub struct FileFilter(String, Vec<(FilterType, String)>);
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
-pub enum FilterType {
+enum FilterType {
     GlobPattern = 0,
     MimeType = 1,
 }
@@ -120,8 +120,13 @@ impl FileFilter {
         Self(label.to_string(), vec![])
     }
 
-    pub fn add(mut self, filter_type: FilterType, filter: &str) -> Self {
-        self.1.push((filter_type, filter.to_string()));
+    pub fn mimetype(mut self, mimetype: &str) -> Self {
+        self.1.push((FilterType::MimeType, mimetype.to_string()));
+        self
+    }
+
+    pub fn glob(mut self, pattern: &str) -> Self {
+        self.1.push((FilterType::GlobPattern, pattern.to_string()));
         self
     }
 }
@@ -139,7 +144,7 @@ impl Choice {
         )
     }
 
-    pub fn add(mut self, key: &str, value: &str) -> Self {
+    pub fn insert(mut self, key: &str, value: &str) -> Self {
         self.2.push((key.to_string(), value.to_string()));
         self
     }
