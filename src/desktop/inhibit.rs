@@ -9,7 +9,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a create inhibit monitor request.
 pub struct CreateMonitorOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
     pub session_handle_token: Option<HandleToken>,
@@ -30,7 +30,7 @@ impl CreateMonitorOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options of an inhibit request.
 pub struct InhibitOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// User-visible reason for the inhibition.
     pub reason: Option<String>,

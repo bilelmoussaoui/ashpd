@@ -3,7 +3,7 @@
 //! ```no_run
 //! use zbus;
 //! use zvariant::Fd;
-//! use libportal::desktop::trash::{TrashProxy, TrashStatus};
+//! use ashpd::desktop::trash::{TrashProxy, TrashStatus};
 //! use zbus::fdo::Result;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;

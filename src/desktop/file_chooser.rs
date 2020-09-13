@@ -2,10 +2,10 @@
 //!
 //! Opening a file
 //! ```no_run
-//! use libportal::desktop::file_chooser::{
+//! use ashpd::desktop::file_chooser::{
 //!     Choice, FileChooserProxy, FileFilter, FilterType, SelectedFiles, OpenFileOptions,
 //! };
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
@@ -41,10 +41,10 @@
 //! Ask to save a file
 //!
 //! ```no_run
-//! use libportal::desktop::file_chooser::{
+//! use ashpd::desktop::file_chooser::{
 //!     FileChooserProxy, FileFilter, FilterType, SelectedFiles, SaveFileOptions,
 //! };
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
@@ -72,8 +72,8 @@
 //!
 //! Ask to save multiple files
 //! ```no_run
-//! use libportal::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions, SelectedFiles};
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions, SelectedFiles};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
@@ -160,7 +160,7 @@ impl Choice {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a open file request.
 pub struct OpenFileOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
@@ -223,7 +223,7 @@ impl OpenFileOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a save file request.
 pub struct SaveFileOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,
@@ -293,7 +293,7 @@ impl SaveFileOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a save files request.
 pub struct SaveFilesOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
     pub accept_label: Option<String>,

@@ -1,5 +1,5 @@
 //! ```no_run
-//! use libportal::desktop::settings::SettingsProxy;
+//! use ashpd::desktop::settings::SettingsProxy;
 //! use zbus::{self, fdo::Result};
 //!
 //! fn main() -> Result<()> {

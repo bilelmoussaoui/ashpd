@@ -1,42 +1,42 @@
-/// Interact with `org.freedesktop.portal.Account` interface.
+/// Request access to the current logged user information such as the id, name or their avatar uri.
 pub mod account;
-/// Interact with `org.freedesktop.portal.Background` interface.
+/// Request running an application in the background.
 pub mod background;
-/// Interact with `org.freedesktop.portal.Camera` interface.
+/// Check if a camera is available, request access to it and open a pipewire remote stream.
 pub mod camera;
-/// Interact with `org.freedesktop.portal.Device` interface.
+/// Request access to specific devices such as camera, speakers or microphone.
 pub mod device;
-/// Interact with `org.freedesktop.portal.Email` interface.
+/// Compose an email.
 pub mod email;
-/// Interact with `org.freedesktop.portal.FileChooser` interface.
+/// Open/Save file(s) chooser.
 pub mod file_chooser;
-/// Interact with `org.freedesktop.portal.GameMode` interface.
+/// Enable/Disable/Query the status of Game Mode.
 pub mod game_mode;
-/// Interact with `org.freedesktop.portal.Inhibit` interface.
+/// Inhibit the session from being restarted or the user from logging out.
 pub mod inhibit;
-/// Interact with `org.freedesktop.portal.Location` interface.
+/// Query the user's GPS location.
 pub mod location;
-/// Interact with `org.freedesktop.portal.MemoryMonitor` interface.
+/// Monitor memory level.
 pub mod memory_monitor;
-/// Interact with `org.freedesktop.portal.NetworkMonitor` interface.
+/// Check the status of the network on a user's machine.
 pub mod network_monitor;
-/// Interact with `org.freedesktop.portal.Notification` interface.
+/// Send/withdraw notifications.
 pub mod notification;
-/// Interact with `org.freedesktop.portal.OpenURI` interface.
+/// Open a file or a directory.
 pub mod open_uri;
-/// Interact with `org.freedesktop.portal.Print` interface.
+/// Print a docucment.
 pub mod print;
-/// Interact with `org.freedesktop.portal.RemoteDesktop` interface.
+/// Start a remote desktop session and interact with it.
 pub mod remote_desktop;
-/// Interact with `org.freedesktop.portal.ScreenCast` interface.
+/// Start a screencast session and get the pipewire remote of it.
 pub mod screencast;
-/// Interact with `org.freedesktop.portal.Screenshot` interface.
+/// Take a screenshot or pick a color.
 pub mod screenshot;
-/// Interact with `org.freedesktop.portal.Secret` interface.
+/// Retrieve a per-application secret used to encrypt confedential data inside the sandbox.
 pub mod secret;
-/// Interact with `org.freedesktop.portal.Settings` interface.
+/// Read & listen to system settings changes.
 pub mod settings;
-/// Interact with `org.freedesktop.portal.Trash` interface.
+/// Move a file to the trash.
 pub mod trash;
-/// Interact with `org.freedesktop.portal.Wallpaper` interface.
+/// Set a wallpaper on lockscreen, background or both.
 pub mod wallpaper;

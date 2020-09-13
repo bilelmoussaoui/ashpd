@@ -4,12 +4,12 @@
 //! Only available for Flatpak applications.
 //!
 //! ```no_run
-//! use libportal::flatpak::update_monitor::{
+//! use ashpd::flatpak::update_monitor::{
 //!     UpdateInfo, UpdateMonitorProxy, UpdateOptions, UpdateProgress,
 //! };
-//! use libportal::flatpak::{CreateMonitorOptions, FlatpakProxy};
-//! use libportal::zbus::{fdo::Result, Connection};
-//! use libportal::WindowIdentifier;
+//! use ashpd::flatpak::{CreateMonitorOptions, FlatpakProxy};
+//! use zbus::{fdo::Result, Connection};
+//! use ashpd::WindowIdentifier;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;

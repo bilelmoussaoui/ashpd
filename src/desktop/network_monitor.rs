@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::network_monitor::NetworkMonitorProxy;
+//! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

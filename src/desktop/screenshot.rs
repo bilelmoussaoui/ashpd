@@ -3,8 +3,8 @@
 //! Taking a screenshot
 //!
 //! ```no_run
-//! use libportal::desktop::screenshot::{Screenshot, ScreenshotOptions, ScreenshotProxy};
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::desktop::screenshot::{Screenshot, ScreenshotOptions, ScreenshotProxy};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -26,8 +26,8 @@
 //!
 //! Picking a color
 //!```no_run
-//! use libportal::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -58,7 +58,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a screenshot request.
 pub struct ScreenshotOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// Whether the dialog should be modal.
     pub modal: Option<bool>,
@@ -91,7 +91,7 @@ pub struct Screenshot {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a pick color request.
 pub struct PickColorOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
 }
 
@@ -121,7 +121,7 @@ impl Color {
     }
 }
 
-#[cfg(feature = "feature_gdk")]
+#[cfg(feature = "gdk_color")]
 impl Into<gdk::RGBA> for &Color {
     fn into(self) -> gdk::RGBA {
         gdk::RGBA {

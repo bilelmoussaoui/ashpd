@@ -1,10 +1,10 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::background::{
+//! use ashpd::desktop::background::{
 //!     BackgroundOptions, BackgroundProxy, Background,
 //! };
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

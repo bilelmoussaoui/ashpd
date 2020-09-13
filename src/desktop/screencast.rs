@@ -4,11 +4,11 @@
 //! The portal is currently useless without pipewire & rust support.
 //!
 //! ```no_run
-//! use libportal::desktop::screencast::{
+//! use ashpd::desktop::screencast::{
 //!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
 //! };
-//! use libportal::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
 //! use zbus::{self, fdo::Result};
 //! use zvariant::ObjectPath;
 //! use enumflags2::BitFlags;
@@ -23,7 +23,7 @@
 //!         session_handle.clone(),
 //!         SelectSourcesOptions::default()
 //!             .multiple(true)
-//!            .cursor_mode(BitFlags::from(CursorMode::Metadata))
+//!             .cursor_mode(BitFlags::from(CursorMode::Metadata))
 //!             .types(SourceType::Monitor | SourceType::Window),
 //!     )?;
 //!
@@ -60,8 +60,12 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = ScreenCastProxy::new(&connection)?;
 //!
-//!     let request_handle =
-//!         proxy.create_session(CreateSessionOptions::default().session_handle_token(HandleToken::try_from("token").unwrap()))?;
+//!     let session_token = HandleToken::try_from("session120").unwrap();
+//!
+//!     let request_handle = proxy.create_session(
+//!         CreateSessionOptions::default()
+//!             .session_handle_token(session_token)
+//!     )?;
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
 //!
 //!     request.on_response(|r: Response<CreateSession>| {
@@ -104,7 +108,7 @@ pub enum CursorMode {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a create a screencast session request.
 pub struct CreateSessionOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
     pub session_handle_token: Option<HandleToken>,
@@ -125,7 +129,7 @@ impl CreateSessionOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
     /// What types of content to record.
     pub types: Option<BitFlags<SourceType>>,
@@ -160,7 +164,7 @@ impl SelectSourcesOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a start screencast request.
 pub struct StartCastOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
 }
 

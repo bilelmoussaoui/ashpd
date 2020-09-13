@@ -1,7 +1,12 @@
-//! libportal, the portal gun getting oxedized, the Rust wrapper for the XDG portals DBus interfaces.
+//! ASHPD, accronym of Aperture Science Handheld Portal Device is a Rust & zbus wrapper of
+//! the XDG portals DBus interfaces. The library aims to provide an easy way to
+//! interact with the various portals per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html)
+//!
+//! It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
+//!
 //! ```no_run
-//! use libportal::desktop::screenshot::{ScreenshotProxy, PickColorOptions};
-//! use libportal::WindowIdentifier;
+//! use ashpd::desktop::screenshot::{ScreenshotProxy, PickColorOptions};
+//! use ashpd::WindowIdentifier;
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -11,19 +16,24 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//!
+//! # Optional features
+//!
+//! | Feature | Description |
+//! | ---     | ----------- |
+//! | gdk_color | Implement `Into<gdk::RGBA>` for [`Color`] |
+//!
+//!
+//! [`Color`]: ./desktop/screenshot/struct.Color.html
+//!
 
-/// Implementation of the various portals under `/org/freedesktop/portal/desktop`
+/// Interact with the user's desktop such as taking a screenshot, setting a background or quering the user's location.
 pub mod desktop;
-/// Implementation of the various portals under `/org/freedesktop/portal/documents`
+/// Interact with the documents store or transfer files across apps.
 pub mod documents;
-/// Implementation of the various portals under `/org/freedesktop/portal/Flatpak`
+/// Spawn commands outside the sandbox or monitor if the running application has received an update & install it.
 pub mod flatpak;
-///! # libportal
-///!
-///! libportal is a Rust wrapper around the XDG Portals DBus interfaces
-///! Specifications: [https://flatpak.github.io/xdg-desktop-portal/portal-docs.html](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html)
-///! C alternative: [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
-///!
 mod handle_token;
 mod helper;
 mod request;

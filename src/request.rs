@@ -5,14 +5,19 @@ use zbus::{fdo::DBusProxy, fdo::Result, Connection};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
+/// A typical response returned by the `on_response` signal of a `RequestProxy`.
 pub type Response<T> = std::result::Result<T, ResponseError>;
 
 #[derive(Debug, Serialize, Deserialize, Type)]
+/// The most basic response. Used when only the status of the request is what we receive as a response.
 pub struct BasicResponse(HashMap<String, OwnedValue>);
 
 #[derive(Debug)]
+/// An error returned a portal request caused by either the user cancelling the request or something else.
 pub enum ResponseError {
+    /// The user canceled the request.
     Cancelled,
+    /// Something else happened.
     Other,
 }
 

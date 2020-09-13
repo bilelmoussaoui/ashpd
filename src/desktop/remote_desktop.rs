@@ -73,7 +73,7 @@ impl SelectDevicesOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a start remote desktop request.
 pub struct StartRemoteOptions {
-    /// A string that will be used as the last element of the handle. Must be a valid object path element.
+    /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
 }
 

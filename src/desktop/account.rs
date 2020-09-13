@@ -1,8 +1,8 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::account::{AccountProxy, UserInfoOptions, UserInfo};
-//! use libportal::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::desktop::account::{AccountProxy, UserInfoOptions, UserInfo};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

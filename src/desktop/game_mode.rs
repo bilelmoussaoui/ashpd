@@ -1,5 +1,5 @@
 //! ```no_run
-//! use libportal::desktop::game_mode::{GameModeProxy, GameModeStatus};
+//! use ashpd::desktop::game_mode::{GameModeProxy, GameModeStatus};
 //! use zbus::{self, fdo::Result};
 //!
 //! fn main() -> Result<()> {

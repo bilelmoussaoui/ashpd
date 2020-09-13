@@ -9,7 +9,7 @@ use zvariant_derive::Type;
 /// A valid object path element must only contain the ASCII characters "[A-Z][a-z][0-9]_"
 ///
 /// ```
-/// use libportal::HandleToken;
+/// use ashpd::HandleToken;
 /// use std::convert::TryFrom;
 ///
 /// assert_eq!(HandleToken::try_from("token").is_ok(), true);

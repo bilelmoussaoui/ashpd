@@ -3,8 +3,8 @@
 //! Open a file
 //!
 //! ```no_run
-//! use libportal::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
+//! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
+//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use zbus::{self, fdo::Result};
 //! use zvariant::Fd;
 //! use std::fs::File;
@@ -34,10 +34,9 @@
 //! Open a file from a URI
 //!
 //! ```no_run
-//! use libportal::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use libportal::zbus;
-//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
+//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
+//! use zbus::{self, fdo::Result};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;

@@ -4,8 +4,8 @@
 //!
 //! ```no_run
 //! use enumflags2::BitFlags;
-//! use libportal::flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions};
-//! use libportal::zbus::{fdo::Result, Connection};
+//! use ashpd::flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions};
+//! use zbus::{fdo::Result, Connection};
 //! use std::collections::HashMap;
 //!
 //! fn main() -> Result<()> {

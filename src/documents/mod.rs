@@ -2,8 +2,8 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::documents::{DocumentsProxy, Permission};
-//! use libportal::zbus::{fdo::Result, Connection};
+//! use ashpd::documents::{DocumentsProxy, Permission};
+//! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;

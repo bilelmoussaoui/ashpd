@@ -3,8 +3,8 @@
 //! Access a [`Device`]
 //!
 //! ```no_run
-//! use libportal::desktop::device::{DeviceProxy, AccessDeviceOptions, Device};
-//! use libportal::{RequestProxy, BasicResponse as Basic, Response};
+//! use ashpd::desktop::device::{DeviceProxy, AccessDeviceOptions, Device};
+//! use ashpd::{RequestProxy, BasicResponse as Basic, Response};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

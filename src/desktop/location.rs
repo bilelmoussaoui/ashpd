@@ -1,10 +1,10 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::location::{
+//! use ashpd::desktop::location::{
 //!     LocationAccessOptions, LocationProxy, LocationStartOptions,
 //! };
-//! use libportal::{
+//! use ashpd::{
 //!     HandleToken, RequestProxy, Response,
 //!     BasicResponse as Basic, WindowIdentifier,
 //! };

@@ -1,9 +1,9 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
-//! use libportal::zbus;
-//! use libportal::zvariant::Value;
+//! use ashpd::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
+//! use zbus::{self, fdo::Result};
+//! use zvariant::Value;
 //! use std::{thread, time};
 //!
 //! fn main() -> Result<()> {

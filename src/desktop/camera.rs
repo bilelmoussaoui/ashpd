@@ -1,8 +1,8 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::camera::{CameraProxy, CameraAccessOptions};
-//! use libportal::{BasicResponse as Basic, Response, RequestProxy};
+//! use ashpd::desktop::camera::{CameraProxy, CameraAccessOptions};
+//! use ashpd::{BasicResponse as Basic, Response, RequestProxy};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

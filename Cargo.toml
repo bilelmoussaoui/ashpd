@@ -1,16 +1,16 @@
 [package]
-name = "libportal"
+name = "ashpd"
 version = "0.1.0"
-description = "xdg-desktop-portal implementation"
+description = "XDG portals wrapper in Rust using zbus"
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
 edition = "2018"
-repository = "https://github.com/bilelmoussaoui/libportal-rs"
+repository = "https://github.com/bilelmoussaoui/ashpd"
 exclude = ["interfaces/*.xml"]
 keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
 
 [features]
-color = ["gdk"]
+gdk_color = ["gdk"]
 
 
 [dependencies]

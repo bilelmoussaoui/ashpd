@@ -3,8 +3,8 @@
 //! Sets a wallpaper from a file:
 //!
 //! ```no_run
-//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
-//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
+//! use ashpd::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
+//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zbus::fdo::Result;
@@ -34,8 +34,8 @@
 //! Sets a wallpaper from a URI:
 //!
 //! ```no_run
-//! use libportal::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
-//! use libportal::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
+//! use ashpd::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
+//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

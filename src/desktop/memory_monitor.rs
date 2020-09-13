@@ -1,8 +1,8 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libportal::desktop::memory_monitor::MemoryMonitorProxy;
-//! use libportal::zbus::{self, fdo::Result};
+//! use ashpd::desktop::memory_monitor::MemoryMonitorProxy;
+//! use zbus::{self, fdo::Result};
 //!
 //!
 //! fn main() -> Result<()> {
