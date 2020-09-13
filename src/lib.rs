@@ -1,6 +1,6 @@
-//! ASHPD, accronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus) wrapper of
+//! ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus) wrapper of
 //! the XDG portals DBus interfaces. The library aims to provide an easy way to
-//! interact with the various portals per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
+//! interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
 //!
 //! It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal).
 //!
@@ -27,18 +27,20 @@
 //!    })?;
 //!
 //!    Ok(())
-//!}
+//! }
 //! ```
 //!
-//! # Optional features
+//! ## Optional features
 //!
 //! | Feature | Description |
 //! | ---     | ----------- |
 //! | gdk_color | Implement `Into<gdk::RGBA>` for [`Color`] |
 //!
+//!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
+//!
 
-/// Interact with the user's desktop such as taking a screenshot, setting a background or quering the user's location.
+/// Interact with the user's desktop such as taking a screenshot, setting a background or querying the user's location.
 pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;

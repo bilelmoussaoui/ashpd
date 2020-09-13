@@ -8,9 +8,9 @@ pub mod camera;
 pub mod device;
 /// Compose an email.
 pub mod email;
-/// Open/Save file(s) chooser.
+/// Open/save file(s) chooser.
 pub mod file_chooser;
-/// Enable/Disable/Query the status of Game Mode.
+/// Enable/disable/query the status of Game Mode.
 pub mod game_mode;
 /// Inhibit the session from being restarted or the user from logging out.
 pub mod inhibit;

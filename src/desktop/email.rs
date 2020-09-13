@@ -8,19 +8,19 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 pub struct EmailOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
-    /// The email address to send to
+    /// The email address to send to.
     pub address: Option<String>,
-    // The email adresses to send to
+    // The email addresses to send to.
     pub addresses: Option<Vec<String>>,
-    // The email adresses to CC
+    // The email addresses to CC.
     pub cc: Option<Vec<String>>,
-    // The email adresses to BCC
+    // The email addresses to BCC.
     pub bcc: Option<Vec<String>>,
-    /// The subject of the email
+    /// The subject of the email.
     pub subject: Option<String>,
-    /// The body of the email
+    /// The body of the email.
     pub body: Option<String>,
-    /// A list of file descriptors of files to attach
+    /// A list of file descriptors of files to attach.
     pub attachment_fds: Option<Vec<Fd>>,
 }
 
@@ -60,11 +60,11 @@ impl EmailOptions {
         self
     }
 
-    pub fn attach(mut self, attachement: Fd) -> Self {
+    pub fn attach(mut self, attachment: Fd) -> Self {
         match self.attachment_fds {
-            Some(ref mut attachements) => attachements.push(attachement),
+            Some(ref mut attachments) => attachments.push(attachment),
             None => {
-                self.attachment_fds.replace(vec![attachement]);
+                self.attachment_fds.replace(vec![attachment]);
             }
         };
         self

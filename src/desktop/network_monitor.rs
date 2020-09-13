@@ -75,7 +75,7 @@ trait NetworkMonitor {
     fn get_connectivity(&self) -> Result<Connectivity>;
 
     /// Returns whether the network is considered metered.
-    /// That is, whether the system as traffic flowing through the default connection that is subject ot limitations by service providers.
+    /// That is, whether the system as traffic flowing through the default connection that is subject to limitations by service providers.
     fn get_metered(&self) -> Result<bool>;
 
     /// Returns the three values all at once.

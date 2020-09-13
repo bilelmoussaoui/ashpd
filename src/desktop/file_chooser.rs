@@ -25,7 +25,7 @@
 //!                     .add("latin15", "Western"),
 //!             )
 //!             // A trick to have a checkbox
-//!             .choice(Choice::new("reencode", "Reencode", "false"))
+//!             .choice(Choice::new("re-encode", "Re-encode", "false"))
 //!             .filter(FileFilter::new("SVG Image").add(FilterType::MimeType, "image/svg+xml")),
 //!     )?;
 //!

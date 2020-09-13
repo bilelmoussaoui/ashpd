@@ -18,7 +18,7 @@
 //!     match proxy.trash_file(Fd::from(file.as_raw_fd()))? {
 //!         TrashStatus::Succeeded => println!("the file was removed!"),
 //!         TrashStatus::Failed => println!("oof, couldn't remove the file"),
-//!         _ => println!("something else happenned"),
+//!         _ => println!("something else happened"),
 //!     };
 //!
 //!     Ok(())

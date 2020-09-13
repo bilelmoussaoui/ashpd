@@ -118,7 +118,7 @@ trait GameMode {
     ///
     /// # Arguments
     ///
-    /// * `target` - Proccess file descriptor of the game to register.
+    /// * `target` - Process file descriptor of the game to register.
     /// * `requester` - Process file descriptor of the process requesting the registration.
     #[dbus_proxy(name = "RegisterGameByPIDFd")]
     fn register_game_by_pidfd(&self, target: Fd, requester: Fd) -> Result<RegisterStatus>;

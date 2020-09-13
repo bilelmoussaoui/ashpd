@@ -17,7 +17,7 @@ pub enum KeyState {
 #[repr(u32)]
 pub enum DeviceType {
     Keyboard = 1,
-    Pointeur = 2,
+    Pointer = 2,
     Touchscreen = 4,
 }
 

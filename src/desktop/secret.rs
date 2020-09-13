@@ -30,7 +30,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a retrieve secret request.
 pub struct RetrieveOptions {
-    /// A string returned by a pervious call to `retrieve_secret`
+    /// A string returned by a previous call to `retrieve_secret`
     pub token: Option<String>,
 }
 
