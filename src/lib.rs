@@ -36,7 +36,6 @@
 //! | ---     | ----------- |
 //! | gdk_color | Implement `Into<gdk::RGBA>` for [`Color`] |
 //!
-//!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
 
 /// Interact with the user's desktop such as taking a screenshot, setting a background or quering the user's location.
