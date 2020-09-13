@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```
+//! ```no_run
 //! use libportal::documents::file_transfer::{FileTransferProxy, TransferOptions};
 //! use zbus::{fdo::Result, Connection};
 //! use std::collections::HashMap;
