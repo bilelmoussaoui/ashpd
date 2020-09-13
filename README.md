@@ -1,6 +1,41 @@
-# ashpd
+# ASHPD
+
 [![](https://docs.rs/ashpd/badge.svg)](https://docs.rs/ashpd/) [![](https://img.shields.io/crates/v/ashpd)](https://crates.io/crates/ashpd) ![](https://github.com/bilelmoussaoui/ashpd/workflows/CI/badge.svg)
 
-xdg-desktop-portal wrapper using Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus). It's an equivalent of the C wrapper [libportal](https://github.com/flatpak/libportal)
+ASHPD, accronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus) wrapper of
+the XDG portals DBus interfaces. The library aims to provide an easy way to
+interact with the various portals per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
+It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
 
-Specificiation: [https://flatpak.github.io/xdg-desktop-portal/portal-docs.html](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html)
+
+```rust
+use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
+use ashpd::{RequestProxy, Response, WindowIdentifier};
+use zbus::fdo::Result;
+
+fn main() -> Result<()> {
+   let connection = zbus::Connection::new_session()?;
+   let proxy = ScreenshotProxy::new(&connection)?;
+   
+   let request_handle = proxy.pick_color(
+            WindowIdentifier::default(),
+            PickColorOptions::default()
+   )?;
+   
+   let request = RequestProxy::new(&connection, &request_handle)?;
+    request.on_response(|response: Response<Color>| {
+        if let Ok(color) = response {
+            println!("({}, {}, {})", color.red(), color.green(), color.blue());
+        }
+   })?;
+   
+   Ok(())
+ }
+```
+
+# Optional features
+| Feature | Description |
+| ---     | ----------- |
+| gdk_color | Implement `Into<gdk::RGBA>` for [`Color`] |
+
+[`Color`]: https://bilelmoussaoui.github.io/ashpd/ashpd/desktop/screenshot/struct.Color.html

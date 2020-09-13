@@ -1,22 +1,34 @@
-//! ASHPD, accronym of Aperture Science Handheld Portal Device is a Rust & zbus wrapper of
+//! ASHPD, accronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus) wrapper of
 //! the XDG portals DBus interfaces. The library aims to provide an easy way to
-//! interact with the various portals per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html)
+//! interact with the various portals per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
 //!
-//! It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
+//! It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal).
 //!
 //! ```no_run
-//! use ashpd::desktop::screenshot::{ScreenshotProxy, PickColorOptions};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
+//! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = ScreenshotProxy::new(&connection)?;
-//!     let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
-//!     Ok(())
-//! }
-//! ```
+//!    let connection = zbus::Connection::new_session()?;
+//!    let proxy = ScreenshotProxy::new(&connection)?;
 //!
+//!    let request_handle = proxy.pick_color(
+//!             WindowIdentifier::default(),
+//!             PickColorOptions::default()
+//!    )?;
+//!
+//!    let request = RequestProxy::new(&connection, &request_handle)?;
+//!
+//!     request.on_response(|response: Response<Color>| {
+//!         if let Ok(color) = response {
+//!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
+//!         }
+//!    })?;
+//!
+//!    Ok(())
+//!}
+//! ```
 //!
 //! # Optional features
 //!
@@ -26,7 +38,6 @@
 //!
 //!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
-//!
 
 /// Interact with the user's desktop such as taking a screenshot, setting a background or quering the user's location.
 pub mod desktop;
