@@ -3,7 +3,7 @@ use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Fd;
+use zvariant::{Fd, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -71,7 +71,7 @@ impl SpawnOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 pub struct CreateMonitorOptions {}
 
 #[dbus_proxy(
@@ -84,7 +84,7 @@ pub struct CreateMonitorOptions {}
 trait Flatpak {
     /// Creates an update monitor object that will emit signals
     /// when an update for the caller becomes available, and can be used to install it.
-    fn create_update_monitor(&self, options: CreateMonitorOptions) -> Result<String>;
+    fn create_update_monitor(&self, options: CreateMonitorOptions) -> Result<OwnedObjectPath>;
 
     /// This methods let you start a new instance of your application, optionally enabling a tighter sandbox.
     ///

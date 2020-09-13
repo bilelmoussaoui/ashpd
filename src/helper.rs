@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use zvariant_derive::Type;
 
-/// Null terminated string, we can't use CString because it doesn't implement Type.
+/// Null terminated string
 #[derive(Serialize, Deserialize, Type)]
 pub struct NString(Vec<u8>);
 
