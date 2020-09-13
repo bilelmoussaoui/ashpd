@@ -1,3 +1,53 @@
+//! # Examples
+//!
+//! How to inhibit logout/user switch
+//!
+//! ```no_run
+//!  use ashpd::desktop::inhibit::{
+//!     CreateMonitorOptions, InhibitFlags, InhibitOptions, InhibitProxy, InhibitState, SessionState,
+//! };
+//! use ashpd::{HandleToken, WindowIdentifier};
+//! use zbus::{self, fdo::Result};
+//!
+//! use std::convert::TryFrom;
+//! use std::{thread, time};
+//!
+//! fn main() -> Result<()> {
+//!     let connection = zbus::Connection::new_session()?;
+//!     let c = connection.clone();
+//!
+//!     let proxy = InhibitProxy::new(&c)?;
+//!
+//!     let session_token = HandleToken::try_from("sessiontoken").unwrap();
+//!
+//!     proxy.create_monitor(
+//!         WindowIdentifier::default(),
+//!         CreateMonitorOptions::default().session_handle_token(session_token),
+//!     )?;
+//!
+//!     proxy.on_state_changed(move |proxy, state: InhibitState| -> Result<()> {
+//!         match state.session_state() {
+//!             SessionState::Running => (),
+//!             SessionState::QueryEnd => {
+//!
+//!                 proxy.inhibit(
+//!                     WindowIdentifier::default(),
+//!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
+//!                     InhibitOptions::default().reason("please save the opened project first."),
+//!                 )?;
+//!
+//!                 thread::sleep(time::Duration::from_secs(1));
+//!                 proxy.query_end_response(state.session_handle().into())?;
+//!             }
+//!             SessionState::Ending => {
+//!                 println!("ending the session");
+//!             }
+//!         }
+//!         Ok(())
+//!     })?;
+//!     Ok(())
+//! }
+//! ```
 use crate::{HandleToken, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
