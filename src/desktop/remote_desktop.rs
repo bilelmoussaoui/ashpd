@@ -1,7 +1,87 @@
+//! # Examples
+//!
+//! ```no_run
+//! use ashpd::desktop::remote_desktop::{
+//!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy, SelectDevices,
+//!     SelectDevicesOptions, StartRemoteOptions,
+//! };
+//! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
+//! use zbus::{fdo::Result, Connection};
+//! use zvariant::ObjectPath;
+//! use std::collections::HashMap;
+//! use std::convert::TryFrom;
+//!
+//! fn select_devices(
+//!     handle: ObjectPath,
+//!     connection: &Connection,
+//!     proxy: &RemoteDesktopProxy,
+//! ) -> Result<()> {
+//!     let request_handle = proxy.select_devices(
+//!         handle.clone(),
+//!         SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|r: Response<Basic>| {
+//!         if r.is_ok() {
+//!             start_remote(handle, connection, proxy).unwrap();
+//!         }
+//!     })?;
+//!
+//!     Ok(())
+//! }
+//!
+//! fn start_remote(
+//!     handle: ObjectPath,
+//!     connection: &Connection,
+//!     proxy: &RemoteDesktopProxy,
+//! ) -> Result<()> {
+//!     let request_handle = proxy.start(
+//!         handle.clone(),
+//!         WindowIdentifier::default(),
+//!         StartRemoteOptions::default(),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     request.on_response(|r: Response<SelectDevices>| {
+//!         proxy
+//!             .notify_keyboard_keycode(
+//!                 handle.clone(),
+//!                 HashMap::new(),
+//!                 13, // Enter key code
+//!                 KeyState::Pressed,
+//!             )
+//!             .unwrap();
+//!
+//!         println!("{:#?}", r.unwrap().devices);
+//!     })?;
+//!
+//!     Ok(())
+//! }
+//!
+//! fn main() -> Result<()> {
+//!     let connection = Connection::new_session()?;
+//!     let proxy = RemoteDesktopProxy::new(&connection)?;
+//!
+//!     let handle = proxy.create_session(
+//!         CreateRemoteOptions::default()
+//!             .session_handle_token(HandleToken::try_from("token").unwrap()),
+//!     )?;
+//!
+//!     let request = RequestProxy::new(&connection, &handle)?;
+//!     request.on_response(|r: Response<CreateSession>| {
+//!         let session = r.unwrap();
+//!         select_devices(session.handle(), &connection, &proxy).unwrap();
+//!     })?;
+//!
+//!     Ok(())
+//! }
+//! ```
 use crate::{HandleToken, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -50,6 +130,18 @@ impl CreateRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+pub struct CreateSession {
+    /// A string that will be used as the last element of the session handle.
+    session_handle: String,
+}
+
+impl CreateSession {
+    pub fn handle(&self) -> ObjectPath {
+        ObjectPath::try_from(self.session_handle.clone()).unwrap()
+    }
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a select devices request.
 pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
@@ -82,6 +174,11 @@ impl StartRemoteOptions {
         self.handle_token = Some(handle_token);
         self
     }
+}
+
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+pub struct SelectDevices {
+    pub devices: BitFlags<DeviceType>,
 }
 
 #[dbus_proxy(
