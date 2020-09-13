@@ -23,9 +23,11 @@ pub mod flatpak;
 ///! Specifications: [https://flatpak.github.io/xdg-desktop-portal/portal-docs.html](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html)
 ///! C alternative: [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
 ///!
+mod helper;
 mod request;
 mod session;
 mod window_identifier;
+pub use self::helper::NString;
 pub use self::request::{BasicResponse, RequestProxy, Response, ResponseError};
 pub use self::session::SessionProxy;
 pub use self::window_identifier::WindowIdentifier;

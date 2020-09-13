@@ -98,6 +98,7 @@
 //!     Ok(())
 //! }
 //! ```
+use crate::NString;
 use crate::WindowIdentifier;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -232,9 +233,9 @@ pub struct SaveFileOptions {
     /// Suggested filename.
     pub current_name: Option<String>,
     /// Suggested folder to save the file in.
-    pub current_folder: Option<Vec<u8>>,
+    pub current_folder: Option<NString>,
     /// The current file (when saving an existing file).
-    pub current_file: Option<Vec<u8>>,
+    pub current_file: Option<NString>,
     /// List of serialized file filters.
     pub filters: Vec<FileFilter>,
     /// Request that this filter be set by default at dialog creation.
@@ -260,18 +261,12 @@ impl SaveFileOptions {
     }
 
     pub fn current_folder(mut self, current_folder: &str) -> Self {
-        let mut current_folder: Vec<u8> = current_folder.into();
-        current_folder.push(0); // null terminated
-
-        self.current_folder = Some(current_folder);
+        self.current_folder = Some(current_folder.into());
         self
     }
 
     pub fn current_file(mut self, current_file: &str) -> Self {
-        let mut current_file: Vec<u8> = current_file.into();
-        current_file.push(0); // null terminated
-
-        self.current_file = Some(current_file);
+        self.current_file = Some(current_file.into());
         self
     }
 
@@ -308,9 +303,9 @@ pub struct SaveFilesOptions {
     /// List of serialized combo boxes to add to the file chooser
     pub choices: Vec<Choice>,
     /// Suggested folder to save the file in.
-    pub current_folder: Option<Vec<u8>>,
+    pub current_folder: Option<NString>,
     /// An array of file names to be saved.
-    pub files: Option<Vec<Vec<u8>>>,
+    pub files: Option<Vec<NString>>,
 }
 
 impl SaveFilesOptions {
@@ -335,10 +330,7 @@ impl SaveFilesOptions {
     }
 
     pub fn current_folder(mut self, current_folder: &str) -> Self {
-        let mut current_folder: Vec<u8> = current_folder.into();
-        current_folder.push(0); // null terminated
-
-        self.current_folder = Some(current_folder);
+        self.current_folder = Some(current_folder.into());
         self
     }
 
@@ -346,12 +338,8 @@ impl SaveFilesOptions {
         self.files = Some(
             files
                 .into_iter()
-                .map(|f| {
-                    let mut u: Vec<u8> = f.into();
-                    u.push(0); // null terminated
-                    u
-                })
-                .collect::<Vec<Vec<u8>>>(),
+                .map(|f| f.into())
+                .collect::<Vec<NString>>(),
         );
         self
     }

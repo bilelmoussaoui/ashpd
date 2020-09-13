@@ -1,10 +1,12 @@
+use crate::NString;
 use enumflags2::BitFlags;
-use serde::{Deserialize, Serialize};
+use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
-use strum_macros::EnumString;
+use std::str::FromStr;
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Fd;
+use zvariant::{Fd, Signature};
 use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -16,18 +18,41 @@ pub enum Flags {
     ExportDirectory = 8,
 }
 
-/// * `flags` - 1 == reuse_existing, 2 == persistent, 4 == as-needed-by-app, 8 = export directory
 /// A `HashMap` mapping application IDs to the permissions for that application
-pub type Permissions = HashMap<String, Vec<String>>;
+pub type Permissions = HashMap<String, Vec<Permission>>;
 
-#[derive(Debug, Clone, Serialize, Deserialize, EnumString, PartialEq, Eq, Type)]
+#[derive(Debug, Clone, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq)]
 #[strum(serialize_all = "lowercase")]
 pub enum Permission {
     Read,
     Write,
     #[strum(serialize = "grant-permissions")]
     GrantPermissions,
-    Delte,
+    Delete,
+}
+
+impl zvariant::Type for Permission {
+    fn signature() -> Signature<'static> {
+        Signature::from_string_unchecked("s".to_string())
+    }
+}
+
+impl Serialize for Permission {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        String::serialize(&self.to_string(), serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Permission {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(Permission::from_str(&String::deserialize(deserializer)?).expect("invalid permission"))
+    }
 }
 
 #[dbus_proxy(
@@ -79,7 +104,7 @@ trait Documents {
         o_path_fds: &[Fd],
         flags: BitFlags<Flags>,
         app_id: &str,
-        permissions: &[&Permission],
+        permissions: &[Permission],
     ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>)>;
 
     /// Creates an entry in the document store for writing a new file.
@@ -95,7 +120,7 @@ trait Documents {
     fn add_named(
         &self,
         o_path_parent_fd: Fd,
-        filename: &[u8],
+        filename: &NString,
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<String>;
@@ -116,10 +141,10 @@ trait Documents {
     fn add_named_full(
         &self,
         o_path_fd: Fd,
-        filename: &[u8],
+        filename: &NString,
         flags: BitFlags<Flags>,
         app_id: &str,
-        permissions: &[&Permission],
+        permissions: &[Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>)>;
 
     /// Removes an entry from the document store. The file itself is not deleted.
@@ -133,14 +158,21 @@ trait Documents {
 
     /// Returns the path at which the document store fuse filesystem is mounted.
     /// This will typically be /run/user/$UID/doc/.
-    fn get_mount_point(&self) -> Result<Vec<u8>>;
+    fn get_mount_point(&self) -> Result<NString>;
 
-    /// GrantPermissions method
+    /// Grants access permissions for a file in the document store to an application.
+    /// This call is available inside the sandbox if the application has the 'grant-permissions' permission for the document.
+    ///
+    /// # Arguments
+    ///
+    /// * `doc_id` - the ID of the file in the document store.
+    /// * `app_id` - the ID of the application to which permissions are granted.
+    /// * `permissions` - the permissions to grant.
     fn grant_permissions(
         &self,
         doc_id: &str,
         app_id: &str,
-        permissions: &[&Permission],
+        permissions: &[Permission],
     ) -> Result<()>;
 
     /// Gets the filesystem path and application permissions for a document store entry.
@@ -150,7 +182,7 @@ trait Documents {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store
-    fn info(&self, doc_id: &str) -> Result<(Vec<u8>, Permissions)>;
+    fn info(&self, doc_id: &str) -> Result<(NString, Permissions)>;
 
     /// Lists documents in the document store for an application (or for all applications).
     ///
@@ -159,7 +191,7 @@ trait Documents {
     /// # Arguments
     ///
     /// * `app-id` - The application ID, or '' to list all documents
-    fn list(&self, app_id: &str) -> Result<HashMap<String, Vec<u8>>>;
+    fn list(&self, app_id: &str) -> Result<HashMap<String, NString>>;
 
     /// Looks up the document ID for a file.
     /// This call is not available inside the sandbox.
@@ -170,7 +202,7 @@ trait Documents {
     /// # Arguments
     ///
     /// - `filename` - A path in the host filesystem
-    fn lookup(&self, filename: &[u8]) -> Result<String>;
+    fn lookup(&self, filename: NString) -> Result<String>;
 
     /// Revokes access permissions for a file in the document store from an application.
     /// This call is available inside the sandbox if the application
@@ -185,7 +217,7 @@ trait Documents {
         &self,
         doc_id: &str,
         app_id: &str,
-        permissions: &[&Permission],
+        permissions: &[Permission],
     ) -> Result<()>;
 
     /// version property
