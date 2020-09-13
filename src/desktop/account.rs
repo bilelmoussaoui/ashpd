@@ -72,7 +72,7 @@ pub struct UserInfo {
 trait Account {
     /// Gets information about the user.
     ///
-    /// Returns a [`RequestProxy`] handle.
+    /// Returns a [`RequestProxy`] object path..
     ///
     /// # Arguments
     ///

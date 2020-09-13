@@ -14,7 +14,7 @@
 //!     let connection = Connection::new_session()?;
 //!     let proxy = PrintProxy::new(&connection)?;
 //!
-//!     let file = File::open("/home/bilelmoussaoui/devis.pdf").expect("file to print was not found");
+//!     let file = File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
 //!
 //!     let request_handle = proxy
 //!         .print(

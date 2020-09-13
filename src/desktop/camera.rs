@@ -53,7 +53,7 @@ impl CameraAccessOptions {
 trait Camera {
     /// Requests an access to the camera.
     ///
-    /// Returns a [`RequestProxy`] handle.
+    /// Returns a [`RequestProxy`] object path..
     ///
     /// # Arguments
     ///

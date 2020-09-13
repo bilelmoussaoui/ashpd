@@ -95,14 +95,14 @@ trait RemoteDesktop {
     /// A remote desktop session is used to allow remote controlling a desktop session.
     /// It can also be used together with a screen cast session
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
     /// * `options` - A [`CreateRemoteOptions`]
     ///
     /// [`CreateRemoteOptions`]: ./struct.CreateRemoteOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     fn create_session(&self, options: CreateRemoteOptions) -> Result<OwnedObjectPath>;
 
     /// Notify keyboard code
@@ -110,12 +110,14 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `keycode` - Keyboard code that was pressed or released
     /// * `state` - The new state of the keyboard code
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_keyboard_keycode(
         &self,
         session_handle: ObjectPath,
@@ -129,12 +131,14 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `keysym` - Keyboard symbol that was pressed or released
     /// * `state` - The new state of the keyboard code
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_keyboard_keysym(
         &self,
         session_handle: ObjectPath,
@@ -152,12 +156,14 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `dx` - Relative axis movement on the x axis
     /// * `dy` - Relative axis movement on the y axis
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_pointer_axis(
         &self,
         session_handle: ObjectPath,
@@ -171,11 +177,13 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `axis` - The axis that was scrolled
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_pointer_axis_discrete(
         &self,
         session_handle: ObjectPath,
@@ -191,12 +199,14 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `button` - The pointer button was pressed or released
     /// * `state` - The new state of the keyboard code
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_pointer_button(
         &self,
         session_handle: ObjectPath,
@@ -210,12 +220,14 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `dx` - Relative movement on the x axis
     /// * `dy` - Relative movement on the y axis
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_pointer_motion(
         &self,
         session_handle: ObjectPath,
@@ -229,13 +241,15 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to
     /// * `x` - Pointer motion x coordinate
     /// * `y` - Pointer motion y coordinate
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_pointer_motion_absolute(
         &self,
         session_handle: ObjectPath,
@@ -252,14 +266,16 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to
     /// * `slot` - Touch slot where touch point appeared
     /// * `x` - Touch down x coordinate
     /// * `y` - Touch down y coordinate
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_touch_down(
         &self,
         session_handle: ObjectPath,
@@ -277,14 +293,16 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to
     /// * `slot` - Touch slot where touch point appeared
     /// * `x` - Touch motion x coordinate
     /// * `y` - Touch motion y coordinate
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_touch_motion(
         &self,
         session_handle: ObjectPath,
@@ -301,11 +319,13 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - ?
     /// * `slot` - Touch slot where touch point appeared
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
     fn notify_touch_up(
         &self,
         session_handle: ObjectPath,
@@ -317,11 +337,11 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `options` - [`SelectDevicesOptions`]
     ///
     /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     fn select_devices(
         &self,
         session_handle: ObjectPath,
@@ -336,12 +356,12 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`Session`] object handle
+    /// * `session_handle` - The [`SessionProxy`] object handle
     /// * `parent_window` - The application window identifier
     /// * `options` - [`StartRemoteOptions`]
     ///
     /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     fn start(
         &self,
         session_handle: ObjectPath,

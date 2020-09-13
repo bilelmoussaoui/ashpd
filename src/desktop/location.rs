@@ -189,6 +189,7 @@ impl<'a> LocationProxy<'a> {
         Ok(Self { proxy, connection })
     }
 
+    // FIXME: refactor once zbus supports signals
     pub fn on_location_updated<F>(&self, callback: F) -> Result<()>
     where
         F: FnOnce(LocationResponse),

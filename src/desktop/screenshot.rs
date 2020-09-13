@@ -142,7 +142,7 @@ impl Into<gdk::RGBA> for &Color {
 trait Screenshot {
     /// Obtains the color of a single pixel.
     ///
-    /// Returns a [`RequestProxy`] handle.
+    /// Returns a [`RequestProxy`] object path..
     ///
     /// # Arguments
     ///
@@ -159,7 +159,7 @@ trait Screenshot {
 
     /// Takes a screenshot
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -167,7 +167,7 @@ trait Screenshot {
     /// * `options` - A [`ScreenshotOptions`]
     ///
     /// [`ScreenshotOptions`]: ./struct.ScreenshotOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     fn screenshot(
         &self,
         parent_window: WindowIdentifier,

@@ -31,6 +31,7 @@ impl<'a> SessionProxy<'a> {
     }
 
     /// Emitted when a session is closed.
+    // FIXME: refactor once zbus supports signals
     pub fn on_closed<F>(&self, callback: F) -> Result<()>
     where
         F: FnOnce(SessionDetails) -> Result<()>,

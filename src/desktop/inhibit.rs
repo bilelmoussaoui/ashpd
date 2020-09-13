@@ -133,7 +133,7 @@ impl<'a> InhibitProxy<'a> {
     /// While this session is active, the caller will receive `state_changed` signals
     /// with updates on the session state.
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -141,7 +141,7 @@ impl<'a> InhibitProxy<'a> {
     /// * `options` - [`CreateMonitorOptions`]
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     pub fn create_monitor(
         &self,
         window: WindowIdentifier,
@@ -152,7 +152,7 @@ impl<'a> InhibitProxy<'a> {
 
     /// Inhibits a session status changes.
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -161,7 +161,7 @@ impl<'a> InhibitProxy<'a> {
     /// * `options` - [`InhibitOptions`]
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     pub fn inhibit(
         &self,
         window: WindowIdentifier,

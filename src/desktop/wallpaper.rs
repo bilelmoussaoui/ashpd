@@ -124,7 +124,7 @@ impl WallpaperOptions {
 trait Wallpaper {
     /// Sets the lockscreen, background or both wallapers from a file descriptor
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -133,7 +133,7 @@ trait Wallpaper {
     /// * `options` - A [`WallpaperOptions`]
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     fn set_wallpaper_file(
         &self,
         parent_window: WindowIdentifier,
@@ -143,7 +143,7 @@ trait Wallpaper {
 
     /// Sets the lockscreen, background or both wallapers from an URI
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -152,7 +152,7 @@ trait Wallpaper {
     /// * `options` - A [`WallpaperOptions`]
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     #[dbus_proxy(name = "SetWallpaperURI")]
     fn set_wallpaper_uri(
         &self,

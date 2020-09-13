@@ -13,11 +13,11 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = TrashProxy::new(&connection)?;
 //!
-//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night(1).jpg").unwrap();
+//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
 //!     match proxy.trash_file(Fd::from(file.as_raw_fd()))? {
-//!         TrashStatus::Succeeded => println!("hey world"),
-//!         TrashStatus::Failed => println!("tfo"),
+//!         TrashStatus::Succeeded => println!("the file was removed!"),
+//!         TrashStatus::Failed => println!("oof, couldn't remove the file"),
 //!         _ => println!("something else happenned"),
 //!     };
 //!

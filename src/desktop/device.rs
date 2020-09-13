@@ -79,7 +79,7 @@ impl Serialize for Device {
 trait Device {
     /// Asks for access to a device.
     ///
-    /// Returns a [`RequestProxy`] handle.
+    /// Returns a [`RequestProxy`] object path..
     ///
     /// # Arguments
     ///

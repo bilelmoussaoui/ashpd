@@ -228,9 +228,9 @@ pub struct StreamProperties {
 trait ScreenCast {
     /// Create a screen cast session.
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
-    /// [`Request`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     fn create_session(&self, options: CreateSessionOptions) -> Result<OwnedObjectPath>;
 
     /// Open a file descriptor to the PipeWire remote where the screen cast streams are available.
@@ -239,10 +239,11 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path for the [`Session`] object
+    /// * `session_handle` - Object path for the [`SessionProxy`] object
     /// * `options` - ?
+    /// FIXME: figure out the options we can take here
     ///
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
     fn open_pipe_wire_remote(
         &self,
         session_handle: ObjectPath,
@@ -255,15 +256,15 @@ trait ScreenCast {
     /// Passing invalid input to this method will cause the session to be closed.
     /// An application may only attempt to select sources once per session.
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path of the [`Session`] object
+    /// * `session_handle` - Object path of the [`SessionProxy`] object
     /// * `options` - A `SelectSourcesOptions`
     ///
-    /// [`Request`]: ../request/struct.RequestProxy.html
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
     fn select_sources(
         &self,
         session_handle: ObjectPath,
@@ -277,16 +278,16 @@ trait ScreenCast {
     ///
     /// An application can only attempt start a session once.
     ///
-    /// Returns a [`Request`] handle
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path of the [`Session`] object
+    /// * `session_handle` - Object path of the [`SessionProxy`] object
     /// * `parent_window` - Identifier for the application window
     /// * `options` - A `StartScreenCastOptions`
     ///
-    /// [`Request`]: ../request/struct.RequestProxy.html
-    /// [`Session`]: ../session/struct.SessionProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
     fn start(
         &self,
         session_handle: ObjectPath,

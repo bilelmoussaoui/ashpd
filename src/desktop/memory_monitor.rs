@@ -35,6 +35,7 @@ impl<'a> MemoryMonitorProxy<'a> {
     }
 
     /// Signal emitted when a particular low memory situation happens with 0 being the lowest level of memory availability warning, and 255 being the highest
+    // FIXME: refactor once zbus supports signals
     pub fn on_low_memory_warning<F>(&self, callback: F) -> Result<()>
     where
         F: FnOnce(u32),

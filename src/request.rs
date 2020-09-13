@@ -56,6 +56,7 @@ impl<'a> RequestProxy<'a> {
         Ok(Self { proxy, connection })
     }
 
+    // FIXME: refactor once zbus supports signals
     pub fn on_response<F, T>(&self, callback: F) -> Result<()>
     where
         F: FnOnce(Response<T>),

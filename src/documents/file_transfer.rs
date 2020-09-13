@@ -79,6 +79,7 @@ trait FileTransfer {
     /// * `key` - a key returned by `start_transfer`
     /// * `fds` - a list of file descriptors of the files to register
     /// * `options` - ?
+    /// FIXME: figure out the options we can take here
     fn add_files(&self, key: &str, fds: &[Fd], options: HashMap<&str, Value>) -> Result<()>;
 
     /// Retrieves files that were previously added to the session with `add_files`.
@@ -91,6 +92,7 @@ trait FileTransfer {
     ///
     /// * `key` - a key returned by `start_transfer`
     /// * `options` - ?
+    /// FIXME: figure out the options we can take here
     fn retrieve_files(&self, key: &str, options: HashMap<&str, Value>) -> Result<Vec<String>>;
 
     /// Starts a session for a file transfer.
