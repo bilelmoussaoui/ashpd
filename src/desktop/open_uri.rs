@@ -115,7 +115,7 @@ impl OpenFileOptions {
 trait OpenURI {
     /// Asks to open the directory containing a local file in the file browser.
     ///
-    /// Returns a [`RequestPrxoy`] object path.
+    /// Returns a [`RequestProxy`] object path.
     ///
     /// # Arguments
     ///
@@ -124,7 +124,7 @@ trait OpenURI {
     /// * `options` - [`OpenDirOptions`]
     ///
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
-    /// [`RequestPrxoy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     fn open_directory(
         &self,
         parent_window: WindowIdentifier,
@@ -143,7 +143,7 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    /// [`RequestPrxoy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     fn open_file(
         &self,
         parent_window: WindowIdentifier,

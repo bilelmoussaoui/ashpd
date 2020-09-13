@@ -119,10 +119,10 @@ trait Flatpak {
     /// * `to_process_group` - whether to send the signal to the process group
     fn spawn_signal(&self, pid: u32, signal: u32, to_process_group: bool) -> Result<()>;
 
-    // signal
+    // FIXME: signal
     // fn spawn_started(&self, pid: u32, relpid: u32);
 
-    // signal
+    // FIXME: signal
     // fn spawn_existed(&self, pid: u32, exit_status: u32);
 
     /// Flags marking what optional features are available.
