@@ -20,7 +20,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --all-features
+          args: --package libportal --all-features --no-deps
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v2
