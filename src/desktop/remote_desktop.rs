@@ -432,6 +432,8 @@ trait RemoteDesktop {
 
     /// Select input devices to remote control.
     ///
+    /// Returns a [`RequestProxy`] object path.
+    ///
     /// # Arguments
     ///
     /// * `session_handle` - The [`SessionProxy`] object handle
@@ -439,6 +441,7 @@ trait RemoteDesktop {
     ///
     /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
     fn select_devices(
         &self,
         session_handle: ObjectPath,
@@ -451,6 +454,8 @@ trait RemoteDesktop {
     /// the user select what to share, including devices and optionally screen content
     /// if screen cast sources was selected.
     ///
+    /// Returns a [`RequestProxy`] object path.
+    ///
     /// # Arguments
     ///
     /// * `session_handle` - The [`SessionProxy`] object handle
@@ -459,6 +464,7 @@ trait RemoteDesktop {
     ///
     /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
     fn start(
         &self,
         session_handle: ObjectPath,
