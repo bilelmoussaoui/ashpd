@@ -44,10 +44,15 @@ use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
+///
 pub enum Flags {
+    /// Resuse the existing document store entry for the file.
     ReuseExisting = 1,
+    /// Persistent file.
     Persistent = 2,
+    /// Depends on the application needs.
     AsNeededByApp = 4,
+    /// Export a directory.
     ExportDirectory = 8,
 }
 
@@ -136,7 +141,7 @@ trait Documents {
     /// * `o_path_fds` - open file descriptors for the files to export
     /// * `flags` - a `Flags` enum.
     /// * `app_id` - an application ID, or empty string
-    /// * `permissions` - the permissions to grant, possible values are 'read', 'write', 'grant-permissions' and 'delete'
+    /// * `permissions` - the permissions to grant
     fn add_full(
         &self,
         o_path_fds: &[Fd],

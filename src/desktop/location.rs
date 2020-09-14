@@ -207,6 +207,7 @@ impl<'a> LocationProxy<'a> {
         Ok(Self { proxy, connection })
     }
 
+    /// Signal emitted when the user location is updated.
     // FIXME: refactor once zbus supports signals
     pub fn on_location_updated<F>(&self, callback: F) -> Result<()>
     where

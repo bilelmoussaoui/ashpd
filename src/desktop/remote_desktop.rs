@@ -194,7 +194,9 @@ impl StartRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+/// A response to a select device request.
 pub struct SelectedDevices {
+    /// The selected devices.
     pub devices: BitFlags<DeviceType>,
 }
 

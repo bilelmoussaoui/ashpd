@@ -34,17 +34,21 @@ use zvariant_derive::Type;
 pub type Namespace = HashMap<String, OwnedValue>;
 
 #[derive(Debug, Serialize, Deserialize, Type)]
+/// A specific namespace.key = value setting.
 pub struct Setting(String, String, OwnedValue);
 
 impl Setting {
+    /// The setting namespace.
     pub fn namespace(&self) -> String {
         self.0.clone()
     }
 
+    /// The setting key.
     pub fn key(&self) -> String {
         self.1.clone()
     }
 
+    /// The setting value.
     pub fn value(&self) -> OwnedValue {
         self.2.clone()
     }

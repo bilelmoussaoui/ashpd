@@ -35,11 +35,11 @@
 //! ```
 
 use crate::{HandleToken, WindowIdentifier};
+use serde::{Deserialize, Serialize, Serializer};
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, OwnedObjectPath, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use serde::{Deserialize, Serializer, Serialize};
 
 #[derive(
     Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
@@ -154,6 +154,7 @@ pub struct Settings {
     /// What pages to print, one of all, even or odd.
     #[zvariant(rename = "page-set")]
     pub page_set: Option<String>,
+    /// The finishings.
     pub finishings: Option<String>,
     /// The number of pages per sheet.
     #[zvariant(rename = "number-up")]
@@ -162,6 +163,7 @@ pub struct Settings {
     #[zvariant(rename = "number-up-layout")]
     pub number_up_layout: Option<String>,
     #[zvariant(rename = "output-bin")]
+    /// The output bin.
     pub output_bin: Option<String>,
     /// The horizontal resolution in dpi.
     #[zvariant(rename = "resolution-x")]
@@ -238,11 +240,13 @@ impl Settings {
         self
     }
 
+    /// Sets the duplex printing mode.
     pub fn duplex(mut self, duplex: &str) -> Self {
         self.duplex = Some(duplex.to_string());
         self
     }
 
+    /// Whether to collate copies.
     pub fn collate(mut self, collate: &str) -> Self {
         self.collate = Some(collate.to_string());
         self
@@ -254,11 +258,13 @@ impl Settings {
         self
     }
 
+    /// Sets the media type.
     pub fn media_type(mut self, media_type: &str) -> Self {
         self.media_type = Some(media_type.to_string());
         self
     }
 
+    /// Sets the dithering to use.
     pub fn dither(mut self, dither: &str) -> Self {
         self.dither = Some(dither.to_string());
         self
@@ -288,6 +294,7 @@ impl Settings {
         self
     }
 
+    /// Sets the finishings.
     pub fn finishings(mut self, finishings: &str) -> Self {
         self.finishings = Some(finishings.to_string());
         self
@@ -305,6 +312,7 @@ impl Settings {
         self
     }
 
+    /// Sets the output bin
     pub fn output_bin(mut self, output_bin: &str) -> Self {
         self.output_bin = Some(output_bin.to_string());
         self
@@ -322,6 +330,7 @@ impl Settings {
         self
     }
 
+    /// Sets the resolution in lines per inch.
     pub fn print_lpi(mut self, print_lpi: &str) -> Self {
         self.print_lpi = Some(print_lpi.to_string());
         self

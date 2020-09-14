@@ -104,10 +104,15 @@ impl InhibitOptions {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, BitFlags, Type)]
 #[repr(u32)]
+/// The actions to inhibit that can end the user's session
 pub enum InhibitFlags {
+    /// Logout.
     Logout = 1,
+    /// User switch.
     UserSwitch = 2,
+    /// Suspend.
     Suspend = 4,
+    /// Idle.
     Idle = 8,
 }
 
@@ -117,17 +122,21 @@ struct InhibitMonitorResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
+/// A response received when the session state signal is received.
 pub struct InhibitState(OwnedObjectPath, State);
 
 impl InhibitState {
+    /// The session handle.
     pub fn session_handle(&self) -> OwnedObjectPath {
         self.0.clone()
     }
 
+    /// Whether screensaver is active or not.
     pub fn screensaver_active(&self) -> bool {
         self.1.screensaver_active
     }
 
+    /// The session state.
     pub fn session_state(&self) -> SessionState {
         self.1.session_state
     }
@@ -143,9 +152,13 @@ struct State {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
+/// The current state of the user's session.
 pub enum SessionState {
+    /// Running.
     Running = 1,
+    /// The user asked to end the session e.g logout.
     QueryEnd = 2,
+    /// The session is ending.
     Ending = 3,
 }
 

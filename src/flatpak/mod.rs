@@ -34,6 +34,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
+/// A bitmask representing the "permissions" of a newely created sandbox.
 pub enum SandboxFlags {
     /// Share the display access (X11, wayland) with the caller.
     DisplayAccess = 1,
