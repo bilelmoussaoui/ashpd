@@ -2,7 +2,7 @@
 //!
 //! ```no_run
 //! use ashpd::desktop::remote_desktop::{
-//!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy, SelectDevices,
+//!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy, SelectedDevices,
 //!     SelectDevicesOptions, StartRemoteOptions,
 //! };
 //! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
@@ -43,7 +43,7 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|r: Response<SelectDevices>| {
+//!     request.on_response(|r: Response<SelectedDevices>| {
 //!         proxy
 //!             .notify_keyboard_keycode(
 //!                 handle.clone(),
@@ -88,23 +88,33 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
+/// The keyboard key state.
 pub enum KeyState {
+    /// The key is pressed.
     Pressed = 0,
+    /// The key is released..
     Released = 1,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, BitFlags, Clone, Copy, Type)]
 #[repr(u32)]
+/// A bit flag for the available devices.
 pub enum DeviceType {
+    /// A keyboard.
     Keyboard = 1,
+    /// A mouse pointer.
     Pointer = 2,
+    /// A touchscreen
     Touchscreen = 4,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
+/// The available axis.
 pub enum Axis {
+    /// Vertical axis.
     Vertical = 0,
+    /// Horizontal axis.
     Horizontal = 1,
 }
 
@@ -118,11 +128,13 @@ pub struct CreateRemoteOptions {
 }
 
 impl CreateRemoteOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
         self.session_handle_token = Some(session_handle_token);
         self
@@ -130,12 +142,14 @@ impl CreateRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// A response to a create session request.
 pub struct CreateSession {
     /// A string that will be used as the last element of the session handle.
     session_handle: String,
 }
 
 impl CreateSession {
+    /// The created session handle.
     pub fn handle(&self) -> ObjectPath {
         ObjectPath::try_from(self.session_handle.clone()).unwrap()
     }
@@ -151,11 +165,13 @@ pub struct SelectDevicesOptions {
 }
 
 impl SelectDevicesOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets the device types to request remote controlling of.
     pub fn types(mut self, types: BitFlags<DeviceType>) -> Self {
         self.types = Some(types);
         self
@@ -170,6 +186,7 @@ pub struct StartRemoteOptions {
 }
 
 impl StartRemoteOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -177,7 +194,7 @@ impl StartRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-pub struct SelectDevices {
+pub struct SelectedDevices {
     pub devices: BitFlags<DeviceType>,
 }
 

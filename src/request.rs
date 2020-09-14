@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zbus::{fdo::DBusProxy, fdo::Result, Connection};
-use zvariant::OwnedValue;
+use zvariant::{ObjectPath, OwnedValue};
 use zvariant_derive::Type;
 
 /// A typical response returned by the `on_response` signal of a `RequestProxy`.
@@ -58,11 +58,18 @@ pub struct RequestProxy<'a> {
 }
 
 impl<'a> RequestProxy<'a> {
-    pub fn new(connection: &'a Connection, handle: &'a str) -> Result<Self> {
+    /// Creates a new request proxy.
+    ///
+    /// # Arguments
+    ///
+    /// * `connection` - A DBus session connection.
+    /// * `handle` - An object path returned by a portal call.
+    pub fn new(connection: &'a Connection, handle: &'a ObjectPath) -> Result<Self> {
         let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/desktop")?;
         Ok(Self { proxy, connection })
     }
 
+    /// A signal emitted when the portal interaction is over.
     // FIXME: refactor once zbus supports signals
     pub fn on_response<F, T>(&self, callback: F) -> Result<()>
     where

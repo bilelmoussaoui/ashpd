@@ -117,6 +117,9 @@ impl SpawnOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+/// Specficied options on a create monitor request
+///
+/// Currently there are no possible options yet.
 pub struct CreateMonitorOptions {}
 
 #[dbus_proxy(

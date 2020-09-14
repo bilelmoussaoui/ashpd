@@ -35,6 +35,7 @@ use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+/// Specified options on a start transfer request.
 pub struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
     pub writeable: Option<bool>,
@@ -43,11 +44,13 @@ pub struct TransferOptions {
 }
 
 impl TransferOptions {
+    /// Sets whether the chosen application can write to the files or not.
     pub fn writeable(mut self, writeable: bool) -> Self {
         self.writeable = Some(writeable);
         self
     }
 
+    /// Whether to stop the transfer automatically after the first retrieve_files call.
     pub fn autostop(mut self, autostop: bool) -> Self {
         self.autostop = Some(autostop);
         self

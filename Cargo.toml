@@ -14,9 +14,9 @@ gdk_color = ["gdk"]
 
 
 [dependencies]
-zbus = { git = "https://gitlab.freedesktop.org/zeenix/zbus" }
-zvariant = { git = "https://gitlab.freedesktop.org/zeenix/zbus", features = ["enumflags2"] }
-zvariant_derive = { git = "https://gitlab.freedesktop.org/zeenix/zbus" }
+zbus = { version = "1.1" }
+zvariant = { version = "2.2", features = ["enumflags2"] }
+zvariant_derive = { version = "2.2" }
 serde = {version = "1.0", features = ["derive"] }
 serde_repr = "0.1"
 strum = "0.19"

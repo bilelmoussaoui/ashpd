@@ -37,23 +37,32 @@
 use crate::WindowIdentifier;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{fdo::DBusProxy, fdo::Result, Connection};
+use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+/// Specficied options on an update request
+///
+/// Currently there are no possible options yet.
 pub struct UpdateOptions {}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// A response containing the update information when an update is available.
 pub struct UpdateInfo {
     #[zvariant(rename = "running-commit")]
-    pub running_commit: Option<String>,
+    /// The currently running ostree commit.
+    pub running_commit: String,
     #[zvariant(rename = "local-commit")]
-    pub local_commit: Option<String>,
+    /// The locally installed ostree commit.
+    pub local_commit: String,
     #[zvariant(rename = "remote-commit")]
-    pub remote_commit: Option<String>,
+    /// The available commit ot install.
+    pub remote_commit: String,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
+/// The update status.
 pub enum UpdateStatus {
     /// Running.
     Running = 0,
@@ -66,6 +75,7 @@ pub enum UpdateStatus {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// A response of the update progress signal.
 pub struct UpdateProgress {
     /// The number of operations that the update consists of.
     pub n_ops: Option<u32>,
@@ -89,11 +99,18 @@ pub struct UpdateMonitorProxy<'a> {
 }
 
 impl<'a> UpdateMonitorProxy<'a> {
-    pub fn new(connection: &'a Connection, handle: &'a str) -> Result<Self> {
+    /// Creates a new request proxy.
+    ///
+    /// # Arguments
+    ///
+    /// * `connection` - A DBus session connection.
+    /// * `handle` - An object path returned by a create_update_monitor call.
+    pub fn new(connection: &'a Connection, handle: &'a ObjectPath) -> Result<Self> {
         let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/Flatpak")?;
         Ok(Self { proxy, connection })
     }
 
+    /// A signal received when there's progress during the application update.
     // FIXME: refactor once zbus supports signals
     pub fn on_progress<F>(&self, callback: F) -> Result<()>
     where
@@ -111,6 +128,7 @@ impl<'a> UpdateMonitorProxy<'a> {
         }
     }
 
+    /// A signal received when there's an application update.
     // FIXME: refactor once zbus supports signals
     pub fn on_update_available<F>(&self, callback: F) -> Result<()>
     where
@@ -130,7 +148,7 @@ impl<'a> UpdateMonitorProxy<'a> {
         Ok(())
     }
 
-    ///  Ends the update monitoring and cancels any ongoing installation.
+    /// Ends the update monitoring and cancels any ongoing installation.
     pub fn close(&self) -> zbus::Result<()> {
         self.proxy.call("Close", &())?;
         Ok(())

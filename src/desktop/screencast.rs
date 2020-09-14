@@ -89,13 +89,17 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
+/// A bit flag for the available sources to record.
 pub enum SourceType {
+    /// A monitor.
     Monitor = 1,
+    /// A specific window
     Window = 2,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type, BitFlags)]
 #[repr(u32)]
+/// A bit flag for the possible cursor modes.
 pub enum CursorMode {
     /// The cursor is not part of the screen cast stream.
     Hidden = 1,
@@ -115,11 +119,13 @@ pub struct CreateSessionOptions {
 }
 
 impl CreateSessionOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
         self.session_handle_token = Some(session_handle_token);
         self
@@ -140,21 +146,25 @@ pub struct SelectSourcesOptions {
 }
 
 impl SelectSourcesOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets whether to allow selecting multiple sources.
     pub fn multiple(mut self, multiple: bool) -> Self {
         self.multiple = Some(multiple);
         self
     }
 
+    /// Sets how the cursor will be drawn on the screen cast stream.
     pub fn cursor_mode(mut self, cursor_mode: BitFlags<CursorMode>) -> Self {
         self.cursor_mode = Some(cursor_mode);
         self
     }
 
+    /// Sets the types of content to record.
     pub fn types(mut self, types: BitFlags<SourceType>) -> Self {
         self.types = Some(types);
         self
@@ -169,6 +179,7 @@ pub struct StartCastOptions {
 }
 
 impl StartCastOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -176,42 +187,50 @@ impl StartCastOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// A response to the create session request.
 pub struct CreateSession {
     /// A string that will be used as the last element of the session handle.
     session_handle: String,
 }
 
 impl CreateSession {
+    /// The created session handle.
     pub fn handle(&self) -> ObjectPath {
         ObjectPath::try_from(self.session_handle.clone()).unwrap()
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// A response to start the streamcast request.
 pub struct Streams {
     streams: Vec<Stream>,
 }
 
 impl Streams {
+    /// The available streams.
     pub fn streams(&self) -> &Vec<Stream> {
         &self.streams
     }
 }
 
 #[derive(Serialize, Deserialize, Type, Debug)]
+/// A pipewire stream.
 pub struct Stream(u32, StreamProperties);
 
 impl Stream {
+    /// Thep pipewire stream node
     pub fn pipewire_node_id(&self) -> u32 {
         self.0
     }
 
+    /// The stream properties.
     pub fn properties(&self) -> &StreamProperties {
         &self.1
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// The stream properties.
 pub struct StreamProperties {
     /// A tuple consisting of the position (x, y) in the compositor coordinate space.
     /// Note that the position may not be equivalent to a position in a pixel coordinate space.

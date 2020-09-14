@@ -12,24 +12,18 @@ use zvariant_derive::Type;
 ///
 /// For other windowing systems, or if you don't have a suitable handle, just use the `Default` implementation.
 ///
+/// Normally, we should provide a `From<gtk::Window> for WindowIdentifier` implementation.
+/// But as that's currently impossible to do from Rust in a sane way, we should try to provide a C function
+/// that gives us a handle from the `Gdk::Window` and call it from Rust in the `From` implementation.
+///
+/// We would love merge requests that adds other `From<T> for WindowIdentifier` implementations for other toolkits.
+///
 /// [`WindowIdentifier`]: ./struct.WindowIdentifier.html
 ///
-// FIXME: add a GTK feature and
-// implement From<gtk::Window> for WindowIdentifier
-// it's going to ugly. As of today, there's no nice way to get the window
-// handle. You need to check if the window is running under x11
-// and then use gdkx11 provides the necessary x11 types to get a handle.
-// The same thing should be done for wayland, except it's more complex
-// the bindings are not possible currently as the C part uses some C types
-// that are not part of any bindings nor havbe bindings support.
-// which makes generating the bindings of only the part we need harder
-// as we need to fix gtk first, wait for a release, generate the bindings and so on.
-//
-// The alternative would be to have a C file with a function that gives us a handle
-// from a gtk_sys::Window, and call it inside the from implementation
 pub struct WindowIdentifier(String);
 
 impl WindowIdentifier {
+    /// Create a new window identifier
     pub fn new(identifier: &str) -> Self {
         Self(identifier.to_string())
     }
