@@ -56,7 +56,7 @@ pub struct UpdateInfo {
     /// The locally installed ostree commit.
     pub local_commit: String,
     #[zvariant(rename = "remote-commit")]
-    /// The available commit ot install.
+    /// The available commit to install.
     pub remote_commit: String,
 }
 

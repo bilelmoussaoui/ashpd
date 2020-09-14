@@ -374,7 +374,7 @@ impl SaveFilesOptions {
         self
     }
 
-    /// Specifices the current folder path.
+    /// Specifies the current folder path.
     pub fn current_folder(mut self, current_folder: &str) -> Self {
         self.current_folder = Some(current_folder.into());
         self

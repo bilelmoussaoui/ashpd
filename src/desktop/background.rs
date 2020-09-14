@@ -52,7 +52,7 @@ pub struct BackgroundOptions {
 }
 
 impl BackgroundOptions {
-    /// Sets a user-visible reson for the request.
+    /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
@@ -76,7 +76,7 @@ impl BackgroundOptions {
         self
     }
 
-    /// Specifices the command line to execute.
+    /// Specifies the command line to execute.
     pub fn commandline(mut self, command: Vec<String>) -> Self {
         self.commandline = Some(command);
         self

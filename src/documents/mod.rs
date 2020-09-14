@@ -46,7 +46,7 @@ use zvariant_derive::Type;
 #[repr(u32)]
 ///
 pub enum Flags {
-    /// Resuse the existing document store entry for the file.
+    /// Reuse the existing document store entry for the file.
     ReuseExisting = 1,
     /// Persistent file.
     Persistent = 2,

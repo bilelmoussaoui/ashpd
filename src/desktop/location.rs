@@ -57,7 +57,7 @@ pub enum Accuracy {
     Country = 1,
     /// City.
     City = 2,
-    /// Neighborhod.
+    /// Neighborhood.
     Neighborhood = 3,
     /// Street.
     Street = 4,
@@ -85,13 +85,13 @@ impl LocationAccessOptions {
         self
     }
 
-    /// Sets the distance treshold in meters.
+    /// Sets the distance threshold in meters.
     pub fn distance_threshold(mut self, distance_threshold: u32) -> Self {
         self.distance_threshold = Some(distance_threshold);
         self
     }
 
-    /// Sets the time treshold in seconds.
+    /// Sets the time threshold in seconds.
     pub fn time_threshold(mut self, time_threshold: u32) -> Self {
         self.time_threshold = Some(time_threshold);
         self
