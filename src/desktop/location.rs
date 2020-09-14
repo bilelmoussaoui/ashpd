@@ -231,11 +231,12 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path returned by `create_session`
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `parent_window` - Identifier for the application window
     /// * `options` - A `LocationStartOptions`
     ///
-    /// [`RequestProxy`]: ../session/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
     pub fn start(
         &self,
         session_handle: ObjectPath,

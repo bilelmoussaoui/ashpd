@@ -244,7 +244,7 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path for the [`SessionProxy`] object
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
     ///
@@ -265,7 +265,7 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path of the [`SessionProxy`] object
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - A `SelectSourcesOptions`
     ///
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
@@ -287,7 +287,7 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - Object path of the [`SessionProxy`] object
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `parent_window` - Identifier for the application window
     /// * `options` - A `StartScreenCastOptions`
     ///

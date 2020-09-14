@@ -221,7 +221,14 @@ impl<'a> InhibitProxy<'a> {
         self.proxy.call("Inhibit", &(window, flags, options))
     }
 
-    /// QueryEndResponse method
+    /// Acknowledges that the caller received the "state_changed" signal
+    /// his method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
+    ///
+    /// # Arguments
+    ///
+    /// * `session_handle` - A [`SessionProxy`] object path.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub fn query_end_response(&self, session_handle: ObjectPath) -> zbus::Result<()> {
         self.proxy.call("QueryEndResponse", &(session_handle))
     }

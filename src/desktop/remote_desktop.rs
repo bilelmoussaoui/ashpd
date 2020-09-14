@@ -207,7 +207,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `keycode` - Keyboard code that was pressed or released
     /// * `state` - The new state of the keyboard code
@@ -228,7 +228,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `keysym` - Keyboard symbol that was pressed or released
     /// * `state` - The new state of the keyboard code
@@ -253,7 +253,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `dx` - Relative axis movement on the x axis
     /// * `dy` - Relative axis movement on the y axis
@@ -274,7 +274,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `axis` - The axis that was scrolled
     ///
@@ -296,7 +296,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `button` - The pointer button was pressed or released
     /// * `state` - The new state of the keyboard code
@@ -317,7 +317,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `dx` - Relative movement on the x axis
     /// * `dy` - Relative movement on the y axis
@@ -338,7 +338,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to
     /// * `x` - Pointer motion x coordinate
@@ -363,7 +363,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to
     /// * `slot` - Touch slot where touch point appeared
@@ -390,7 +390,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to
     /// * `slot` - Touch slot where touch point appeared
@@ -416,7 +416,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - ?
     /// * `slot` - Touch slot where touch point appeared
     ///
@@ -436,7 +436,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - [`SelectDevicesOptions`]
     ///
     /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
@@ -458,7 +458,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - The [`SessionProxy`] object handle
+    /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `parent_window` - The application window identifier
     /// * `options` - [`StartRemoteOptions`]
     ///
