@@ -8,6 +8,7 @@ repository = "https://github.com/bilelmoussaoui/ashpd"
 exclude = ["interfaces/*.xml"]
 keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
+categories = ["gui", "os::linux-apis", "api-bindings"]
 
 [features]
 gdk_color = ["gdk"]
