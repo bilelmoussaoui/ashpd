@@ -66,11 +66,13 @@ pub struct CreateMonitorOptions {
 }
 
 impl CreateMonitorOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
         self.session_handle_token = Some(session_handle_token);
         self
@@ -87,11 +89,13 @@ pub struct InhibitOptions {
 }
 
 impl InhibitOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets a user visible reason for the inhibit request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
@@ -152,6 +156,7 @@ pub struct InhibitProxy<'a> {
 }
 
 impl<'a> InhibitProxy<'a> {
+    /// Create a new inhibit proxy.
     pub fn new(connection: &'a Connection) -> Result<Self> {
         let proxy = Proxy::new(
             connection,
@@ -162,7 +167,7 @@ impl<'a> InhibitProxy<'a> {
         Ok(Self { proxy, connection })
     }
 
-    // Signal emitted when a particular low memory situation happens with 0 being the lowest level of memory availability warning, and 255 being the highest
+    /// Signal emitted when the session state changes.
     pub fn on_state_changed<F>(&self, callback: F) -> Result<()>
     where
         F: Fn(&InhibitProxy, InhibitState) -> Result<()>,

@@ -36,14 +36,80 @@
 
 use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath};
+use zvariant::{Fd, OwnedObjectPath, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
+use serde::{Deserialize, Serializer, Serialize};
+
+#[derive(
+    Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
+)]
+#[strum(serialize_all = "lowercase")]
+/// The page orientation.
+pub enum Orientation {
+    /// Landscape.
+    Landscape,
+    /// Portrait.
+    Portrait,
+    #[strum(serialize = "reverse_landscape")]
+    /// Reverse landscape.
+    ReverseLandscape,
+    #[strum(serialize = "reverse_portrait")]
+    /// Reverse portrait.
+    ReversePortrait,
+}
+
+impl zvariant::Type for Orientation {
+    fn signature() -> Signature<'static> {
+        String::signature()
+    }
+}
+
+impl Serialize for Orientation {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        String::serialize(&self.to_string(), serializer)
+    }
+}
+
+#[derive(
+    Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
+)]
+#[strum(serialize_all = "lowercase")]
+/// The print quality.
+pub enum Quality {
+    /// Draft quality.
+    Draft,
+    /// Low quality.
+    Low,
+    /// Normal quality.
+    Normal,
+    /// High quality.
+    High,
+}
+
+impl zvariant::Type for Quality {
+    fn signature() -> Signature<'static> {
+        String::signature()
+    }
+}
+
+impl Serialize for Quality {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        String::serialize(&self.to_string(), serializer)
+    }
+}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Print settings to set in the print dialog.
 pub struct Settings {
     /// One of landscape, portrait, reverse_landscape or reverse_portrait.
-    pub orientation: Option<String>,
+    pub orientation: Option<Orientation>,
     /// A paper name according to [PWG 5101.1-2002](ftp://ftp.pwg.org/pub/pwg/candidates/cs-pwgmsn10-20020226-5101.1.pdf)
     #[zvariant(rename = "paper-format")]
     pub paper_format: Option<String>,
@@ -59,8 +125,8 @@ pub struct Settings {
     /// The default paper source.
     #[zvariant(rename = "default-source")]
     pub default_source: Option<String>,
-    /// Print quality, one of normal, high, low or draft.
-    pub quality: Option<String>,
+    /// Print quality.
+    pub quality: Option<Quality>,
     /// The resolution, sets both resolution-x & resolution-y
     pub resolution: Option<String>,
     /// Whether to use color.
@@ -118,46 +184,55 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn orientation(mut self, orientation: &str) -> Self {
-        self.orientation = Some(orientation.to_string());
+    /// Sets the orientation.
+    pub fn orientation(mut self, orientation: Orientation) -> Self {
+        self.orientation = Some(orientation);
         self
     }
 
+    /// Sets the paper name.
     pub fn paper_format(mut self, paper_format: &str) -> Self {
         self.paper_format = Some(paper_format.to_string());
         self
     }
 
+    /// Sets the paper width.
     pub fn paper_width(mut self, paper_width: &str) -> Self {
         self.paper_width = Some(paper_width.to_string());
         self
     }
 
+    /// Sets the paper height.
     pub fn paper_height(mut self, paper_height: &str) -> Self {
         self.paper_height = Some(paper_height.to_string());
         self
     }
 
+    /// Sets the number of copies to print.
     pub fn n_copies(mut self, n_copies: &str) -> Self {
         self.n_copies = Some(n_copies.to_string());
         self
     }
 
+    /// Sets the default paper source.
     pub fn default_source(mut self, default_source: &str) -> Self {
         self.default_source = Some(default_source.to_string());
         self
     }
 
-    pub fn quality(mut self, quality: &str) -> Self {
-        self.quality = Some(quality.to_string());
+    /// Sets the print quality.
+    pub fn quality(mut self, quality: Quality) -> Self {
+        self.quality = Some(quality);
         self
     }
 
+    /// Sets the resolution, both resolution-x & resolution-y.
     pub fn resolution(mut self, resolution: &str) -> Self {
         self.resolution = Some(resolution.to_string());
         self
     }
 
+    /// Sets whether to use color.
     pub fn use_color(mut self, use_color: bool) -> Self {
         self.use_color = Some(use_color);
         self
@@ -173,6 +248,7 @@ impl Settings {
         self
     }
 
+    /// Sets whether to reverse the order of the printed pages.
     pub fn reverse(mut self, reverse: &str) -> Self {
         self.reverse = Some(reverse.to_string());
         self
@@ -188,21 +264,25 @@ impl Settings {
         self
     }
 
+    /// Sets the page scale in percent.
     pub fn scale(mut self, scale: &str) -> Self {
         self.scale = Some(scale.to_string());
         self
     }
 
+    /// Sets what pages to print, one of all, selection, current or ranges.
     pub fn print_pages(mut self, print_pages: &str) -> Self {
         self.print_pages = Some(print_pages.to_string());
         self
     }
 
+    /// Sets a list of page ranges, formatted like this: 0-2,4,9-11.
     pub fn page_ranges(mut self, page_ranges: &str) -> Self {
         self.page_ranges = Some(page_ranges.to_string());
         self
     }
 
+    /// Sets what pages to print, one of all, even or odd.
     pub fn page_set(mut self, page_set: &str) -> Self {
         self.page_set = Some(page_set.to_string());
         self
@@ -213,11 +293,13 @@ impl Settings {
         self
     }
 
+    /// Sets the number of pages per sheet.
     pub fn number_up(mut self, number_up: &str) -> Self {
         self.number_up = Some(number_up.to_string());
         self
     }
 
+    /// Sets the number up layout, one of lrtb, lrbt, rltb, rlbt, tblr, tbrl, btlr, btrl.
     pub fn number_up_layout(mut self, number_up_layout: &str) -> Self {
         self.number_up_layout = Some(number_up_layout.to_string());
         self
@@ -228,11 +310,13 @@ impl Settings {
         self
     }
 
+    /// Sets the horizontal resolution in dpi.
     pub fn resolution_x(mut self, resolution_x: &str) -> Self {
         self.resolution_x = Some(resolution_x.to_string());
         self
     }
 
+    /// Sets the vertical resolution in dpi.
     pub fn resolution_y(mut self, resolution_y: &str) -> Self {
         self.resolution_y = Some(resolution_y.to_string());
         self
@@ -243,18 +327,21 @@ impl Settings {
         self
     }
 
+    /// Sets the print-to-file base name.
     pub fn output_basename(mut self, output_basename: &str) -> Self {
         self.output_basename = Some(output_basename.to_string());
         self
     }
 
-    pub fn output_file_format(mut self, output_basename: &str) -> Self {
-        self.output_basename = Some(output_basename.to_string());
+    /// Sets the print-to-file format, one of PS, PDF, SVG.
+    pub fn output_file_format(mut self, output_file_format: &str) -> Self {
+        self.output_file_format = Some(output_file_format.to_string());
         self
     }
 
-    pub fn output_uri(mut self, output_basename: &str) -> Self {
-        self.output_basename = Some(output_basename.to_string());
+    /// Sets the print-to-file output uri.
+    pub fn output_uri(mut self, output_uri: &str) -> Self {
+        self.output_uri = Some(output_uri.to_string());
         self
     }
 }
@@ -262,7 +349,7 @@ impl Settings {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Setup the printed pages.
 pub struct PageSetup {
-    /// the PPD name.
+    /// the PPD name. It's the name to select a given driver.
     #[zvariant(rename = "PPDName")]
     pub ppdname: Option<String>,
     /// The name of the page setup.
@@ -281,56 +368,66 @@ pub struct PageSetup {
     pub margin_right: Option<f64>,
     /// Left margin in millimeters.
     pub margin_left: Option<f64>,
-    /// Orientation, one of portrait, landscape, reverse-portrait or reverse-landscape.
-    pub orientation: Option<String>,
+    /// The page orientation.
+    pub orientation: Option<Orientation>,
 }
 
 impl PageSetup {
+    /// Sets the ppdname.
     pub fn ppdname(mut self, ppdname: &str) -> Self {
         self.ppdname = Some(ppdname.to_string());
         self
     }
 
+    /// Sets the name of the page setup.
     pub fn name(mut self, name: &str) -> Self {
         self.name = Some(name.to_string());
         self
     }
 
+    /// Sets the user visible name of the page setup.
     pub fn display_name(mut self, display_name: &str) -> Self {
         self.display_name = Some(display_name.to_string());
         self
     }
 
-    pub fn orientation(mut self, orientation: &str) -> Self {
-        self.orientation = Some(orientation.to_string());
+    /// Sets the orientation.
+    pub fn orientation(mut self, orientation: Orientation) -> Self {
+        self.orientation = Some(orientation);
         self
     }
 
+    /// Sets the page width.
     pub fn width(mut self, width: f64) -> Self {
         self.width = Some(width);
         self
     }
 
+    /// Sets the page height.
     pub fn height(mut self, height: f64) -> Self {
         self.height = Some(height);
         self
     }
 
+    /// Sets the page top margin.
     pub fn margin_top(mut self, margin_top: f64) -> Self {
         self.margin_top = Some(margin_top);
         self
     }
 
+    /// Sets the page bottom margin.
     pub fn margin_bottom(mut self, margin_bottom: f64) -> Self {
         self.margin_bottom = Some(margin_bottom);
         self
     }
 
+    /// Sets the page right margin.
     pub fn margin_right(mut self, margin_right: f64) -> Self {
         self.margin_right = Some(margin_right);
         self
     }
 
+    /// Sets the page margin left.
     pub fn margin_left(mut self, margin_left: f64) -> Self {
         self.margin_left = Some(margin_left);
         self
@@ -347,11 +444,13 @@ pub struct PreparePrintOptions {
 }
 
 impl PreparePrintOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
@@ -370,16 +469,19 @@ pub struct PrintOptions {
 }
 
 impl PrintOptions {
+    /// A token retrieved from a prepare print response.
     pub fn token(mut self, token: &str) -> Self {
         self.token = Some(token.to_string());
         self
     }
 
+    /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -387,10 +489,14 @@ impl PrintOptions {
 }
 
 #[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
+/// A response returned by a prepare print request.
 pub struct PreparePrint {
+    /// The printing settings.
     pub settings: Settings,
     #[zvariant(rename = "page-setup")]
+    /// The printed pages setup.
     pub page_setup: PageSetup,
+    /// A token to pass to the print request.
     pub token: u32,
 }
 

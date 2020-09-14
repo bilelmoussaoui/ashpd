@@ -56,11 +56,16 @@ pub type Permissions = HashMap<String, Vec<Permission>>;
 
 #[derive(Debug, Clone, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq)]
 #[strum(serialize_all = "lowercase")]
+/// The possible permissions to grant to a specific application for a specific document.
 pub enum Permission {
+    /// Read access.
     Read,
+    /// Write access.
     Write,
     #[strum(serialize = "grant-permissions")]
+    /// The possibility to grant new permissions to the file.
     GrantPermissions,
+    /// Delete access.
     Delete,
 }
 
