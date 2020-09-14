@@ -24,14 +24,14 @@ use zvariant_derive::Type;
 pub struct HandleToken(String);
 
 #[derive(Debug)]
-pub struct HandleInvalidCharacter(String);
+pub struct HandleInvalidCharacter(char);
 
 impl std::convert::TryFrom<&str> for HandleToken {
     type Error = HandleInvalidCharacter;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         for char in value.chars() {
             if !char.is_ascii_alphanumeric() {
-                return Err(HandleInvalidCharacter(char.to_string()));
+                return Err(HandleInvalidCharacter(char));
             }
         }
         Ok(Self(value.to_string()))
