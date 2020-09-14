@@ -35,7 +35,7 @@ use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a background request.
+/// Specified options for a `request_background` request.
 pub struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
@@ -52,26 +52,31 @@ pub struct BackgroundOptions {
 }
 
 impl BackgroundOptions {
+    /// Sets a user-visible reson for the request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
     }
 
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets whether to auto start the application or not.
     pub fn autostart(mut self, autostart: bool) -> Self {
         self.autostart = Some(autostart);
         self
     }
 
+    /// Sets whether the application is dbus activatable.
     pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
         self.dbus_activatable = Some(dbus_activatable);
         self
     }
 
+    /// Specifices the command line to execute.
     pub fn commandline(mut self, command: Vec<String>) -> Self {
         self.commandline = Some(command);
         self
@@ -79,7 +84,7 @@ impl BackgroundOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// Result returned by the response signal after a background request.
+/// The response of a `background` request.
 pub struct Background {
     /// if the application is allowed to run in the background
     pub background: bool,

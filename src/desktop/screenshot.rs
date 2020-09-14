@@ -67,16 +67,19 @@ pub struct ScreenshotOptions {
 }
 
 impl ScreenshotOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
+    /// Sets whether the dialog should offer customization before a screenshot or not.
     pub fn interactive(mut self, interactive: bool) -> Self {
         self.interactive = Some(interactive);
         self
@@ -84,7 +87,9 @@ impl ScreenshotOptions {
 }
 
 #[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
+/// A response to a screenshot request.
 pub struct Screenshot {
+    /// The screenshot uri.
     pub uri: String,
 }
 
@@ -96,6 +101,7 @@ pub struct PickColorOptions {
 }
 
 impl PickColorOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -103,19 +109,23 @@ impl PickColorOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+/// A response to a pick color request.
 pub struct Color {
     color: ([f64; 3]),
 }
 
 impl Color {
+    /// Red.
     pub fn red(&self) -> f64 {
         self.color[0]
     }
 
+    /// Green.
     pub fn green(&self) -> f64 {
         self.color[1]
     }
 
+    /// Blue.
     pub fn blue(&self) -> f64 {
         self.color[2]
     }

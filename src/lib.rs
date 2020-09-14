@@ -39,7 +39,7 @@
 //!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
 //!
-
+#![deny(missing_docs)]
 /// Interact with the user's desktop such as taking a screenshot, setting a background or querying the user's location.
 pub mod desktop;
 /// Interact with the documents store or transfer files across apps.

@@ -30,7 +30,7 @@ use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified the options for a get user information request.
+/// The possible options for a get user information request.
 pub struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
@@ -39,11 +39,13 @@ pub struct UserInfoOptions {
 }
 
 impl UserInfoOptions {
+    /// Sets a user visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
     }
 
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -51,6 +53,7 @@ impl UserInfoOptions {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+/// The response of a `get_user_information` request.
 pub struct UserInfo {
     /// User identifier.
     pub id: String,

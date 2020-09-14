@@ -32,13 +32,14 @@ use zvariant::{OwnedObjectPath, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a device access request.
+/// Specified options for a `access_device` request.
 pub struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
 }
 
 impl AccessDeviceOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -49,9 +50,13 @@ impl AccessDeviceOptions {
     Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
 )]
 #[strum(serialize_all = "lowercase")]
+/// The possible device to request access to.
 pub enum Device {
+    /// A microphone.
     Microphone,
+    /// Speakers.
     Speakers,
+    /// A Camera.
     Camera,
 }
 

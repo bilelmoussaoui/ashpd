@@ -106,6 +106,7 @@ use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize, Deserialize, Type, Debug)]
+/// A file filter, to limit the available file choices to a mimetype or a glob pattern.
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -116,15 +117,22 @@ enum FilterType {
 }
 
 impl FileFilter {
+    /// Create a new file filter
+    ///
+    /// # Arguments
+    ///
+    /// * `label` - user-visible name of the file filter.
     pub fn new(label: &str) -> Self {
         Self(label.to_string(), vec![])
     }
 
+    /// Adds a mime type to the file filter.
     pub fn mimetype(mut self, mimetype: &str) -> Self {
         self.1.push((FilterType::MimeType, mimetype.to_string()));
         self
     }
 
+    /// Adds a glob pattern to the file filter.
     pub fn glob(mut self, pattern: &str) -> Self {
         self.1.push((FilterType::GlobPattern, pattern.to_string()));
         self
@@ -132,9 +140,17 @@ impl FileFilter {
 }
 
 #[derive(Serialize, Deserialize, Type, Debug)]
+/// Presents the user with a choice to select from or as a checkbox.
 pub struct Choice(String, String, Vec<(String, String)>, String);
 
 impl Choice {
+    /// Creates a new choice
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - A unique identifier of the choice
+    /// * `label` - user-visible name of the choice
+    /// * `initial_selection` - the initially selected value
     pub fn new(id: &str, label: &str, initial_selection: &str) -> Self {
         Self(
             id.to_string(),
@@ -144,26 +160,30 @@ impl Choice {
         )
     }
 
+    /// Adds a (key, value) as a choice.
     pub fn insert(mut self, key: &str, value: &str) -> Self {
         self.2.push((key.to_string(), value.to_string()));
         self
     }
 
+    /// The choice's unique id
     pub fn id(&self) -> String {
         self.0.clone()
     }
 
+    /// The user visible label of the choice.
     pub fn label(&self) -> String {
         self.1.clone()
     }
 
+    /// The initially selected value.
     pub fn initial_selection(&self) -> String {
         self.3.clone()
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a open file request.
+/// Specified options for a `open_file` request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
@@ -184,41 +204,49 @@ pub struct OpenFileOptions {
 }
 
 impl OpenFileOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets a user-visible string to the "accept" button.
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
         self
     }
 
+    /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
+    /// Sets whether to allow multiple files selection.
     pub fn multiple(mut self, multiple: bool) -> Self {
         self.multiple = Some(multiple);
         self
     }
 
+    /// Sets whether to select directories or not.
     pub fn directory(mut self, directory: bool) -> Self {
         self.directory = Some(directory);
         self
     }
 
+    /// Adds a files filter.
     pub fn filter(mut self, filter: FileFilter) -> Self {
         self.filters.push(filter);
         self
     }
 
+    /// Specifies the default filter.
     pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
         self.current_filter = Some(current_filter);
         self
     }
 
+    /// Adds a choice.
     pub fn choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
@@ -249,46 +277,55 @@ pub struct SaveFileOptions {
 }
 
 impl SaveFileOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets a user-visible string to the "accept" button.
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
         self
     }
 
+    /// Sets the current file name.
     pub fn current_name(mut self, current_name: &str) -> Self {
         self.current_name = Some(current_name.to_string());
         self
     }
 
+    /// Sets the current folder.
     pub fn current_folder(mut self, current_folder: &str) -> Self {
         self.current_folder = Some(current_folder.into());
         self
     }
 
+    /// Sets the absolute path of the file.
     pub fn current_file(mut self, current_file: &str) -> Self {
         self.current_file = Some(current_file.into());
         self
     }
 
+    /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
+    /// Adds a files filter.
     pub fn filter(mut self, filter: FileFilter) -> Self {
         self.filters.push(filter);
         self
     }
 
+    /// Sets the default filter.
     pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
         self.current_filter = Some(current_filter);
         self
     }
 
+    /// Adds a choice.
     pub fn choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
@@ -313,31 +350,37 @@ pub struct SaveFilesOptions {
 }
 
 impl SaveFilesOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets a user-visible string to the "accept" button.
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
         self
     }
 
+    /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
+    /// Adds a choice.
     pub fn choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
     }
 
+    /// Specifices the current folder path.
     pub fn current_folder(mut self, current_folder: &str) -> Self {
         self.current_folder = Some(current_folder.into());
         self
     }
 
+    /// Sets a list of files to save.
     pub fn files(mut self, files: Vec<String>) -> Self {
         self.files = Some(
             files
@@ -350,8 +393,11 @@ impl SaveFilesOptions {
 }
 
 #[derive(Debug, TypeDict, SerializeDict, DeserializeDict)]
+/// A response to an open/save file request.
 pub struct SelectedFiles {
+    /// The selected files uris.
     pub uris: Vec<String>,
+    /// The selected value of each choice as a tuple of (key, value)
     pub choices: Option<Vec<(String, String)>>,
 }
 

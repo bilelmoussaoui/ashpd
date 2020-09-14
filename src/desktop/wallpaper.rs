@@ -104,11 +104,13 @@ pub struct WallpaperOptions {
 }
 
 impl WallpaperOptions {
+    /// Whether to show a preview of the picture.
     pub fn show_preview(mut self, show_preview: bool) -> Self {
         self.show_preview = Some(show_preview);
         self
     }
 
+    /// Sets where to set the wallpaper on.
     pub fn set_on(mut self, set_on: SetOn) -> Self {
         self.set_on = Some(set_on);
         self

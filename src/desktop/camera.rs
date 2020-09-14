@@ -32,13 +32,14 @@ use zvariant::{Fd, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a camera access request.
+/// Specified options for a `access_camera` request.
 pub struct CameraAccessOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
 }
 
 impl CameraAccessOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self

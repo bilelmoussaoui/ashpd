@@ -49,12 +49,19 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
+/// The accuracy of the location.
 pub enum Accuracy {
+    /// None.
     None = 0,
+    /// Country.
     Country = 1,
+    /// City.
     City = 2,
+    /// Neighborhod.
     Neighborhood = 3,
+    /// Street.
     Street = 4,
+    /// The exact location.
     Exact = 5,
 }
 
@@ -72,21 +79,25 @@ pub struct LocationAccessOptions {
 }
 
 impl LocationAccessOptions {
+    /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
         self.session_handle_token = Some(session_handle_token);
         self
     }
 
+    /// Sets the distance treshold in meters.
     pub fn distance_threshold(mut self, distance_threshold: u32) -> Self {
         self.distance_threshold = Some(distance_threshold);
         self
     }
 
+    /// Sets the time treshold in seconds.
     pub fn time_threshold(mut self, time_threshold: u32) -> Self {
         self.time_threshold = Some(time_threshold);
         self
     }
 
+    /// Sets the location accuracy.
     pub fn accuracy(mut self, accuracy: Accuracy) -> Self {
         self.accuracy = Some(accuracy);
         self
@@ -101,6 +112,7 @@ pub struct LocationStartOptions {
 }
 
 impl LocationStartOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -108,9 +120,11 @@ impl LocationStartOptions {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
+/// The response received on a `location_updated` signal.
 pub struct LocationResponse(OwnedObjectPath, Location);
 
 impl LocationResponse {
+    /// A `SessionProxy` object path.
     pub fn session_handle<'a>(&self) -> &'a ObjectPath {
         &self.0
     }
@@ -135,6 +149,7 @@ impl LocationResponse {
         self.1.heading
     }
 
+    /// The location description
     pub fn description(&self) -> String {
         self.1.description.clone()
     }
@@ -174,13 +189,14 @@ struct Location {
     #[zvariant(rename = "Timestamp")]
     timestamp: (u64, u64),
 }
-
+/// The interface lets sandboxed applications query basic information about the location.
 pub struct LocationProxy<'a> {
     proxy: Proxy<'a>,
     connection: &'a Connection,
 }
 
 impl<'a> LocationProxy<'a> {
+    /// Creates a new location proxy.
     pub fn new(connection: &'a Connection) -> Result<Self> {
         let proxy = Proxy::new(
             connection,
