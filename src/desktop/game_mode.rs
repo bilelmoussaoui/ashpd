@@ -24,6 +24,7 @@ use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
+/// The status of the game mode.
 pub enum GameModeStatus {
     /// GameMode is inactive.
     Inactive = 0,
@@ -37,6 +38,7 @@ pub enum GameModeStatus {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
+/// The status of a register game mode request.
 pub enum RegisterStatus {
     /// If the game was successfully registered.
     Success = 0,
@@ -46,6 +48,7 @@ pub enum RegisterStatus {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
+/// The status of an un-register game mode request.
 pub enum UnregisterStatus {
     /// If the game was successfully registered.
     Success = 0,

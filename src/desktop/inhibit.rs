@@ -66,11 +66,13 @@ pub struct CreateMonitorOptions {
 }
 
 impl CreateMonitorOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
         self.session_handle_token = Some(session_handle_token);
         self
@@ -87,11 +89,13 @@ pub struct InhibitOptions {
 }
 
 impl InhibitOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets a user visible reason for the inhibit request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
@@ -100,10 +104,15 @@ impl InhibitOptions {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, BitFlags, Type)]
 #[repr(u32)]
+/// The actions to inhibit that can end the user's session
 pub enum InhibitFlags {
+    /// Logout.
     Logout = 1,
+    /// User switch.
     UserSwitch = 2,
+    /// Suspend.
     Suspend = 4,
+    /// Idle.
     Idle = 8,
 }
 
@@ -113,17 +122,21 @@ struct InhibitMonitorResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
+/// A response received when the session state signal is received.
 pub struct InhibitState(OwnedObjectPath, State);
 
 impl InhibitState {
+    /// The session handle.
     pub fn session_handle(&self) -> OwnedObjectPath {
         self.0.clone()
     }
 
+    /// Whether screensaver is active or not.
     pub fn screensaver_active(&self) -> bool {
         self.1.screensaver_active
     }
 
+    /// The session state.
     pub fn session_state(&self) -> SessionState {
         self.1.session_state
     }
@@ -139,9 +152,13 @@ struct State {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
+/// The current state of the user's session.
 pub enum SessionState {
+    /// Running.
     Running = 1,
+    /// The user asked to end the session e.g logout.
     QueryEnd = 2,
+    /// The session is ending.
     Ending = 3,
 }
 
@@ -152,6 +169,7 @@ pub struct InhibitProxy<'a> {
 }
 
 impl<'a> InhibitProxy<'a> {
+    /// Create a new inhibit proxy.
     pub fn new(connection: &'a Connection) -> Result<Self> {
         let proxy = Proxy::new(
             connection,
@@ -162,7 +180,7 @@ impl<'a> InhibitProxy<'a> {
         Ok(Self { proxy, connection })
     }
 
-    // Signal emitted when a particular low memory situation happens with 0 being the lowest level of memory availability warning, and 255 being the highest
+    /// Signal emitted when the session state changes.
     pub fn on_state_changed<F>(&self, callback: F) -> Result<()>
     where
         F: Fn(&InhibitProxy, InhibitState) -> Result<()>,
@@ -222,7 +240,7 @@ impl<'a> InhibitProxy<'a> {
     }
 
     /// Acknowledges that the caller received the "state_changed" signal
-    /// his method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
+    /// This method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
     ///
     /// # Arguments
     ///

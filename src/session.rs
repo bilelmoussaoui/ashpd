@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use zbus::{fdo::DBusProxy, fdo::Result, Connection};
-use zvariant::OwnedValue;
+use zvariant::{ObjectPath, OwnedValue};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
 
@@ -25,7 +25,13 @@ pub struct SessionProxy<'a> {
 }
 
 impl<'a> SessionProxy<'a> {
-    pub fn new(connection: &'a Connection, handle: &'a str) -> Result<Self> {
+    /// Creates a new session proxy.
+    ///
+    /// # Arguments
+    ///
+    /// * `connection` - A DBus session connection.
+    /// * `handle` - An object path returned by a portal call that creates a session.
+    pub fn new(connection: &'a Connection, handle: &'a ObjectPath) -> Result<Self> {
         let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/desktop")?;
         Ok(Self { proxy, connection })
     }

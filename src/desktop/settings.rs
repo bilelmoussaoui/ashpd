@@ -30,21 +30,25 @@ use zbus::{fdo::Result, Connection, Proxy};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-/// A HashMap of the key: value found on a specific namespace
+/// A HashMap of the <key, value> settings found on a specific namespace
 pub type Namespace = HashMap<String, OwnedValue>;
 
 #[derive(Debug, Serialize, Deserialize, Type)]
+/// A specific namespace.key = value setting.
 pub struct Setting(String, String, OwnedValue);
 
 impl Setting {
+    /// The setting namespace.
     pub fn namespace(&self) -> String {
         self.0.clone()
     }
 
+    /// The setting key.
     pub fn key(&self) -> String {
         self.1.clone()
     }
 
+    /// The setting value.
     pub fn value(&self) -> OwnedValue {
         self.2.clone()
     }
@@ -58,6 +62,7 @@ pub struct SettingsProxy<'a> {
 }
 
 impl<'a> SettingsProxy<'a> {
+    /// Creates a new settings proxy.
     pub fn new(connection: &'a Connection) -> Result<Self> {
         let proxy = Proxy::new(
             connection,

@@ -45,11 +45,11 @@ pub struct EmailOptions {
     pub handle_token: Option<HandleToken>,
     /// The email address to send to.
     pub address: Option<String>,
-    // The email addresses to send to.
+    /// The email addresses to send to.
     pub addresses: Option<Vec<String>>,
-    // The email addresses to CC.
+    /// The email addresses to CC.
     pub cc: Option<Vec<String>>,
-    // The email addresses to BCC.
+    /// The email addresses to BCC.
     pub bcc: Option<Vec<String>>,
     /// The subject of the email.
     pub subject: Option<String>,
@@ -60,41 +60,49 @@ pub struct EmailOptions {
 }
 
 impl EmailOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Sets the email address to send the email to.
     pub fn address(mut self, address: &str) -> Self {
         self.address = Some(address.to_string());
         self
     }
 
+    /// Sets a list of email addresses to send the email to.
     pub fn addresses(mut self, addresses: Vec<String>) -> Self {
         self.addresses = Some(addresses);
         self
     }
 
+    /// Sets a list of email addresses to BCC.
     pub fn bcc(mut self, bcc: Vec<String>) -> Self {
         self.bcc = Some(bcc);
         self
     }
 
+    /// Sets a list of email addresses to CC.
     pub fn cc(mut self, cc: Vec<String>) -> Self {
         self.cc = Some(cc);
         self
     }
 
+    /// Sets the email subject.
     pub fn subject(mut self, subject: &str) -> Self {
         self.subject = Some(subject.to_string());
         self
     }
 
+    /// Sets the email body.
     pub fn body(mut self, body: &str) -> Self {
         self.body = Some(body.to_string());
         self
     }
 
+    /// Attaches a file to the email.
     pub fn attach(mut self, attachment: Fd) -> Self {
         match self.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),

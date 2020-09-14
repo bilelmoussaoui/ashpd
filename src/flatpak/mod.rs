@@ -34,6 +34,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
+/// A bitmask representing the "permissions" of a newely created sandbox.
 pub enum SandboxFlags {
     /// Share the display access (X11, wayland) with the caller.
     DisplayAccess = 1,
@@ -49,6 +50,7 @@ pub enum SandboxFlags {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
+/// Flags affecting the created sandbox.
 pub enum SpawnFlags {
     /// Clear the environment.
     ClearEnv = 1,
@@ -68,12 +70,14 @@ pub enum SpawnFlags {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
+/// Flags marking what optional features are available.
 pub enum SupportsFlags {
     /// Supports the expose sandbox pids flag of Spawn.
     ExposePids = 1,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+/// Specficied options on a spawn request.
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     /// Note that absolute paths or subdirectories are not allowed.
@@ -90,26 +94,31 @@ pub struct SpawnOptions {
 }
 
 impl SpawnOptions {
+    /// Sets the list of filenames for files to expose the new sandbox.
     pub fn sandbox_expose(mut self, sandbox_expose: Vec<String>) -> Self {
         self.sandbox_expose = Some(sandbox_expose);
         self
     }
 
+    /// Sets the list of filenames for files to expose the new sandbox, readonly.
     pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: Vec<String>) -> Self {
         self.sandbox_expose_ro = Some(sandbox_expose_ro);
         self
     }
 
+    /// Sets the list of file descriptors of files to expose the new sandbox.
     pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: Vec<Fd>) -> Self {
         self.sandbox_expose_fd = Some(sandbox_expose_fd);
         self
     }
 
+    /// Sets the list of file descriptors of files to expose the new sandbox, readonly.
     pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: Vec<Fd>) -> Self {
         self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro);
         self
     }
 
+    /// Sets the created sandbox flags.
     pub fn sandbox_flags(mut self, sandbox_flags: BitFlags<SandboxFlags>) -> Self {
         self.sandbox_flags = Some(sandbox_flags);
         self
@@ -117,6 +126,9 @@ impl SpawnOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+/// Specficied options on a create monitor request.
+///
+/// Currently there are no possible options yet.
 pub struct CreateMonitorOptions {}
 
 #[dbus_proxy(

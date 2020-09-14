@@ -69,6 +69,7 @@ pub struct OpenDirOptions {
 }
 
 impl OpenDirOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
@@ -88,16 +89,19 @@ pub struct OpenFileOptions {
 }
 
 impl OpenFileOptions {
+    /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
         self
     }
 
+    /// Whether the file should be writeable or not.
     pub fn writeable(mut self, writeable: bool) -> Self {
         self.writeable = Some(writeable);
         self
     }
 
+    /// Whether to always ask the user which application to use or not.
     pub fn ask(mut self, ask: bool) -> Self {
         self.ask = Some(ask);
         self

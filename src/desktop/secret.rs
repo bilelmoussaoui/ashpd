@@ -35,6 +35,7 @@ pub struct RetrieveOptions {
 }
 
 impl RetrieveOptions {
+    /// Sets the token received on a previous call to `retrieve_secret`.
     pub fn token(mut self, token: &str) -> Self {
         self.token = Some(token.to_string());
         self

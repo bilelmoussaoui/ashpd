@@ -32,8 +32,11 @@ use zvariant_derive::Type;
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
 #[non_exhaustive]
+/// The status of moving a file to the trash.
 pub enum TrashStatus {
+    /// Moving the file to the trash failed.
     Failed = 0,
+    /// Moving the file to the trash succeeded
     Succeeded = 1,
 }
 

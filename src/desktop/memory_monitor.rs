@@ -24,6 +24,7 @@ pub struct MemoryMonitorProxy<'a> {
 }
 
 impl<'a> MemoryMonitorProxy<'a> {
+    /// Creates a new memory monitor proxy.
     pub fn new(connection: &'a Connection) -> Result<Self> {
         let proxy = Proxy::new(
             connection,

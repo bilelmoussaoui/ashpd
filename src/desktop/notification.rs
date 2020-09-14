@@ -51,10 +51,15 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
     Debug, Clone, Deserialize, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq,
 )]
 #[strum(serialize_all = "lowercase")]
+/// The notification priority
 pub enum Priority {
+    /// Low.
     Low,
+    /// Normal.
     Normal,
+    /// High.
     High,
+    /// Urgent.
     Urgent,
 }
 
@@ -95,6 +100,11 @@ pub struct Notification {
 }
 
 impl Notification {
+    /// Create a new notification
+    ///
+    /// # Arguments
+    ///
+    /// * `title` - the notification title
     pub fn new(title: &str) -> Self {
         Self {
             title: title.to_string(),
@@ -107,31 +117,37 @@ impl Notification {
         }
     }
 
+    /// Sets the notification body.
     pub fn body(mut self, body: &str) -> Self {
         self.body = Some(body.to_string());
         self
     }
 
+    /// Sets an icon to the notification
     pub fn icon(mut self, icon: OwnedValue) -> Self {
         self.icon = Some(icon);
         self
     }
 
+    /// Sets the notiifcation priority.
     pub fn priority(mut self, priority: Priority) -> Self {
         self.priority = Some(priority);
         self
     }
 
+    /// Sets the default action when the user clicks on the notification.
     pub fn default_action(mut self, default_action: &str) -> Self {
         self.default_action = Some(default_action.to_string());
         self
     }
 
+    /// Sets a value to be sent in the action_invoked signal.
     pub fn default_action_target(mut self, default_action_target: OwnedValue) -> Self {
         self.default_action_target = Some(default_action_target);
         self
     }
 
+    /// Adds a new button to the notification.
     pub fn button(mut self, button: Button) -> Self {
         match self.buttons {
             Some(ref mut buttons) => buttons.push(button),
@@ -155,6 +171,12 @@ pub struct Button {
 }
 
 impl Button {
+    /// Create a new notification button
+    ///
+    /// # Arguments
+    ///
+    /// * `label` - the user visible label of the button
+    /// * `action` - the action name to be invoked when the user clicks on the button.
     pub fn new(label: &str, action: &str) -> Self {
         Self {
             label: label.to_string(),
@@ -163,6 +185,7 @@ impl Button {
         }
     }
 
+    /// The value to send with the action name when the button is clicked.
     pub fn target(mut self, target: OwnedValue) -> Self {
         self.target = Some(target);
         self
@@ -170,6 +193,7 @@ impl Button {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
+/// An invoked action.
 pub struct Action<'a>(&'a str, &'a str, Vec<OwnedValue>);
 
 impl<'a> Action<'a> {
@@ -210,6 +234,7 @@ pub struct NotificationProxy<'a> {
 }
 
 impl<'a> NotificationProxy<'a> {
+    /// Create a new notification proxy.
     pub fn new(connection: &'a Connection) -> Result<Self> {
         let proxy = Proxy::new(
             connection,
