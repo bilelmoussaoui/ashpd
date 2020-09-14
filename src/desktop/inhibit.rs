@@ -222,7 +222,7 @@ impl<'a> InhibitProxy<'a> {
     }
 
     /// Acknowledges that the caller received the "state_changed" signal
-    /// his method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
+    /// This method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
     ///
     /// # Arguments
     ///
