@@ -191,4 +191,5 @@ trait Flatpak {
     fn version(&self) -> Result<u32>;
 }
 
+/// Monitor if there's an update it and install it.
 pub mod update_monitor;
