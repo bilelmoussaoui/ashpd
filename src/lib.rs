@@ -34,10 +34,12 @@
 //!
 //! | Feature | Description |
 //! | ---     | ----------- |
-//! | gdk_color | Implement `Into<gdk::RGBA>` for [`Color`] |
+//! | feature_gtk | Implement `Into<gdk::RGBA>` for [`Color`] |
+//! |  | Implement `From<gtk::Window>` for [`WindowIdentifier`] |
 //!
 //!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
+//! [`WindowIdentifier`]: ./window_identifier/struct.WindowIdentifier.html
 //!
 // #![deny(missing_docs)] enable once
 /// Interact with the user's desktop such as taking a screenshot, setting a background or querying the user's location.

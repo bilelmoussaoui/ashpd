@@ -34,3 +34,34 @@ impl Default for WindowIdentifier {
         Self::new("")
     }
 }
+
+#[cfg(feature = "feature_gtk")]
+impl From<gtk::Window> for WindowIdentifier {
+    fn from(win: gtk::Window) -> Self {
+        use gdk::prelude::{Cast, ObjectExt, WindowExt};
+        use gtk::WidgetExt;
+
+        let window = win
+            .get_window()
+            .expect("The window has to be mapped first.");
+
+        let handle = match window.get_display().get_type().name().as_ref() {
+            /*
+            TODO: implement the get_wayland handle
+            "GdkWaylandDisplay" => {
+                let handle = get_wayland_handle(win).unwrap();
+                WindowIdentifier(format!("wayland:{}", handle))
+            }*/
+            "GdkX11Display" => match window.downcast::<gdkx11::X11Window>().map(|w| w.get_xid()) {
+                Ok(xid) => WindowIdentifier(format!("x11:{}", xid)),
+                Err(_) => None,
+            },
+            _ => None,
+        };
+
+        match handle {
+            Some(h) => WindowIdentifier(h),
+            None => WindowIdentifier::default(),
+        }
+    }
+}

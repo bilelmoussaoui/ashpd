@@ -1,27 +1,27 @@
 [package]
-name = "ashpd"
-version = "0.1.0"
-description = "XDG portals wrapper in Rust using zbus"
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
+categories = ["gui", "os::linux-apis", "api-bindings"]
+description = "XDG portals wrapper in Rust using zbus"
 edition = "2018"
-repository = "https://github.com/bilelmoussaoui/ashpd"
 exclude = ["interfaces/*.xml"]
 keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
-categories = ["gui", "os::linux-apis", "api-bindings"]
+name = "ashpd"
+repository = "https://github.com/bilelmoussaoui/ashpd"
+version = "0.1.0"
 
 [features]
-gdk_color = ["gdk"]
-
+feature_gtk = ["gdk", "gdkx11", "gtk"]
 
 [dependencies]
-zbus = { version = "1.1" }
-zvariant = { version = "2.2", features = ["enumflags2"] }
-zvariant_derive = { version = "2.2" }
-serde = {version = "1.0", features = ["derive"] }
+enumflags2 = "0.6"
+gdk = {version = "0.13", optional = true}
+gtk = { version = "0.9", optional = true}
+gdkx11 = {version = "0.9", optional = true}
+serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 strum = "0.19"
 strum_macros = "0.19"
-enumflags2 = "0.6"
-gdk = {version = "0.13", optional = true}
-
+zbus = {version = "1.1"}
+zvariant = {version = "2.2", features = ["enumflags2"]}
+zvariant_derive = {version = "2.2"}

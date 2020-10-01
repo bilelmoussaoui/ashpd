@@ -10,3 +10,5 @@ Cargo.lock
 **/*.rs.bk
 demo/target/
 demo/
+src/window_identifier.rs
+src/window_identifier.rs

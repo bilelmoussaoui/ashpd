@@ -131,8 +131,8 @@ impl Color {
     }
 }
 
-#[cfg(feature = "gdk_color")]
-impl Into<gdk::RGBA> for &Color {
+#[cfg(feature = "feature_gtk")]
+impl Into<gdk::RGBA> for Color {
     fn into(self) -> gdk::RGBA {
         gdk::RGBA {
             red: self.red(),
