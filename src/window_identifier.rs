@@ -12,9 +12,7 @@ use zvariant_derive::Type;
 ///
 /// For other windowing systems, or if you don't have a suitable handle, just use the `Default` implementation.
 ///
-/// Normally, we should provide a `From<gtk::Window> for WindowIdentifier` implementation.
-/// But as that's currently impossible to do from Rust in a sane way, we should try to provide a C function
-/// that gives us a handle from the `Gdk::Window` and call it from Rust in the `From` implementation.
+/// Please note that the `From<gtk::Window>` implementation is x11 only for now.
 ///
 /// We would love merge requests that adds other `From<T> for WindowIdentifier` implementations for other toolkits.
 ///
