@@ -29,6 +29,7 @@ use std::collections::HashMap;
 use zbus::{fdo::Result, Connection, Proxy};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
+use std::convert::TryFrom;
 
 /// A HashMap of the <key, value> settings found on a specific namespace
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -114,7 +115,7 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// * `namespace` - Namespace to look up key in
     /// * `key` - The key to get
-    pub fn read<T: zvariant::OwnedValue>(&self, namespace: &str, key: &str) -> zbus::Result<T> {
+    pub fn read<T: TryFrom<zvariant::OwnedValue>>(&self, namespace: &str, key: &str) -> zbus::Result<T> {
         self.proxy.call("Read", &(namespace, key))
     }
 
