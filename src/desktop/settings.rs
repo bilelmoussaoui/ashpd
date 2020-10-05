@@ -26,10 +26,10 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use zbus::{fdo::Result, Connection, Proxy};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
-use std::convert::TryFrom;
 
 /// A HashMap of the <key, value> settings found on a specific namespace
 pub type Namespace = HashMap<String, OwnedValue>;
