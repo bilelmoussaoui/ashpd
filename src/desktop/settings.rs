@@ -8,7 +8,7 @@
 //!
 //!     println!(
 //!         "{:#?}",
-//!         proxy.read("org.gnome.desktop.interface", "clock-format")?
+//!         proxy.read::<String>("org.gnome.desktop.interface", "clock-format")?
 //!     );
 //!     println!("{:#?}", proxy.read_all(&["org.gnome.desktop.interface"])?);
 //!
