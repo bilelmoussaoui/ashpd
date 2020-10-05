@@ -114,7 +114,7 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// * `namespace` - Namespace to look up key in
     /// * `key` - The key to get
-    pub fn read(&self, namespace: &str, key: &str) -> zbus::Result<zvariant::OwnedValue> {
+    pub fn read<T: zvariant::OwnedValue>(&self, namespace: &str, key: &str) -> zbus::Result<T> {
         self.proxy.call("Read", &(namespace, key))
     }
 
