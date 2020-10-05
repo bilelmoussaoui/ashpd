@@ -16,7 +16,7 @@
 //!     proxy.on_setting_changed(|setting| {
 //!         println!("{}", setting.namespace());
 //!         println!("{}", setting.key());
-//!         println!("{:#?}", setting.value());
+//!         println!("{:#?}", setting.value::<String>());
 //!     })?;
 //!
 //!
@@ -50,7 +50,7 @@ impl Setting {
     }
 
     /// The setting value.
-    pub fn value(&self) -> OwnedValue {
+    pub fn value<T: TryFrom<OwnedValue>>(&self) -> T {
         self.2.clone()
     }
 }
@@ -115,7 +115,7 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// * `namespace` - Namespace to look up key in
     /// * `key` - The key to get
-    pub fn read<T: TryFrom<zvariant::OwnedValue>>(&self, namespace: &str, key: &str) -> zbus::Result<T> {
+    pub fn read<T: TryFrom<OwnedValue>>(&self, namespace: &str, key: &str) -> zbus::Result<T> {
         self.proxy.call("Read", &(namespace, key))
     }
 
