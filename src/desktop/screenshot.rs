@@ -31,24 +31,23 @@
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
-//!    let connection = zbus::Connection::new_session()?;
-//!    let proxy = ScreenshotProxy::new(&connection)?;
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = ScreenshotProxy::new(&connection)?;
 //!
-//!    let request_handle = proxy.pick_color(
+//!     let request_handle = proxy.pick_color(
 //!             WindowIdentifier::default(),
 //!             PickColorOptions::default()
-//!    )?;
+//!     )?;
 //!
-//!    let request = RequestProxy::new(&connection, &request_handle)?;
-//!
+//!     let request = RequestProxy::new(&connection, &request_handle)?;
 //!     request.on_response(|response: Response<Color>| {
 //!         if let Ok(color) = response {
 //!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!         }
-//!    })?;
+//!     })?;
 //!
-//!    Ok(())
-//!}
+//!     Ok(())
+//! }
 //! ```
 use crate::{HandleToken, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
