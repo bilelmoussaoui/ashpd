@@ -44,7 +44,7 @@
 //! [`WindowIdentifier`]: ./window_identifier/struct.WindowIdentifier.html
 //!
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
-compile_error!("You can't enable both GTK 3 & GTK 4 features at once.");
+compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 
 // #![deny(missing_docs)] enable once
 /// Interact with the user's desktop such as taking a screenshot, setting a background or querying the user's location.

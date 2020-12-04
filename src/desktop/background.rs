@@ -16,7 +16,7 @@
 //!         BackgroundOptions::default()
 //!             .autostart(true)
 //!             .commandline(vec!["geary".to_string()])
-//!             .reason("Automatically fetch your latest mails."),
+//!             .reason("Automatically fetch your latest mails"),
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;

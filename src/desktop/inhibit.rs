@@ -33,7 +33,7 @@
 //!                 proxy.inhibit(
 //!                     WindowIdentifier::default(),
 //!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
-//!                     InhibitOptions::default().reason("please save the opened project first."),
+//!                     InhibitOptions::default().reason("please save the opened project first"),
 //!                 )?;
 //!
 //!                 thread::sleep(time::Duration::from_secs(1));

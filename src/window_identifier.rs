@@ -72,7 +72,7 @@ impl From<gtk4::Window> for WindowIdentifier {
 
         let surface = win
             .get_surface()
-            .expect("The surface has to be mapped first.");
+            .expect("The window has to be mapped first.");
 
         let handle = match surface
             .get_display()
