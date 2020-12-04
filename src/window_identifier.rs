@@ -12,7 +12,7 @@ use zvariant_derive::Type;
 ///
 /// For other windowing systems, or if you don't have a suitable handle, just use the `Default` implementation.
 ///
-/// Please note that the `From<gtk::Window>` implementation is x11 only for now.
+/// Please note that the `From<gtk3::Window>` and `From<gtk4::Window> implementation are x11 only for now.
 ///
 /// We would love merge requests that adds other `From<T> for WindowIdentifier` implementations for other toolkits.
 ///
@@ -51,6 +51,52 @@ impl From<gtk3::Window> for WindowIdentifier {
                 WindowIdentifier(format!("wayland:{}", handle))
             }*/
             "GdkX11Display" => match window.downcast::<gdk3x11::X11Window>().map(|w| w.get_xid()) {
+                Ok(xid) => Some(format!("x11:{}", xid)),
+                Err(_) => None,
+            },
+            _ => None,
+        };
+
+        match handle {
+            Some(h) => WindowIdentifier(h),
+            None => WindowIdentifier::default(),
+        }
+    }
+}
+
+#[cfg(feature = "feature_gtk4")]
+impl From<gtk4::Window> for WindowIdentifier {
+    fn from(win: gtk4::Window) -> Self {
+        use gdk4::prelude::{Cast, ObjectExt};
+        use gtk4::NativeExt;
+
+        let surface = win
+            .get_surface()
+            .expect("The surface has to be mapped first.");
+
+        let handle = match surface
+            .get_display()
+            .expect("Surface has to be attached to a display")
+            .get_type()
+            .name()
+            .as_ref()
+        {
+            "GdkWaylandDisplay" => {
+                /*
+                As the wayland api is async, let's wait till zbus is async ready before
+                we do enable it.
+                Note: we need to unexport the handle once it's not used anymore automatically
+                        using level.unexport_handle();
+                let top_level = surface.downcast::<gdk4wayland::WaylandTopLevel>().unwrap();
+                top_level.export_handle(move |level, handle| {
+                    Some(format!("wayland:{}", handle))
+                });*/
+                None
+            }
+            "GdkX11Display" => match surface
+                .downcast::<gdk4x11::X11Surface>()
+                .map(|w| w.get_xid())
+            {
                 Ok(xid) => Some(format!("x11:{}", xid)),
                 Err(_) => None,
             },

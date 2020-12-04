@@ -142,6 +142,18 @@ impl Into<gdk3::RGBA> for Color {
     }
 }
 
+#[cfg(feature = "feature_gtk4")]
+impl Into<gdk4::RGBA> for Color {
+    fn into(self) -> gdk4::RGBA {
+        gdk4::RGBA {
+            red: self.red(),
+            green: self.green(),
+            blue: self.blue(),
+            alpha: 1_f64,
+        }
+    }
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Screenshot",
     default_service = "org.freedesktop.portal.Desktop",
