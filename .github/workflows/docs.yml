@@ -8,10 +8,12 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    container:
+      image: docker.io/bilelmoussaoui/gtk4
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install libgtk-3-dev
+        run: sudo dnf install -y gtk3-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
