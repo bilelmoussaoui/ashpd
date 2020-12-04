@@ -33,11 +33,11 @@ impl Default for WindowIdentifier {
     }
 }
 
-#[cfg(feature = "feature_gtk")]
-impl From<gtk::Window> for WindowIdentifier {
-    fn from(win: gtk::Window) -> Self {
-        use gdk::prelude::{Cast, ObjectExt, WindowExt};
-        use gtk::WidgetExt;
+#[cfg(feature = "feature_gtk3")]
+impl From<gtk3::Window> for WindowIdentifier {
+    fn from(win: gtk3::Window) -> Self {
+        use gdk3::prelude::{Cast, ObjectExt, WindowExt};
+        use gtk3::WidgetExt;
 
         let window = win
             .get_window()
@@ -50,8 +50,8 @@ impl From<gtk::Window> for WindowIdentifier {
                 let handle = get_wayland_handle(win).unwrap();
                 WindowIdentifier(format!("wayland:{}", handle))
             }*/
-            "GdkX11Display" => match window.downcast::<gdkx11::X11Window>().map(|w| w.get_xid()) {
-                Ok(xid) => WindowIdentifier(format!("x11:{}", xid)),
+            "GdkX11Display" => match window.downcast::<gdk3x11::X11Window>().map(|w| w.get_xid()) {
+                Ok(xid) => Some(format!("x11:{}", xid)),
                 Err(_) => None,
             },
             _ => None,

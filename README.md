@@ -36,8 +36,8 @@ fn main() -> Result<()> {
 ## Optional features
 | Feature | Description |
 | ---     | ----------- |
-| feature_gtk | Implement `Into<gdk::RGBA>` for [`Color`] |
-|  | Implement `From<gtk::Window>` for [`WindowIdentifier`] |
+| feature_gtk3 | Implement `Into<gdk3::RGBA>` for [`Color`] |
+|  | Implement `From<gtk3::Window>` for [`WindowIdentifier`] |
 
 [`Color`]: https://bilelmoussaoui.github.io/ashpd/ashpd/desktop/screenshot/struct.Color.html
 [`WindowIdentifier`]: https://bilelmoussaoui.github.io/ashpd/ashpd/struct.WindowIdentifier.html

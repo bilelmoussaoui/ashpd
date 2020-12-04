@@ -11,13 +11,13 @@ repository = "https://github.com/bilelmoussaoui/ashpd"
 version = "0.1.0"
 
 [features]
-feature_gtk = ["gdk", "gdkx11", "gtk"]
+feature_gtk3 = ["gdk3", "gdk3x11", "gtk3"]
 
 [dependencies]
 enumflags2 = "0.6"
-gdk = {version = "0.13", optional = true}
-gtk = { version = "0.9", optional = true}
-gdkx11 = {version = "0.9", optional = true}
+gdk3 = {package = "gdk", version = "0.13", optional = true}
+gdk3x11 = {package = "gdkx11", version = "0.9", optional = true}
+gtk3 = {package = "gtk", version = "0.9", optional = true}
 serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 strum = "0.20"

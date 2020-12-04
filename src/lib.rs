@@ -34,8 +34,8 @@
 //!
 //! | Feature | Description |
 //! | ---     | ----------- |
-//! | feature_gtk | Implement `Into<gdk::RGBA>` for [`Color`] |
-//! |  | Implement `From<gtk::Window>` for [`WindowIdentifier`] |
+//! | feature_gtk3 | Implement `Into<gdk3::RGBA>` for [`Color`] |
+//! |  | Implement `From<gtk3::Window>` for [`WindowIdentifier`] |
 //!
 //!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
