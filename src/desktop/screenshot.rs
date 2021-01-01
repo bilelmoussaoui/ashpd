@@ -149,7 +149,7 @@ impl Into<gdk4::RGBA> for Color {
             red: self.red(),
             green: self.green(),
             blue: self.blue(),
-            alpha: 1_f64,
+            alpha: 1_f32,
         }
     }
 }
