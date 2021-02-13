@@ -17,8 +17,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: Response<Screenshot>| {
+//!     request.connect_response(|response: Response<Screenshot>| {
 //!         println!("{}", response.unwrap().uri);
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -40,10 +41,11 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: Response<Color>| {
+//!     request.connect_response(|response: Response<Color>| {
 //!         if let Ok(color) = response {
 //!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!         }
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())

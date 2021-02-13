@@ -18,17 +18,19 @@
 //!     let monitor_handle = proxy.create_update_monitor(CreateMonitorOptions::default())?;
 //!     let monitor = UpdateMonitorProxy::new(&connection, &monitor_handle)?;
 //!
-//!     monitor.on_progress(|p: UpdateProgress| {
+//!     monitor.connect_progress(move |p: UpdateProgress| {
 //!         println!("{:#?}", p);
 //!         if p.progress == Some(100) {
 //!             monitor.close().unwrap();
 //!         }
+//!         Ok(())
 //!     })?;
 //!
-//!     monitor.on_update_available(|_: UpdateInfo| {
+//!     monitor.connect_update_available(move |_: UpdateInfo| {
 //!         monitor
 //!             .update(WindowIdentifier::default(), UpdateOptions::default())
 //!             .unwrap();
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -36,8 +38,7 @@
 //! ```
 use crate::WindowIdentifier;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{fdo::DBusProxy, fdo::Result, Connection};
-use zvariant::ObjectPath;
+use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -91,78 +92,24 @@ pub struct UpdateProgress {
     pub error_message: Option<String>,
 }
 
+#[dbus_proxy(default_path = "/org/freedesktop/portal/Flatpak")]
 /// The interface exposes some interactions with Flatpak on the host to the sandbox.
 /// For example, it allows you to restart the applications or start a more sandboxed instance.
-pub struct UpdateMonitorProxy<'a> {
-    proxy: DBusProxy<'a>,
-    connection: &'a Connection,
-}
-
-impl<'a> UpdateMonitorProxy<'a> {
-    /// Creates a new request proxy.
-    ///
-    /// # Arguments
-    ///
-    /// * `connection` - A DBus session connection.
-    /// * `handle` - An object path returned by a create_update_monitor call.
-    pub fn new(connection: &'a Connection, handle: &'a ObjectPath) -> Result<Self> {
-        let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/Flatpak")?;
-        Ok(Self { proxy, connection })
-    }
-
+trait UpdateMonitor {
+    #[dbus_proxy(signal)]
     /// A signal received when there's progress during the application update.
-    // FIXME: refactor once zbus supports signals
-    pub fn on_progress<F>(&self, callback: F) -> Result<()>
-    where
-        F: Fn(UpdateProgress),
-    {
-        loop {
-            let msg = self.connection.receive_message()?;
-            let msg_header = msg.header()?;
-            if msg_header.message_type()? == zbus::MessageType::Signal
-                && msg_header.member()? == Some("Progress")
-            {
-                let response = msg.body::<UpdateProgress>()?;
-                callback(response);
-            }
-        }
-    }
+    fn progress(&self, progress: UpdateProgress) -> Result<()>;
 
+    #[dbus_proxy(signal)]
     /// A signal received when there's an application update.
-    // FIXME: refactor once zbus supports signals
-    pub fn on_update_available<F>(&self, callback: F) -> Result<()>
-    where
-        F: FnOnce(UpdateInfo),
-    {
-        loop {
-            let msg = self.connection.receive_message()?;
-            let msg_header = msg.header()?;
-            if msg_header.message_type()? == zbus::MessageType::Signal
-                && msg_header.member()? == Some("UpdateAvailable")
-            {
-                let response = msg.body::<UpdateInfo>()?;
-                callback(response);
-                break;
-            }
-        }
-        Ok(())
-    }
+    fn update_available(&self, update_info: UpdateInfo) -> Result<()>;
 
     /// Ends the update monitoring and cancels any ongoing installation.
-    pub fn close(&self) -> zbus::Result<()> {
-        self.proxy.call("Close", &())?;
-        Ok(())
-    }
+    fn close(&self) -> Result<()>;
 
     /// Asks to install an update of the calling app.
     ///
     /// Note that updates are only allowed if the new version
     /// has the same permissions (or less) than the currently installed version
-    pub fn update(
-        &self,
-        parent_window: WindowIdentifier,
-        options: UpdateOptions,
-    ) -> zbus::Result<()> {
-        self.proxy.call("Update", &(parent_window, options))
-    }
+    fn update(&self, parent_window: WindowIdentifier, options: UpdateOptions) -> Result<()>;
 }

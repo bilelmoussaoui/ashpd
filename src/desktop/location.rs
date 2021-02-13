@@ -27,14 +27,14 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(move |response: Response<Basic>| {
-//!         if response.is_ok() {
-//!             proxy.on_location_updated(move |location| {
-//!                 println!("{}", location.accuracy());
-//!                 println!("{}", location.longitude());
-//!                 println!("{}", location.latitude());
-//!             });
-//!         }
+//!     request.connect_response(move |response: Response<Basic>| {
+//!         proxy.connect_location_updated(move |location| {
+//!             println!("{}", location.accuracy());
+//!             println!("{}", location.longitude());
+//!             println!("{}", location.latitude());
+//!             Ok(())
+//!         })?;
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -43,7 +43,7 @@
 use crate::{HandleToken, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{fdo::Result, Connection, Proxy};
+use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -189,43 +189,17 @@ struct Location {
     #[zvariant(rename = "Timestamp")]
     timestamp: (u64, u64),
 }
+
+#[dbus_proxy(
+    interface = "org.freedesktop.portal.Location",
+    default_service = "org.freedesktop.portal.Desktop",
+    default_path = "/org/freedesktop/portal/desktop"
+)]
 /// The interface lets sandboxed applications query basic information about the location.
-pub struct LocationProxy<'a> {
-    proxy: Proxy<'a>,
-    connection: &'a Connection,
-}
-
-impl<'a> LocationProxy<'a> {
-    /// Creates a new location proxy.
-    pub fn new(connection: &'a Connection) -> Result<Self> {
-        let proxy = Proxy::new(
-            connection,
-            "org.freedesktop.portal.Desktop",
-            "/org/freedesktop/portal/desktop",
-            "org.freedesktop.portal.Location",
-        )?;
-        Ok(Self { proxy, connection })
-    }
-
+trait Location {
+    #[dbus_proxy(signal)]
     /// Signal emitted when the user location is updated.
-    // FIXME: refactor once zbus supports signals
-    pub fn on_location_updated<F>(&self, callback: F) -> Result<()>
-    where
-        F: FnOnce(LocationResponse),
-    {
-        loop {
-            let msg = self.connection.receive_message()?;
-            let msg_header = msg.header()?;
-            if msg_header.message_type()? == zbus::MessageType::Signal
-                && msg_header.member()? == Some("LocationUpdated")
-            {
-                let response = msg.body::<LocationResponse>()?;
-                callback(response);
-                break;
-            }
-        }
-        Ok(())
-    }
+    fn location_updated(&self, location: LocationResponse) -> Result<()>;
 
     /// Create a location session.
     ///
@@ -237,9 +211,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// [`LocationAccessOptions`]: ./struct.LocationAccessOptions.html
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
-    pub fn create_session(&self, options: LocationAccessOptions) -> zbus::Result<OwnedObjectPath> {
-        self.proxy.call("CreateSession", &(options))
-    }
+    fn create_session(&self, options: LocationAccessOptions) -> zbus::Result<OwnedObjectPath>;
 
     /// Start the location session.
     /// An application can only attempt start a session once.
@@ -254,18 +226,14 @@ impl<'a> LocationProxy<'a> {
     ///
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
-    pub fn start(
+    fn start(
         &self,
-        session_handle: ObjectPath,
+        session_handle: ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: LocationStartOptions,
-    ) -> zbus::Result<OwnedObjectPath> {
-        self.proxy
-            .call("Start", &(session_handle, parent_window, options))
-    }
+    ) -> zbus::Result<OwnedObjectPath>;
 
     /// version property
-    pub fn version(&self) -> Result<u32> {
-        self.proxy.get_property::<u32>("version")
-    }
+    #[dbus_proxy(property, name = "version")]
+    fn version(&self) -> Result<u32>;
 }

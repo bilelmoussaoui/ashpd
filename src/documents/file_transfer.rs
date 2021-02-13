@@ -83,7 +83,7 @@ trait FileTransfer {
     /// * `fds` - a list of file descriptors of the files to register
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
-    fn add_files(&self, key: &str, fds: &[Fd], options: HashMap<&str, Value>) -> Result<()>;
+    fn add_files(&self, key: &str, fds: &[Fd], options: HashMap<&str, Value<'_>>) -> Result<()>;
 
     /// Retrieves files that were previously added to the session with `add_files`.
     /// The files will be exported in the document portal as-needed for the caller,
@@ -96,7 +96,7 @@ trait FileTransfer {
     /// * `key` - a key returned by `start_transfer`
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
-    fn retrieve_files(&self, key: &str, options: HashMap<&str, Value>) -> Result<Vec<String>>;
+    fn retrieve_files(&self, key: &str, options: HashMap<&str, Value<'_>>) -> Result<Vec<String>>;
 
     /// Starts a session for a file transfer.
     /// The caller should call `add_files` at least once, to add files to this session.
@@ -112,8 +112,8 @@ trait FileTransfer {
     /// * `key` - A key returned by `start_transfer`
     fn stop_transfer(&self, key: &str) -> Result<()>;
 
-    // FIXME: signal
-    // fn transfer_closed(&self, key: &str);
+    #[dbus_proxy(signal)]
+    fn transfer_closed(&self, key: &str) -> Result<()>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]

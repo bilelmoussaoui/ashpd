@@ -24,8 +24,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: Response<Basic>| {
+//!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok() );
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -51,8 +52,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: Response<Basic>| {
+//!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok() );
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

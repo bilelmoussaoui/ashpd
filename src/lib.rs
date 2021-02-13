@@ -20,10 +20,11 @@
 //!
 //!    let request = RequestProxy::new(&connection, &request_handle)?;
 //!
-//!     request.on_response(|response: Response<Color>| {
+//!     request.connect_response(|response: Response<Color>| {
 //!         if let Ok(color) = response {
 //!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!         }
+//!         Ok(())
 //!    })?;
 //!
 //!    Ok(())
@@ -60,8 +61,8 @@ mod session;
 mod window_identifier;
 pub use self::handle_token::HandleToken;
 pub use self::helper::NString;
-pub use self::request::{BasicResponse, RequestProxy, Response, ResponseError};
-pub use self::session::SessionProxy;
+pub use self::request::{AsyncRequestProxy, BasicResponse, RequestProxy, Response, ResponseError};
+pub use self::session::{AsyncSessionProxy, SessionProxy};
 pub use self::window_identifier::WindowIdentifier;
 pub use zbus;
 pub use zvariant;

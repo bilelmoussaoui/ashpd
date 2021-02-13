@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```no_run
+//! ```
 //! use ashpd::desktop::account::{AccountProxy, UserInfoOptions, UserInfo};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
@@ -14,12 +14,15 @@
 //!             .reason("Fractal would like access to your information"),
 //!     )?;
 //!     let req = RequestProxy::new(&connection, &request_handle)?;
-//!     req.on_response(|response: Response<UserInfo>| {
-//!         if let Ok(user_info) = response {
+//!     req.connect_response(|response| {
+//!             let user_info: Response<UserInfo> = response.into();
+//!             let user_info = user_info.unwrap();
+//!
 //!             println!("{}", user_info.id);
 //!             println!("{}", user_info.name);
 //!             println!("{}", user_info.image);
-//!         }
+//!         
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

@@ -22,10 +22,11 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|r: Response<Basic>| {
+//!     request.connect_response(move |r: Response<Basic>| {
 //!         if r.is_ok() {
-//!             start_remote(handle, connection, proxy).unwrap();
+//!             start_remote(handle, connection, proxy)?;
 //!         }
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -43,17 +44,17 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|r: Response<SelectedDevices>| {
+//!     request.connect_response(move |r: Response<SelectedDevices>| {
 //!         proxy
 //!             .notify_keyboard_keycode(
 //!                 handle.clone(),
 //!                 HashMap::new(),
 //!                 13, // Enter key code
 //!                 KeyState::Pressed,
-//!             )
-//!             .unwrap();
+//!             )?;
 //!
 //!         println!("{:#?}", r.unwrap().devices);
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -69,9 +70,10 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &handle)?;
-//!     request.on_response(|r: Response<CreateSession>| {
+//!     request.connect_response(move |r: Response<CreateSession>| {
 //!         let session = r.unwrap();
-//!         select_devices(session.handle(), &connection, &proxy).unwrap();
+//!         select_devices(session.handle(), &connection, &proxy)?;
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -236,8 +238,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_keyboard_keycode(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         keycode: i32,
         state: KeyState,
     ) -> Result<()>;
@@ -257,8 +259,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_keyboard_keysym(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         keysym: i32,
         state: KeyState,
     ) -> Result<()>;
@@ -282,8 +284,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_pointer_axis(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         dx: f64,
         dy: f64,
     ) -> Result<()>;
@@ -302,8 +304,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_pointer_axis_discrete(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         axis: Axis,
         steps: i32,
     ) -> Result<()>;
@@ -325,8 +327,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_pointer_button(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         button: i32,
         state: KeyState,
     ) -> Result<()>;
@@ -346,8 +348,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_pointer_motion(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         dx: f64,
         dy: f64,
     ) -> Result<()>;
@@ -368,8 +370,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_pointer_motion_absolute(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         stream: u32,
         x: f64,
         y: f64,
@@ -394,8 +396,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_touch_down(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         stream: u32,
         slot: u32,
         x: f64,
@@ -421,8 +423,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_touch_motion(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         stream: u32,
         slot: u32,
         x: f64,
@@ -444,8 +446,8 @@ trait RemoteDesktop {
     /// FIXME: figure out the options we can take here
     fn notify_touch_up(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
         slot: u32,
     ) -> Result<()>;
 
@@ -463,7 +465,7 @@ trait RemoteDesktop {
     /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
     fn select_devices(
         &self,
-        session_handle: ObjectPath,
+        session_handle: ObjectPath<'_>,
         options: SelectDevicesOptions,
     ) -> Result<OwnedObjectPath>;
 
@@ -486,7 +488,7 @@ trait RemoteDesktop {
     /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
     fn start(
         &self,
-        session_handle: ObjectPath,
+        session_handle: ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: StartRemoteOptions,
     ) -> Result<OwnedObjectPath>;
