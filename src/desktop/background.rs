@@ -20,11 +20,12 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|response: Response<Background>| {
+//!     request.connect_response(|response: Response<Background>| {
 //!         if let Ok(bg) = response {
 //!             println!("{}", bg.autostart);
 //!             println!("{}", bg.background);
 //!         }
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }

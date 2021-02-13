@@ -176,11 +176,11 @@ trait Flatpak {
     /// * `to_process_group` - whether to send the signal to the process group
     fn spawn_signal(&self, pid: u32, signal: u32, to_process_group: bool) -> Result<()>;
 
-    // FIXME: signal
-    // fn spawn_started(&self, pid: u32, relpid: u32);
+    #[dbus_proxy(signal)]
+    fn spawn_started(&self, pid: u32, relpid: u32) -> Result<()>;
 
-    // FIXME: signal
-    // fn spawn_existed(&self, pid: u32, exit_status: u32);
+    #[dbus_proxy(signal)]
+    fn spawn_existed(&self, pid: u32, exit_status: u32) -> Result<()>;
 
     /// Flags marking what optional features are available.
     #[dbus_proxy(property)]

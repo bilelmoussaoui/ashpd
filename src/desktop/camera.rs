@@ -14,13 +14,14 @@
 //!     let request_handle = proxy.access_camera(CameraAccessOptions::default())?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(move |response: Response<Basic>| {
+//!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
 //!             //let options: HashMap<&str, zvariant::Value> = HashMap::new();
 //!             //FIXME: update this once we know which kind of options it takes
 //!             //let req = proxy.open_pipe_wire_remote(options).unwrap();
 //!             //println!("{:#?}", req);
 //!         }
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -73,7 +74,7 @@ trait Camera {
     ///
     /// * `options` - ?
     /// FIXME: figure out what are the possible options
-    fn open_pipe_wire_remote(&self, options: HashMap<&str, Value>) -> Result<Fd>;
+    fn open_pipe_wire_remote(&self, options: HashMap<&str, Value<'_>>) -> Result<Fd>;
 
     /// A boolean stating whether there is any cameras available.
     #[dbus_proxy(property)]

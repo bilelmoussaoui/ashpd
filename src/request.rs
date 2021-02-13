@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
-use zbus::{fdo::DBusProxy, fdo::Result, Connection};
-use zvariant::{ObjectPath, OwnedValue};
+use zbus::dbus_proxy;
+use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-/// A typical response returned by the `on_response` signal of a `RequestProxy`.
+/// A typical response returned by the `connect_response` signal of a `RequestProxy`.
 ///
 /// [`RequestProxy`]: ./struct.RequestProxy.html
 pub type Response<T> = std::result::Result<T, ResponseError>;
@@ -25,7 +25,7 @@ pub enum ResponseError {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
-enum ResponseType {
+pub enum ResponseType {
     /// Success, the request is carried out
     Success = 0,
     /// The user cancelled the interaction
@@ -52,53 +52,16 @@ enum ResponseType {
 /// It is recommended that the caller should verify that the returned handle is what
 /// it expected, and update its signal subscription if it isn't.
 /// This ensures that applications will work with both old and new versions of xdg-desktop-portal.
-pub struct RequestProxy<'a> {
-    proxy: DBusProxy<'a>,
-    connection: &'a Connection,
-}
 
-impl<'a> RequestProxy<'a> {
-    /// Creates a new request proxy.
-    ///
-    /// # Arguments
-    ///
-    /// * `connection` - A DBus session connection.
-    /// * `handle` - An object path returned by a portal call.
-    pub fn new(connection: &'a Connection, handle: &'a ObjectPath) -> Result<Self> {
-        let proxy = DBusProxy::new_for(connection, handle, "/org/freedesktop/portal/desktop")?;
-        Ok(Self { proxy, connection })
-    }
-
+#[dbus_proxy(default_path = "/org/freedesktop/portal/desktop")]
+trait Request {
+    #[dbus_proxy(signal)]
     /// A signal emitted when the portal interaction is over.
-    // FIXME: refactor once zbus supports signals
-    pub fn on_response<F, T>(&self, callback: F) -> Result<()>
+    fn response<T>(&self, response: (ResponseType, T)) -> Result<()>
     where
-        F: FnOnce(Response<T>),
-        T: serde::de::DeserializeOwned + zvariant::Type,
-    {
-        loop {
-            let msg = self.connection.receive_message()?;
-            let msg_header = msg.header()?;
-            if msg_header.message_type()? == zbus::MessageType::Signal
-                && msg_header.member()? == Some("Response")
-            {
-                let response = msg.body::<(ResponseType, T)>()?;
-                let response = match response.0 {
-                    ResponseType::Success => Response::Ok(response.1),
-                    ResponseType::Cancelled => Response::Err(ResponseError::Cancelled),
-                    ResponseType::Other => Response::Err(ResponseError::Other),
-                };
-                callback(response);
-                break;
-            }
-        }
-        Ok(())
-    }
+        T: serde::de::DeserializeOwned + zvariant::Type;
 
     /// Closes the portal request to which this object refers and ends all related user interaction (dialogs, etc).
     /// A Response signal will not be emitted in this case.
-    pub fn close(&self) -> Result<()> {
-        self.proxy.call("Close", &())?;
-        Ok(())
-    }
+    fn close(&self) -> zbus::Result<()>;
 }

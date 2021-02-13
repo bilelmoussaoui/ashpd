@@ -30,8 +30,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|r: Response<SelectedFiles>| {
+//!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -62,8 +63,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|r: Response<SelectedFiles>| {
+//!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
@@ -91,8 +93,9 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|r: Response<SelectedFiles>| {
+//!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())

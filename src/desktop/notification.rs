@@ -22,7 +22,7 @@
 //!             .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
 //!     )?;
 //!
-//!     proxy.on_action_invoked(|action: Action| {
+//!     proxy.connect_action_invoked(|action: Action| {
 //!         match action.name() {
 //!             "copy" => (),   // Copy something to clipboard
 //!             "delete" => (), // Delete the file
@@ -32,7 +32,8 @@
 //!         println!(
 //!             "{:#?}",
 //!             action.parameter().get(0).unwrap().downcast_ref::<u32>()
-//!         )
+//!         );
+//!         Ok(())
 //!     })?;
 //!
 //!     thread::sleep(time::Duration::from_secs(1));
@@ -43,7 +44,7 @@
 //!```
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zbus::{fdo::Result, Connection, Proxy};
+use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{OwnedValue, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -213,6 +214,11 @@ impl<'a> Action<'a> {
     }
 }
 
+#[dbus_proxy(
+    interface = "org.freedesktop.portal.Desktop",
+    default_service = "org.freedesktop.portal.Notification",
+    default_path = "/org/freedesktop/portal/desktop"
+)]
 /// The interface lets sandboxed applications send and withdraw notifications.
 ///
 /// It is not possible for the application to learn if the notification was actually
@@ -228,41 +234,10 @@ impl<'a> Action<'a> {
 /// Other actions are activated by sending the
 ///  #org.freedeskop.portal.Notification::ActionInvoked signal to the application.
 ///
-pub struct NotificationProxy<'a> {
-    proxy: Proxy<'a>,
-    connection: &'a Connection,
-}
-
-impl<'a> NotificationProxy<'a> {
-    /// Create a new notification proxy.
-    pub fn new(connection: &'a Connection) -> Result<Self> {
-        let proxy = Proxy::new(
-            connection,
-            "org.freedesktop.portal.Desktop",
-            "/org/freedesktop/portal/desktop",
-            "org.freedesktop.portal.Notification",
-        )?;
-        Ok(Self { proxy, connection })
-    }
-
+trait Notification {
+    #[dbus_proxy(signal)]
     /// Signal emitted when a particular action is invoked
-    pub fn on_action_invoked<F>(&self, callback: F) -> Result<()>
-    where
-        F: FnOnce(Action),
-    {
-        loop {
-            let msg = self.connection.receive_message()?;
-            let msg_header = msg.header()?;
-            if msg_header.message_type()? == zbus::MessageType::Signal
-                && msg_header.member()? == Some("ActionInvoked")
-            {
-                let response = msg.body::<Action>()?;
-                callback(response);
-                break;
-            }
-        }
-        Ok(())
-    }
+    fn action_invoked(&self, action: Action) -> Result<()>;
 
     /// Sends a notification.
     ///
@@ -273,23 +248,15 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// * `id` - Application-provided ID for this notification
     /// * `notification` - HashMap
-    pub fn add_notification(&self, id: &str, notification: Notification) -> Result<()> {
-        self.proxy.call("AddNotification", &(id, notification))?;
-        Ok(())
-    }
+    fn add_notification(&self, id: &str, notification: Notification) -> Result<()>;
 
     /// Withdraws a notification.
     ///
     /// # Arguments
     ///
     /// * `id` - Application-provided ID for this notification
-    pub fn remove_notification(&self, id: &str) -> Result<()> {
-        self.proxy.call("RemoveNotification", &(id))?;
-        Ok(())
-    }
+    fn remove_notification(&self, id: &str) -> Result<()>;
 
     /// version property
-    pub fn version(&self) -> Result<u32> {
-        self.proxy.get_property::<u32>("version")
-    }
+    fn version(&self) -> Result<u32>;
 }

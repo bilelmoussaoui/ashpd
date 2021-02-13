@@ -16,8 +16,9 @@
 //!
 //!     let handle = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())?;
 //!     let request = RequestProxy::new(&connection, &handle)?;
-//!     request.on_response(|r: Response<Basic>| {
+//!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{:#?}", r);
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())

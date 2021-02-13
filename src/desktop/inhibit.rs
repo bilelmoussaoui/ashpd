@@ -25,7 +25,7 @@
 //!         CreateMonitorOptions::default().session_handle_token(session_token),
 //!     )?;
 //!
-//!     proxy.on_state_changed(move |proxy, state: InhibitState| -> Result<()> {
+//!     proxy.connect_state_changed(move |state: InhibitState|{
 //!         match state.session_state() {
 //!             SessionState::Running => (),
 //!             SessionState::QueryEnd => {
@@ -52,7 +52,7 @@ use crate::{HandleToken, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{fdo::Result, Connection, Proxy};
+use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -162,41 +162,13 @@ pub enum SessionState {
     Ending = 3,
 }
 
+#[dbus_proxy(
+    interface = "org.freedesktop.portal.Desktop",
+    default_service = "org.freedesktop.portal.Inhibit",
+    default_path = "/org/freedesktop/portal/desktop"
+)]
 /// The interface lets sandboxed applications inhibit the user session from ending, suspending, idling or getting switched away.
-pub struct InhibitProxy<'a> {
-    proxy: Proxy<'a>,
-    connection: &'a Connection,
-}
-
-impl<'a> InhibitProxy<'a> {
-    /// Create a new inhibit proxy.
-    pub fn new(connection: &'a Connection) -> Result<Self> {
-        let proxy = Proxy::new(
-            connection,
-            "org.freedesktop.portal.Desktop",
-            "/org/freedesktop/portal/desktop",
-            "org.freedesktop.portal.Inhibit",
-        )?;
-        Ok(Self { proxy, connection })
-    }
-
-    /// Signal emitted when the session state changes.
-    pub fn on_state_changed<F>(&self, callback: F) -> Result<()>
-    where
-        F: Fn(&InhibitProxy, InhibitState) -> Result<()>,
-    {
-        loop {
-            let msg = self.connection.receive_message()?;
-            let msg_header = msg.header()?;
-            if msg_header.message_type()? == zbus::MessageType::Signal
-                && msg_header.member()? == Some("StateChanged")
-            {
-                let response = msg.body::<InhibitState>()?;
-                callback(self, response)?;
-            }
-        }
-    }
-
+trait Inhibit {
     /// Creates a monitoring session.
     /// While this session is active, the caller will receive `state_changed` signals
     /// with updates on the session state.
@@ -210,13 +182,11 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    pub fn create_monitor(
+    fn create_monitor(
         &self,
         window: WindowIdentifier,
         options: CreateMonitorOptions,
-    ) -> zbus::Result<OwnedObjectPath> {
-        self.proxy.call("CreateMonitor", &(window, options))
-    }
+    ) -> zbus::Result<OwnedObjectPath>;
 
     /// Inhibits a session status changes.
     ///
@@ -230,14 +200,16 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    pub fn inhibit(
+    fn inhibit(
         &self,
         window: WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         options: InhibitOptions,
-    ) -> zbus::Result<OwnedObjectPath> {
-        self.proxy.call("Inhibit", &(window, flags, options))
-    }
+    ) -> zbus::Result<OwnedObjectPath>;
+
+    /// Signal emitted when the session state changes.
+    #[dbus_proxy(signal)]
+    fn state_changed(&self, state: InhibitState) -> Result<()>;
 
     /// Acknowledges that the caller received the "state_changed" signal
     /// This method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
@@ -247,12 +219,9 @@ impl<'a> InhibitProxy<'a> {
     /// * `session_handle` - A [`SessionProxy`] object path.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    pub fn query_end_response(&self, session_handle: ObjectPath) -> zbus::Result<()> {
-        self.proxy.call("QueryEndResponse", &(session_handle))
-    }
+    fn query_end_response(&self, session_handle: ObjectPath<'_>) -> zbus::Result<()>;
 
     /// version property
-    pub fn version(&self) -> Result<u32> {
-        self.proxy.get_property::<u32>("version")
-    }
+    #[dbus_proxy(property, name = "version")]
+    fn version(&self) -> Result<u32>;
 }

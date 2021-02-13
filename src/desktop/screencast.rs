@@ -28,10 +28,11 @@
 //!     )?;
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(move |response: Response<Basic>| {
+//!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
-//!             start_cast(session_handle, proxy, connection).unwrap();
+//!             start_cast(session_handle, proxy, connection)?;
 //!         }
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -47,11 +48,12 @@
 //!         StartCastOptions::default(),
 //!     )?;
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(move |r: Response<Streams>| {
+//!     request.connect_response(move |r: Response<Streams>| {
 //!         r.unwrap().streams().iter().for_each(|stream| {
 //!             println!("{}", stream.pipewire_node_id());
 //!             println!("{:#?}", stream.properties());
 //!         });
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -68,11 +70,11 @@
 //!     )?;
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
 //!
-//!     request.on_response(|r: Response<CreateSession>| {
-//!         match r {
-//!             Ok(session) => select_sources(session.handle(), &proxy, &connection).unwrap(),
-//!             Err(_) => println!("hello!"),
+//!     request.connect_response(|r: Response<CreateSession>| {
+//!         if let Ok(session) = r {
+//!             select_sources(session.handle(), &proxy, &connection)?;
 //!         };
+//!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
@@ -270,8 +272,8 @@ trait ScreenCast {
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
     fn open_pipe_wire_remote(
         &self,
-        session_handle: ObjectPath,
-        options: HashMap<&str, Value>,
+        session_handle: ObjectPath<'_>,
+        options: HashMap<&str, Value<'_>>,
     ) -> Result<Fd>;
 
     /// Configure what the screen cast session should record.
@@ -291,7 +293,7 @@ trait ScreenCast {
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
     fn select_sources(
         &self,
-        session_handle: ObjectPath,
+        session_handle: ObjectPath<'_>,
         options: SelectSourcesOptions,
     ) -> Result<OwnedObjectPath>;
 
@@ -314,7 +316,7 @@ trait ScreenCast {
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
     fn start(
         &self,
-        session_handle: ObjectPath,
+        session_handle: ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: StartCastOptions,
     ) -> Result<OwnedObjectPath>;

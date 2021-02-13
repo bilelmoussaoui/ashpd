@@ -26,8 +26,9 @@
 //!         .unwrap();
 //!
 //!     let request = RequestProxy::new(&connection, &request_handle)?;
-//!     request.on_response(|r: Response<Basic>| {
+//!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{:#?}", r.is_ok());
+//!         Ok(())
 //!     })?;
 //!
 //!     Ok(())
