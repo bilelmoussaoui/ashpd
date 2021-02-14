@@ -1,7 +1,6 @@
 use serde::{
     de::{self, DeserializeOwned, Visitor},
-    ser::SerializeTuple,
-    Deserialize, Deserializer, Serialize, Serializer,
+    Deserialize, Deserializer, Serialize,
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{collections::HashMap, fmt, marker::PhantomData};
@@ -13,42 +12,12 @@ use zvariant_derive::Type;
 ///
 /// [`RequestProxy`]: ./struct.RequestProxy.html
 #[derive(Debug)]
-pub enum Response<T>
-where
-    T: Serialize,
-{
+pub enum Response<T> {
     Ok(T),
     Err(ResponseError),
 }
 
-impl<T> Serialize for Response<T>
-where
-    T: Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut tuple_serializer = serializer.serialize_tuple(2)?;
-        match self {
-            Response::Err(err) => {
-                let response_type: ResponseType = err.clone().into();
-                tuple_serializer.serialize_element(&response_type)?;
-                tuple_serializer.serialize_element(&BasicResponse::default())?;
-            }
-            Response::Ok(response) => {
-                tuple_serializer.serialize_element(&ResponseType::Success)?;
-                tuple_serializer.serialize_element(&response)?;
-            }
-        };
-        tuple_serializer.end()
-    }
-}
-
-impl<T> zvariant::Type for Response<T>
-where
-    T: Serialize,
-{
+impl<T> zvariant::Type for Response<T> {
     fn signature() -> zvariant::Signature<'static> {
         <(ResponseType, OwnedValue)>::signature()
     }
@@ -56,7 +25,7 @@ where
 
 impl<'de, T> Deserialize<'de> for Response<T>
 where
-    T: Serialize + DeserializeOwned + zvariant::Type,
+    T: DeserializeOwned + zvariant::Type,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -93,10 +62,7 @@ where
     }
 }
 
-impl<T> Response<T>
-where
-    T: Serialize,
-{
+impl<T> Response<T> {
     pub fn is_ok(&self) -> bool {
         matches!(self, Response::Ok(_))
     }
@@ -115,7 +81,7 @@ where
 
 impl<T> From<(ResponseType, T)> for Response<T>
 where
-    T: DeserializeOwned + zvariant::Type + Serialize,
+    T: DeserializeOwned + zvariant::Type,
 {
     fn from(f: (ResponseType, T)) -> Self {
         match f.0 {
@@ -190,7 +156,7 @@ trait Request {
     /// A signal emitted when the portal interaction is over.
     fn response<T>(&self, response: Response<T>) -> Result<()>
     where
-        T: DeserializeOwned + zvariant::Type + Serialize;
+        T: DeserializeOwned + zvariant::Type;
 
     /// Closes the portal request to which this object refers and ends all related user interaction (dialogs, etc).
     /// A Response signal will not be emitted in this case.
