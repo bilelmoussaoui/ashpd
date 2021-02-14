@@ -13,7 +13,7 @@
 //!
 //!     let request_handle = proxy.access_camera(CameraAccessOptions::default())?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
 //!             //let options: HashMap<&str, zvariant::Value> = HashMap::new();

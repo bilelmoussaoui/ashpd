@@ -12,16 +12,16 @@
 //! use std::convert::TryFrom;
 //!
 //! fn select_devices(
-//!     handle: ObjectPath,
-//!     connection: &Connection,
-//!     proxy: &RemoteDesktopProxy,
+//!     handle: ObjectPath<'static>,
+//!     connection: &'static Connection,
+//!     proxy: &'static RemoteDesktopProxy,
 //! ) -> Result<()> {
 //!     let request_handle = proxy.select_devices(
 //!         handle.clone(),
 //!         SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<Basic>| {
 //!         if r.is_ok() {
 //!             start_remote(handle, connection, proxy)?;
@@ -33,9 +33,9 @@
 //! }
 //!
 //! fn start_remote(
-//!     handle: ObjectPath,
-//!     connection: &Connection,
-//!     proxy: &RemoteDesktopProxy,
+//!     handle: ObjectPath<'static>,
+//!     connection: &'static Connection,
+//!     proxy: &'static RemoteDesktopProxy,
 //! ) -> Result<()> {
 //!     let request_handle = proxy.start(
 //!         handle.clone(),
@@ -43,7 +43,7 @@
 //!         StartRemoteOptions::default(),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<SelectedDevices>| {
 //!         proxy
 //!             .notify_keyboard_keycode(
@@ -64,12 +64,12 @@
 //!     let connection = Connection::new_session()?;
 //!     let proxy = RemoteDesktopProxy::new(&connection)?;
 //!
-//!     let handle = proxy.create_session(
+//!     let request_handle = proxy.create_session(
 //!         CreateRemoteOptions::default()
 //!             .session_handle_token(HandleToken::try_from("token").unwrap()),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<CreateSession>| {
 //!         let session = r.unwrap();
 //!         select_devices(session.handle(), &connection, &proxy)?;

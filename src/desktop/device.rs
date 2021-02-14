@@ -16,7 +16,7 @@
 //!         AccessDeviceOptions::default(),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok());
 //!         Ok(())

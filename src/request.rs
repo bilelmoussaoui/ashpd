@@ -1,6 +1,10 @@
-use serde::{Deserialize, Serialize};
+use serde::{
+    de::{self, DeserializeOwned, Visitor},
+    ser::SerializeTuple,
+    Deserialize, Deserializer, Serialize, Serializer,
+};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt, marker::PhantomData};
 use zbus::dbus_proxy;
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
@@ -8,13 +12,131 @@ use zvariant_derive::Type;
 /// A typical response returned by the `connect_response` signal of a `RequestProxy`.
 ///
 /// [`RequestProxy`]: ./struct.RequestProxy.html
-pub type Response<T> = std::result::Result<T, ResponseError>;
+#[derive(Debug)]
+pub enum Response<T>
+where
+    T: Serialize,
+{
+    Ok(T),
+    Err(ResponseError),
+}
+
+impl<T> Serialize for Response<T>
+where
+    T: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut tuple_serializer = serializer.serialize_tuple(2)?;
+        match self {
+            Response::Err(err) => {
+                let response_type: ResponseType = err.clone().into();
+                tuple_serializer.serialize_element(&response_type)?;
+                tuple_serializer.serialize_element(&BasicResponse::default())?;
+            }
+            Response::Ok(response) => {
+                tuple_serializer.serialize_element(&ResponseType::Success)?;
+                tuple_serializer.serialize_element(&response)?;
+            }
+        };
+        tuple_serializer.end()
+    }
+}
+
+impl<T> zvariant::Type for Response<T>
+where
+    T: Serialize,
+{
+    fn signature() -> zvariant::Signature<'static> {
+        <(ResponseType, OwnedValue)>::signature()
+    }
+}
+
+impl<'de, T> Deserialize<'de> for Response<T>
+where
+    T: Serialize + DeserializeOwned + zvariant::Type,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ResponseVisitor<T>(PhantomData<fn() -> (ResponseType, T)>);
+
+        impl<'de, T> Visitor<'de> for ResponseVisitor<T>
+        where
+            T: Deserialize<'de>,
+        {
+            type Value = (ResponseType, T);
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                write!(
+                    formatter,
+                    "a tuple composed of the response status along with the response"
+                )
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: de::SeqAccess<'de>,
+            {
+                let type_: Option<ResponseType> = seq.next_element()?;
+                let data: Option<T> = seq.next_element()?;
+                Ok((type_.unwrap(), data.unwrap()))
+            }
+        }
+
+        let visitor = ResponseVisitor::<T>(PhantomData);
+        let response: (ResponseType, T) = deserializer.deserialize_tuple(2, visitor)?;
+        Ok(response.into())
+    }
+}
+
+impl<T> Response<T>
+where
+    T: Serialize,
+{
+    pub fn is_ok(&self) -> bool {
+        matches!(self, Response::Ok(_))
+    }
+
+    pub fn is_err(&self) -> bool {
+        matches!(self, Response::Err(_))
+    }
+
+    pub fn unwrap(&self) -> &T {
+        match self {
+            Self::Ok(response) => response,
+            Self::Err(_) => panic!("Called Response::unwrap on a Response::Err"),
+        }
+    }
+}
+
+impl<T> From<(ResponseType, T)> for Response<T>
+where
+    T: DeserializeOwned + zvariant::Type + Serialize,
+{
+    fn from(f: (ResponseType, T)) -> Self {
+        match f.0 {
+            ResponseType::Success => Response::Ok(f.1),
+            ResponseType::Cancelled => Response::Err(ResponseError::Cancelled),
+            ResponseType::Other => Response::Err(ResponseError::Other),
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, Type)]
 /// The most basic response. Used when only the status of the request is what we receive as a response.
 pub struct BasicResponse(HashMap<String, OwnedValue>);
 
-#[derive(Debug)]
+impl Default for BasicResponse {
+    fn default() -> Self {
+        BasicResponse(HashMap::new())
+    }
+}
+
+#[derive(Debug, Clone)]
 /// An error returned a portal request caused by either the user cancelling the request or something else.
 pub enum ResponseError {
     /// The user canceled the request.
@@ -25,13 +147,22 @@ pub enum ResponseError {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
-pub enum ResponseType {
+enum ResponseType {
     /// Success, the request is carried out
     Success = 0,
     /// The user cancelled the interaction
     Cancelled = 1,
     /// The user interaction was ended in some other way
     Other = 2,
+}
+
+impl From<ResponseError> for ResponseType {
+    fn from(err: ResponseError) -> Self {
+        match err {
+            ResponseError::Other => Self::Other,
+            ResponseError::Cancelled => Self::Cancelled,
+        }
+    }
 }
 
 /// The Request interface is shared by all portal interfaces.
@@ -57,9 +188,9 @@ pub enum ResponseType {
 trait Request {
     #[dbus_proxy(signal)]
     /// A signal emitted when the portal interaction is over.
-    fn response<T>(&self, response: (ResponseType, T)) -> Result<()>
+    fn response<T>(&self, response: Response<T>) -> Result<()>
     where
-        T: serde::de::DeserializeOwned + zvariant::Type;
+        T: DeserializeOwned + zvariant::Type + Serialize;
 
     /// Closes the portal request to which this object refers and ends all related user interaction (dialogs, etc).
     /// A Response signal will not be emitted in this case.

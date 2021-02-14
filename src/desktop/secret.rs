@@ -14,8 +14,8 @@
 //!
 //!     let file = File::open("test.txt").unwrap();
 //!
-//!     let handle = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())?;
-//!     let request = RequestProxy::new(&connection, &handle)?;
+//!     let request_handle = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{:#?}", r);
 //!         Ok(())

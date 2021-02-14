@@ -16,7 +16,7 @@
 //!     let proxy = FlatpakProxy::new(&connection)?;
 //!
 //!     let monitor_handle = proxy.create_update_monitor(CreateMonitorOptions::default())?;
-//!     let monitor = UpdateMonitorProxy::new(&connection, &monitor_handle)?;
+//!     let monitor = UpdateMonitorProxy::new_for_path(&connection, monitor_handle.as_str())?;
 //!
 //!     monitor.connect_progress(move |p: UpdateProgress| {
 //!         println!("{:#?}", p);
