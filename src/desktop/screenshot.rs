@@ -16,7 +16,7 @@
 //!             .interactive(true)
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Screenshot>| {
 //!         println!("{}", response.unwrap().uri);
 //!         Ok(())
@@ -40,9 +40,9 @@
 //!             PickColorOptions::default()
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Color>| {
-//!         if let Ok(color) = response {
+//!         if let Response::Ok(color) = response {
 //!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!         }
 //!         Ok(())

@@ -15,9 +15,9 @@
 //! use std::convert::TryFrom;
 //!
 //! fn select_sources(
-//!     session_handle: ObjectPath,
-//!     proxy: &ScreenCastProxy,
-//!     connection: &zbus::Connection,
+//!     session_handle: ObjectPath<'static>,
+//!     proxy: &'static ScreenCastProxy,
+//!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
 //!     let request_handle = proxy.select_sources(
 //!         session_handle.clone(),
@@ -27,7 +27,7 @@
 //!             .types(SourceType::Monitor | SourceType::Window),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
 //!             start_cast(session_handle, proxy, connection)?;
@@ -38,16 +38,16 @@
 //! }
 //!
 //! fn start_cast(
-//!     session_handle: ObjectPath,
-//!     proxy: &ScreenCastProxy,
-//!     connection: &zbus::Connection,
+//!     session_handle: ObjectPath<'static>,
+//!     proxy: &'static ScreenCastProxy,
+//!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
 //!     let request_handle = proxy.start(
 //!         session_handle,
 //!         WindowIdentifier::default(),
 //!         StartCastOptions::default(),
 //!     )?;
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<Streams>| {
 //!         r.unwrap().streams().iter().for_each(|stream| {
 //!             println!("{}", stream.pipewire_node_id());
@@ -68,10 +68,10 @@
 //!         CreateSessionOptions::default()
 //!             .session_handle_token(session_token)
 //!     )?;
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!
-//!     request.connect_response(|r: Response<CreateSession>| {
-//!         if let Ok(session) = r {
+//!     request.connect_response(|response: Response<CreateSession>| {
+//!         if let Response::Ok(session) = response {
 //!             select_sources(session.handle(), &proxy, &connection)?;
 //!         };
 //!         Ok(())

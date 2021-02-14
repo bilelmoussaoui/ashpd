@@ -29,7 +29,7 @@
 //!             .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
 //!         Ok(())
@@ -62,7 +62,7 @@
 //!             .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
 //!         Ok(())
@@ -92,7 +92,7 @@
 //!             .files(vec!["test.jpg".to_string(), "awesome.png".to_string()]),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
 //!         Ok(())

@@ -19,12 +19,12 @@
 //!             .reason("Automatically fetch your latest mails"),
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &request_handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Background>| {
-//!         if let Ok(bg) = response {
-//!             println!("{}", bg.autostart);
-//!             println!("{}", bg.background);
-//!         }
+//!         let bg = response.unwrap();
+//!         println!("{}", bg.autostart);
+//!         println!("{}", bg.background);
+//!
 //!         Ok(())
 //!     })?;
 //!     Ok(())

@@ -16,7 +16,7 @@
 //!
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
-//!     let handle = proxy.compose_email(
+//!     let request_handle = proxy.compose_email(
 //!         WindowIdentifier::default(),
 //!         EmailOptions::default()
 //!             .address("test@gmail.com")
@@ -25,7 +25,7 @@
 //!             .attach(Fd::from(file.as_raw_fd()))
 //!     )?;
 //!
-//!     let request = RequestProxy::new(&connection, &handle)?;
+//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{}", r.is_ok());
 //!         Ok(())
