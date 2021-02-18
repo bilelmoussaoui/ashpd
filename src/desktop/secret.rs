@@ -14,8 +14,7 @@
 //!
 //!     let file = File::open("test.txt").unwrap();
 //!
-//!     let request_handle = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())?;
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
+//!     let request = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())?;
 //!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{:#?}", r);
 //!         Ok(())
@@ -24,8 +23,9 @@
 //!     Ok(())
 //! }
 //! ```
+use crate::{AsyncRequestProxy, RequestProxy};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath};
+use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -53,7 +53,7 @@ impl RetrieveOptions {
 trait Secret {
     /// Retrieves a master secret for a sandboxed application.
     ///
-    /// Returns a [`RequestProxy`] object path..
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -62,7 +62,8 @@ trait Secret {
     ///
     /// [`RetrieveOptions`]: ./struct.RetrieveOptions.html
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
-    fn retrieve_secret(&self, fd: Fd, options: RetrieveOptions) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn retrieve_secret(&self, fd: Fd, options: RetrieveOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

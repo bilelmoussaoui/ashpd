@@ -16,12 +16,11 @@
 //!     connection: &'static Connection,
 //!     proxy: &'static RemoteDesktopProxy,
 //! ) -> Result<()> {
-//!     let request_handle = proxy.select_devices(
+//!     let request = proxy.select_devices(
 //!         handle.clone(),
 //!         SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<Basic>| {
 //!         if r.is_ok() {
 //!             start_remote(handle, connection, proxy)?;
@@ -33,17 +32,16 @@
 //! }
 //!
 //! fn start_remote(
-//!     handle: ObjectPath<'static>,
-//!     connection: &'static Connection,
-//!     proxy: &'static RemoteDesktopProxy,
+//!     handle: ObjectPath<'_>,
+//!     connection: &'_ Connection,
+//!     proxy: &'_ RemoteDesktopProxy,
 //! ) -> Result<()> {
-//!     let request_handle = proxy.start(
+//!     let request = proxy.start(
 //!         handle.clone(),
 //!         WindowIdentifier::default(),
 //!         StartRemoteOptions::default(),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<SelectedDevices>| {
 //!         proxy
 //!             .notify_keyboard_keycode(
@@ -64,12 +62,11 @@
 //!     let connection = Connection::new_session()?;
 //!     let proxy = RemoteDesktopProxy::new(&connection)?;
 //!
-//!     let request_handle = proxy.create_session(
+//!     let request = proxy.create_session(
 //!         CreateRemoteOptions::default()
 //!             .session_handle_token(HandleToken::try_from("token").unwrap()),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<CreateSession>| {
 //!         let session = r.unwrap();
 //!         select_devices(session.handle(), &connection, &proxy)?;
@@ -79,13 +76,13 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{ObjectPath, OwnedObjectPath, Value};
+use zvariant::{ObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -213,7 +210,7 @@ trait RemoteDesktop {
     /// A remote desktop session is used to allow remote controlling a desktop session.
     /// It can also be used together with a screen cast session
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -221,7 +218,8 @@ trait RemoteDesktop {
     ///
     /// [`CreateRemoteOptions`]: ./struct.CreateRemoteOptions.html
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
-    fn create_session(&self, options: CreateRemoteOptions) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn create_session(&self, options: CreateRemoteOptions);
 
     /// Notify keyboard code
     /// May only be called if KEYBOARD access was provided after starting the session.
@@ -453,7 +451,7 @@ trait RemoteDesktop {
 
     /// Select input devices to remote control.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -463,11 +461,8 @@ trait RemoteDesktop {
     /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
-    fn select_devices(
-        &self,
-        session_handle: ObjectPath<'_>,
-        options: SelectDevicesOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn select_devices(&self, session_handle: ObjectPath<'_>, options: SelectDevicesOptions);
 
     ///  Start the remote desktop session.
     ///
@@ -475,7 +470,7 @@ trait RemoteDesktop {
     /// the user select what to share, including devices and optionally screen content
     /// if screen cast sources was selected.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -486,12 +481,13 @@ trait RemoteDesktop {
     /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
+    #[dbus_proxy(object = "Request")]
     fn start(
         &self,
         session_handle: ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: StartRemoteOptions,
-    ) -> Result<OwnedObjectPath>;
+    );
 
     /// Available source types.
     #[dbus_proxy(property)]

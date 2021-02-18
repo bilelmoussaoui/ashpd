@@ -15,21 +15,18 @@
 //!     let connection = Connection::new_session()?;
 //!     let proxy = FlatpakProxy::new(&connection)?;
 //!
-//!     let monitor_handle = proxy.create_update_monitor(CreateMonitorOptions::default())?;
-//!     let monitor = UpdateMonitorProxy::new_for_path(&connection, monitor_handle.as_str())?;
+//!     let monitor = proxy.create_update_monitor(CreateMonitorOptions::default())?;
 //!
 //!     monitor.connect_progress(move |p: UpdateProgress| {
-//!         println!("{:#?}", p);
 //!         if p.progress == Some(100) {
-//!             monitor.close().unwrap();
+//!             monitor.close()?;
 //!         }
 //!         Ok(())
 //!     })?;
 //!
 //!     monitor.connect_update_available(move |_: UpdateInfo| {
 //!         monitor
-//!             .update(WindowIdentifier::default(), UpdateOptions::default())
-//!             .unwrap();
+//!             .update(WindowIdentifier::default(), UpdateOptions::default())?;
 //!         Ok(())
 //!     })?;
 //!

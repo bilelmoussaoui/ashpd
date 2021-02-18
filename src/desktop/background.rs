@@ -11,7 +11,7 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = BackgroundProxy::new(&connection)?;
 //!
-//!     let request_handle = proxy.request_background(
+//!     let request = proxy.request_background(
 //!         WindowIdentifier::default(),
 //!         BackgroundOptions::default()
 //!             .autostart(true)
@@ -19,7 +19,6 @@
 //!             .reason("Automatically fetch your latest mails"),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Background>| {
 //!         let bg = response.unwrap();
 //!         println!("{}", bg.autostart);
@@ -30,9 +29,8 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -103,7 +101,7 @@ pub struct Background {
 trait Background {
     /// Requests that the application is allowed to run in the background.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -112,11 +110,8 @@ trait Background {
     ///
     /// [`BackgroundOptions`]: ./struct.BackgroundOptions.html
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
-    fn request_background(
-        &self,
-        parent_window: WindowIdentifier,
-        options: BackgroundOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn request_background(&self, parent_window: WindowIdentifier, options: BackgroundOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

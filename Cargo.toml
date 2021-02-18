@@ -30,6 +30,6 @@ serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 strum = "0.20"
 strum_macros = "0.20"
-zbus = {git = "https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch = "bilelmoussaoui/dbus_proxy"}
-zvariant = {git = "https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch = "bilelmoussaoui/dbus_proxy", features = ["enumflags2"]}
-zvariant_derive = {git = "https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch = "bilelmoussaoui/dbus_proxy"}
+zbus = {git = "https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch = "bilelmoussaoui/object-attr"}
+zvariant = {git = "https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch = "bilelmoussaoui/object-attr", features = ["enumflags2"]}
+zvariant_derive = {git = "https://gitlab.freedesktop.org/bilelmoussaoui/zbus", branch = "bilelmoussaoui/object-attr"}

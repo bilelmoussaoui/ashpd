@@ -20,13 +20,12 @@
 //!
 //!     let session_handle = proxy.create_session(options)?;
 //!
-//!     let request_handle = proxy.start(
+//!     let request = proxy.start(
 //!         session_handle.into(),
 //!         WindowIdentifier::default(),
 //!         LocationStartOptions::default(),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |response: Response<Basic>| {
 //!         proxy.connect_location_updated(move |location| {
 //!             println!("{}", location.accuracy());
@@ -40,7 +39,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
@@ -216,7 +215,7 @@ trait Location {
     /// Start the location session.
     /// An application can only attempt start a session once.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -226,12 +225,13 @@ trait Location {
     ///
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    #[dbus_proxy(object = "Request")]
     fn start(
         &self,
         session_handle: ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: LocationStartOptions,
-    ) -> zbus::Result<OwnedObjectPath>;
+    );
 
     /// version property
     #[dbus_proxy(property, name = "version")]

@@ -12,7 +12,7 @@
 //!     let connection = Connection::new_session()?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection)?;
-//!     let request_handle = proxy.open_file(
+//!     let request = proxy.open_file(
 //!         WindowIdentifier::default(),
 //!         "open a file to read",
 //!         OpenFileOptions::default()
@@ -29,7 +29,6 @@
 //!             .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
 //!         Ok(())
@@ -52,7 +51,7 @@
 //!     let connection = Connection::new_session()?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection)?;
-//!     let request_handle = proxy.save_file(
+//!     let request = proxy.save_file(
 //!         WindowIdentifier::default(),
 //!         "open a file to write",
 //!         SaveFileOptions::default()
@@ -62,7 +61,6 @@
 //!             .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
 //!         Ok(())
@@ -82,7 +80,7 @@
 //!     let connection = Connection::new_session()?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection)?;
-//!     let request_handle = proxy.save_files(
+//!     let request = proxy.save_files(
 //!         WindowIdentifier::default(),
 //!         "open files to write",
 //!         SaveFilesOptions::default()
@@ -92,7 +90,6 @@
 //!             .files(vec!["test.jpg".to_string(), "awesome.png".to_string()]),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
 //!         Ok(())
@@ -101,11 +98,10 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, NString, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, NString, RequestProxy, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize, Deserialize, Type, Debug)]
@@ -414,7 +410,7 @@ pub struct SelectedFiles {
 trait FileChooser {
     /// Asks to open one or more files.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -424,16 +420,12 @@ trait FileChooser {
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn open_file(
-        &self,
-        parent_window: WindowIdentifier,
-        title: &str,
-        options: OpenFileOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn open_file(&self, parent_window: WindowIdentifier, title: &str, options: OpenFileOptions);
 
     /// Asks for a location to save a file.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -443,12 +435,8 @@ trait FileChooser {
     ///
     /// [`SaveFileOptions`]: ./struct.SaveFileOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn save_file(
-        &self,
-        parent_window: WindowIdentifier,
-        title: &str,
-        options: SaveFileOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn save_file(&self, parent_window: WindowIdentifier, title: &str, options: SaveFileOptions);
 
     /// Asks for a folder as a location to save one or more files.
     /// The names of the files will be used as-is and appended to the
@@ -457,7 +445,7 @@ trait FileChooser {
     /// names, the portal may prompt or take some other action to
     /// construct a unique file name and return that instead.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -467,12 +455,8 @@ trait FileChooser {
     ///
     /// [`SaveFilesOptions`]: ./struct.SaveFilesOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn save_files(
-        &self,
-        parent_window: WindowIdentifier,
-        title: &str,
-        options: SaveFilesOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn save_files(&self, parent_window: WindowIdentifier, title: &str, options: SaveFilesOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

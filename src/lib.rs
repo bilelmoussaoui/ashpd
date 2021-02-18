@@ -13,12 +13,10 @@
 //!    let connection = zbus::Connection::new_session()?;
 //!    let proxy = ScreenshotProxy::new(&connection)?;
 //!
-//!    let request_handle = proxy.pick_color(
+//!    let request = proxy.pick_color(
 //!             WindowIdentifier::default(),
 //!             PickColorOptions::default()
 //!    )?;
-//!
-//!    let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!
 //!     request.connect_response(|response: Response<Color>| {
 //!         if let Response::Ok(color) = response {

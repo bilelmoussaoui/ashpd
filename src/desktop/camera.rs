@@ -11,9 +11,8 @@
 //!
 //!     println!("{}", proxy.is_camera_present()?);
 //!
-//!     let request_handle = proxy.access_camera(CameraAccessOptions::default())?;
+//!     let request = proxy.access_camera(CameraAccessOptions::default())?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
 //!             //let options: HashMap<&str, zvariant::Value> = HashMap::new();
@@ -26,10 +25,10 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::HandleToken;
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath, Value};
+use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -56,7 +55,7 @@ impl CameraAccessOptions {
 trait Camera {
     /// Requests an access to the camera.
     ///
-    /// Returns a [`RequestProxy`] object path..
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -64,7 +63,8 @@ trait Camera {
     ///
     /// [`CameraAccessOptions`]: ./struct.CameraAccessOptions.html
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
-    fn access_camera(&self, options: CameraAccessOptions) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn access_camera(&self, options: CameraAccessOptions);
 
     /// Open a file descriptor to the PipeWire remote where the camera nodes are available.
     ///
