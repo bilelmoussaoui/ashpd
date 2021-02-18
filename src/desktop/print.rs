@@ -16,7 +16,7 @@
 //!
 //!     let file = File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
 //!
-//!     let request_handle = proxy
+//!     let request = proxy
 //!         .print(
 //!             WindowIdentifier::default(),
 //!             "test",
@@ -25,7 +25,6 @@
 //!         )
 //!         .unwrap();
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{:#?}", r.is_ok());
 //!         Ok(())
@@ -35,11 +34,11 @@
 //! }
 //! ```
 
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath, Signature};
+use zvariant::{Fd, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(
@@ -519,7 +518,7 @@ pub struct PreparePrint {
 trait Print {
     /// Presents a print dialog to the user and returns print settings and page setup.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -533,6 +532,7 @@ trait Print {
     /// [`PageSetup`]: ./struct.PageSetup.html
     /// [`PreparePrintOptions`]: ./struct.PreparePrintOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    #[dbus_proxy(object = "Request")]
     fn prepare_print(
         &self,
         parent_window: WindowIdentifier,
@@ -540,13 +540,13 @@ trait Print {
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
-    ) -> Result<OwnedObjectPath>;
+    );
 
     /// Asks to print a file.
     /// The file must be passed in the form of a file descriptor open for reading.
     /// This ensures that sandboxed applications only print files that they have access to.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -557,13 +557,8 @@ trait Print {
     ///
     /// [`PrintOptions`]: ./struct.PrintOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn print(
-        &self,
-        parent_window: WindowIdentifier,
-        title: &str,
-        fd: Fd,
-        options: PrintOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn print(&self, parent_window: WindowIdentifier, title: &str, fd: Fd, options: PrintOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

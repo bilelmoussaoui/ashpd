@@ -10,13 +10,12 @@
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = ScreenshotProxy::new(&connection)?;
-//!     let request_handle = proxy.screenshot(
+//!     let request = proxy.screenshot(
 //!         WindowIdentifier::default(),
 //!         ScreenshotOptions::default()
 //!             .interactive(true)
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Screenshot>| {
 //!         println!("{}", response.unwrap().uri);
 //!         Ok(())
@@ -35,12 +34,11 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = ScreenshotProxy::new(&connection)?;
 //!
-//!     let request_handle = proxy.pick_color(
+//!     let request = proxy.pick_color(
 //!             WindowIdentifier::default(),
 //!             PickColorOptions::default()
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Color>| {
 //!         if let Response::Ok(color) = response {
 //!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
@@ -51,9 +49,8 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -165,7 +162,7 @@ impl Into<gdk4::RGBA> for Color {
 trait Screenshot {
     /// Obtains the color of a single pixel.
     ///
-    /// Returns a [`RequestProxy`] object path..
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -174,15 +171,12 @@ trait Screenshot {
     ///
     /// [`PickColorOptions`]: ./struct.PickColorOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn pick_color(
-        &self,
-        parent_window: WindowIdentifier,
-        options: PickColorOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn pick_color(&self, parent_window: WindowIdentifier, options: PickColorOptions);
 
     /// Takes a screenshot
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -191,11 +185,8 @@ trait Screenshot {
     ///
     /// [`ScreenshotOptions`]: ./struct.ScreenshotOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn screenshot(
-        &self,
-        parent_window: WindowIdentifier,
-        options: ScreenshotOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn screenshot(&self, parent_window: WindowIdentifier, options: ScreenshotOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

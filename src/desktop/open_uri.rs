@@ -16,13 +16,12 @@
 //!
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
-//!     let request_handle = proxy.open_file(
+//!     let request = proxy.open_file(
 //!         WindowIdentifier::default(),
 //!         Fd::from(file.as_raw_fd()),
 //!         OpenFileOptions::default(),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok());
 //!         Ok(())
@@ -43,13 +42,12 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = OpenURIProxy::new(&connection)?;
 //!
-//!     let request_handle = proxy.open_uri(
+//!     let request = proxy.open_uri(
 //!         WindowIdentifier::default(),
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
 //!         OpenFileOptions::default(),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok());
 //!         Ok(())
@@ -58,9 +56,9 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath};
+use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -120,7 +118,7 @@ impl OpenFileOptions {
 trait OpenURI {
     /// Asks to open the directory containing a local file in the file browser.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -130,16 +128,12 @@ trait OpenURI {
     ///
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn open_directory(
-        &self,
-        parent_window: WindowIdentifier,
-        fd: Fd,
-        options: OpenDirOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn open_directory(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenDirOptions);
 
     /// Asks to open a local file.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -149,16 +143,12 @@ trait OpenURI {
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn open_file(
-        &self,
-        parent_window: WindowIdentifier,
-        fd: Fd,
-        options: OpenFileOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn open_file(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenFileOptions);
 
     /// Asks to open a local file.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -168,13 +158,8 @@ trait OpenURI {
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    #[dbus_proxy(name = "OpenURI")]
-    fn open_uri(
-        &self,
-        parent_window: WindowIdentifier,
-        uri: &str,
-        options: OpenFileOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(name = "OpenURI", object = "Request")]
+    fn open_uri(&self, parent_window: WindowIdentifier, uri: &str, options: OpenFileOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

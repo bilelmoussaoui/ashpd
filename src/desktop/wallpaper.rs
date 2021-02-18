@@ -16,14 +16,13 @@
 //!
 //!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
 //!
-//!     let request_handle = proxy.set_wallpaper_file(
+//!     let request = proxy.set_wallpaper_file(
 //!         WindowIdentifier::default(),
 //!         Fd::from(wallpaper.as_raw_fd()),
 //!         WallpaperOptions::default()
 //!             .set_on(SetOn::Background),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok() );
 //!         Ok(())
@@ -43,7 +42,7 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = WallpaperProxy::new(&connection)?;
 //!
-//!     let request_handle = proxy.set_wallpaper_uri(
+//!     let request = proxy.set_wallpaper_uri(
 //!         WindowIdentifier::default(),
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
 //!         WallpaperOptions::default()
@@ -51,7 +50,6 @@
 //!             .set_on(SetOn::Both),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok() );
 //!         Ok(())
@@ -59,11 +57,11 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::WindowIdentifier;
+use crate::{AsyncRequestProxy, RequestProxy, WindowIdentifier};
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath, Signature};
+use zvariant::{Fd, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(Deserialize, Debug, Clone, Copy, AsRefStr, EnumString, IntoStaticStr, ToString)]
@@ -128,7 +126,7 @@ impl WallpaperOptions {
 trait Wallpaper {
     /// Sets the lockscreen, background or both wallapers from a file descriptor
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -138,16 +136,17 @@ trait Wallpaper {
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    #[dbus_proxy(object = "Request")]
     fn set_wallpaper_file(
         &self,
         parent_window: WindowIdentifier,
         fd: Fd,
         options: WallpaperOptions,
-    ) -> Result<OwnedObjectPath>;
+    );
 
     /// Sets the lockscreen, background or both wallapers from an URI
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -157,13 +156,13 @@ trait Wallpaper {
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    #[dbus_proxy(name = "SetWallpaperURI")]
+    #[dbus_proxy(name = "SetWallpaperURI", object = "Request")]
     fn set_wallpaper_uri(
         &self,
         parent_window: WindowIdentifier,
         uri: &str,
         options: WallpaperOptions,
-    ) -> Result<OwnedObjectPath>;
+    );
 
     /// version property
     #[dbus_proxy(property, name = "version")]

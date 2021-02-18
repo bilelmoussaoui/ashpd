@@ -10,13 +10,12 @@
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = DeviceProxy::new(&connection)?;
-//!     let request_handle = proxy.access_device(
+//!     let request = proxy.access_device(
 //!         6879,
 //!         &[Device::Speakers],
 //!         AccessDeviceOptions::default(),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok());
 //!         Ok(())
@@ -25,11 +24,11 @@
 //! }
 //! ```
 //! [`Device`]: ./enum.Device.html
-use crate::HandleToken;
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{OwnedObjectPath, Signature};
+use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -86,7 +85,7 @@ impl Serialize for Device {
 trait Device {
     /// Asks for access to a device.
     ///
-    /// Returns a [`RequestProxy`] object path..
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -96,12 +95,8 @@ trait Device {
     ///
     /// [`AccessDeviceOptions`]: ./struct.AccessDeviceOptions.html
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
-    fn access_device(
-        &self,
-        pid: u32,
-        devices: &[Device],
-        options: AccessDeviceOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn access_device(&self, pid: u32, devices: &[Device], options: AccessDeviceOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

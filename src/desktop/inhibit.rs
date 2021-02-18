@@ -14,9 +14,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let c = connection.clone();
-//!
-//!     let proxy = InhibitProxy::new(&c)?;
+//!     let proxy = InhibitProxy::new(&connection)?;
 //!
 //!     let session_token = HandleToken::try_from("sessiontoken").unwrap();
 //!
@@ -48,7 +46,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -173,7 +171,7 @@ trait Inhibit {
     /// While this session is active, the caller will receive `state_changed` signals
     /// with updates on the session state.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -182,15 +180,12 @@ trait Inhibit {
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn create_monitor(
-        &self,
-        window: WindowIdentifier,
-        options: CreateMonitorOptions,
-    ) -> zbus::Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn create_monitor(&self, window: WindowIdentifier, options: CreateMonitorOptions);
 
     /// Inhibits a session status changes.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -200,12 +195,13 @@ trait Inhibit {
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    #[dbus_proxy(object = "Request")]
     fn inhibit(
         &self,
         window: WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         options: InhibitOptions,
-    ) -> zbus::Result<OwnedObjectPath>;
+    );
 
     /// Signal emitted when the session state changes.
     #[dbus_proxy(signal)]

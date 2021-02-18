@@ -8,28 +8,25 @@
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = AccountProxy::new(&connection)?;
-//!     let request_handle = proxy.get_user_information(
+//!     let request = proxy.get_user_information(
 //!         WindowIdentifier::default(),
 //!         UserInfoOptions::default()
 //!             .reason("Fractal would like access to your information"),
 //!     )?;
-//!     let req = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
-//!     req.connect_response(|response| {
-//!             let user_info: Response<UserInfo> = response.into();
-//!             let user_info = user_info.unwrap();
+//!     request.connect_response(|response: Response<UserInfo>| {
+//!         let user_info = response.unwrap();
 //!
-//!             println!("{}", user_info.id);
-//!             println!("{}", user_info.name);
-//!             println!("{}", user_info.image);
+//!         println!("{}", user_info.id);
+//!         println!("{}", user_info.name);
+//!         println!("{}", user_info.image);
 //!
 //!         Ok(())
 //!     })?;
 //!     Ok(())
 //! }
 //!```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -78,7 +75,7 @@ pub struct UserInfo {
 trait Account {
     /// Gets information about the user.
     ///
-    /// Returns a [`RequestProxy`] object path..
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -87,11 +84,8 @@ trait Account {
     ///
     /// [`UserInfoOptions`]: ./struct.UserInfoOptions.html
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
-    fn get_user_information(
-        &self,
-        window: WindowIdentifier,
-        options: UserInfoOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn get_user_information(&self, window: WindowIdentifier, options: UserInfoOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

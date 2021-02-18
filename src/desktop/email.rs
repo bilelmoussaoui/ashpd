@@ -16,7 +16,7 @@
 //!
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
-//!     let request_handle = proxy.compose_email(
+//!     let request = proxy.compose_email(
 //!         WindowIdentifier::default(),
 //!         EmailOptions::default()
 //!             .address("test@gmail.com")
@@ -25,7 +25,6 @@
 //!             .attach(Fd::from(file.as_raw_fd()))
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{}", r.is_ok());
 //!         Ok(())
@@ -34,9 +33,9 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, OwnedObjectPath};
+use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -126,7 +125,7 @@ trait Email {
     ///
     /// Note that the default email client for the host will need to support mailto: URIs following RFC 2368
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -135,11 +134,8 @@ trait Email {
     ///
     /// [`EmailOptions`]: ./struct.EmailOptions.html
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
-    fn compose_email(
-        &self,
-        parent_window: WindowIdentifier,
-        options: EmailOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn compose_email(&self, parent_window: WindowIdentifier, options: EmailOptions);
 
     /// version property
     #[dbus_proxy(property, name = "version")]

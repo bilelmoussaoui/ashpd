@@ -19,7 +19,7 @@
 //!     proxy: &'static ScreenCastProxy,
 //!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
-//!     let request_handle = proxy.select_sources(
+//!     let request = proxy.select_sources(
 //!         session_handle.clone(),
 //!         SelectSourcesOptions::default()
 //!             .multiple(true)
@@ -27,7 +27,6 @@
 //!             .types(SourceType::Monitor | SourceType::Window),
 //!     )?;
 //!
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
 //!             start_cast(session_handle, proxy, connection)?;
@@ -42,12 +41,11 @@
 //!     proxy: &'static ScreenCastProxy,
 //!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
-//!     let request_handle = proxy.start(
+//!     let request = proxy.start(
 //!         session_handle,
 //!         WindowIdentifier::default(),
 //!         StartCastOptions::default(),
 //!     )?;
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!     request.connect_response(move |r: Response<Streams>| {
 //!         r.unwrap().streams().iter().for_each(|stream| {
 //!             println!("{}", stream.pipewire_node_id());
@@ -64,11 +62,10 @@
 //!
 //!     let session_token = HandleToken::try_from("session120").unwrap();
 //!
-//!     let request_handle = proxy.create_session(
+//!     let request = proxy.create_session(
 //!         CreateSessionOptions::default()
 //!             .session_handle_token(session_token)
 //!     )?;
-//!     let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
 //!
 //!     request.connect_response(|response: Response<CreateSession>| {
 //!         if let Response::Ok(session) = response {
@@ -79,14 +76,14 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{HandleToken, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use core::convert::TryFrom;
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
+use zvariant::{Fd, ObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
@@ -254,10 +251,11 @@ pub struct StreamProperties {
 trait ScreenCast {
     /// Create a screen cast session.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    fn create_session(&self, options: CreateSessionOptions) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn create_session(&self, options: CreateSessionOptions);
 
     /// Open a file descriptor to the PipeWire remote where the screen cast streams are available.
     ///
@@ -282,7 +280,7 @@ trait ScreenCast {
     /// Passing invalid input to this method will cause the session to be closed.
     /// An application may only attempt to select sources once per session.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -291,11 +289,8 @@ trait ScreenCast {
     ///
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
-    fn select_sources(
-        &self,
-        session_handle: ObjectPath<'_>,
-        options: SelectSourcesOptions,
-    ) -> Result<OwnedObjectPath>;
+    #[dbus_proxy(object = "Request")]
+    fn select_sources(&self, session_handle: ObjectPath<'_>, options: SelectSourcesOptions);
 
     /// Start the screen cast session.
     ///
@@ -304,7 +299,7 @@ trait ScreenCast {
     ///
     /// An application can only attempt start a session once.
     ///
-    /// Returns a [`RequestProxy`] object path.
+    /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
@@ -314,12 +309,13 @@ trait ScreenCast {
     ///
     /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    #[dbus_proxy(object = "Request")]
     fn start(
         &self,
         session_handle: ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: StartCastOptions,
-    ) -> Result<OwnedObjectPath>;
+    );
 
     /// Available cursor mode.
     #[dbus_proxy(property)]
