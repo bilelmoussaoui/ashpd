@@ -2,11 +2,11 @@
 //!
 //! Spawn a process outside of the sandbox, only works in a Flatpak.
 //!
-//! ```no_run
-//! use enumflags2::BitFlags;
+//! ```rust,no_run
 //! use ashpd::flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions};
-//! use zbus::{fdo::Result, Connection};
+//! use enumflags2::BitFlags;
 //! use std::collections::HashMap;
+//! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
@@ -35,7 +35,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
-/// A bitmask representing the "permissions" of a newely created sandbox.
+/// A bitmask representing the "permissions" of a newly created sandbox.
 pub enum SandboxFlags {
     /// Share the display access (X11, wayland) with the caller.
     DisplayAccess = 1,
@@ -57,9 +57,9 @@ pub enum SpawnFlags {
     ClearEnv = 1,
     /// Spawn the latest version of the app.
     Latest = 2,
-    /// Spawn in a sandbox (equivalent of the sandbox option of flatpak run).
+    /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
     Sandbox = 4,
-    /// Spawn without network (equivalent of the unshare=network option of flatpak run).
+    /// Spawn without network (equivalent of the `unshare=network` option of `flatpak run`).
     NoNetwork = 8,
     /// Kill the sandbox when the caller disappears from the session bus.
     Kill = 16,
@@ -78,17 +78,17 @@ pub enum SupportsFlags {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specficied options on a spawn request.
+/// Specified options on a spawn request.
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     /// Note that absolute paths or subdirectories are not allowed.
     pub sandbox_expose: Option<Vec<String>>,
-    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, readonly.
+    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, read-only.
     /// Note that absolute paths or subdirectories are not allowed.
     pub sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     pub sandbox_expose_fd: Option<Vec<Fd>>,
-    /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, readonly.
+    /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, read-only.
     pub sandbox_expose_fd_ro: Option<Vec<Fd>>,
     /// Flags affecting the created sandbox.
     pub sandbox_flags: Option<BitFlags<SandboxFlags>>,
@@ -101,7 +101,7 @@ impl SpawnOptions {
         self
     }
 
-    /// Sets the list of filenames for files to expose the new sandbox, readonly.
+    /// Sets the list of filenames for files to expose the new sandbox, read-only.
     pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: Vec<String>) -> Self {
         self.sandbox_expose_ro = Some(sandbox_expose_ro);
         self
@@ -113,7 +113,7 @@ impl SpawnOptions {
         self
     }
 
-    /// Sets the list of file descriptors of files to expose the new sandbox, readonly.
+    /// Sets the list of file descriptors of files to expose the new sandbox, read-only.
     pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: Vec<Fd>) -> Self {
         self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro);
         self
@@ -127,7 +127,7 @@ impl SpawnOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specficied options on a create monitor request.
+/// Specified options on a create monitor request.
 ///
 /// Currently there are no possible options yet.
 pub struct CreateMonitorOptions {}

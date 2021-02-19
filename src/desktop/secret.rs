@@ -1,12 +1,12 @@
 //! # Examples
 //!
-//! ```no_run
-//! use ashpd::desktop::secret::{SecretProxy, RetrieveOptions};
-//! use ashpd::{RequestProxy, Response, BasicResponse as Basic};
-//! use zbus::{fdo::Result, Connection};
-//! use zvariant::Fd;
+//! ```rust,no_run
+//! use ashpd::desktop::secret::{RetrieveOptions, SecretProxy};
+//! use ashpd::{BasicResponse as Basic, RequestProxy, Response};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
+//! use zbus::{fdo::Result, Connection};
+//! use zvariant::Fd;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;

@@ -4,28 +4,22 @@
 //!
 //! It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal).
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
-//!    let connection = zbus::Connection::new_session()?;
-//!    let proxy = ScreenshotProxy::new(&connection)?;
-//!
-//!    let request = proxy.pick_color(
-//!             WindowIdentifier::default(),
-//!             PickColorOptions::default()
-//!    )?;
-//!
+//!     let connection = zbus::Connection::new_session()?;
+//!     let proxy = ScreenshotProxy::new(&connection)?;
+//!     let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
 //!     request.connect_response(|response: Response<Color>| {
 //!         if let Response::Ok(color) = response {
 //!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!         }
 //!         Ok(())
-//!    })?;
-//!
-//!    Ok(())
+//!     })?;
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -42,6 +36,7 @@
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
 //! [`WindowIdentifier`]: ./window_identifier/struct.WindowIdentifier.html
 //!
+#[deny(broken_intra_doc_links)]
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
 compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 

@@ -3,13 +3,13 @@
 //! How to monitor if there's a new update and install it.
 //! Only available for Flatpak applications.
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::flatpak::update_monitor::{
 //!     UpdateInfo, UpdateMonitorProxy, UpdateOptions, UpdateProgress,
 //! };
 //! use ashpd::flatpak::{CreateMonitorOptions, FlatpakProxy};
-//! use zbus::{fdo::Result, Connection};
 //! use ashpd::WindowIdentifier;
+//! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
@@ -25,8 +25,7 @@
 //!     })?;
 //!
 //!     monitor.connect_update_available(move |_: UpdateInfo| {
-//!         monitor
-//!             .update(WindowIdentifier::default(), UpdateOptions::default())?;
+//!         monitor.update(WindowIdentifier::default(), UpdateOptions::default())?;
 //!         Ok(())
 //!     })?;
 //!
@@ -39,7 +38,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specficied options on an update request
+/// Specified options on an update request
 ///
 /// Currently there are no possible options yet.
 pub struct UpdateOptions {}
@@ -48,10 +47,10 @@ pub struct UpdateOptions {}
 /// A response containing the update information when an update is available.
 pub struct UpdateInfo {
     #[zvariant(rename = "running-commit")]
-    /// The currently running ostree commit.
+    /// The currently running OSTree commit.
     pub running_commit: String,
     #[zvariant(rename = "local-commit")]
-    /// The locally installed ostree commit.
+    /// The locally installed OSTree commit.
     pub local_commit: String,
     #[zvariant(rename = "remote-commit")]
     /// The available commit to install.

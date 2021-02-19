@@ -2,34 +2,30 @@
 //!
 //! Compose an email
 //!
-//! ```no_run
-//! use ashpd::desktop::email::{EmailProxy, EmailOptions};
-//! use ashpd::{RequestProxy, Response, WindowIdentifier, BasicResponse as Basic};
-//! use zbus::{fdo::Result, Connection};
-//! use zvariant::Fd;
+//! ```rust,no_run
+//! use ashpd::desktop::email::{EmailOptions, EmailProxy};
+//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
+//! use zbus::{fdo::Result, Connection};
+//! use zvariant::Fd;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
 //!     let proxy = EmailProxy::new(&connection)?;
-//!
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!
 //!     let request = proxy.compose_email(
 //!         WindowIdentifier::default(),
 //!         EmailOptions::default()
 //!             .address("test@gmail.com")
 //!             .subject("email subject")
 //!             .body("the pre-filled email body")
-//!             .attach(Fd::from(file.as_raw_fd()))
+//!             .attach(Fd::from(file.as_raw_fd())),
 //!     )?;
-//!
 //!     request.connect_response(|r: Response<Basic>| {
 //!         println!("{}", r.is_ok());
 //!         Ok(())
 //!     })?;
-//!
 //!     Ok(())
 //! }
 //! ```

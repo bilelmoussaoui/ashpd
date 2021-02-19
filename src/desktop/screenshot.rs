@@ -2,7 +2,7 @@
 //!
 //! Taking a screenshot
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::screenshot::{Screenshot, ScreenshotOptions, ScreenshotProxy};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
@@ -12,8 +12,7 @@
 //!     let proxy = ScreenshotProxy::new(&connection)?;
 //!     let request = proxy.screenshot(
 //!         WindowIdentifier::default(),
-//!         ScreenshotOptions::default()
-//!             .interactive(true)
+//!         ScreenshotOptions::default().interactive(true),
 //!     )?;
 //!
 //!     request.connect_response(|response: Response<Screenshot>| {
@@ -25,7 +24,7 @@
 //!```
 //!
 //! Picking a color
-//!```no_run
+//!```no_run,rust
 //! use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
@@ -34,10 +33,7 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = ScreenshotProxy::new(&connection)?;
 //!
-//!     let request = proxy.pick_color(
-//!             WindowIdentifier::default(),
-//!             PickColorOptions::default()
-//!     )?;
+//!     let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
 //!
 //!     request.connect_response(|response: Response<Color>| {
 //!         if let Response::Ok(color) = response {
@@ -170,7 +166,7 @@ trait Screenshot {
     /// * `options` - A [`PickColorOptions`]
     ///
     /// [`PickColorOptions`]: ./struct.PickColorOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn pick_color(&self, parent_window: WindowIdentifier, options: PickColorOptions);
 
@@ -184,7 +180,7 @@ trait Screenshot {
     /// * `options` - A [`ScreenshotOptions`]
     ///
     /// [`ScreenshotOptions`]: ./struct.ScreenshotOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn screenshot(&self, parent_window: WindowIdentifier, options: ScreenshotOptions);
 

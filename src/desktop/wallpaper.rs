@@ -2,9 +2,9 @@
 //!
 //! Sets a wallpaper from a file:
 //!
-//! ```no_run
-//! use ashpd::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
-//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
+//! ```rust,no_run
+//! use ashpd::desktop::wallpaper::{SetOn, WallpaperOptions, WallpaperProxy};
+//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zbus::fdo::Result;
@@ -14,17 +14,17 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = WallpaperProxy::new(&connection)?;
 //!
-//!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
+//!     let wallpaper =
+//!         File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
 //!
 //!     let request = proxy.set_wallpaper_file(
 //!         WindowIdentifier::default(),
 //!         Fd::from(wallpaper.as_raw_fd()),
-//!         WallpaperOptions::default()
-//!             .set_on(SetOn::Background),
+//!         WallpaperOptions::default().set_on(SetOn::Background),
 //!     )?;
 //!
 //!     request.connect_response(|response: Response<Basic>| {
-//!         println!("{}", response.is_ok() );
+//!         println!("{}", response.is_ok());
 //!         Ok(())
 //!     })?;
 //!     Ok(())
@@ -33,9 +33,9 @@
 //!
 //! Sets a wallpaper from a URI:
 //!
-//! ```no_run
-//! use ashpd::desktop::wallpaper::{WallpaperOptions, WallpaperProxy, SetOn};
-//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
+//! ```rust,no_run
+//! use ashpd::desktop::wallpaper::{SetOn, WallpaperOptions, WallpaperProxy};
+//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
@@ -51,7 +51,7 @@
 //!     )?;
 //!
 //!     request.connect_response(|response: Response<Basic>| {
-//!         println!("{}", response.is_ok() );
+//!         println!("{}", response.is_ok());
 //!         Ok(())
 //!     })?;
 //!     Ok(())
@@ -68,11 +68,11 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 #[serde(rename = "lowercase")]
 /// Where to set the wallpaper on.
 pub enum SetOn {
-    /// Set the wallpaper only on the lockscreen.
+    /// Set the wallpaper only on the lock-screen.
     Lockscreen,
     /// Set the wallpaper only on the background.
     Background,
-    /// Set the wallpaper on both lockscreen and background.
+    /// Set the wallpaper on both lock-screen and background.
     Both,
 }
 
@@ -124,18 +124,18 @@ impl WallpaperOptions {
 )]
 /// The interface lets sandboxed applications set the user's desktop background picture.
 trait Wallpaper {
-    /// Sets the lockscreen, background or both wallapers from a file descriptor
+    /// Sets the lock-screen, background or both wallpaper's from a file descriptor
     ///
     /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window
-    /// * `fd` - The wallapaper file description
+    /// * `fd` - The wallpaper file description
     /// * `options` - A [`WallpaperOptions`]
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn set_wallpaper_file(
         &self,
@@ -144,18 +144,18 @@ trait Wallpaper {
         options: WallpaperOptions,
     );
 
-    /// Sets the lockscreen, background or both wallapers from an URI
+    /// Sets the lock-screen, background or both wallpaper's from an URI
     ///
     /// Returns a [`RequestProxy`].
     ///
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window
-    /// * `uri` - The wallapaper URI
+    /// * `uri` - The wallpaper URI
     /// * `options` - A [`WallpaperOptions`]
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(name = "SetWallpaperURI", object = "Request")]
     fn set_wallpaper_uri(
         &self,

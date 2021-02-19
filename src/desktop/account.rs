@@ -1,7 +1,7 @@
 //! # Examples
 //!
-//! ```no_run
-//! use ashpd::desktop::account::{AccountProxy, UserInfoOptions, UserInfo};
+//! ```rust,no_run
+//! use ashpd::desktop::account::{AccountProxy, UserInfo, UserInfoOptions};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
@@ -10,8 +10,7 @@
 //!     let proxy = AccountProxy::new(&connection)?;
 //!     let request = proxy.get_user_information(
 //!         WindowIdentifier::default(),
-//!         UserInfoOptions::default()
-//!             .reason("Fractal would like access to your information"),
+//!         UserInfoOptions::default().reason("Fractal would like access to your information"),
 //!     )?;
 //!     request.connect_response(|response: Response<UserInfo>| {
 //!         let user_info = response.unwrap();

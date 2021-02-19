@@ -1,18 +1,18 @@
 //! # Examples
 //!
 //! How to create a screen cast session & start it.
-//! The portal is currently useless without pipewire & rust support.
+//! The portal is currently useless without PipeWire & Rust support.
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::screencast::{
 //!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
 //! };
 //! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
-//! use zbus::{self, fdo::Result};
-//! use zvariant::ObjectPath;
 //! use enumflags2::BitFlags;
 //! use std::convert::TryFrom;
+//! use zbus::{self, fdo::Result};
+//! use zvariant::ObjectPath;
 //!
 //! fn select_sources(
 //!     session_handle: ObjectPath<'static>,
@@ -62,10 +62,8 @@
 //!
 //!     let session_token = HandleToken::try_from("session120").unwrap();
 //!
-//!     let request = proxy.create_session(
-//!         CreateSessionOptions::default()
-//!             .session_handle_token(session_token)
-//!     )?;
+//!     let request = proxy
+//!         .create_session(CreateSessionOptions::default().session_handle_token(session_token))?;
 //!
 //!     request.connect_response(|response: Response<CreateSession>| {
 //!         if let Response::Ok(session) = response {
@@ -213,11 +211,11 @@ impl Streams {
 }
 
 #[derive(Serialize, Deserialize, Type, Debug)]
-/// A pipewire stream.
+/// A PipeWire stream.
 pub struct Stream(u32, StreamProperties);
 
 impl Stream {
-    /// Thep pipewire stream node
+    /// The PipeWire stream node
     pub fn pipewire_node_id(&self) -> u32 {
         self.0
     }
@@ -253,7 +251,7 @@ trait ScreenCast {
     ///
     /// Returns a [`RequestProxy`].
     ///
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn create_session(&self, options: CreateSessionOptions);
 
@@ -267,7 +265,7 @@ trait ScreenCast {
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
     ///
-    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     fn open_pipe_wire_remote(
         &self,
         session_handle: ObjectPath<'_>,
@@ -287,8 +285,8 @@ trait ScreenCast {
     /// * `session_handle` - A [`SessionProxy`] object path.
     /// * `options` - A `SelectSourcesOptions`
     ///
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Request")]
     fn select_sources(&self, session_handle: ObjectPath<'_>, options: SelectSourcesOptions);
 
@@ -307,8 +305,8 @@ trait ScreenCast {
     /// * `parent_window` - Identifier for the application window
     /// * `options` - A `StartScreenCastOptions`
     ///
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Request")]
     fn start(
         &self,

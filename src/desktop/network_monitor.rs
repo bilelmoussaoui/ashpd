@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 //! use zbus::fdo::Result;
 //!

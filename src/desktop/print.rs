@@ -2,13 +2,13 @@
 //!
 //! Print a file
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::print::{PrintOptions, PrintProxy};
-//! use zbus::{fdo::Result, Connection};
 //! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
-//! use zvariant::Fd;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
+//! use zbus::{fdo::Result, Connection};
+//! use zvariant::Fd;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
@@ -531,7 +531,7 @@ trait Print {
     /// [`Settings`]: ./struct.Settings.html
     /// [`PageSetup`]: ./struct.PageSetup.html
     /// [`PreparePrintOptions`]: ./struct.PreparePrintOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn prepare_print(
         &self,
@@ -556,7 +556,7 @@ trait Print {
     /// * `options` - [`PrintOptions`]
     ///
     /// [`PrintOptions`]: ./struct.PrintOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn print(&self, parent_window: WindowIdentifier, title: &str, fd: Fd, options: PrintOptions);
 

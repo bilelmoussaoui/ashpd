@@ -2,38 +2,32 @@
 //!
 //! How to inhibit logout/user switch
 //!
-//! ```no_run
-//!  use ashpd::desktop::inhibit::{
+//! ```rust,no_run
+//! use ashpd::desktop::inhibit::{
 //!     CreateMonitorOptions, InhibitFlags, InhibitOptions, InhibitProxy, InhibitState, SessionState,
 //! };
 //! use ashpd::{HandleToken, WindowIdentifier};
-//! use zbus::{self, fdo::Result};
-//!
 //! use std::convert::TryFrom;
 //! use std::{thread, time};
+//! use zbus::{self, fdo::Result};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = InhibitProxy::new(&connection)?;
-//!
 //!     let session_token = HandleToken::try_from("sessiontoken").unwrap();
-//!
 //!     proxy.create_monitor(
 //!         WindowIdentifier::default(),
 //!         CreateMonitorOptions::default().session_handle_token(session_token),
 //!     )?;
-//!
-//!     proxy.connect_state_changed(move |state: InhibitState|{
+//!     proxy.connect_state_changed(move |state: InhibitState| {
 //!         match state.session_state() {
 //!             SessionState::Running => (),
 //!             SessionState::QueryEnd => {
-//!
 //!                 proxy.inhibit(
 //!                     WindowIdentifier::default(),
 //!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
 //!                     InhibitOptions::default().reason("please save the opened project first"),
 //!                 )?;
-//!
 //!                 thread::sleep(time::Duration::from_secs(1));
 //!                 proxy.query_end_response(state.session_handle().into())?;
 //!             }
@@ -179,7 +173,6 @@ trait Inhibit {
     /// * `options` - [`CreateMonitorOptions`]
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn create_monitor(&self, window: WindowIdentifier, options: CreateMonitorOptions);
 
@@ -194,7 +187,7 @@ trait Inhibit {
     /// * `options` - [`InhibitOptions`]
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn inhibit(
         &self,

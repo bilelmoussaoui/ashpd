@@ -1,9 +1,9 @@
 //! # Examples
 //!
 //! Opening a file
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{
-//!     Choice, FileChooserProxy, FileFilter, SelectedFiles, OpenFileOptions,
+//!     Choice, FileChooserProxy, FileFilter, OpenFileOptions, SelectedFiles,
 //! };
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
@@ -40,16 +40,13 @@
 //!
 //! Ask to save a file
 //!
-//! ```no_run
-//! use ashpd::desktop::file_chooser::{
-//!     FileChooserProxy, FileFilter, SelectedFiles, SaveFileOptions,
-//! };
+//! ```rust,no_run
+//! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions, SelectedFiles};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!
 //!     let proxy = FileChooserProxy::new(&connection)?;
 //!     let request = proxy.save_file(
 //!         WindowIdentifier::default(),
@@ -60,18 +57,16 @@
 //!             .modal(true)
 //!             .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
 //!     )?;
-//!
 //!     request.connect_response(|r: Response<SelectedFiles>| {
 //!         println!("{:#?}", r.unwrap());
 //!         Ok(())
 //!     })?;
-//!
 //!     Ok(())
 //! }
 //!```
 //!
 //! Ask to save multiple files
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions, SelectedFiles};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
@@ -419,7 +414,7 @@ trait FileChooser {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn open_file(&self, parent_window: WindowIdentifier, title: &str, options: OpenFileOptions);
 
@@ -434,7 +429,7 @@ trait FileChooser {
     /// * `options` - [`SaveFileOptions`]
     ///
     /// [`SaveFileOptions`]: ./struct.SaveFileOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn save_file(&self, parent_window: WindowIdentifier, title: &str, options: SaveFileOptions);
 
@@ -454,7 +449,7 @@ trait FileChooser {
     /// * `options` - [`SaveFilesOptions`]
     ///
     /// [`SaveFilesOptions`]: ./struct.SaveFilesOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn save_files(&self, parent_window: WindowIdentifier, title: &str, options: SaveFilesOptions);
 
