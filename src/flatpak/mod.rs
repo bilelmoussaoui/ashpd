@@ -37,9 +37,9 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 #[repr(u32)]
 /// A bitmask representing the "permissions" of a newly created sandbox.
 pub enum SandboxFlags {
-    /// Share the display access (X11, wayland) with the caller.
+    /// Share the display access (X11, Wayland) with the caller.
     DisplayAccess = 1,
-    /// Share the sound access (pulseaudio) with the caller.
+    /// Share the sound access (PulseAudio) with the caller.
     SoundAccess = 2,
     /// Share the gpu access with the caller.
     GPUAccess = 4,

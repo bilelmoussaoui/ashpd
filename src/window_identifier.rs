@@ -35,8 +35,7 @@ impl Default for WindowIdentifier {
 #[cfg(feature = "feature_gtk3")]
 impl From<gtk3::Window> for WindowIdentifier {
     fn from(win: gtk3::Window) -> Self {
-        use gdk3::prelude::{Cast, ObjectExt};
-        use gtk3::WidgetExt;
+        use gtk3::prelude::{Cast, ObjectExt, WidgetExt};
 
         let window = win
             .get_window()
@@ -66,8 +65,7 @@ impl From<gtk3::Window> for WindowIdentifier {
 #[cfg(feature = "feature_gtk4")]
 impl From<gtk4::Window> for WindowIdentifier {
     fn from(win: gtk4::Window) -> Self {
-        use gdk4::prelude::{Cast, ObjectExt};
-        use gtk4::NativeExt;
+        use gtk4::prelude::{Cast, NativeExt, ObjectExt};
 
         let surface = win
             .get_surface()
