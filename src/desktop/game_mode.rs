@@ -1,4 +1,4 @@
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::game_mode::{GameModeProxy, GameModeStatus};
 //! use zbus::{self, fdo::Result};
 //!

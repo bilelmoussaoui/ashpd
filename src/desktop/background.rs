@@ -1,9 +1,7 @@
 //! # Examples
 //!
-//! ```no_run
-//! use ashpd::desktop::background::{
-//!     BackgroundOptions, BackgroundProxy, Background,
-//! };
+//! ```rust,no_run
+//! use ashpd::desktop::background::{Background, BackgroundOptions, BackgroundProxy};
 //! use ashpd::{RequestProxy, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!

@@ -17,7 +17,6 @@ use zvariant_derive::Type;
 /// We would love merge requests that adds other `From<T> for WindowIdentifier` implementations for other toolkits.
 ///
 /// [`WindowIdentifier`]: ./struct.WindowIdentifier.html
-///
 pub struct WindowIdentifier(String);
 
 impl WindowIdentifier {
@@ -36,7 +35,7 @@ impl Default for WindowIdentifier {
 #[cfg(feature = "feature_gtk3")]
 impl From<gtk3::Window> for WindowIdentifier {
     fn from(win: gtk3::Window) -> Self {
-        use gdk3::prelude::{Cast, ObjectExt, WindowExt};
+        use gdk3::prelude::{Cast, ObjectExt};
         use gtk3::WidgetExt;
 
         let window = win

@@ -1,9 +1,8 @@
 //! # Examples
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::memory_monitor::MemoryMonitorProxy;
 //! use zbus::{self, fdo::Result};
-//!
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
@@ -15,7 +14,6 @@
 //!     Ok(())
 //! }
 //! ```
-
 use zbus::{dbus_proxy, fdo::Result};
 
 #[dbus_proxy(

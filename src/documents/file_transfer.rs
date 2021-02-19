@@ -1,22 +1,18 @@
 //! # Examples
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::documents::file_transfer::{FileTransferProxy, TransferOptions};
-//! use zbus::{fdo::Result, Connection};
 //! use std::collections::HashMap;
-//! use zvariant::Fd;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
+//! use zbus::{fdo::Result, Connection};
+//! use zvariant::Fd;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
 //!     let proxy = FileTransferProxy::new(&connection)?;
 //!
-//!     let key = proxy.start_transfer(
-//!         TransferOptions::default()
-//!             .writeable(true)
-//!             .autostop(true)
-//!     )?;
+//!     let key = proxy.start_transfer(TransferOptions::default().writeable(true).autostop(true))?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy.add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new())?;
 //!

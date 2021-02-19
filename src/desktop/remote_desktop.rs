@@ -1,15 +1,15 @@
 //! # Examples
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{
-//!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy, SelectedDevices,
-//!     SelectDevicesOptions, StartRemoteOptions,
+//!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy,
+//!     SelectDevicesOptions, SelectedDevices, StartRemoteOptions,
 //! };
 //! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
-//! use zbus::{fdo::Result, Connection};
-//! use zvariant::ObjectPath;
 //! use std::collections::HashMap;
 //! use std::convert::TryFrom;
+//! use zbus::{fdo::Result, Connection};
+//! use zvariant::ObjectPath;
 //!
 //! fn select_devices(
 //!     handle: ObjectPath<'static>,
@@ -43,13 +43,12 @@
 //!     )?;
 //!
 //!     request.connect_response(move |r: Response<SelectedDevices>| {
-//!         proxy
-//!             .notify_keyboard_keycode(
-//!                 handle.clone(),
-//!                 HashMap::new(),
-//!                 13, // Enter key code
-//!                 KeyState::Pressed,
-//!             )?;
+//!         proxy.notify_keyboard_keycode(
+//!             handle.clone(),
+//!             HashMap::new(),
+//!             13, // Enter key code
+//!             KeyState::Pressed,
+//!         )?;
 //!
 //!         println!("{:#?}", r.unwrap().devices);
 //!         Ok(())

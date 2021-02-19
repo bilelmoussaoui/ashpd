@@ -1,13 +1,8 @@
 //! # Examples
 //!
-//! ```no_run
-//! use ashpd::desktop::location::{
-//!     LocationAccessOptions, LocationProxy, LocationStartOptions,
-//! };
-//! use ashpd::{
-//!     HandleToken, RequestProxy, Response,
-//!     BasicResponse as Basic, WindowIdentifier,
-//! };
+//! ```rust,no_run
+//! use ashpd::desktop::location::{LocationAccessOptions, LocationProxy, LocationStartOptions};
+//! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
 //! use std::convert::TryFrom;
 //! use zbus::{self, fdo::Result};
 //!
@@ -16,7 +11,7 @@
 //!     let proxy = LocationProxy::new(&connection)?;
 //!
 //!     let options = LocationAccessOptions::default()
-//!                     .session_handle_token(HandleToken::try_from("token").unwrap());
+//!         .session_handle_token(HandleToken::try_from("token").unwrap());
 //!
 //!     let session_handle = proxy.create_session(options)?;
 //!
@@ -209,7 +204,7 @@ trait Location {
     /// * `options` - A [`LocationAccessOptions`]
     ///
     /// [`LocationAccessOptions`]: ./struct.LocationAccessOptions.html
-    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     fn create_session(&self, options: LocationAccessOptions) -> zbus::Result<OwnedObjectPath>;
 
     /// Start the location session.
@@ -223,8 +218,8 @@ trait Location {
     /// * `parent_window` - Identifier for the application window
     /// * `options` - A `LocationStartOptions`
     ///
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
-    /// [`SessionProxy`]: ../session/struct.SessionProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Request")]
     fn start(
         &self,

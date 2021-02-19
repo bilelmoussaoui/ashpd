@@ -1,13 +1,11 @@
 //! # Examples
 //!
-//! ```no_run
-//! use zbus;
-//! use zvariant::Fd;
+//! ```rust,no_run
 //! use ashpd::desktop::trash::{TrashProxy, TrashStatus};
-//! use zbus::fdo::Result;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//!
+//! use zbus::fdo::Result;
+//! use zvariant::Fd;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;

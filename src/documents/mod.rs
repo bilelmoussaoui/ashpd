@@ -1,7 +1,7 @@
 //!
 //! # Examples
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::documents::{DocumentsProxy, Permission};
 //! use zbus::{fdo::Result, Connection};
 //!

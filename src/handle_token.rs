@@ -19,8 +19,8 @@ use zvariant_derive::Type;
 /// assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
 /// ```
 ///
-/// [`SessionProxy`]: ../session/struct.SessionProxy.html
-/// [`RequestProxy`]: ../request/struct.RequestProxy.html
+/// [`SessionProxy`]: ./struct.SessionProxy.html
+/// [`RequestProxy`]: ./struct.RequestProxy.html
 pub struct HandleToken(String);
 
 #[derive(Debug)]

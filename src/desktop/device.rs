@@ -2,19 +2,15 @@
 //!
 //! Access a [`Device`]
 //!
-//! ```no_run
-//! use ashpd::desktop::device::{DeviceProxy, AccessDeviceOptions, Device};
-//! use ashpd::{RequestProxy, BasicResponse as Basic, Response};
+//! ```rust,no_run
+//! use ashpd::desktop::device::{AccessDeviceOptions, Device, DeviceProxy};
+//! use ashpd::{BasicResponse as Basic, RequestProxy, Response};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = DeviceProxy::new(&connection)?;
-//!     let request = proxy.access_device(
-//!         6879,
-//!         &[Device::Speakers],
-//!         AccessDeviceOptions::default(),
-//!     )?;
+//!     let request = proxy.access_device(6879, &[Device::Speakers], AccessDeviceOptions::default())?;
 //!
 //!     request.connect_response(|response: Response<Basic>| {
 //!         println!("{}", response.is_ok());

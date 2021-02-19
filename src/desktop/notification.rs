@@ -1,10 +1,10 @@
 //! # Examples
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
+//! use std::{thread, time};
 //! use zbus::{self, fdo::Result};
 //! use zvariant::Value;
-//! use std::{thread, time};
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
@@ -40,7 +40,6 @@
 //!     proxy.remove_notification(notification_id)?;
 //!     Ok(())
 //! }
-//!
 //!```
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
@@ -130,7 +129,7 @@ impl Notification {
         self
     }
 
-    /// Sets the notiifcation priority.
+    /// Sets the notification priority.
     pub fn priority(mut self, priority: Priority) -> Self {
         self.priority = Some(priority);
         self

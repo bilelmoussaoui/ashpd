@@ -7,7 +7,6 @@ the XDG portals DBus interfaces. The library aims to provide an easy way to
 interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
 It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
 
-
 ```rust
 use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
 use ashpd::{RequestProxy, Response, WindowIdentifier};
@@ -16,24 +15,19 @@ use zbus::fdo::Result;
 fn main() -> Result<()> {
     let connection = zbus::Connection::new_session()?;
     let proxy = ScreenshotProxy::new(&connection)?;
-    
-    let request_handle = proxy.pick_color(
-            WindowIdentifier::default(),
-            PickColorOptions::default()
-    )?;
-   
-    let request = RequestProxy::new_for_path(&connection, request_handle.as_str())?;
+    let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
     request.connect_response(|response: Response<Color>| {
         if let Response::Ok(color) = response {
             println!("({}, {}, {})", color.red(), color.green(), color.blue());
         }
+        Ok(())
     })?;
-   
     Ok(())
 }
 ```
 
 ## Optional features
+
 | Feature | Description |
 | ---     | ----------- |
 | feature_gtk3 | Implement `Into<gdk3::RGBA>` for [`Color`] |

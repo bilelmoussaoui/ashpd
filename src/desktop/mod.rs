@@ -2,7 +2,7 @@
 pub mod account;
 /// Request running an application in the background.
 pub mod background;
-/// Check if a camera is available, request access to it and open a pipewire remote stream.
+/// Check if a camera is available, request access to it and open a PipeWire remote stream.
 pub mod camera;
 /// Request access to specific devices such as camera, speakers or microphone.
 pub mod device;
@@ -28,11 +28,11 @@ pub mod open_uri;
 pub mod print;
 /// Start a remote desktop session and interact with it.
 pub mod remote_desktop;
-/// Start a screencast session and get the pipewire remote of it.
+/// Start a screencast session and get the PipeWire remote of it.
 pub mod screencast;
 /// Take a screenshot or pick a color.
 pub mod screenshot;
-/// Retrieve a per-application secret used to encrypt confedential data inside the sandbox.
+/// Retrieve a per-application secret used to encrypt confidential data inside the sandbox.
 pub mod secret;
 /// Read & listen to system settings changes.
 pub mod settings;

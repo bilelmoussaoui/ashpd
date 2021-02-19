@@ -1,4 +1,4 @@
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::settings::SettingsProxy;
 //! use zbus::{self, fdo::Result};
 //!
@@ -11,7 +11,6 @@
 //!         proxy.read("org.gnome.desktop.interface", "clock-format")?
 //!     );
 //!     println!("{:#?}", proxy.read_all(&["org.gnome.desktop.interface"])?);
-//!
 //!
 //!     proxy.connect_setting_changed(|setting| {
 //!         println!("{}", setting.namespace());

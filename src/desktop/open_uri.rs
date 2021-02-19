@@ -2,13 +2,13 @@
 //!
 //! Open a file
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
-//! use zbus::{self, fdo::Result};
-//! use zvariant::Fd;
+//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
+//! use zbus::{self, fdo::Result};
+//! use zvariant::Fd;
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
@@ -33,9 +33,9 @@
 //!
 //! Open a file from a URI
 //!
-//! ```no_run
+//! ```rust,no_run
 //! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use ashpd::{RequestProxy, Response, BasicResponse as Basic, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
 //! use zbus::{self, fdo::Result};
 //!
 //! fn main() -> Result<()> {
@@ -127,7 +127,7 @@ trait OpenURI {
     /// * `options` - [`OpenDirOptions`]
     ///
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn open_directory(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenDirOptions);
 
@@ -142,7 +142,7 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn open_file(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenFileOptions);
 
@@ -157,7 +157,7 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`]
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    /// [`RequestProxy`]: ../request/struct.RequestProxy.html
+    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(name = "OpenURI", object = "Request")]
     fn open_uri(&self, parent_window: WindowIdentifier, uri: &str, options: OpenFileOptions);
 
