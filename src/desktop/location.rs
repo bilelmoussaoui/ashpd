@@ -121,7 +121,7 @@ pub struct LocationResponse(OwnedObjectPath, Location);
 
 impl LocationResponse {
     /// A `SessionProxy` object path.
-    pub fn session_handle<'a>(&self) -> &'a ObjectPath {
+    pub fn session_handle(&self) -> &ObjectPath<'_> {
         &self.0
     }
 

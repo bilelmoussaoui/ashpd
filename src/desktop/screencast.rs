@@ -79,7 +79,6 @@ use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
-use std::ops::Deref;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -193,7 +192,7 @@ pub struct CreateSession {
 impl CreateSession {
     /// The created session handle.
     pub fn handle(&self) -> &ObjectPath<'_> {
-        self.session_handle.deref()
+        &self.session_handle
     }
 }
 
