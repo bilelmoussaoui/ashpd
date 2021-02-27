@@ -23,10 +23,11 @@
 //!     })?;
 //!     Ok(())
 //! }
-//!```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+//! ```
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// The possible options for a get user information request.
@@ -67,10 +68,11 @@ pub struct UserInfo {
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface lets sandboxed applications query basic information about the user,
-/// like his name and avatar photo.
+/// The interface lets sandboxed applications query basic information about the
+/// user, like his name and avatar photo.
 ///
-/// The portal backend will present the user with a dialog to confirm which (if any) information to share.
+/// The portal backend will present the user with a dialog to confirm which (if
+/// any) information to share.
 trait Account {
     /// Gets information about the user.
     ///

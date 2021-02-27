@@ -34,12 +34,13 @@
 //! }
 //! ```
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(
     Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
@@ -141,7 +142,8 @@ pub struct Settings {
     /// A media type according to [PWG 5101.1-2002](ftp://ftp.pwg.org/pub/pwg/candidates/cs-pwgmsn10-20020226-5101.1.pdf)
     #[zvariant(rename = "media-type")]
     pub media_type: Option<String>,
-    /// The dithering to use, one of fine, none, coarse, lineart, grayscale or error-diffusion.
+    /// The dithering to use, one of fine, none, coarse, lineart, grayscale or
+    /// error-diffusion.
     pub dither: Option<String>,
     /// The scale in percent
     pub scale: Option<String>,
@@ -306,7 +308,8 @@ impl Settings {
         self
     }
 
-    /// Sets the number up layout, one of lrtb, lrbt, rltb, rlbt, tblr, tbrl, btlr, btrl.
+    /// Sets the number up layout, one of lrtb, lrbt, rltb, rlbt, tblr, tbrl,
+    /// btlr, btrl.
     pub fn number_up_layout(mut self, number_up_layout: &str) -> Self {
         self.number_up_layout = Some(number_up_layout.to_string());
         self
@@ -516,7 +519,8 @@ pub struct PreparePrint {
 )]
 /// The interface lets sandboxed applications print.
 trait Print {
-    /// Presents a print dialog to the user and returns print settings and page setup.
+    /// Presents a print dialog to the user and returns print settings and page
+    /// setup.
     ///
     /// # Arguments
     ///
@@ -540,8 +544,9 @@ trait Print {
     );
 
     /// Asks to print a file.
-    /// The file must be passed in the form of a file descriptor open for reading.
-    /// This ensures that sandboxed applications only print files that they have access to.
+    /// The file must be passed in the form of a file descriptor open for
+    /// reading. This ensures that sandboxed applications only print files
+    /// that they have access to.
     ///
     /// # Arguments
     ///

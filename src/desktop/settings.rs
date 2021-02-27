@@ -22,8 +22,9 @@
 //! }
 //! ```
 
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
@@ -67,8 +68,9 @@ impl std::fmt::Debug for Setting {
     default_service = "org.freedesktop.portal.Settings",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface provides read-only access to a small number of host settings required for toolkits similar to XSettings.
-/// It is not for general purpose settings.
+/// The interface provides read-only access to a small number of host settings
+/// required for toolkits similar to XSettings. It is not for general purpose
+/// settings.
 trait Settings {
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
@@ -78,13 +80,14 @@ trait Settings {
     ///
     /// * `namespaces` - List of namespaces to filter results by.
     ///
-    ///     If `namespaces` is an empty array or contains an empty string it matches all.
-    ///     Globbing is supported but only for trailing sections, e.g. "org.example.*".
+    /// If `namespaces` is an empty array or contains an empty string it matches
+    /// all. Globing is supported but only for trailing sections, e.g.
+    /// "org.example.*".
     fn read_all(&self, namespaces: &[&str]) -> zbus::Result<HashMap<String, Namespace>>;
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
-    /// Returns the value `key` is to to as a `zvariant::OwnedValue`
+    /// Returns the value `key` is to to as a `zvariant::OwnedValue`.
     ///
     /// # Arguments
     ///

@@ -29,7 +29,7 @@
 //!
 //!     Ok(())
 //! }
-//!```
+//! ```
 //!
 //! Open a file from a URI
 //!
@@ -56,10 +56,11 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for an open directory request.
@@ -82,9 +83,12 @@ pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
     /// Whether to allow the chosen application to write to the file.
-    /// This key only takes effect the uri points to a local file that is exported in the document portal, and the chosen application is sandboxed itself.
+    /// This key only takes effect the uri points to a local file that is
+    /// exported in the document portal, and the chosen application is sandboxed
+    /// itself.
     writeable: Option<bool>,
-    /// Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
+    /// Whether to ask the user to choose an app. If this is not passed, or
+    /// false, the portal may use a default or pick the last choice.
     ask: Option<bool>,
 }
 
@@ -114,7 +118,8 @@ impl OpenFileOptions {
     default_path = "/org/freedesktop/portal/desktop"
 )]
 /// The interface lets sandboxed applications open URIs
-/// (e.g. a http: link to the applications homepage) under the control of the user.
+/// (e.g. a http: link to the applications homepage) under the control of the
+/// user.
 trait OpenURI {
     /// Asks to open the directory containing a local file in the file browser.
     ///

@@ -29,9 +29,10 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
 /// Specified options for a `request_background` request.
@@ -46,7 +47,8 @@ pub struct BackgroundOptions {
     #[zvariant(rename = "dbus-activatable")]
     dbus_activatable: Option<bool>,
     /// Command to use when auto-starting at login.
-    /// If this is not specified, the Exec line from the desktop file will be used.
+    /// If this is not specified, the Exec line from the desktop file will be
+    /// used.
     #[zvariant(rename = "commandline")]
     command: Option<Vec<String>>,
 }
@@ -77,7 +79,8 @@ impl BackgroundOptions {
     }
 
     /// Specifies the command line to execute.
-    /// If this is not specified, the Exec line from the desktop file will be used.
+    /// If this is not specified, the Exec line from the desktop file will be
+    /// used.
     pub fn command(mut self, command: &[&str]) -> Self {
         let command = command.to_vec().iter().map(|s| s.to_string()).collect();
         self.command = Some(command);
@@ -100,7 +103,8 @@ pub struct Background {
     default_path = "/org/freedesktop/portal/desktop"
 )]
 /// The interface lets sandboxed applications request that the application
-/// is allowed to run in the background or started automatically when the user logs in.
+/// is allowed to run in the background or started automatically when the user
+/// logs in.
 trait Background {
     /// Requests that the application is allowed to run in the background.
     ///

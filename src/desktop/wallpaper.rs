@@ -57,12 +57,13 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, RequestProxy, WindowIdentifier};
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, RequestProxy, WindowIdentifier};
 
 #[derive(
     Deserialize, Debug, Clone, Copy, PartialEq, Hash, AsRefStr, EnumString, IntoStaticStr, ToString,
@@ -106,7 +107,8 @@ pub struct WallpaperOptions {
 
 impl WallpaperOptions {
     /// Whether to show a preview of the picture.
-    /// **Note** that the portal may decide to show a preview even if this option is not set.
+    /// **Note** that the portal may decide to show a preview even if this
+    /// option is not set.
     pub fn show_preview(mut self, show_preview: bool) -> Self {
         self.show_preview = Some(show_preview);
         self
@@ -124,9 +126,11 @@ impl WallpaperOptions {
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface lets sandboxed applications set the user's desktop background picture.
+/// The interface lets sandboxed applications set the user's desktop background
+/// picture.
 trait Wallpaper {
-    /// Sets the lock-screen, background or both wallpaper's from a file descriptor.
+    /// Sets the lock-screen, background or both wallpaper's from a file
+    /// descriptor.
     ///
     /// # Arguments
     ///

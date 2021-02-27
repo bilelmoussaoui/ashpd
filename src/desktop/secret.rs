@@ -23,10 +23,11 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, RequestProxy};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, RequestProxy};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a retrieve secret request.
@@ -49,7 +50,8 @@ impl RetrieveOptions {
     default_path = "/org/freedesktop/portal/desktop"
 )]
 /// The interface lets sandboxed applications retrieve a per-application secret.
-/// The secret can then be used for encrypting confidential data inside the sandbox.
+/// The secret can then be used for encrypting confidential data inside the
+/// sandbox.
 trait Secret {
     /// Retrieves a master secret for a sandboxed application.
     ///

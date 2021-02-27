@@ -40,13 +40,14 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a create inhibit monitor request.
@@ -113,6 +114,15 @@ pub struct InhibitMonitorResponse {
     session_handle: OwnedObjectPath,
 }
 
+#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+#[doc(hidden)]
+struct State {
+    #[zvariant(rename = "screensaver-active")]
+    pub screensaver_active: bool,
+    #[zvariant(rename = "session-state")]
+    pub session_state: SessionState,
+}
+
 #[derive(Debug, Serialize, Deserialize, Type)]
 /// A response received when the session state signal is received.
 pub struct InhibitState(OwnedObjectPath, State);
@@ -134,14 +144,6 @@ impl InhibitState {
     }
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-struct State {
-    #[zvariant(rename = "screensaver-active")]
-    pub screensaver_active: bool,
-    #[zvariant(rename = "session-state")]
-    pub session_state: SessionState,
-}
-
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 /// The current state of the user's session.
@@ -159,11 +161,12 @@ pub enum SessionState {
     default_service = "org.freedesktop.portal.Inhibit",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface lets sandboxed applications inhibit the user session from ending, suspending, idling or getting switched away.
+/// The interface lets sandboxed applications inhibit the user session from
+/// ending, suspending, idling or getting switched away.
 trait Inhibit {
     /// Creates a monitoring session.
-    /// While this session is active, the caller will receive `state_changed` signals
-    /// with updates on the session state.
+    /// While this session is active, the caller will receive `state_changed`
+    /// signals with updates on the session state.
     ///
     /// # Arguments
     ///
@@ -196,7 +199,8 @@ trait Inhibit {
     fn state_changed(&self, state: InhibitState) -> Result<()>;
 
     /// Acknowledges that the caller received the "state_changed" signal.
-    /// This method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
+    /// This method should be called within one second after receiving a
+    /// `state_changed` signal with the `SessionState::QueryEnd` state.
     ///
     /// # Arguments
     ///

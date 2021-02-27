@@ -31,11 +31,12 @@
 //! }
 //! ```
 
+use std::collections::HashMap;
+use std::str::FromStr;
+
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
-use std::str::FromStr;
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Signature};
@@ -60,7 +61,8 @@ pub type Permissions = HashMap<String, Vec<Permission>>;
 
 #[derive(Debug, Clone, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq)]
 #[strum(serialize_all = "lowercase")]
-/// The possible permissions to grant to a specific application for a specific document.
+/// The possible permissions to grant to a specific application for a specific
+/// document.
 pub enum Permission {
     /// Read access.
     Read,
@@ -102,19 +104,21 @@ impl<'de> Deserialize<'de> for Permission {
     default_service = "org.freedesktop.portal.Documents",
     default_path = "/org/freedesktop/portal/documents"
 )]
-/// The interface lets sandboxed applications make files from the outside world available to sandboxed applications in a controlled way.
+/// The interface lets sandboxed applications make files from the outside world
+/// available to sandboxed applications in a controlled way.
 ///
-/// Exported files will be made accessible to the application via a fuse filesystem
-/// that gets mounted at `/run/user/$UID/doc/`. The filesystem gets mounted both outside
-/// and inside the sandbox, but the view inside the sandbox is restricted to just
-/// those files that the application is allowed to access.
+/// Exported files will be made accessible to the application via a fuse
+/// filesystem that gets mounted at `/run/user/$UID/doc/`. The filesystem gets
+/// mounted both outside and inside the sandbox, but the view inside the sandbox
+/// is restricted to just those files that the application is allowed to access.
 ///
 /// Individual files will appear at `/run/user/$UID/doc/$DOC_ID/filename`,
 /// where `$DOC_ID` is the ID of the file in the document store.
 /// It is returned by the `Add()` and `AddNamed()` calls.
 ///
-/// The permissions that the application has for a document store entry (see `GrantPermissions()`)
-/// are reflected in the POSIX mode bits in the fuse filesystem.
+/// The permissions that the application has for a document store entry (see
+/// `GrantPermissions()`) are reflected in the POSIX mode bits in the fuse
+/// filesystem.
 trait Documents {
     /// Adds a file to the document store.
     /// The file is passed in the form of an open file descriptor
@@ -125,15 +129,18 @@ trait Documents {
     /// # Arguments
     ///
     /// * `o_path_fd` - Open file descriptor for the file to add.
-    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
-    /// * `persistent` - Whether to add the file only for this session or permanently.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry
+    ///   for the file.
+    /// * `persistent` - Whether to add the file only for this session or
+    ///   permanently.
     fn add(&self, o_path_fd: Fd, reuse_existing: bool, persistent: bool) -> Result<String>;
 
     /// Adds multiple files to the document store.
     /// The files are passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.
     ///
-    /// Returns the IDs of the files in the document store along with other extra info.
+    /// Returns the IDs of the files in the document store along with other
+    /// extra info.
     ///
     /// # Arguments
     ///
@@ -157,8 +164,10 @@ trait Documents {
     ///
     /// * `o_path_parent_fd` - Open file descriptor for the parent directory.
     /// * `filename` - The basename for the file.
-    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
-    /// * `persistent` - Whether to add the file only for this session or permanently.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry
+    ///   for the file.
+    /// * `persistent` - Whether to add the file only for this session or
+    ///   permanently.
     fn add_named(
         &self,
         o_path_parent_fd: Fd,
@@ -171,7 +180,8 @@ trait Documents {
     /// The files are passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.
     ///
-    /// Returns the ID of the file in the document store along with other extra info.
+    /// Returns the ID of the file in the document store along with other extra
+    /// info.
     ///
     /// # Arguments
     ///
@@ -189,9 +199,9 @@ trait Documents {
         permissions: &[Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>)>;
 
-    /// Removes an entry from the document store. The file itself is not deleted.
-    /// This call is available inside the sandbox if the application
-    /// has the 'delete' permission for the document.
+    /// Removes an entry from the document store. The file itself is not
+    /// deleted. This call is available inside the sandbox if the
+    /// application has the 'delete' permission for the document.
     ///
     /// # Arguments
     ///
@@ -202,8 +212,9 @@ trait Documents {
     /// This will typically be /run/user/$UID/doc/.
     fn get_mount_point(&self) -> Result<String>;
 
-    /// Grants access permissions for a file in the document store to an application.
-    /// This call is available inside the sandbox if the application has the 'grant-permissions' permission for the document.
+    /// Grants access permissions for a file in the document store to an
+    /// application. This call is available inside the sandbox if the
+    /// application has the 'grant-permissions' permission for the document.
     ///
     /// # Arguments
     ///
@@ -217,18 +228,22 @@ trait Documents {
         permissions: &[Permission],
     ) -> Result<()>;
 
-    /// Gets the filesystem path and application permissions for a document store entry.
+    /// Gets the filesystem path and application permissions for a document
+    /// store entry.
     ///
-    /// Returns the path of the file in the host filesystem along with the [`Permissions`]
+    /// Returns the path of the file in the host filesystem along with the
+    /// [`Permissions`]
     ///
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
     fn info(&self, doc_id: &str) -> Result<(String, Permissions)>;
 
-    /// Lists documents in the document store for an application (or for all applications).
+    /// Lists documents in the document store for an application (or for all
+    /// applications).
     ///
-    /// Returns a `HashMap` mapping document IDs to their filesystem path on the host system
+    /// Returns a `HashMap` mapping document IDs to their filesystem path on the
+    /// host system
     ///
     /// # Arguments
     ///
@@ -246,14 +261,15 @@ trait Documents {
     /// - `filename` - A path in the host filesystem.
     fn lookup(&self, filename: &str) -> Result<String>;
 
-    /// Revokes access permissions for a file in the document store from an application.
-    /// This call is available inside the sandbox if the application
-    /// has the 'grant-permissions' permission for the document.
+    /// Revokes access permissions for a file in the document store from an
+    /// application. This call is available inside the sandbox if the
+    /// application has the 'grant-permissions' permission for the document.
     ///
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
-    /// * `app_id` - The ID of the application from which permissions are revoked.
+    /// * `app_id` - The ID of the application from which permissions are
+    ///   revoked.
     /// * `permissions` - The permissions to revoke.
     fn revoke_permissions(
         &self,

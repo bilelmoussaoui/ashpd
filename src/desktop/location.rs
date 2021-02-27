@@ -34,14 +34,15 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{
-    AsyncRequestProxy, AsyncSessionProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier,
-};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use crate::{
+    AsyncRequestProxy, AsyncSessionProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -140,12 +141,13 @@ impl LocationResponse {
         self.1.speed
     }
 
-    /// The heading, in degrees, going clockwise. North 0, East 90, South 180, West 270.
+    /// The heading, in degrees, going clockwise. North 0, East 90, South 180,
+    /// West 270.
     pub fn heading(&self) -> f64 {
         self.1.heading
     }
 
-    /// The location description
+    /// The location description.
     pub fn description(&self) -> &str {
         &self.1.description
     }
@@ -191,7 +193,8 @@ struct Location {
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface lets sandboxed applications query basic information about the location.
+/// The interface lets sandboxed applications query basic information about the
+/// location.
 trait Location {
     #[dbus_proxy(signal)]
     /// Signal emitted when the user location is updated.
