@@ -12,7 +12,7 @@
 //!     let connection = Connection::new_session()?;
 //!     let proxy = FileTransferProxy::new(&connection)?;
 //!
-//!     let key = proxy.start_transfer(TransferOptions::default().writeable(true).autostop(true))?;
+//!     let key = proxy.start_transfer(TransferOptions::default().writeable(true).auto_stop(true))?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy.add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new())?;
 //!

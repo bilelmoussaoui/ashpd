@@ -19,6 +19,23 @@ pub enum Response<T> {
     Err(ResponseError),
 }
 
+impl<T> Response<T> {
+    pub fn is_ok(&self) -> bool {
+        matches!(self, Response::Ok(_))
+    }
+
+    pub fn is_err(&self) -> bool {
+        matches!(self, Response::Err(_))
+    }
+
+    pub fn unwrap(&self) -> &T {
+        match self {
+            Self::Ok(response) => response,
+            Self::Err(_) => panic!("Called Response::unwrap on a Response::Err"),
+        }
+    }
+}
+
 impl<T> zvariant::Type for Response<T> {
     fn signature() -> zvariant::Signature<'static> {
         <(ResponseType, OwnedValue)>::signature()
@@ -68,23 +85,6 @@ where
     }
 }
 
-impl<T> Response<T> {
-    pub fn is_ok(&self) -> bool {
-        matches!(self, Response::Ok(_))
-    }
-
-    pub fn is_err(&self) -> bool {
-        matches!(self, Response::Err(_))
-    }
-
-    pub fn unwrap(&self) -> &T {
-        match self {
-            Self::Ok(response) => response,
-            Self::Err(_) => panic!("Called Response::unwrap on a Response::Err"),
-        }
-    }
-}
-
 #[doc(hidden)]
 impl<T> From<(ResponseType, T)> for Response<T>
 where
@@ -110,7 +110,7 @@ impl Default for BasicResponse {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, PartialEq, Hash, Clone)]
 /// An error returned a portal request caused by either the user cancelling the
 /// request or something else.
 pub enum ResponseError {
@@ -120,15 +120,26 @@ pub enum ResponseError {
     Other,
 }
 
+impl std::error::Error for ResponseError {}
+
+impl std::fmt::Display for ResponseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Cancelled => f.write_str("Cancelled"),
+            Self::Other => f.write_str("Other"),
+        }
+    }
+}
+
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
 #[doc(hidden)]
 enum ResponseType {
-    /// Success, the request is carried out
+    /// Success, the request is carried out.
     Success = 0,
-    /// The user cancelled the interaction
+    /// The user cancelled the interaction.
     Cancelled = 1,
-    /// The user interaction was ended in some other way
+    /// The user interaction was ended in some other way.
     Other = 2,
 }
 
