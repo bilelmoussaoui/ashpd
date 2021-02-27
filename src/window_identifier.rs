@@ -3,18 +3,24 @@ use zvariant_derive::Type;
 
 #[derive(Type, Clone, Debug, Serialize, Deserialize)]
 /// Most portals interact with the user by showing dialogs.
-/// These dialogs should generally be placed on top of the application window that triggered them.
-/// To arrange this, the compositor needs to know about the application window.
-/// Many portal requests expect a [`WindowIdentifier`] for this reason.
+/// These dialogs should generally be placed on top of the application window
+/// that triggered them. To arrange this, the compositor needs to know about the
+/// application window. Many portal requests expect a [`WindowIdentifier`] for
+/// this reason.
 ///
-/// Under X11, the [`WindowIdentifier`] should have the form `x11:XID`, where XID is the XID of the application window.
-/// Under Wayland, it should have the form `wayland:HANDLE`, where HANDLE is a surface handle obtained with the xdg-foreign protocol.
+/// Under X11, the [`WindowIdentifier`] should have the form `x11:XID`, where
+/// XID is the XID of the application window. Under Wayland, it should have the
+/// form `wayland:HANDLE`, where HANDLE is a surface handle obtained with the
+/// xdg-foreign protocol.
 ///
-/// For other windowing systems, or if you don't have a suitable handle, just use the `Default` implementation.
+/// For other windowing systems, or if you don't have a suitable handle, just
+/// use the `Default` implementation.
 ///
-/// Please **note** that the `From<gtk3::Window>` and `From<gtk4::Window>` implementation are x11 only for now.
+/// Please **note** that the `From<gtk3::Window>` and `From<gtk4::Window>`
+/// implementation are x11 only for now.
 ///
-/// We would love merge requests that adds other `From<T> for WindowIdentifier` implementations for other toolkits.
+/// We would love merge requests that adds other `From<T> for WindowIdentifier`
+/// implementations for other toolkits.
 ///
 /// [`WindowIdentifier`]: ./struct.WindowIdentifier.html
 pub struct WindowIdentifier(String);

@@ -40,7 +40,7 @@
 //!     proxy.remove_notification(notification_id)?;
 //!     Ok(())
 //! }
-//!```
+//! ```
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
@@ -165,7 +165,8 @@ impl Notification {
 pub struct Button {
     /// User-visible label for the button. Mandatory.
     label: String,
-    /// Name of an action that is exported by the application. The action will be activated when the user clicks on the button.
+    /// Name of an action that is exported by the application. The action will
+    /// be activated when the user clicks on the button.
     action: String,
     /// Target parameter to send along when activating the action.
     target: Option<OwnedValue>,
@@ -177,7 +178,8 @@ impl Button {
     /// # Arguments
     ///
     /// * `label` - the user visible label of the button.
-    /// * `action` - the action name to be invoked when the user clicks on the button.
+    /// * `action` - the action name to be invoked when the user clicks on the
+    ///   button.
     pub fn new(label: &str, action: &str) -> Self {
         Self {
             label: label.to_string(),
@@ -221,19 +223,20 @@ impl Action {
 )]
 /// The interface lets sandboxed applications send and withdraw notifications.
 ///
-/// It is not possible for the application to learn if the notification was actually
-/// presented to the user. Not a portal in the strict sense, since there is no user interaction.
+/// It is not possible for the application to learn if the notification was
+/// actually presented to the user. Not a portal in the strict sense, since
+/// there is no user interaction.
 ///
-/// **Note** that in contrast to most other portal requests, notifications are expected
-/// to outlast the running application. If a user clicks on a notification after
-/// the application has exited, it will get activated again.
+/// **Note** that in contrast to most other portal requests, notifications are
+/// expected to outlast the running application. If a user clicks on a
+/// notification after the application has exited, it will get activated again.
 ///
 /// Notifications can specify actions that can be activated by the user.
-/// Actions whose name starts with 'app.' are assumed to be exported and will be activated
-/// via the ActivateAction() method in the org.freedesktop.Application interface.
-/// Other actions are activated by sending the
-///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the application.
-///
+/// Actions whose name starts with 'app.' are assumed to be exported and will be
+/// activated via the ActivateAction() method in the org.freedesktop.Application
+/// interface. Other actions are activated by sending the
+///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the
+/// application.
 trait Notification {
     #[dbus_proxy(signal)]
     /// Signal emitted when a particular action is invoked.
@@ -242,7 +245,8 @@ trait Notification {
     /// Sends a notification.
     ///
     /// The ID can be used to later withdraw the notification.
-    /// If the application reuses the same ID without withdrawing, the notification is replaced by the new one.
+    /// If the application reuses the same ID without withdrawing, the
+    /// notification is replaced by the new one.
     ///
     /// # Arguments
     ///

@@ -24,13 +24,15 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::flatpak::update_monitor::{AsyncUpdateMonitorProxy, UpdateMonitorProxy};
+use std::collections::HashMap;
+
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use crate::flatpak::update_monitor::{AsyncUpdateMonitorProxy, UpdateMonitorProxy};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
@@ -58,13 +60,16 @@ pub enum SpawnFlags {
     Latest = 2,
     /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
     Sandbox = 4,
-    /// Spawn without network (equivalent of the `unshare=network` option of `flatpak run`).
+    /// Spawn without network (equivalent of the `unshare=network` option of
+    /// `flatpak run`).
     NoNetwork = 8,
     /// Kill the sandbox when the caller disappears from the session bus.
     Kill = 16,
-    /// Expose the sandbox pids in the callers sandbox, only supported if using user namespaces for containers (not setuid), see the support property.
+    /// Expose the sandbox pids in the callers sandbox, only supported if using
+    /// user namespaces for containers (not setuid), see the support property.
     Expose = 32,
-    /// Emit a SpawnStarted signal once the sandboxed process has been fully started.
+    /// Emit a SpawnStarted signal once the sandboxed process has been fully
+    /// started.
     Emit = 64,
 }
 
@@ -79,13 +84,17 @@ pub enum SupportsFlags {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a spawn request.
 pub struct SpawnOptions {
-    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
+    /// A list of filenames for files inside the sandbox that will be exposed to
+    /// the new sandbox, for reading and writing.
     sandbox_expose: Option<Vec<String>>,
-    /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, read-only.
+    /// A list of filenames for files inside the sandbox that will be exposed to
+    /// the new sandbox, read-only.
     sandbox_expose_ro: Option<Vec<String>>,
-    /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
+    /// A list of file descriptor for files inside the sandbox that will be
+    /// exposed to the new sandbox, for reading and writing.
     sandbox_expose_fd: Option<Vec<Fd>>,
-    /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, read-only.
+    /// A list of file descriptor for files inside the sandbox that will be
+    /// exposed to the new sandbox, read-only.
     sandbox_expose_fd_ro: Option<Vec<Fd>>,
     /// Flags affecting the created sandbox.
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
@@ -105,8 +114,9 @@ impl SpawnOptions {
         self
     }
 
-    /// Sets the list of filenames for files to expose the new sandbox, read-only.
-    /// **Note** that absolute paths or subdirectories are not allowed.
+    /// Sets the list of filenames for files to expose the new sandbox,
+    /// read-only. **Note** that absolute paths or subdirectories are not
+    /// allowed.
     pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: &[&str]) -> Self {
         self.sandbox_expose_ro = Some(
             sandbox_expose_ro
@@ -124,7 +134,8 @@ impl SpawnOptions {
         self
     }
 
-    /// Sets the list of file descriptors of files to expose the new sandbox, read-only.
+    /// Sets the list of file descriptors of files to expose the new sandbox,
+    /// read-only.
     pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: &[Fd]) -> Self {
         self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro.to_vec());
         self
@@ -148,24 +159,29 @@ pub struct CreateMonitorOptions {}
     default_service = "org.freedesktop.portal.Flatpak",
     default_path = "/org/freedesktop/portal/Flatpak"
 )]
-/// The interface exposes some interactions with Flatpak on the host to the sandbox.
-/// For example, it allows you to restart the applications or start a more sandboxed instance.
+/// The interface exposes some interactions with Flatpak on the host to the
+/// sandbox. For example, it allows you to restart the applications or start a
+/// more sandboxed instance.
 trait Flatpak {
     /// Creates an update monitor object that will emit signals
-    /// when an update for the caller becomes available, and can be used to install it.
+    /// when an update for the caller becomes available, and can be used to
+    /// install it.
     #[dbus_proxy(object = "UpdateMonitor")]
     fn create_update_monitor(&self, options: CreateMonitorOptions);
 
-    /// This methods let you start a new instance of your application, optionally enabling a tighter sandbox.
+    /// This methods let you start a new instance of your application,
+    /// optionally enabling a tighter sandbox.
     ///
     /// Returns the PID of the new process.
     ///
     /// # Arguments
     ///
     /// * `cwd_path` - The working directory for the new process.
-    /// * `arvg` - The argv for the new process, starting with the executable to launch.
+    /// * `arvg` - The argv for the new process, starting with the executable to
+    ///   launch.
     /// * `fds` - Array of file descriptors to pass to the new process.
-    /// * `envs` - Array of variable/value pairs for the environment of the new process.
+    /// * `envs` - Array of variable/value pairs for the environment of the new
+    ///   process.
     /// * `flags`
     /// * `options` - A [`SpawnOptions`].
     ///
@@ -180,7 +196,8 @@ trait Flatpak {
         options: SpawnOptions,
     ) -> Result<u32>;
 
-    /// This methods let you send a Unix signal to a process that was started `spawn`.
+    /// This methods let you send a Unix signal to a process that was started
+    /// `spawn`.
     ///
     /// # Arguments
     ///

@@ -25,11 +25,13 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
 use std::collections::HashMap;
+
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_camera` request.
@@ -51,7 +53,8 @@ impl CameraAccessOptions {
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface lets sandboxed applications access camera devices, such as web cams.
+/// The interface lets sandboxed applications access camera devices, such as web
+/// cams.
 trait Camera {
     /// Requests an access to the camera.
     ///
@@ -63,7 +66,8 @@ trait Camera {
     #[dbus_proxy(object = "Request")]
     fn access_camera(&self, options: CameraAccessOptions);
 
-    /// Open a file descriptor to the PipeWire remote where the camera nodes are available.
+    /// Open a file descriptor to the PipeWire remote where the camera nodes are
+    /// available.
     ///
     /// Returns a File descriptor of an open PipeWire remote.
     ///

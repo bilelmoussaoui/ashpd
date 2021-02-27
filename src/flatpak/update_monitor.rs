@@ -32,10 +32,11 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::WindowIdentifier;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use crate::WindowIdentifier;
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on an update request.
@@ -78,7 +79,8 @@ pub struct UpdateProgress {
     pub n_ops: Option<u32>,
     /// The position of the currently active operation.
     pub op: Option<u32>,
-    /// The progress of the currently active operation, as a number between 0 and 100.
+    /// The progress of the currently active operation, as a number between 0
+    /// and 100.
     pub progress: Option<u32>,
     /// The overall status of the update.
     pub status: Option<UpdateStatus>,
@@ -89,8 +91,9 @@ pub struct UpdateProgress {
 }
 
 #[dbus_proxy(default_path = "/org/freedesktop/portal/Flatpak")]
-/// The interface exposes some interactions with Flatpak on the host to the sandbox.
-/// For example, it allows you to restart the applications or start a more sandboxed instance.
+/// The interface exposes some interactions with Flatpak on the host to the
+/// sandbox. For example, it allows you to restart the applications or start a
+/// more sandboxed instance.
 trait UpdateMonitor {
     #[dbus_proxy(signal)]
     /// A signal received when there's progress during the application update.

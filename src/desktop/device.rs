@@ -20,12 +20,13 @@
 //! }
 //! ```
 //! [`Device`]: ./enum.Device.html
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_device` request.
@@ -76,14 +77,17 @@ impl Serialize for Device {
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface lets services ask if an application should get access to devices such as microphones, speakers or cameras.
-/// Not a portal in the strict sense, since the API is not directly accessible to applications inside the sandbox.
+/// The interface lets services ask if an application should get access to
+/// devices such as microphones, speakers or cameras. Not a portal in the strict
+/// sense, since the API is not directly accessible to applications inside the
+/// sandbox.
 trait Device {
     /// Asks for access to a device.
     ///
     /// # Arguments
     ///
-    /// * `pid` - The pid of the application on whose behalf the request is made.
+    /// * `pid` - The pid of the application on whose behalf the request is
+    ///   made.
     /// * `devices` - A list of devices to request access to.
     /// * `options` - A [`AccessDeviceOptions`].
     ///

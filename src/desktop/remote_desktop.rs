@@ -74,13 +74,15 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use std::collections::HashMap;
+
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -204,19 +206,20 @@ pub struct SelectedDevices {
 /// The interface lets sandboxed applications create remote desktop sessions.
 pub trait RemoteDesktop {
     /// Create a remote desktop session.
-    /// A remote desktop session is used to allow remote controlling a desktop session.
-    /// It can also be used together with a screen cast session
+    /// A remote desktop session is used to allow remote controlling a desktop
+    /// session. It can also be used together with a screen cast session.
     ///
     /// # Arguments
     ///
-    /// * `options` - A [`CreateRemoteOptions`]
+    /// * `options` - A [`CreateRemoteOptions`].
     ///
     /// [`CreateRemoteOptions`]: ./struct.CreateRemoteOptions.html
     #[dbus_proxy(object = "Request")]
     fn create_session(&self, options: CreateRemoteOptions);
 
-    /// Notify keyboard code
-    /// May only be called if KEYBOARD access was provided after starting the session.
+    /// Notify keyboard code.
+    /// May only be called if KEYBOARD access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -236,8 +239,9 @@ pub trait RemoteDesktop {
         state: KeyState,
     ) -> Result<()>;
 
-    /// Notify keyboard symbol
-    /// May only be called if KEYBOARD access was provided after starting the session.
+    /// Notify keyboard symbol.
+    /// May only be called if KEYBOARD access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -257,12 +261,13 @@ pub trait RemoteDesktop {
         state: KeyState,
     ) -> Result<()>;
 
-    /// Notify pointer axis
-    /// The axis movement from a 'smooth scroll' device, such as a touchpad.
+    /// Notify pointer axis.
+    /// The axis movement from a "smooth scroll" device, such as a touchpad.
     /// When applicable, the size of the motion delta should be equivalent to
     /// the motion vector of a pointer motion done using the same advice.
     ///
-    /// May only be called if POINTER access was provided after starting the session.
+    /// May only be called if POINTER access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -282,8 +287,9 @@ pub trait RemoteDesktop {
         dy: f64,
     ) -> Result<()>;
 
-    /// Notify pointer axis discrete
-    /// May only be called if POINTER access was provided after starting the session.
+    /// Notify pointer axis discrete.
+    /// May only be called if POINTER access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -302,10 +308,11 @@ pub trait RemoteDesktop {
         steps: i32,
     ) -> Result<()>;
 
-    /// Notify pointer button
+    /// Notify pointer button.
     /// The pointer button is encoded according to Linux Evdev button codes.
     ///
-    ///  May only be called if POINTER access was provided after starting the session.
+    ///  May only be called if POINTER access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -326,7 +333,8 @@ pub trait RemoteDesktop {
     ) -> Result<()>;
 
     /// Notify about a new relative pointer motion event.
-    /// The (dx, dy) vector represents the new pointer position in the streams logical coordinate space.
+    /// The (dx, dy) vector represents the new pointer position in the streams
+    /// logical coordinate space.
     ///
     /// # Arguments
     ///
@@ -347,7 +355,8 @@ pub trait RemoteDesktop {
     ) -> Result<()>;
 
     /// Notify about a new absolute pointer motion event.
-    /// The (x, y) position represents the new pointer position in the streams logical coordinate space
+    /// The (x, y) position represents the new pointer position in the streams
+    /// logical coordinate space.
     ///
     /// # Arguments
     ///
@@ -370,9 +379,11 @@ pub trait RemoteDesktop {
     ) -> Result<()>;
 
     /// Notify about a new touch down event.
-    /// The (x, y) position represents the new touch point position in the streams logical coordinate space
+    /// The (x, y) position represents the new touch point position in the
+    /// streams logical coordinate space.
     ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the session.
+    /// May only be called if TOUCHSCREEN access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -397,9 +408,11 @@ pub trait RemoteDesktop {
     ) -> Result<()>;
 
     /// Notify about a new touch motion event.
-    /// The (x, y) position represents where the touch point position in the streams logical coordinate space moved
+    /// The (x, y) position represents where the touch point position in the
+    /// streams logical coordinate space moved.
     ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the session.
+    /// May only be called if TOUCHSCREEN access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -425,7 +438,8 @@ pub trait RemoteDesktop {
 
     /// Notify about a new touch up event.
     ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the session.
+    /// May only be called if TOUCHSCREEN access was provided after starting the
+    /// session.
     ///
     /// # Arguments
     ///
@@ -458,8 +472,8 @@ pub trait RemoteDesktop {
     ///  Start the remote desktop session.
     ///
     /// This will typically result in the portal presenting a dialog letting
-    /// the user select what to share, including devices and optionally screen content
-    /// if screen cast sources was selected.
+    /// the user select what to share, including devices and optionally screen
+    /// content if screen cast sources was selected.
     ///
     /// # Arguments
     ///

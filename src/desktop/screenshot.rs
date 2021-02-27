@@ -21,7 +21,7 @@
 //!     })?;
 //!     Ok(())
 //! }
-//!```
+//! ```
 //!
 //! Picking a color
 //!```no_run,rust
@@ -45,9 +45,10 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options on a screenshot request.
@@ -56,7 +57,8 @@ pub struct ScreenshotOptions {
     handle_token: Option<HandleToken>,
     /// Whether the dialog should be modal.
     modal: Option<bool>,
-    /// Hint whether the dialog should offer customization before taking a screenshot.
+    /// Hint whether the dialog should offer customization before taking a
+    /// screenshot.
     interactive: Option<bool>,
 }
 
@@ -73,7 +75,8 @@ impl ScreenshotOptions {
         self
     }
 
-    /// Sets whether the dialog should offer customization before a screenshot or not.
+    /// Sets whether the dialog should offer customization before a screenshot
+    /// or not.
     pub fn interactive(mut self, interactive: bool) -> Self {
         self.interactive = Some(interactive);
         self

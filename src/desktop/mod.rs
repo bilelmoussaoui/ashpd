@@ -1,8 +1,10 @@
-/// Request access to the current logged user information such as the id, name or their avatar uri.
+/// Request access to the current logged user information such as the id, name
+/// or their avatar uri.
 pub mod account;
 /// Request running an application in the background.
 pub mod background;
-/// Check if a camera is available, request access to it and open a PipeWire remote stream.
+/// Check if a camera is available, request access to it and open a PipeWire
+/// remote stream.
 pub mod camera;
 /// Request access to specific devices such as camera, speakers or microphone.
 pub mod device;
@@ -32,7 +34,8 @@ pub mod remote_desktop;
 pub mod screencast;
 /// Take a screenshot or pick a color.
 pub mod screenshot;
-/// Retrieve a per-application secret used to encrypt confidential data inside the sandbox.
+/// Retrieve a per-application secret used to encrypt confidential data inside
+/// the sandbox.
 pub mod secret;
 /// Read & listen to system settings changes.
 pub mod settings;

@@ -21,11 +21,14 @@ use zbus::{dbus_proxy, fdo::Result};
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface provides information about low system memory to sandboxed applications.
-/// It is not a portal in the strict sense, since it does not involve user interaction.
+/// The interface provides information about low system memory to sandboxed
+/// applications. It is not a portal in the strict sense, since it does not
+/// involve user interaction.
 trait MemoryMonitor {
     #[dbus_proxy(signal)]
-    /// Signal emitted when a particular low memory situation happens with 0 being the lowest level of memory availability warning, and 255 being the highest
+    /// Signal emitted when a particular low memory situation happens
+    /// with 0 being the lowest level of memory availability warning, and 255
+    /// being the highest.
     fn low_memory_warning(&self, level: i32) -> Result<()>;
 
     /// The version of this DBus interface.

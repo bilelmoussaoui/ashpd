@@ -63,7 +63,7 @@
 //!     })?;
 //!     Ok(())
 //! }
-//!```
+//! ```
 //!
 //! Ask to save multiple files
 //! ```rust,no_run
@@ -93,14 +93,16 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+
 #[derive(Serialize, Deserialize, Type, Clone, Debug)]
-/// A file filter, to limit the available file choices to a mimetype or a glob pattern.
+/// A file filter, to limit the available file choices to a mimetype or a glob
+/// pattern.
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
 #[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Debug, Type)]
@@ -396,8 +398,9 @@ pub struct SelectedFiles {
     default_service = "org.freedesktop.portal.Desktop",
     default_path = "/org/freedesktop/portal/desktop"
 )]
-/// The interface lets sandboxed applications ask the user for access to files outside the sandbox.
-/// The portal backend will present the user with a file chooser dialog.
+/// The interface lets sandboxed applications ask the user for access to files
+/// outside the sandbox. The portal backend will present the user with a file
+/// chooser dialog.
 trait FileChooser {
     /// Asks to open one or more files.
     ///

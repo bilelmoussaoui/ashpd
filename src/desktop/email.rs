@@ -29,10 +29,11 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a compose email request.
@@ -119,7 +120,8 @@ impl EmailOptions {
 trait Email {
     /// Presents a window that lets the user compose an email.
     ///
-    /// **Note** that the default email client for the host will need to support mailto: URIs following RFC 2368.
+    /// **Note** that the default email client for the host will need to support
+    /// mailto: URIs following RFC 2368.
     ///
     /// # Arguments
     ///

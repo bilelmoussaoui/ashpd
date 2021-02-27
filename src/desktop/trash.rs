@@ -46,7 +46,8 @@ pub enum TrashStatus {
 /// The interface lets sandboxed applications send files to the trashcan.
 trait Trash {
     /// Sends a file to the trashcan.
-    /// Applications are allowed to trash a file if they can open it in read/write mode.
+    /// Applications are allowed to trash a file if they can open it in
+    /// read/write mode.
     ///
     /// # Arguments
     ///

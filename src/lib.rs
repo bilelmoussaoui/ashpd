@@ -35,25 +35,27 @@
 //!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
 //! [`WindowIdentifier`]: ./window_identifier/struct.WindowIdentifier.html
-//!
 #[deny(broken_intra_doc_links)]
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
 compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 
 // #![deny(missing_docs)] enable once
-/// Interact with the user's desktop such as taking a screenshot, setting a background or querying the user's location.
+/// Interact with the user's desktop such as taking a screenshot, setting a
+/// background or querying the user's location.
 pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;
-/// Spawn commands outside the sandbox or monitor if the running application has received an update & install it.
+/// Spawn commands outside the sandbox or monitor if the running application has
+/// received an update & install it.
 pub mod flatpak;
 mod handle_token;
 mod request;
 mod session;
 mod window_identifier;
+pub use zbus;
+pub use zvariant;
+
 pub use self::handle_token::HandleToken;
 pub use self::request::{AsyncRequestProxy, BasicResponse, RequestProxy, Response, ResponseError};
 pub use self::session::{AsyncSessionProxy, SessionProxy};
 pub use self::window_identifier::WindowIdentifier;
-pub use zbus;
-pub use zvariant;

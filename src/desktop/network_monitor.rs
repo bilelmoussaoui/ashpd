@@ -56,8 +56,8 @@ pub enum Connectivity {
     default_path = "/org/freedesktop/portal/desktop"
 )]
 /// The interface provides network status information to sandboxed applications.
-/// It is not a portal in the strict sense, since it does not involve user interaction.
-/// Applications are expected to use this interface indirectly,
+/// It is not a portal in the strict sense, since it does not involve user
+/// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib `GNetworkMonitor` interface.
 trait NetworkMonitor {
     /// Returns whether the given hostname is believed to be reachable.
@@ -69,15 +69,16 @@ trait NetworkMonitor {
     fn can_reach(&self, hostname: &str, port: u32) -> Result<bool>;
 
     /// Returns whether the network is considered available.
-    /// That is, whether the system as a default route for at least one of IPv4 or IPv6.
+    /// That is, whether the system as a default route for at least one of IPv4
+    /// or IPv6.
     fn get_available(&self) -> Result<bool>;
 
     /// Returns more detailed information about the host's network connectivity
     fn get_connectivity(&self) -> Result<Connectivity>;
 
     /// Returns whether the network is considered metered.
-    /// That is, whether the system as traffic flowing through the default connection
-    /// that is subject to limitations by service providers.
+    /// That is, whether the system as traffic flowing through the default
+    /// connection that is subject to limitations by service providers.
     fn get_metered(&self) -> Result<bool>;
 
     /// Returns the three values all at once.

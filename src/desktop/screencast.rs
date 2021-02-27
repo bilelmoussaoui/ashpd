@@ -74,14 +74,16 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use std::collections::HashMap;
+
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
@@ -101,7 +103,8 @@ pub enum CursorMode {
     Hidden = 1,
     /// The cursor is embedded as part of the stream buffers.
     Embedded = 2,
-    /// The cursor is not part of the screen cast stream, but sent as PipeWire stream metadata.
+    /// The cursor is not part of the screen cast stream, but sent as PipeWire
+    /// stream metadata.
     Metadata = 4,
 }
 
@@ -228,14 +231,16 @@ impl Stream {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// The stream properties.
 pub struct StreamProperties {
-    /// A tuple consisting of the position (x, y) in the compositor coordinate space.
-    /// **Note** that the position may not be equivalent to a position in a pixel coordinate space.
-    /// Only available for monitor streams.
+    /// A tuple consisting of the position (x, y) in the compositor coordinate
+    /// space. **Note** that the position may not be equivalent to a
+    /// position in a pixel coordinate space. Only available for monitor
+    /// streams.
     pub position: Option<(i32, i32)>,
     /// A tuple consisting of (width, height).
-    /// The size represents the size of the stream as it is displayed in the compositor coordinate space.
-    /// **Note** that this size may not be equivalent to a size in a pixel coordinate space.
-    /// The size may differ from the size of the stream.
+    /// The size represents the size of the stream as it is displayed in the
+    /// compositor coordinate space. **Note** that this size may not be
+    /// equivalent to a size in a pixel coordinate space. The size may
+    /// differ from the size of the stream.
     pub size: (i32, i32),
 }
 
@@ -250,7 +255,8 @@ trait ScreenCast {
     #[dbus_proxy(object = "Request")]
     fn create_session(&self, options: CreateSessionOptions);
 
-    /// Open a file descriptor to the PipeWire remote where the screen cast streams are available.
+    /// Open a file descriptor to the PipeWire remote where the screen cast
+    /// streams are available.
     ///
     /// Returns a file descriptor of an open PipeWire remote.
     ///
@@ -270,8 +276,9 @@ trait ScreenCast {
     /// Configure what the screen cast session should record.
     /// This method must be called before starting the session.
     ///
-    /// Passing invalid input to this method will cause the session to be closed.
-    /// An application may only attempt to select sources once per session.
+    /// Passing invalid input to this method will cause the session to be
+    /// closed. An application may only attempt to select sources once per
+    /// session.
     ///
     /// # Arguments
     ///
@@ -284,8 +291,8 @@ trait ScreenCast {
 
     /// Start the screen cast session.
     ///
-    /// This will typically result the portal presenting a dialog letting the user do
-    /// the selection set up by `select_sources`.
+    /// This will typically result the portal presenting a dialog letting the
+    /// user do the selection set up by `select_sources`.
     ///
     /// An application can only attempt start a session once.
     ///
