@@ -1,5 +1,5 @@
 use serde::{
-    de::{self, DeserializeOwned, Visitor},
+    de::{self, DeserializeOwned, Error, Visitor},
     Deserialize, Deserializer, Serialize,
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -50,9 +50,13 @@ where
             where
                 A: de::SeqAccess<'de>,
             {
-                let type_: Option<ResponseType> = seq.next_element()?;
-                let data: Option<T> = seq.next_element()?;
-                Ok((type_.unwrap(), data.unwrap()))
+                let type_: ResponseType = seq.next_element()?.ok_or(A::Error::custom(
+                    "Failed to deserialize the response. Expected a numeric (u) value as the first item of the returned tuple",
+                ))?;
+                let data: T = seq.next_element()?.ok_or(A::Error::custom(
+                    "Failed to deserialize the response. Expected a vardict (a{sv}) with the returned results",
+                ))?;
+                Ok((type_, data))
             }
         }
 
