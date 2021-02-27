@@ -15,12 +15,12 @@
 //! use zvariant::ObjectPath;
 //!
 //! fn select_sources(
-//!     session_handle: ObjectPath<'static>,
+//!     session_handle: &ObjectPath<'static>,
 //!     proxy: &'static ScreenCastProxy,
 //!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
 //!     let request = proxy.select_sources(
-//!         session_handle.clone(),
+//!         session_handle,
 //!         SelectSourcesOptions::default()
 //!             .multiple(true)
 //!             .cursor_mode(BitFlags::from(CursorMode::Metadata))
@@ -37,7 +37,7 @@
 //! }
 //!
 //! fn start_cast(
-//!     session_handle: ObjectPath<'static>,
+//!     session_handle: &ObjectPath<'static>,
 //!     proxy: &'static ScreenCastProxy,
 //!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
@@ -75,13 +75,13 @@
 //! }
 //! ```
 use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
-use core::convert::TryFrom;
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
+use std::ops::Deref;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, ObjectPath, Value};
+use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
@@ -107,7 +107,7 @@ pub enum CursorMode {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a create a screencast session request.
+/// Specified options on a create a Screen Cast session request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
@@ -169,7 +169,7 @@ impl SelectSourcesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a start screencast request.
+/// Specified options on a start Screen Cast request.
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
     pub handle_token: Option<HandleToken>,
@@ -187,18 +187,18 @@ impl StartCastOptions {
 /// A response to the create session request.
 pub struct CreateSession {
     /// A string that will be used as the last element of the session handle.
-    session_handle: String,
+    session_handle: OwnedObjectPath,
 }
 
 impl CreateSession {
     /// The created session handle.
-    pub fn handle(&self) -> ObjectPath {
-        ObjectPath::try_from(self.session_handle.clone()).unwrap()
+    pub fn handle(&self) -> &ObjectPath<'_> {
+        self.session_handle.deref()
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// A response to start the streamcast request.
+/// A response to start the Stream Cast request.
 pub struct Streams {
     streams: Vec<Stream>,
 }
@@ -268,7 +268,7 @@ trait ScreenCast {
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     fn open_pipe_wire_remote(
         &self,
-        session_handle: ObjectPath<'_>,
+        session_handle: &ObjectPath<'_>,
         options: HashMap<&str, Value<'_>>,
     ) -> Result<Fd>;
 
@@ -288,7 +288,7 @@ trait ScreenCast {
     /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Request")]
-    fn select_sources(&self, session_handle: ObjectPath<'_>, options: SelectSourcesOptions);
+    fn select_sources(&self, session_handle: &ObjectPath<'_>, options: SelectSourcesOptions);
 
     /// Start the screen cast session.
     ///
@@ -310,7 +310,7 @@ trait ScreenCast {
     #[dbus_proxy(object = "Request")]
     fn start(
         &self,
-        session_handle: ObjectPath<'_>,
+        session_handle: &ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: StartCastOptions,
     );

@@ -194,22 +194,22 @@ impl Button {
 
 #[derive(Debug, Serialize, Deserialize, Type)]
 /// An invoked action.
-pub struct Action<'a>(&'a str, &'a str, Vec<OwnedValue>);
+pub struct Action(String, String, Vec<OwnedValue>);
 
-impl<'a> Action<'a> {
+impl Action {
     /// Notification ID.
-    pub fn id(&self) -> &'a str {
-        self.0
+    pub fn id(&self) -> &str {
+        &self.0
     }
 
     /// Action name.
-    pub fn name(&self) -> &'a str {
-        self.1
+    pub fn name(&self) -> &str {
+        &self.1
     }
 
     /// The parameters passed to the action.
-    pub fn parameter(&self) -> Vec<OwnedValue> {
-        self.2.clone()
+    pub fn parameter(&self) -> &Vec<OwnedValue> {
+        &self.2
     }
 }
 
@@ -257,5 +257,6 @@ trait Notification {
     fn remove_notification(&self, id: &str) -> Result<()>;
 
     /// version property
+    #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

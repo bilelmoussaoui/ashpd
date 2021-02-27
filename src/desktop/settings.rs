@@ -37,18 +37,18 @@ pub struct Setting(String, String, OwnedValue);
 
 impl Setting {
     /// The setting namespace.
-    pub fn namespace(&self) -> String {
-        self.0.clone()
+    pub fn namespace(&self) -> &str {
+        &self.0
     }
 
     /// The setting key.
-    pub fn key(&self) -> String {
-        self.1.clone()
+    pub fn key(&self) -> &str {
+        &self.1
     }
 
     /// The setting value.
-    pub fn value(&self) -> OwnedValue {
-        self.2.clone()
+    pub fn value(&self) -> &OwnedValue {
+        &self.2
     }
 }
 
