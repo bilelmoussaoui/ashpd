@@ -1,3 +1,5 @@
+//! **Note** this portal only works for sandboxed applications.
+//!
 //! # Examples
 //!
 //! ```rust,no_run

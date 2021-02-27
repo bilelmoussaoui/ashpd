@@ -104,6 +104,7 @@ impl PickColorOptions {
 
 #[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, TypeDict)]
 /// A response to a pick color request.
+/// **Note** the values are normalized.
 pub struct Color {
     color: ([f64; 3]),
 }
