@@ -119,9 +119,9 @@ pub enum Axis {
 /// Specified options on a create a remote session request.
 pub struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<HandleToken>,
+    session_handle_token: Option<HandleToken>,
 }
 
 impl CreateRemoteOptions {
@@ -156,9 +156,9 @@ impl CreateSession {
 /// Specified options on a select devices request.
 pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// The device types to request remote controlling of. Default is all.
-    pub types: Option<BitFlags<DeviceType>>,
+    types: Option<BitFlags<DeviceType>>,
 }
 
 impl SelectDevicesOptions {
@@ -179,7 +179,7 @@ impl SelectDevicesOptions {
 /// Specified options on a start remote desktop request.
 pub struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
 }
 
 impl StartRemoteOptions {
@@ -208,14 +208,11 @@ pub trait RemoteDesktop {
     /// A remote desktop session is used to allow remote controlling a desktop session.
     /// It can also be used together with a screen cast session
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `options` - A [`CreateRemoteOptions`]
     ///
     /// [`CreateRemoteOptions`]: ./struct.CreateRemoteOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn create_session(&self, options: CreateRemoteOptions);
 
@@ -449,8 +446,6 @@ pub trait RemoteDesktop {
 
     /// Select input devices to remote control.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `session_handle` - A [`SessionProxy`] object path.
@@ -458,7 +453,6 @@ pub trait RemoteDesktop {
     ///
     /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn select_devices(&self, session_handle: &ObjectPath<'_>, options: SelectDevicesOptions);
 
@@ -468,8 +462,6 @@ pub trait RemoteDesktop {
     /// the user select what to share, including devices and optionally screen content
     /// if screen cast sources was selected.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `session_handle` - A [`SessionProxy`] object path.
@@ -478,7 +470,6 @@ pub trait RemoteDesktop {
     ///
     /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`RequestProxy`]: ../../session/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn start(
         &self,

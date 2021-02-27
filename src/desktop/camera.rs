@@ -31,11 +31,11 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_camera` request.
 pub struct CameraAccessOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
 }
 
 impl CameraAccessOptions {
@@ -55,14 +55,11 @@ impl CameraAccessOptions {
 trait Camera {
     /// Requests an access to the camera.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `options` - A [`CameraAccessOptions`]
+    /// * `options` - A [`CameraAccessOptions`].
     ///
     /// [`CameraAccessOptions`]: ./struct.CameraAccessOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn access_camera(&self, options: CameraAccessOptions);
 

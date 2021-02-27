@@ -14,7 +14,7 @@
 //!
 //!     proxy.spawn(
 //!         "contrast".into(),
-//!         vec!["".into()],
+//!         &[],
 //!         HashMap::new(),
 //!         HashMap::new(),
 //!         SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
@@ -81,40 +81,52 @@ pub enum SupportsFlags {
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     /// Note that absolute paths or subdirectories are not allowed.
-    pub sandbox_expose: Option<Vec<String>>,
+    sandbox_expose: Option<Vec<String>>,
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, read-only.
     /// Note that absolute paths or subdirectories are not allowed.
-    pub sandbox_expose_ro: Option<Vec<String>>,
+    sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
-    pub sandbox_expose_fd: Option<Vec<Fd>>,
+    sandbox_expose_fd: Option<Vec<Fd>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, read-only.
-    pub sandbox_expose_fd_ro: Option<Vec<Fd>>,
+    sandbox_expose_fd_ro: Option<Vec<Fd>>,
     /// Flags affecting the created sandbox.
-    pub sandbox_flags: Option<BitFlags<SandboxFlags>>,
+    sandbox_flags: Option<BitFlags<SandboxFlags>>,
 }
 
 impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox.
-    pub fn sandbox_expose(mut self, sandbox_expose: Vec<String>) -> Self {
-        self.sandbox_expose = Some(sandbox_expose);
+    pub fn sandbox_expose(mut self, sandbox_expose: &[&str]) -> Self {
+        self.sandbox_expose = Some(
+            sandbox_expose
+                .to_vec()
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
         self
     }
 
     /// Sets the list of filenames for files to expose the new sandbox, read-only.
-    pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: Vec<String>) -> Self {
-        self.sandbox_expose_ro = Some(sandbox_expose_ro);
+    pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: &[&str]) -> Self {
+        self.sandbox_expose_ro = Some(
+            sandbox_expose_ro
+                .to_vec()
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
         self
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox.
-    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: Vec<Fd>) -> Self {
-        self.sandbox_expose_fd = Some(sandbox_expose_fd);
+    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: &[Fd]) -> Self {
+        self.sandbox_expose_fd = Some(sandbox_expose_fd.to_vec());
         self
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox, read-only.
-    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: Vec<Fd>) -> Self {
-        self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro);
+    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: &[Fd]) -> Self {
+        self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro.to_vec());
         self
     }
 
@@ -161,7 +173,7 @@ trait Flatpak {
     fn spawn(
         &self,
         cwd_path: &str,
-        argv: Vec<&str>,
+        argv: &[&str],
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,

@@ -31,8 +31,8 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a retrieve secret request.
 pub struct RetrieveOptions {
-    /// A string returned by a previous call to `retrieve_secret`
-    pub token: Option<String>,
+    /// A string returned by a previous call to `retrieve_secret`.
+    token: Option<String>,
 }
 
 impl RetrieveOptions {
@@ -53,15 +53,12 @@ impl RetrieveOptions {
 trait Secret {
     /// Retrieves a master secret for a sandboxed application.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
-    /// * `options` - A `RetrieveOptions`
+    /// * `options` - A `RetrieveOptions`.
     ///
     /// [`RetrieveOptions`]: ./struct.RetrieveOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn retrieve_secret(&self, fd: Fd, options: RetrieveOptions);
 

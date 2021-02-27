@@ -61,10 +61,12 @@ use crate::{AsyncRequestProxy, RequestProxy, WindowIdentifier};
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, Signature};
+use zvariant::{Fd, Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(Deserialize, Debug, Clone, Copy, AsRefStr, EnumString, IntoStaticStr, ToString)]
+#[derive(
+    Deserialize, Debug, Clone, Copy, PartialEq, Hash, AsRefStr, EnumString, IntoStaticStr, ToString,
+)]
 #[serde(rename = "lowercase")]
 /// Where to set the wallpaper on.
 pub enum SetOn {
@@ -76,9 +78,9 @@ pub enum SetOn {
     Both,
 }
 
-impl zvariant::Type for SetOn {
+impl Type for SetOn {
     fn signature() -> Signature<'static> {
-        Signature::from_string_unchecked("s".to_string())
+        String::signature()
     }
 }
 
@@ -91,16 +93,16 @@ impl Serialize for SetOn {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Clone, TypeDict, Debug, Default)]
 /// Specified options for a set wallpaper request.
 pub struct WallpaperOptions {
     /// Whether to show a preview of the picture
     /// Note that the portal may decide to show a preview even if this option is not set
     #[zvariant(rename = "show-preview")]
-    pub show_preview: Option<bool>,
+    show_preview: Option<bool>,
     /// Where to set the wallpaper on
     #[zvariant(rename = "set-on")]
-    pub set_on: Option<SetOn>,
+    set_on: Option<SetOn>,
 }
 
 impl WallpaperOptions {
@@ -124,18 +126,15 @@ impl WallpaperOptions {
 )]
 /// The interface lets sandboxed applications set the user's desktop background picture.
 trait Wallpaper {
-    /// Sets the lock-screen, background or both wallpaper's from a file descriptor
-    ///
-    /// Returns a [`RequestProxy`].
+    /// Sets the lock-screen, background or both wallpaper's from a file descriptor.
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `fd` - The wallpaper file description
-    /// * `options` - A [`WallpaperOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `fd` - The wallpaper file description.
+    /// * `options` - A [`WallpaperOptions`].
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn set_wallpaper_file(
         &self,
@@ -144,18 +143,15 @@ trait Wallpaper {
         options: WallpaperOptions,
     );
 
-    /// Sets the lock-screen, background or both wallpaper's from an URI
-    ///
-    /// Returns a [`RequestProxy`].
+    /// Sets the lock-screen, background or both wallpaper's from an URI.
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `uri` - The wallpaper URI
-    /// * `options` - A [`WallpaperOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `uri` - The wallpaper URI.
+    /// * `options` - A [`WallpaperOptions`].
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(name = "SetWallpaperURI", object = "Request")]
     fn set_wallpaper_uri(
         &self,

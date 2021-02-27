@@ -27,7 +27,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::Type;
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 #[repr(u32)]
 #[non_exhaustive]
 /// The status of moving a file to the trash.

@@ -82,7 +82,7 @@
 //!             .accept_label("write files")
 //!             .modal(true)
 //!             .current_folder("/home/bilelmoussaoui/Pictures")
-//!             .files(vec!["test.jpg".to_string(), "awesome.png".to_string()]),
+//!             .files(&["test.jpg", "awesome.png"]),
 //!     )?;
 //!
 //!     request.connect_response(|r: Response<SelectedFiles>| {
@@ -99,12 +99,13 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-#[derive(Serialize, Deserialize, Type, Debug)]
+#[derive(Serialize, Deserialize, Type, Clone, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob pattern.
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
+#[doc(hidden)]
 enum FilterType {
     GlobPattern = 0,
     MimeType = 1,
@@ -133,18 +134,18 @@ impl FileFilter {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug)]
+#[derive(Serialize, Deserialize, Type, Clone, Debug)]
 /// Presents the user with a choice to select from or as a checkbox.
 pub struct Choice(String, String, Vec<(String, String)>, String);
 
 impl Choice {
-    /// Creates a new choice
+    /// Creates a new choice.
     ///
     /// # Arguments
     ///
-    /// * `id` - A unique identifier of the choice
-    /// * `label` - user-visible name of the choice
-    /// * `initial_selection` - the initially selected value
+    /// * `id` - A unique identifier of the choice.
+    /// * `label` - user-visible name of the choice.
+    /// * `initial_selection` - the initially selected value.
     pub fn new(id: &str, label: &str, initial_selection: &str) -> Self {
         Self(
             id.to_string(),
@@ -176,25 +177,25 @@ impl Choice {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `open_file` request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
-    pub accept_label: Option<String>,
+    accept_label: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: Option<bool>,
+    modal: Option<bool>,
     /// Whether multiple files can be selected or not.
-    pub multiple: Option<bool>,
+    multiple: Option<bool>,
     /// Whether to select for folders instead of files.
-    pub directory: Option<bool>,
+    directory: Option<bool>,
     /// List of serialized file filters.
-    pub filters: Vec<FileFilter>,
+    filters: Vec<FileFilter>,
     /// Request that this filter be set by default at dialog creation.
-    pub current_filter: Option<FileFilter>,
+    current_filter: Option<FileFilter>,
     /// List of serialized combo boxes to add to the file chooser
-    pub choices: Vec<Choice>,
+    choices: Vec<Choice>,
 }
 
 impl OpenFileOptions {
@@ -251,23 +252,23 @@ impl OpenFileOptions {
 /// Specified options for a save file request.
 pub struct SaveFileOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
-    pub accept_label: Option<String>,
+    accept_label: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: Option<bool>,
+    modal: Option<bool>,
     /// Suggested filename.
-    pub current_name: Option<String>,
+    current_name: Option<String>,
     /// Suggested folder to save the file in.
-    pub current_folder: Option<String>,
+    current_folder: Option<String>,
     /// The current file (when saving an existing file).
-    pub current_file: Option<String>,
+    current_file: Option<String>,
     /// List of serialized file filters.
-    pub filters: Vec<FileFilter>,
+    filters: Vec<FileFilter>,
     /// Request that this filter be set by default at dialog creation.
-    pub current_filter: Option<FileFilter>,
+    current_filter: Option<FileFilter>,
     /// List of serialized combo boxes to add to the file chooser
-    pub choices: Vec<Choice>,
+    choices: Vec<Choice>,
 }
 
 impl SaveFileOptions {
@@ -330,17 +331,17 @@ impl SaveFileOptions {
 /// Specified options for a save files request.
 pub struct SaveFilesOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Label for the accept button. Mnemonic underlines are allowed.
-    pub accept_label: Option<String>,
+    accept_label: Option<String>,
     /// Whether the dialog should be modal.
-    pub modal: Option<bool>,
+    modal: Option<bool>,
     /// List of serialized combo boxes to add to the file chooser
-    pub choices: Vec<Choice>,
+    choices: Vec<Choice>,
     /// Suggested folder to save the file in.
-    pub current_folder: Option<String>,
+    current_folder: Option<String>,
     /// An array of file names to be saved.
-    pub files: Option<Vec<String>>,
+    files: Option<Vec<String>>,
 }
 
 impl SaveFilesOptions {
@@ -375,13 +376,13 @@ impl SaveFilesOptions {
     }
 
     /// Sets a list of files to save.
-    pub fn files(mut self, files: Vec<String>) -> Self {
-        self.files = Some(files);
+    pub fn files(mut self, files: &[&str]) -> Self {
+        self.files = Some(files.to_vec().iter().map(|s| s.to_string()).collect());
         self
     }
 }
 
-#[derive(Debug, TypeDict, SerializeDict, DeserializeDict)]
+#[derive(Debug, TypeDict, SerializeDict, Clone, DeserializeDict)]
 /// A response to an open/save file request.
 pub struct SelectedFiles {
     /// The selected files uris.
@@ -400,31 +401,25 @@ pub struct SelectedFiles {
 trait FileChooser {
     /// Asks to open one or more files.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `title` - Title for the file chooser dialog
-    /// * `options` - [`OpenFileOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `title` - Title for the file chooser dialog.
+    /// * `options` - [`OpenFileOptions`].
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn open_file(&self, parent_window: WindowIdentifier, title: &str, options: OpenFileOptions);
 
     /// Asks for a location to save a file.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `title` - Title for the file chooser dialog
-    /// * `options` - [`SaveFileOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `title` - Title for the file chooser dialog.
+    /// * `options` - [`SaveFileOptions`].
     ///
     /// [`SaveFileOptions`]: ./struct.SaveFileOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn save_file(&self, parent_window: WindowIdentifier, title: &str, options: SaveFileOptions);
 
@@ -435,16 +430,13 @@ trait FileChooser {
     /// names, the portal may prompt or take some other action to
     /// construct a unique file name and return that instead.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `title` - Title for the file chooser dialog
-    /// * `options` - [`SaveFilesOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `title` - Title for the file chooser dialog.
+    /// * `options` - [`SaveFilesOptions`].
     ///
     /// [`SaveFilesOptions`]: ./struct.SaveFilesOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn save_files(&self, parent_window: WindowIdentifier, title: &str, options: SaveFilesOptions);
 

@@ -28,17 +28,17 @@ use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// The possible options for a get user information request.
 pub struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Shown in the dialog to explain why the information is needed.
-    pub reason: Option<String>,
+    reason: Option<String>,
 }
 
 impl UserInfoOptions {
-    /// Sets a user visible reason for the request.
+    /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
         self
@@ -51,7 +51,7 @@ impl UserInfoOptions {
     }
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+#[derive(Debug, SerializeDict, DeserializeDict, Clone, TypeDict)]
 /// The response of a `get_user_information` request.
 pub struct UserInfo {
     /// User identifier.
@@ -74,15 +74,12 @@ pub struct UserInfo {
 trait Account {
     /// Gets information about the user.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `window` - Identifier for the window
-    /// * `options` - A [`UserInfoOptions`]
+    /// * `window` - Identifier for the window.
+    /// * `options` - A [`UserInfoOptions`].
     ///
     /// [`UserInfoOptions`]: ./struct.UserInfoOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn get_user_information(&self, window: WindowIdentifier, options: UserInfoOptions);
 

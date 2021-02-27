@@ -447,9 +447,9 @@ impl PageSetup {
 /// Specified options on a prepare print request.
 pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Whether to make the dialog modal.
-    pub modal: Option<bool>,
+    modal: Option<bool>,
 }
 
 impl PreparePrintOptions {
@@ -470,11 +470,11 @@ impl PreparePrintOptions {
 /// Specified options on a print request.
 pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Whether to make the dialog modal.
-    pub modal: Option<bool>,
+    modal: Option<bool>,
     /// Token that was returned by a previous `prepare_print` call.
-    pub token: Option<String>,
+    token: Option<String>,
 }
 
 impl PrintOptions {
@@ -518,20 +518,17 @@ pub struct PreparePrint {
 trait Print {
     /// Presents a print dialog to the user and returns print settings and page setup.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `title` - Title for the print dialog
-    /// * `settings` - [`Settings`]
-    /// * `page_setup` - [`PageSetup`]
-    /// * `options` - [`PreparePrintOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `title` - Title for the print dialog.
+    /// * `settings` - [`Settings`].
+    /// * `page_setup` - [`PageSetup`].
+    /// * `options` - [`PreparePrintOptions`].
     ///
     /// [`Settings`]: ./struct.Settings.html
     /// [`PageSetup`]: ./struct.PageSetup.html
     /// [`PreparePrintOptions`]: ./struct.PreparePrintOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn prepare_print(
         &self,
@@ -546,17 +543,14 @@ trait Print {
     /// The file must be passed in the form of a file descriptor open for reading.
     /// This ensures that sandboxed applications only print files that they have access to.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - The application window identifier
-    /// * `title` - The title for the print dialog
-    /// * `fd` - File descriptor for reading the content to print
-    /// * `options` - [`PrintOptions`]
+    /// * `parent_window` - The application window identifier.
+    /// * `title` - The title for the print dialog.
+    /// * `fd` - File descriptor for reading the content to print.
+    /// * `options` - [`PrintOptions`].
     ///
     /// [`PrintOptions`]: ./struct.PrintOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn print(&self, parent_window: WindowIdentifier, title: &str, fd: Fd, options: PrintOptions);
 

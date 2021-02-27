@@ -13,7 +13,7 @@
 //!         WindowIdentifier::default(),
 //!         BackgroundOptions::default()
 //!             .autostart(true)
-//!             .commandline(vec!["geary".to_string()])
+//!             .command(&["geary"])
 //!             .reason("Automatically fetch your latest mails"),
 //!     )?;
 //!
@@ -31,21 +31,22 @@ use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
 /// Specified options for a `request_background` request.
 pub struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// User-visible reason for the request.
-    pub reason: Option<String>,
+    reason: Option<String>,
     /// `true` if the app also wants to be started automatically at login.
-    pub autostart: Option<bool>,
+    autostart: Option<bool>,
     /// if `true`, use D-Bus activation for autostart.
     #[zvariant(rename = "dbus-activatable")]
-    pub dbus_activatable: Option<bool>,
-    /// Commandline to use when autostarting at login.
+    dbus_activatable: Option<bool>,
+    /// Command to use when auto-starting at login.
     /// If this is not specified, the Exec line from the desktop file will be used.
-    pub commandline: Option<Vec<String>>,
+    #[zvariant(rename = "commandline")]
+    command: Option<Vec<String>>,
 }
 
 impl BackgroundOptions {
@@ -74,18 +75,20 @@ impl BackgroundOptions {
     }
 
     /// Specifies the command line to execute.
-    pub fn commandline(mut self, command: Vec<String>) -> Self {
-        self.commandline = Some(command);
+    /// If this is not specified, the Exec line from the desktop file will be used.
+    pub fn command(mut self, command: &[&str]) -> Self {
+        let command = command.to_vec().iter().map(|s| s.to_string()).collect();
+        self.command = Some(command);
         self
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// The response of a `background` request.
+/// The response of a `request_background` request.
 pub struct Background {
-    /// if the application is allowed to run in the background
+    /// If the application is allowed to run in the background.
     pub background: bool,
-    /// if the application is will be autostarted.
+    /// If the application is will be auto-started.
     pub autostart: bool,
 }
 
@@ -99,15 +102,12 @@ pub struct Background {
 trait Background {
     /// Requests that the application is allowed to run in the background.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `options` - [`BackgroundOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `options` - [`BackgroundOptions`].
     ///
     /// [`BackgroundOptions`]: ./struct.BackgroundOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn request_background(&self, parent_window: WindowIdentifier, options: BackgroundOptions);
 
