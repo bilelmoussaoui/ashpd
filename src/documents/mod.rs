@@ -31,7 +31,6 @@
 //! }
 //! ```
 
-use crate::NString;
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -163,7 +162,7 @@ trait Documents {
     fn add_named(
         &self,
         o_path_parent_fd: Fd,
-        filename: &NString,
+        filename: &str,
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<String>;
@@ -184,7 +183,7 @@ trait Documents {
     fn add_named_full(
         &self,
         o_path_fd: Fd,
-        filename: &NString,
+        filename: &str,
         flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[Permission],
@@ -201,7 +200,7 @@ trait Documents {
 
     /// Returns the path at which the document store fuse filesystem is mounted.
     /// This will typically be /run/user/$UID/doc/.
-    fn get_mount_point(&self) -> Result<NString>;
+    fn get_mount_point(&self) -> Result<String>;
 
     /// Grants access permissions for a file in the document store to an application.
     /// This call is available inside the sandbox if the application has the 'grant-permissions' permission for the document.
@@ -225,7 +224,7 @@ trait Documents {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store
-    fn info(&self, doc_id: &str) -> Result<(NString, Permissions)>;
+    fn info(&self, doc_id: &str) -> Result<(String, Permissions)>;
 
     /// Lists documents in the document store for an application (or for all applications).
     ///
@@ -234,7 +233,7 @@ trait Documents {
     /// # Arguments
     ///
     /// * `app-id` - The application ID, or '' to list all documents
-    fn list(&self, app_id: &str) -> Result<HashMap<String, NString>>;
+    fn list(&self, app_id: &str) -> Result<HashMap<String, String>>;
 
     /// Looks up the document ID for a file.
     /// This call is not available inside the sandbox.
@@ -245,7 +244,7 @@ trait Documents {
     /// # Arguments
     ///
     /// - `filename` - A path in the host filesystem
-    fn lookup(&self, filename: NString) -> Result<String>;
+    fn lookup(&self, filename: &str) -> Result<String>;
 
     /// Revokes access permissions for a file in the document store from an application.
     /// This call is available inside the sandbox if the application

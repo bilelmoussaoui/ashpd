@@ -93,7 +93,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{AsyncRequestProxy, HandleToken, NString, RequestProxy, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
@@ -259,9 +259,9 @@ pub struct SaveFileOptions {
     /// Suggested filename.
     pub current_name: Option<String>,
     /// Suggested folder to save the file in.
-    pub current_folder: Option<NString>,
+    pub current_folder: Option<String>,
     /// The current file (when saving an existing file).
-    pub current_file: Option<NString>,
+    pub current_file: Option<String>,
     /// List of serialized file filters.
     pub filters: Vec<FileFilter>,
     /// Request that this filter be set by default at dialog creation.
@@ -338,9 +338,9 @@ pub struct SaveFilesOptions {
     /// List of serialized combo boxes to add to the file chooser
     pub choices: Vec<Choice>,
     /// Suggested folder to save the file in.
-    pub current_folder: Option<NString>,
+    pub current_folder: Option<String>,
     /// An array of file names to be saved.
-    pub files: Option<Vec<NString>>,
+    pub files: Option<Vec<String>>,
 }
 
 impl SaveFilesOptions {
@@ -376,12 +376,7 @@ impl SaveFilesOptions {
 
     /// Sets a list of files to save.
     pub fn files(mut self, files: Vec<String>) -> Self {
-        self.files = Some(
-            files
-                .into_iter()
-                .map(|f| f.into())
-                .collect::<Vec<NString>>(),
-        );
+        self.files = Some(files);
         self
     }
 }

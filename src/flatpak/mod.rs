@@ -25,7 +25,6 @@
 //! }
 //! ```
 use crate::flatpak::update_monitor::{AsyncUpdateMonitorProxy, UpdateMonitorProxy};
-use crate::NString;
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
@@ -161,8 +160,8 @@ trait Flatpak {
     /// [`SpawnOptions`]: ./struct.SpawnOptions.html
     fn spawn(
         &self,
-        cwd_path: NString,
-        argv: Vec<NString>,
+        cwd_path: &str,
+        argv: Vec<&str>,
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
