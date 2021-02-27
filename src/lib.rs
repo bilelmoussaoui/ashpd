@@ -1,8 +1,10 @@
+#![deny(broken_intra_doc_links)]
+//#![deny(missing_docs)]
 //! ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus) wrapper of
 //! the XDG portals DBus interfaces. The library aims to provide an easy way to
 //! interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
 //!
-//! It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal).
+//! It provides an alternative to the C library <https://github.com/flatpak/libportal>.
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
@@ -35,11 +37,9 @@
 //!
 //! [`Color`]: ./desktop/screenshot/struct.Color.html
 //! [`WindowIdentifier`]: ./window_identifier/struct.WindowIdentifier.html
-#[deny(broken_intra_doc_links)]
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
 compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 
-// #![deny(missing_docs)] enable once
 /// Interact with the user's desktop such as taking a screenshot, setting a
 /// background or querying the user's location.
 pub mod desktop;
