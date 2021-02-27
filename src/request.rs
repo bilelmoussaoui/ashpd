@@ -79,6 +79,7 @@ impl<T> Response<T> {
     }
 }
 
+#[doc(hidden)]
 impl<T> From<(ResponseType, T)> for Response<T>
 where
     T: DeserializeOwned + zvariant::Type,
@@ -113,6 +114,7 @@ pub enum ResponseError {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
+#[doc(hidden)]
 enum ResponseType {
     /// Success, the request is carried out
     Success = 0,
@@ -122,6 +124,7 @@ enum ResponseType {
     Other = 2,
 }
 
+#[doc(hidden)]
 impl From<ResponseError> for ResponseType {
     fn from(err: ResponseError) -> Self {
         match err {

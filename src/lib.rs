@@ -48,12 +48,10 @@ pub mod documents;
 /// Spawn commands outside the sandbox or monitor if the running application has received an update & install it.
 pub mod flatpak;
 mod handle_token;
-mod helper;
 mod request;
 mod session;
 mod window_identifier;
 pub use self::handle_token::HandleToken;
-pub use self::helper::NString;
 pub use self::request::{AsyncRequestProxy, BasicResponse, RequestProxy, Response, ResponseError};
 pub use self::session::{AsyncSessionProxy, SessionProxy};
 pub use self::window_identifier::WindowIdentifier;
