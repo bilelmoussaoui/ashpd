@@ -50,10 +50,10 @@ where
             where
                 A: de::SeqAccess<'de>,
             {
-                let type_: ResponseType = seq.next_element()?.ok_or(A::Error::custom(
+                let type_: ResponseType = seq.next_element()?.ok_or_else(|| A::Error::custom(
                     "Failed to deserialize the response. Expected a numeric (u) value as the first item of the returned tuple",
                 ))?;
-                let data: T = seq.next_element()?.ok_or(A::Error::custom(
+                let data: T = seq.next_element()?.ok_or_else(|| A::Error::custom(
                     "Failed to deserialize the response. Expected a vardict (a{sv}) with the returned results",
                 ))?;
                 Ok((type_, data))
