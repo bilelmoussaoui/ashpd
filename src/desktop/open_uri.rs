@@ -152,7 +152,7 @@ trait OpenURI {
     #[dbus_proxy(name = "OpenURI", object = "Request")]
     fn open_uri(&self, parent_window: WindowIdentifier, uri: &str, options: OpenFileOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

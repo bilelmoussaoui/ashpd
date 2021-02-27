@@ -440,7 +440,7 @@ trait FileChooser {
     #[dbus_proxy(object = "Request")]
     fn save_files(&self, parent_window: WindowIdentifier, title: &str, options: SaveFilesOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

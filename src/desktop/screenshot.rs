@@ -188,7 +188,7 @@ trait Screenshot {
     #[dbus_proxy(object = "Request")]
     fn screenshot(&self, parent_window: WindowIdentifier, options: ScreenshotOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

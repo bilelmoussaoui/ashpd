@@ -28,7 +28,7 @@ trait MemoryMonitor {
     /// Signal emitted when a particular low memory situation happens with 0 being the lowest level of memory availability warning, and 255 being the highest
     fn low_memory_warning(&self, level: i32) -> Result<()>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

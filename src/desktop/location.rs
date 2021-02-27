@@ -225,7 +225,7 @@ trait Location {
         options: LocationStartOptions,
     );
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

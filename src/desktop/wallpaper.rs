@@ -97,7 +97,6 @@ impl Serialize for SetOn {
 /// Specified options for a set wallpaper request.
 pub struct WallpaperOptions {
     /// Whether to show a preview of the picture
-    /// Note that the portal may decide to show a preview even if this option is not set
     #[zvariant(rename = "show-preview")]
     show_preview: Option<bool>,
     /// Where to set the wallpaper on
@@ -107,6 +106,7 @@ pub struct WallpaperOptions {
 
 impl WallpaperOptions {
     /// Whether to show a preview of the picture.
+    /// **Note** that the portal may decide to show a preview even if this option is not set.
     pub fn show_preview(mut self, show_preview: bool) -> Self {
         self.show_preview = Some(show_preview);
         self
@@ -160,7 +160,7 @@ trait Wallpaper {
         options: WallpaperOptions,
     );
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

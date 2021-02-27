@@ -57,14 +57,15 @@ pub enum Connectivity {
 )]
 /// The interface provides network status information to sandboxed applications.
 /// It is not a portal in the strict sense, since it does not involve user interaction.
-/// Applications are expected to use this interface indirectly, via a library API such as the GLib GNetworkMonitor interface.
+/// Applications are expected to use this interface indirectly,
+/// via a library API such as the GLib `GNetworkMonitor` interface.
 trait NetworkMonitor {
-    /// Returns whether the given hostname is believed to be reachable
+    /// Returns whether the given hostname is believed to be reachable.
     ///
     /// # Arguments
     ///
-    /// * `hostname` - The hostname to reach
-    /// * `port` - The port to reach
+    /// * `hostname` - The hostname to reach.
+    /// * `port` - The port to reach.
     fn can_reach(&self, hostname: &str, port: u32) -> Result<bool>;
 
     /// Returns whether the network is considered available.
@@ -75,13 +76,14 @@ trait NetworkMonitor {
     fn get_connectivity(&self) -> Result<Connectivity>;
 
     /// Returns whether the network is considered metered.
-    /// That is, whether the system as traffic flowing through the default connection that is subject to limitations by service providers.
+    /// That is, whether the system as traffic flowing through the default connection
+    /// that is subject to limitations by service providers.
     fn get_metered(&self) -> Result<bool>;
 
     /// Returns the three values all at once.
     fn get_status(&self) -> Result<NetworkStatus>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

@@ -96,7 +96,7 @@ trait Settings {
     /// Signal emitted when a setting changes.
     fn setting_changed(&self, setting: Setting) -> Result<()>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

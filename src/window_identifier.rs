@@ -12,7 +12,7 @@ use zvariant_derive::Type;
 ///
 /// For other windowing systems, or if you don't have a suitable handle, just use the `Default` implementation.
 ///
-/// Please note that the `From<gtk3::Window>` and `From<gtk4::Window>` implementation are x11 only for now.
+/// Please **note** that the `From<gtk3::Window>` and `From<gtk4::Window>` implementation are x11 only for now.
 ///
 /// We would love merge requests that adds other `From<T> for WindowIdentifier` implementations for other toolkits.
 ///

@@ -77,7 +77,7 @@ trait Camera {
     #[dbus_proxy(property)]
     fn is_camera_present(&self) -> Result<bool>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

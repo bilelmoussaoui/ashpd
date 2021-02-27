@@ -80,10 +80,8 @@ pub enum SupportsFlags {
 /// Specified options on a spawn request.
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
-    /// Note that absolute paths or subdirectories are not allowed.
     sandbox_expose: Option<Vec<String>>,
     /// A list of filenames for files inside the sandbox that will be exposed to the new sandbox, read-only.
-    /// Note that absolute paths or subdirectories are not allowed.
     sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be exposed to the new sandbox, for reading and writing.
     sandbox_expose_fd: Option<Vec<Fd>>,
@@ -95,6 +93,7 @@ pub struct SpawnOptions {
 
 impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox.
+    /// **Note** that absolute paths or subdirectories are not allowed.
     pub fn sandbox_expose(mut self, sandbox_expose: &[&str]) -> Self {
         self.sandbox_expose = Some(
             sandbox_expose
@@ -107,6 +106,7 @@ impl SpawnOptions {
     }
 
     /// Sets the list of filenames for files to expose the new sandbox, read-only.
+    /// **Note** that absolute paths or subdirectories are not allowed.
     pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: &[&str]) -> Self {
         self.sandbox_expose_ro = Some(
             sandbox_expose_ro
@@ -158,16 +158,16 @@ trait Flatpak {
 
     /// This methods let you start a new instance of your application, optionally enabling a tighter sandbox.
     ///
-    /// Returns the PID of the new process
+    /// Returns the PID of the new process.
     ///
     /// # Arguments
     ///
-    /// * `cwd_path` - the working directory for the new process
-    /// * `arvg` - the argv for the new process, starting with the executable to launch
-    /// * `fds` - Array of file descriptors to pass to the new process
-    /// * `envs` - Array of variable/value pairs for the environment of the new process
+    /// * `cwd_path` - The working directory for the new process.
+    /// * `arvg` - The argv for the new process, starting with the executable to launch.
+    /// * `fds` - Array of file descriptors to pass to the new process.
+    /// * `envs` - Array of variable/value pairs for the environment of the new process.
     /// * `flags`
-    /// * `options` - A [`SpawnOptions`]
+    /// * `options` - A [`SpawnOptions`].
     ///
     /// [`SpawnOptions`]: ./struct.SpawnOptions.html
     fn spawn(
@@ -180,13 +180,13 @@ trait Flatpak {
         options: SpawnOptions,
     ) -> Result<u32>;
 
-    /// This methods let you send a Unix signal to a process that was started `spawn`
+    /// This methods let you send a Unix signal to a process that was started `spawn`.
     ///
     /// # Arguments
     ///
-    /// * `pid` - the PID of the process to send the signal to
-    /// * `signal` - the signal to send
-    /// * `to_process_group` - whether to send the signal to the process group
+    /// * `pid` - The PID of the process to send the signal to.
+    /// * `signal` - The signal to send.
+    /// * `to_process_group` - Whether to send the signal to the process group.
     fn spawn_signal(&self, pid: u32, signal: u32, to_process_group: bool) -> Result<()>;
 
     #[dbus_proxy(signal)]
@@ -199,7 +199,7 @@ trait Flatpak {
     #[dbus_proxy(property)]
     fn supports(&self) -> Result<u32>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }
