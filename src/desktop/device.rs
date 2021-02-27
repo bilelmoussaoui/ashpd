@@ -91,7 +91,7 @@ trait Device {
     #[dbus_proxy(object = "Request")]
     fn access_device(&self, pid: u32, devices: &[Device], options: AccessDeviceOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

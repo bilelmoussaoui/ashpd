@@ -29,7 +29,7 @@ trait Session {
     /// Closes the portal session to which this object refers and ends all related user interaction (dialogs, etc).
     fn close(&self) -> zbus::Result<()>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

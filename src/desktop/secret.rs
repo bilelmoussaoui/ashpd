@@ -62,7 +62,7 @@ trait Secret {
     #[dbus_proxy(object = "Request")]
     fn retrieve_secret(&self, fd: Fd, options: RetrieveOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

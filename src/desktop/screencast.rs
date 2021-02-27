@@ -229,12 +229,12 @@ impl Stream {
 /// The stream properties.
 pub struct StreamProperties {
     /// A tuple consisting of the position (x, y) in the compositor coordinate space.
-    /// Note that the position may not be equivalent to a position in a pixel coordinate space.
+    /// **Note** that the position may not be equivalent to a position in a pixel coordinate space.
     /// Only available for monitor streams.
     pub position: Option<(i32, i32)>,
     /// A tuple consisting of (width, height).
     /// The size represents the size of the stream as it is displayed in the compositor coordinate space.
-    /// Note that this size may not be equivalent to a size in a pixel coordinate space.
+    /// **Note** that this size may not be equivalent to a size in a pixel coordinate space.
     /// The size may differ from the size of the stream.
     pub size: (i32, i32),
 }
@@ -312,7 +312,7 @@ trait ScreenCast {
     #[dbus_proxy(property)]
     fn available_source_types(&self) -> Result<u32>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

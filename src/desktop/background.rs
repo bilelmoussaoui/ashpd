@@ -111,7 +111,7 @@ trait Background {
     #[dbus_proxy(object = "Request")]
     fn request_background(&self, parent_window: WindowIdentifier, options: BackgroundOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

@@ -46,14 +46,14 @@ pub enum TrashStatus {
 /// The interface lets sandboxed applications send files to the trashcan.
 trait Trash {
     /// Sends a file to the trashcan.
-    /// Applications are allowed to trash a file if they can open it in r/w mode.
+    /// Applications are allowed to trash a file if they can open it in read/write mode.
     ///
     /// # Arguments
     ///
-    /// * `fd` - the file descriptor
+    /// * `fd` - The file descriptor.
     fn trash_file(&self, fd: Fd) -> Result<TrashStatus>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

@@ -167,8 +167,8 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `window` - The application window identifier
-    /// * `options` - [`CreateMonitorOptions`]
+    /// * `window` - The application window identifier.
+    /// * `options` - [`CreateMonitorOptions`].
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
     #[dbus_proxy(object = "Request")]
@@ -178,9 +178,9 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `window` - The application window identifier
-    /// * `flags` - The flags determine what changes are inhibited
-    /// * `options` - [`InhibitOptions`]
+    /// * `window` - The application window identifier.
+    /// * `flags` - The flags determine what changes are inhibited.
+    /// * `options` - A [`InhibitOptions`].
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
     #[dbus_proxy(object = "Request")]
@@ -205,7 +205,7 @@ trait Inhibit {
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     fn query_end_response(&self, session_handle: &ObjectPath<'_>) -> zbus::Result<()>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

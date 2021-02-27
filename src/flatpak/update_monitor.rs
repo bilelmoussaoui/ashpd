@@ -38,7 +38,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on an update request
+/// Specified options on an update request.
 ///
 /// Currently there are no possible options yet.
 pub struct UpdateOptions {}
@@ -82,9 +82,9 @@ pub struct UpdateProgress {
     pub progress: Option<u32>,
     /// The overall status of the update.
     pub status: Option<UpdateStatus>,
-    /// The error name, sent when status is `UpdateStatus::Failed`
+    /// The error name, sent when status is `UpdateStatus::Failed`.
     pub error: Option<String>,
-    /// The error message, sent when status is `UpdateStatus::Failed`
+    /// The error message, sent when status is `UpdateStatus::Failed`.
     pub error_message: Option<String>,
 }
 
@@ -105,7 +105,7 @@ trait UpdateMonitor {
 
     /// Asks to install an update of the calling app.
     ///
-    /// Note that updates are only allowed if the new version
-    /// has the same permissions (or less) than the currently installed version
+    /// **Note** that updates are only allowed if the new version
+    /// has the same permissions (or less) than the currently installed version.
     fn update(&self, parent_window: WindowIdentifier, options: UpdateOptions) -> Result<()>;
 }

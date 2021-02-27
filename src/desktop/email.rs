@@ -119,7 +119,7 @@ impl EmailOptions {
 trait Email {
     /// Presents a window that lets the user compose an email.
     ///
-    /// Note that the default email client for the host will need to support mailto: URIs following RFC 2368.
+    /// **Note** that the default email client for the host will need to support mailto: URIs following RFC 2368.
     ///
     /// # Arguments
     ///
@@ -130,7 +130,7 @@ trait Email {
     #[dbus_proxy(object = "Request")]
     fn compose_email(&self, parent_window: WindowIdentifier, options: EmailOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

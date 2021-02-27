@@ -72,12 +72,12 @@ impl TransferOptions {
 trait FileTransfer {
     /// Adds files to a session.
     /// This method can be called multiple times on a given session.
-    /// Note that only regular files (not directories) can be added.
+    /// **Note** that only regular files (not directories) can be added.
     ///
     /// # Arguments
     ///
-    /// * `key` - a key returned by `start_transfer`
-    /// * `fds` - a list of file descriptors of the files to register
+    /// * `key` - A key returned by `start_transfer`.
+    /// * `fds` - A list of file descriptors of the files to register.
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
     fn add_files(&self, key: &str, fds: &[Fd], options: HashMap<&str, Value<'_>>) -> Result<()>;
@@ -86,11 +86,11 @@ trait FileTransfer {
     /// The files will be exported in the document portal as-needed for the caller,
     /// and they will be writable if the owner of the session allowed it.
     ///
-    /// Returns the list of file paths
+    /// Returns the list of file paths.
     ///
     /// # Arguments
     ///
-    /// * `key` - a key returned by `start_transfer`
+    /// * `key` - A key returned by `start_transfer`.
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
     fn retrieve_files(&self, key: &str, options: HashMap<&str, Value<'_>>) -> Result<Vec<String>>;
@@ -106,13 +106,13 @@ trait FileTransfer {
     ///
     /// # Arguments
     ///
-    /// * `key` - A key returned by `start_transfer`
+    /// * `key` - A key returned by `start_transfer`.
     fn stop_transfer(&self, key: &str) -> Result<()>;
 
     #[dbus_proxy(signal)]
     fn transfer_closed(&self, key: &str) -> Result<()>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

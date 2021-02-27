@@ -124,9 +124,9 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `o_path_fd` - open file descriptor for the file to add
-    /// * `reuse_existing` - whether to reuse an existing document store entry for the file
-    /// * `persistent` - whether to add the file only for this session or permanently
+    /// * `o_path_fd` - Open file descriptor for the file to add.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
+    /// * `persistent` - Whether to add the file only for this session or permanently.
     fn add(&self, o_path_fd: Fd, reuse_existing: bool, persistent: bool) -> Result<String>;
 
     /// Adds multiple files to the document store.
@@ -137,10 +137,10 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `o_path_fds` - open file descriptors for the files to export
-    /// * `flags` - a `Flags` enum.
-    /// * `app_id` - an application ID, or empty string
-    /// * `permissions` - the permissions to grant
+    /// * `o_path_fds` - Open file descriptors for the files to export.
+    /// * `flags` - A `Flags`.
+    /// * `app_id` - An application ID, or empty string.
+    /// * `permissions` - The permissions to grant.
     fn add_full(
         &self,
         o_path_fds: &[Fd],
@@ -155,10 +155,10 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `o_path_parent_fd` - open file descriptor for the parent directory
-    /// * `filename` - the basename for the file
-    /// * `reuse_existing` - whether to reuse an existing document store entry for the file
-    /// * `persistent` - whether to add the file only for this session or permanently
+    /// * `o_path_parent_fd` - Open file descriptor for the parent directory.
+    /// * `filename` - The basename for the file.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
+    /// * `persistent` - Whether to add the file only for this session or permanently.
     fn add_named(
         &self,
         o_path_parent_fd: Fd,
@@ -175,11 +175,11 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `o_path_fd` - open file descriptor for the parent directory
-    /// * `filename` - the basename for the file
-    /// * `flags` - a `Flags`
-    /// * `app_id` - an application ID, or empty string
-    /// * `permissions` - the permissions to grant.
+    /// * `o_path_fd` - Open file descriptor for the parent directory.
+    /// * `filename` - The basename for the file.
+    /// * `flags` - A `Flags`.
+    /// * `app_id` - An application ID, or empty string.
+    /// * `permissions` - The permissions to grant.
     fn add_named_full(
         &self,
         o_path_fd: Fd,
@@ -195,7 +195,7 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `doc_id` - The ID of the file in the document store
+    /// * `doc_id` - The ID of the file in the document store.
     fn delete(&self, doc_id: &str) -> Result<()>;
 
     /// Returns the path at which the document store fuse filesystem is mounted.
@@ -207,9 +207,9 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `doc_id` - the ID of the file in the document store.
-    /// * `app_id` - the ID of the application to which permissions are granted.
-    /// * `permissions` - the permissions to grant.
+    /// * `doc_id` - The ID of the file in the document store.
+    /// * `app_id` - The ID of the application to which permissions are granted.
+    /// * `permissions` - The permissions to grant.
     fn grant_permissions(
         &self,
         doc_id: &str,
@@ -223,7 +223,7 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `doc_id` - The ID of the file in the document store
+    /// * `doc_id` - The ID of the file in the document store.
     fn info(&self, doc_id: &str) -> Result<(String, Permissions)>;
 
     /// Lists documents in the document store for an application (or for all applications).
@@ -232,7 +232,7 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `app-id` - The application ID, or '' to list all documents
+    /// * `app-id` - The application ID, or '' to list all documents.
     fn list(&self, app_id: &str) -> Result<HashMap<String, String>>;
 
     /// Looks up the document ID for a file.
@@ -243,7 +243,7 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// - `filename` - A path in the host filesystem
+    /// - `filename` - A path in the host filesystem.
     fn lookup(&self, filename: &str) -> Result<String>;
 
     /// Revokes access permissions for a file in the document store from an application.
@@ -252,8 +252,8 @@ trait Documents {
     ///
     /// # Arguments
     ///
-    /// * `doc_id` - The ID of the file in the document store
-    /// * `app_id` - The ID of the application from which permissions are revoked
+    /// * `doc_id` - The ID of the file in the document store.
+    /// * `app_id` - The ID of the application from which permissions are revoked.
     /// * `permissions` - The permissions to revoke.
     fn revoke_permissions(
         &self,
@@ -262,7 +262,7 @@ trait Documents {
         permissions: &[Permission],
     ) -> Result<()>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

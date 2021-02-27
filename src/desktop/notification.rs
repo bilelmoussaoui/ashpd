@@ -89,7 +89,8 @@ pub struct Notification {
     icon: Option<OwnedValue>,
     /// The priority for the notification.
     priority: Option<Priority>,
-    /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
+    /// Name of an action that is exported by the application.
+    /// This action will be activated when the user clicks on the notification.
     #[zvariant(rename = "default-action")]
     default_action: Option<String>,
     /// Target parameter to send along when activating the default action.
@@ -100,11 +101,11 @@ pub struct Notification {
 }
 
 impl Notification {
-    /// Create a new notification
+    /// Create a new notification.
     ///
     /// # Arguments
     ///
-    /// * `title` - the notification title
+    /// * `title` - the notification title.
     pub fn new(title: &str) -> Self {
         Self {
             title: title.to_string(),
@@ -123,7 +124,7 @@ impl Notification {
         self
     }
 
-    /// Sets an icon to the notification
+    /// Sets an icon to the notification.
     pub fn icon(mut self, icon: OwnedValue) -> Self {
         self.icon = Some(icon);
         self
@@ -141,7 +142,7 @@ impl Notification {
         self
     }
 
-    /// Sets a value to be sent in the action_invoked signal.
+    /// Sets a value to be sent in the `action_invoked` signal.
     pub fn default_action_target(mut self, default_action_target: OwnedValue) -> Self {
         self.default_action_target = Some(default_action_target);
         self
@@ -171,11 +172,11 @@ pub struct Button {
 }
 
 impl Button {
-    /// Create a new notification button
+    /// Create a new notification button.
     ///
     /// # Arguments
     ///
-    /// * `label` - the user visible label of the button
+    /// * `label` - the user visible label of the button.
     /// * `action` - the action name to be invoked when the user clicks on the button.
     pub fn new(label: &str, action: &str) -> Self {
         Self {
@@ -223,7 +224,7 @@ impl Action {
 /// It is not possible for the application to learn if the notification was actually
 /// presented to the user. Not a portal in the strict sense, since there is no user interaction.
 ///
-/// Note that in contrast to most other portal requests, notifications are expected
+/// **Note** that in contrast to most other portal requests, notifications are expected
 /// to outlast the running application. If a user clicks on a notification after
 /// the application has exited, it will get activated again.
 ///
@@ -231,11 +232,11 @@ impl Action {
 /// Actions whose name starts with 'app.' are assumed to be exported and will be activated
 /// via the ActivateAction() method in the org.freedesktop.Application interface.
 /// Other actions are activated by sending the
-///  #org.freedeskop.portal.Notification::ActionInvoked signal to the application.
+///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the application.
 ///
 trait Notification {
     #[dbus_proxy(signal)]
-    /// Signal emitted when a particular action is invoked
+    /// Signal emitted when a particular action is invoked.
     fn action_invoked(&self, action: Action) -> Result<()>;
 
     /// Sends a notification.
@@ -245,18 +246,18 @@ trait Notification {
     ///
     /// # Arguments
     ///
-    /// * `id` - Application-provided ID for this notification
-    /// * `notification` - HashMap
+    /// * `id` - Application-provided ID for this notification.
+    /// * `notification` - The notification.
     fn add_notification(&self, id: &str, notification: Notification) -> Result<()>;
 
     /// Withdraws a notification.
     ///
     /// # Arguments
     ///
-    /// * `id` - Application-provided ID for this notification
+    /// * `id` - Application-provided ID for this notification.
     fn remove_notification(&self, id: &str) -> Result<()>;
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }

@@ -554,7 +554,7 @@ trait Print {
     #[dbus_proxy(object = "Request")]
     fn print(&self, parent_window: WindowIdentifier, title: &str, fd: Fd, options: PrintOptions);
 
-    /// version property
+    /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
 }
