@@ -34,25 +34,25 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a compose email request.
 pub struct EmailOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// The email address to send to.
-    pub address: Option<String>,
+    address: Option<String>,
     /// The email addresses to send to.
-    pub addresses: Option<Vec<String>>,
+    addresses: Option<Vec<String>>,
     /// The email addresses to CC.
-    pub cc: Option<Vec<String>>,
+    cc: Option<Vec<String>>,
     /// The email addresses to BCC.
-    pub bcc: Option<Vec<String>>,
+    bcc: Option<Vec<String>>,
     /// The subject of the email.
-    pub subject: Option<String>,
+    subject: Option<String>,
     /// The body of the email.
-    pub body: Option<String>,
+    body: Option<String>,
     /// A list of file descriptors of files to attach.
-    pub attachment_fds: Option<Vec<Fd>>,
+    attachment_fds: Option<Vec<Fd>>,
 }
 
 impl EmailOptions {
@@ -69,20 +69,20 @@ impl EmailOptions {
     }
 
     /// Sets a list of email addresses to send the email to.
-    pub fn addresses(mut self, addresses: Vec<String>) -> Self {
-        self.addresses = Some(addresses);
+    pub fn addresses(mut self, addresses: &[&str]) -> Self {
+        self.addresses = Some(addresses.to_vec().iter().map(|s| s.to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to BCC.
-    pub fn bcc(mut self, bcc: Vec<String>) -> Self {
-        self.bcc = Some(bcc);
+    pub fn bcc(mut self, bcc: &[&str]) -> Self {
+        self.bcc = Some(bcc.to_vec().iter().map(|s| s.to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to CC.
-    pub fn cc(mut self, cc: Vec<String>) -> Self {
-        self.cc = Some(cc);
+    pub fn cc(mut self, cc: &[&str]) -> Self {
+        self.cc = Some(cc.to_vec().iter().map(|s| s.to_string()).collect());
         self
     }
 
@@ -119,17 +119,14 @@ impl EmailOptions {
 trait Email {
     /// Presents a window that lets the user compose an email.
     ///
-    /// Note that the default email client for the host will need to support mailto: URIs following RFC 2368
-    ///
-    /// Returns a [`RequestProxy`].
+    /// Note that the default email client for the host will need to support mailto: URIs following RFC 2368.
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `options` - [`EmailOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `options` - [`EmailOptions`].
     ///
     /// [`EmailOptions`]: ./struct.EmailOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn compose_email(&self, parent_window: WindowIdentifier, options: EmailOptions);
 

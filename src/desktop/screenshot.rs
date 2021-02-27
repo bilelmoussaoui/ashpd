@@ -49,15 +49,15 @@ use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options on a screenshot request.
 pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Whether the dialog should be modal.
-    pub modal: Option<bool>,
+    modal: Option<bool>,
     /// Hint whether the dialog should offer customization before taking a screenshot.
-    pub interactive: Option<bool>,
+    interactive: Option<bool>,
 }
 
 impl ScreenshotOptions {
@@ -80,18 +80,18 @@ impl ScreenshotOptions {
     }
 }
 
-#[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
+#[derive(DeserializeDict, SerializeDict, Clone, TypeDict, Debug)]
 /// A response to a screenshot request.
 pub struct Screenshot {
     /// The screenshot uri.
     pub uri: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options on a pick color request.
 pub struct PickColorOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
 }
 
 impl PickColorOptions {
@@ -102,7 +102,7 @@ impl PickColorOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, TypeDict)]
 /// A response to a pick color request.
 pub struct Color {
     color: ([f64; 3]),
@@ -149,6 +149,16 @@ impl Into<gtk4::gdk::RGBA> for Color {
     }
 }
 
+impl std::fmt::Debug for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Color")
+            .field("red", &self.red())
+            .field("green", &self.green())
+            .field("blue", &self.blue())
+            .finish()
+    }
+}
+
 #[dbus_proxy(
     interface = "org.freedesktop.portal.Screenshot",
     default_service = "org.freedesktop.portal.Desktop",
@@ -158,29 +168,23 @@ impl Into<gtk4::gdk::RGBA> for Color {
 trait Screenshot {
     /// Obtains the color of a single pixel.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `options` - A [`PickColorOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `options` - A [`PickColorOptions`].
     ///
     /// [`PickColorOptions`]: ./struct.PickColorOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn pick_color(&self, parent_window: WindowIdentifier, options: PickColorOptions);
 
-    /// Takes a screenshot
-    ///
-    /// Returns a [`RequestProxy`].
+    /// Takes a screenshot.
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `options` - A [`ScreenshotOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `options` - A [`ScreenshotOptions`].
     ///
     /// [`ScreenshotOptions`]: ./struct.ScreenshotOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn screenshot(&self, parent_window: WindowIdentifier, options: ScreenshotOptions);
 

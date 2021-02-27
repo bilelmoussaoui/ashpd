@@ -52,9 +52,9 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 /// Specified options for a create inhibit monitor request.
 pub struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<HandleToken>,
+    session_handle_token: Option<HandleToken>,
 }
 
 impl CreateMonitorOptions {
@@ -75,9 +75,9 @@ impl CreateMonitorOptions {
 /// Specified options of an inhibit request.
 pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// User-visible reason for the inhibition.
-    pub reason: Option<String>,
+    reason: Option<String>,
 }
 
 impl InhibitOptions {
@@ -109,8 +109,8 @@ pub enum InhibitFlags {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-struct InhibitMonitorResponse {
-    pub session_handle: OwnedObjectPath,
+pub struct InhibitMonitorResponse {
+    session_handle: OwnedObjectPath,
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
@@ -165,8 +165,6 @@ trait Inhibit {
     /// While this session is active, the caller will receive `state_changed` signals
     /// with updates on the session state.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `window` - The application window identifier
@@ -178,8 +176,6 @@ trait Inhibit {
 
     /// Inhibits a session status changes.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `window` - The application window identifier
@@ -187,7 +183,6 @@ trait Inhibit {
     /// * `options` - [`InhibitOptions`]
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn inhibit(
         &self,
@@ -200,7 +195,7 @@ trait Inhibit {
     #[dbus_proxy(signal)]
     fn state_changed(&self, state: InhibitState) -> Result<()>;
 
-    /// Acknowledges that the caller received the "state_changed" signal
+    /// Acknowledges that the caller received the "state_changed" signal.
     /// This method should be called within one second after receiving a `state_changed` signal with the `SessionState::QueryEnd` state.
     ///
     /// # Arguments

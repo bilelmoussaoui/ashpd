@@ -110,9 +110,9 @@ pub enum CursorMode {
 /// Specified options on a create a Screen Cast session request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<HandleToken>,
+    session_handle_token: Option<HandleToken>,
 }
 
 impl CreateSessionOptions {
@@ -133,13 +133,13 @@ impl CreateSessionOptions {
 /// Specified options on a select sources request.
 pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// What types of content to record.
-    pub types: Option<BitFlags<SourceType>>,
+    types: Option<BitFlags<SourceType>>,
     /// Whether to allow selecting multiple sources.
-    pub multiple: Option<bool>,
+    multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
-    pub cursor_mode: Option<BitFlags<CursorMode>>,
+    cursor_mode: Option<BitFlags<CursorMode>>,
 }
 
 impl SelectSourcesOptions {
@@ -172,7 +172,7 @@ impl SelectSourcesOptions {
 /// Specified options on a start Screen Cast request.
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
 }
 
 impl StartCastOptions {
@@ -248,10 +248,6 @@ pub struct StreamProperties {
 /// The interface lets sandboxed applications create screen cast sessions.
 trait ScreenCast {
     /// Create a screen cast session.
-    ///
-    /// Returns a [`RequestProxy`].
-    ///
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn create_session(&self, options: CreateSessionOptions);
 
@@ -278,14 +274,11 @@ trait ScreenCast {
     /// Passing invalid input to this method will cause the session to be closed.
     /// An application may only attempt to select sources once per session.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `session_handle` - A [`SessionProxy`] object path.
-    /// * `options` - A `SelectSourcesOptions`
+    /// * `options` - A `SelectSourcesOptions`.
     ///
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Request")]
     fn select_sources(&self, session_handle: &ObjectPath<'_>, options: SelectSourcesOptions);
@@ -297,15 +290,12 @@ trait ScreenCast {
     ///
     /// An application can only attempt start a session once.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `session_handle` - A [`SessionProxy`] object path.
-    /// * `parent_window` - Identifier for the application window
-    /// * `options` - A `StartScreenCastOptions`
+    /// * `parent_window` - Identifier for the application window.
+    /// * `options` - A `StartScreenCastOptions`.
     ///
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Request")]
     fn start(

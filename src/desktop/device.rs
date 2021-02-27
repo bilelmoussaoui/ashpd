@@ -27,11 +27,11 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_device` request.
 pub struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
 }
 
 impl AccessDeviceOptions {
@@ -43,7 +43,7 @@ impl AccessDeviceOptions {
 }
 
 #[derive(
-    Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
+    Debug, Clone, Copy, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
 )]
 #[strum(serialize_all = "lowercase")]
 /// The possible device to request access to.
@@ -81,16 +81,13 @@ impl Serialize for Device {
 trait Device {
     /// Asks for access to a device.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `pid` - The pid of the application on whose behalf the request is made
+    /// * `pid` - The pid of the application on whose behalf the request is made.
     /// * `devices` - A list of devices to request access to.
     /// * `options` - A [`AccessDeviceOptions`].
     ///
     /// [`AccessDeviceOptions`]: ./struct.AccessDeviceOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn access_device(&self, pid: u32, devices: &[Device], options: AccessDeviceOptions);
 

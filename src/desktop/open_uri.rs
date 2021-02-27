@@ -65,7 +65,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified options for an open directory request.
 pub struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
 }
 
 impl OpenDirOptions {
@@ -80,12 +80,12 @@ impl OpenDirOptions {
 /// Specified options for an open file request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
     /// Whether to allow the chosen application to write to the file.
     /// This key only takes effect the uri points to a local file that is exported in the document portal, and the chosen application is sandboxed itself.
-    pub writeable: Option<bool>,
+    writeable: Option<bool>,
     /// Whether to ask the user to choose an app. If this is not passed, or false, the portal may use a default or pick the last choice.
-    pub ask: Option<bool>,
+    ask: Option<bool>,
 }
 
 impl OpenFileOptions {
@@ -118,46 +118,37 @@ impl OpenFileOptions {
 trait OpenURI {
     /// Asks to open the directory containing a local file in the file browser.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `fd` - File descriptor for a file
-    /// * `options` - [`OpenDirOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `fd` - File descriptor for a file.
+    /// * `options` - [`OpenDirOptions`].
     ///
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn open_directory(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenDirOptions);
 
     /// Asks to open a local file.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `fd` - File descriptor for the file to open
-    /// * `options` - [`OpenFileOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `fd` - File descriptor for the file to open.
+    /// * `options` - [`OpenFileOptions`].
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(object = "Request")]
     fn open_file(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenFileOptions);
 
     /// Asks to open a local file.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window
-    /// * `uri` - The uri to open
-    /// * `options` - [`OpenFileOptions`]
+    /// * `parent_window` - Identifier for the application window.
+    /// * `uri` - The uri to open.
+    /// * `options` - [`OpenFileOptions`].
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     #[dbus_proxy(name = "OpenURI", object = "Request")]
     fn open_uri(&self, parent_window: WindowIdentifier, uri: &str, options: OpenFileOptions);
 

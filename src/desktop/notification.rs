@@ -82,21 +82,21 @@ impl Serialize for Priority {
 /// A notification
 pub struct Notification {
     /// User-visible string to display as the title.
-    pub title: String,
+    title: String,
     /// User-visible string to display as the body.
-    pub body: Option<String>,
+    body: Option<String>,
     /// Serialized icon (e.g using gio::Icon::serialize).
-    pub icon: Option<OwnedValue>,
+    icon: Option<OwnedValue>,
     /// The priority for the notification.
-    pub priority: Option<Priority>,
+    priority: Option<Priority>,
     /// Name of an action that is exported by the application. This action will be activated when the user clicks on the notification.
     #[zvariant(rename = "default-action")]
-    pub default_action: Option<String>,
+    default_action: Option<String>,
     /// Target parameter to send along when activating the default action.
     #[zvariant(rename = "default-action-target")]
-    pub default_action_target: Option<OwnedValue>,
+    default_action_target: Option<OwnedValue>,
     /// Array of buttons to add to the notification.
-    pub buttons: Option<Vec<Button>>,
+    buttons: Option<Vec<Button>>,
 }
 
 impl Notification {
@@ -163,11 +163,11 @@ impl Notification {
 /// A notification button
 pub struct Button {
     /// User-visible label for the button. Mandatory.
-    pub label: String,
+    label: String,
     /// Name of an action that is exported by the application. The action will be activated when the user clicks on the button.
-    pub action: String,
+    action: String,
     /// Target parameter to send along when activating the action.
-    pub target: Option<OwnedValue>,
+    target: Option<OwnedValue>,
 }
 
 impl Button {

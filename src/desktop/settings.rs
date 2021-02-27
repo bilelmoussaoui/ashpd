@@ -28,11 +28,11 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-/// A HashMap of the <key, value> settings found on a specific namespace
+/// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
 
-#[derive(Debug, Serialize, Deserialize, Type)]
-/// A specific namespace.key = value setting.
+#[derive(Serialize, Clone, Deserialize, Type)]
+/// A specific `namespace.key = value` setting.
 pub struct Setting(String, String, OwnedValue);
 
 impl Setting {
@@ -49,6 +49,16 @@ impl Setting {
     /// The setting value.
     pub fn value(&self) -> &OwnedValue {
         &self.2
+    }
+}
+
+impl std::fmt::Debug for Setting {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Setting")
+            .field("namespace", &self.namespace())
+            .field("key", &self.key())
+            .field("value", self.value())
+            .finish()
     }
 }
 
@@ -78,12 +88,12 @@ trait Settings {
     ///
     /// # Arguments
     ///
-    /// * `namespace` - Namespace to look up key in
-    /// * `key` - The key to get
+    /// * `namespace` - Namespace to look up key in.
+    /// * `key` - The key to get.
     fn read(&self, namespace: &str, key: &str) -> zbus::Result<zvariant::OwnedValue>;
 
     #[dbus_proxy(signal)]
-    /// Signal emitted when a particular low memory situation happens with 0 being the lowest level of memory availability warning, and 255 being the highest
+    /// Signal emitted when a setting changes.
     fn setting_changed(&self, setting: Setting) -> Result<()>;
 
     /// version property

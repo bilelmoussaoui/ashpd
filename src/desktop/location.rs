@@ -65,13 +65,13 @@ pub enum Accuracy {
 /// Specified options for a location access request.
 pub struct LocationAccessOptions {
     /// A string that will be used as the last element of the session handle.
-    pub session_handle_token: Option<HandleToken>,
+    session_handle_token: Option<HandleToken>,
     /// Distance threshold in meters. Default is 0.
-    pub distance_threshold: Option<u32>,
+    distance_threshold: Option<u32>,
     /// Time threshold in seconds. Default is 0.
-    pub time_threshold: Option<u32>,
+    time_threshold: Option<u32>,
     /// Requested accuracy. Default is `Accuracy::Exact`.
-    pub accuracy: Option<Accuracy>,
+    accuracy: Option<Accuracy>,
 }
 
 impl LocationAccessOptions {
@@ -104,7 +104,7 @@ impl LocationAccessOptions {
 /// Specified options for a location session start request.
 pub struct LocationStartOptions {
     /// A string that will be used as the last element of the handle.
-    pub handle_token: Option<HandleToken>,
+    handle_token: Option<HandleToken>,
 }
 
 impl LocationStartOptions {
@@ -199,29 +199,23 @@ trait Location {
 
     /// Create a location session.
     ///
-    /// Returns a [`SessionProxy`].
-    ///
     /// # Arguments
     ///
     /// * `options` - A [`LocationAccessOptions`]
     ///
     /// [`LocationAccessOptions`]: ./struct.LocationAccessOptions.html
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Session")]
     fn create_session(&self, options: LocationAccessOptions);
 
     /// Start the location session.
     /// An application can only attempt start a session once.
     ///
-    /// Returns a [`RequestProxy`].
-    ///
     /// # Arguments
     ///
     /// * `session_handle` - A [`SessionProxy`] object path.
-    /// * `parent_window` - Identifier for the application window
-    /// * `options` - A `LocationStartOptions`
+    /// * `parent_window` - Identifier for the application window.
+    /// * `options` - A `LocationStartOptions`.
     ///
-    /// [`RequestProxy`]: ../../request/struct.RequestProxy.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     #[dbus_proxy(object = "Request")]
     fn start(

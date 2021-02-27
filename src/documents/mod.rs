@@ -75,7 +75,7 @@ pub enum Permission {
 
 impl zvariant::Type for Permission {
     fn signature() -> Signature<'static> {
-        Signature::from_string_unchecked("s".to_string())
+        String::signature()
     }
 }
 
