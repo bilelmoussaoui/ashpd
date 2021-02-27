@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use zvariant_derive::Type;
 
 #[derive(Debug, Serialize, Deserialize, Type)]
@@ -26,7 +27,14 @@ pub struct HandleToken(String);
 #[derive(Debug)]
 pub struct HandleInvalidCharacter(char);
 
-impl std::convert::TryFrom<&str> for HandleToken {
+impl std::fmt::Display for HandleInvalidCharacter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("Invalid Character {}", self.0))
+    }
+}
+impl std::error::Error for HandleInvalidCharacter {}
+
+impl TryFrom<&str> for HandleToken {
     type Error = HandleInvalidCharacter;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         for char in value.chars() {
@@ -38,7 +46,7 @@ impl std::convert::TryFrom<&str> for HandleToken {
     }
 }
 
-impl std::convert::TryFrom<String> for HandleToken {
+impl TryFrom<String> for HandleToken {
     type Error = HandleInvalidCharacter;
     fn try_from(value: String) -> Result<Self, Self::Error> {
         HandleToken::try_from(value.as_str())
