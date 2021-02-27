@@ -82,7 +82,7 @@ impl From<gtk4::Window> for WindowIdentifier {
                 /*
                 As the wayland api is async, let's wait till zbus is async ready before
                 we do enable it.
-                Note: we need to unexport the handle once it's not used anymore automatically
+                Note: we need to un-export the handle once it's not used anymore automatically
                         using level.unexport_handle();
                 let top_level = surface.downcast::<gdk4wayland::WaylandTopLevel>().unwrap();
                 top_level.export_handle(move |level, handle| {

@@ -26,7 +26,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// The network status, composed of the avaiability, metered & connectivity
+/// The network status, composed of the availability, metered & connectivity
 pub struct NetworkStatus {
     /// Whether the network is considered available.
     pub available: bool,

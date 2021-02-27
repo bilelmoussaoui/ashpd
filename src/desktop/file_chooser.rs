@@ -161,18 +161,18 @@ impl Choice {
     }
 
     /// The choice's unique id
-    pub fn id(&self) -> String {
-        self.0.clone()
+    pub fn id(&self) -> &str {
+        &self.0
     }
 
     /// The user visible label of the choice.
-    pub fn label(&self) -> String {
-        self.1.clone()
+    pub fn label(&self) -> &str {
+        &self.1
     }
 
     /// The initially selected value.
-    pub fn initial_selection(&self) -> String {
-        self.3.clone()
+    pub fn initial_selection(&self) -> &str {
+        &self.3
     }
 }
 

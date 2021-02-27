@@ -16,7 +16,7 @@
 //!     let session = proxy.create_session(options)?;
 //!
 //!     let request = proxy.start(
-//!         session.path().clone(),
+//!         session.path(),
 //!         WindowIdentifier::default(),
 //!         LocationStartOptions::default(),
 //!     )?;
@@ -146,8 +146,8 @@ impl LocationResponse {
     }
 
     /// The location description
-    pub fn description(&self) -> String {
-        self.1.description.clone()
+    pub fn description(&self) -> &str {
+        &self.1.description
     }
 
     /// The latitude, in degrees.
@@ -226,7 +226,7 @@ trait Location {
     #[dbus_proxy(object = "Request")]
     fn start(
         &self,
-        session_handle: ObjectPath<'_>,
+        session_handle: &ObjectPath<'_>,
         parent_window: WindowIdentifier,
         options: LocationStartOptions,
     );

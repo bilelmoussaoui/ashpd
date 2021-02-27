@@ -29,7 +29,7 @@
 //!                     InhibitOptions::default().reason("please save the opened project first"),
 //!                 )?;
 //!                 thread::sleep(time::Duration::from_secs(1));
-//!                 proxy.query_end_response(state.session_handle().into())?;
+//!                 proxy.query_end_response(state.session_handle())?;
 //!             }
 //!             SessionState::Ending => {
 //!                 println!("ending the session");
@@ -119,8 +119,8 @@ pub struct InhibitState(OwnedObjectPath, State);
 
 impl InhibitState {
     /// The session handle.
-    pub fn session_handle(&self) -> OwnedObjectPath {
-        self.0.clone()
+    pub fn session_handle(&self) -> &ObjectPath<'_> {
+        &self.0
     }
 
     /// Whether screensaver is active or not.
@@ -208,7 +208,7 @@ trait Inhibit {
     /// * `session_handle` - A [`SessionProxy`] object path.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    fn query_end_response(&self, session_handle: ObjectPath<'_>) -> zbus::Result<()>;
+    fn query_end_response(&self, session_handle: &ObjectPath<'_>) -> zbus::Result<()>;
 
     /// version property
     #[dbus_proxy(property, name = "version")]
