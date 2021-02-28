@@ -17,7 +17,6 @@
 //! fn select_sources(
 //!     session_handle: &ObjectPath<'static>,
 //!     proxy: &'static ScreenCastProxy,
-//!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
 //!     let request = proxy.select_sources(
 //!         session_handle,
@@ -29,7 +28,7 @@
 //!
 //!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
-//!             start_cast(session_handle, proxy, connection)?;
+//!             start_cast(session_handle, proxy)?;
 //!         }
 //!         Ok(())
 //!     })?;
@@ -39,7 +38,6 @@
 //! fn start_cast(
 //!     session_handle: &ObjectPath<'static>,
 //!     proxy: &'static ScreenCastProxy,
-//!     connection: &'static zbus::Connection,
 //! ) -> Result<()> {
 //!     let request = proxy.start(
 //!         session_handle,
@@ -67,7 +65,7 @@
 //!
 //!     request.connect_response(|response: Response<CreateSession>| {
 //!         if let Response::Ok(session) = response {
-//!             select_sources(session.handle(), &proxy, &connection)?;
+//!             select_sources(session.handle(), &proxy)?;
 //!         };
 //!         Ok(())
 //!     })?;

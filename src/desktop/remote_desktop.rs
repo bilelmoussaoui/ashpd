@@ -13,7 +13,6 @@
 //!
 //! fn select_devices(
 //!     handle: &'static ObjectPath<'_>,
-//!     connection: &'static Connection,
 //!     proxy: &'static RemoteDesktopProxy,
 //! ) -> Result<()> {
 //!     let request = proxy.select_devices(handle,
@@ -22,7 +21,7 @@
 //!
 //!     request.connect_response(move |r: Response<Basic>| {
 //!         if r.is_ok() {
-//!             start_remote(handle, connection, proxy)?;
+//!             start_remote(handle, proxy)?;
 //!         }
 //!         Ok(())
 //!     })?;
@@ -32,7 +31,6 @@
 //!
 //! fn start_remote(
 //!     handle: &'static ObjectPath<'_>,
-//!     connection: &'static Connection,
 //!     proxy: &'static RemoteDesktopProxy,
 //! ) -> Result<()> {
 //!     let request = proxy.start(
@@ -67,7 +65,7 @@
 //!
 //!     request.connect_response(move |r: Response<CreateSession>| {
 //!         let session = r.unwrap();
-//!         select_devices(session.handle(), &connection, &proxy)?;
+//!         select_devices(session.handle(), &proxy)?;
 //!         Ok(())
 //!     })?;
 //!
