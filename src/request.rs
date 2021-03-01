@@ -15,19 +15,28 @@ use zvariant_derive::Type;
 /// [`RequestProxy`]: ./struct.RequestProxy.html
 #[derive(Debug)]
 pub enum Response<T> {
+    /// Success, the request is carried out.
     Ok(T),
+    /// The user cancelled the request or something else happened.
     Err(ResponseError),
 }
 
 impl<T> Response<T> {
+    /// Whether the request was successful.
     pub fn is_ok(&self) -> bool {
         matches!(self, Response::Ok(_))
     }
 
+    /// Whether the request failed.
     pub fn is_err(&self) -> bool {
         matches!(self, Response::Err(_))
     }
 
+    /// Unwrap the inner response if the request was successful
+    ///
+    /// # Panic
+    ///
+    /// The function panics if the request failed and there's no valid response.
     pub fn unwrap(&self) -> &T {
         match self {
             Self::Ok(response) => response,

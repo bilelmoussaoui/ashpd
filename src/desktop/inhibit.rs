@@ -73,7 +73,7 @@ impl CreateMonitorOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options of an inhibit request.
+/// Specified options of an `inhibit` request.
 pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -110,8 +110,16 @@ pub enum InhibitFlags {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-pub struct InhibitMonitorResponse {
+/// A response to a `create_monitor` request.
+pub struct CreateMonitor {
     session_handle: OwnedObjectPath,
+}
+
+impl CreateMonitor {
+    /// The created session handle.
+    pub fn session_handle(&self) -> &ObjectPath<'_> {
+        &self.session_handle
+    }
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
@@ -124,7 +132,7 @@ struct State {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
-/// A response received when the session state signal is received.
+/// A response received when the `state_changed` signal is received.
 pub struct InhibitState(OwnedObjectPath, State);
 
 impl InhibitState {

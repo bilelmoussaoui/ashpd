@@ -64,8 +64,8 @@
 //!     )?;
 //!
 //!     request.connect_response(move |r: Response<CreateSession>| {
-//!         let session = r.unwrap();
-//!         select_devices(session.handle(), &proxy)?;
+//!         let response = r.unwrap();
+//!         select_devices(response.session_handle(), &proxy)?;
 //!         Ok(())
 //!     })?;
 //!
@@ -138,7 +138,7 @@ impl CreateRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// A response to a create session request.
+/// A response to a `create_session` request.
 pub struct CreateSession {
     /// A string that will be used as the last element of the session handle.
     session_handle: OwnedObjectPath,
@@ -146,7 +146,7 @@ pub struct CreateSession {
 
 impl CreateSession {
     /// The created session handle.
-    pub fn handle(&self) -> &ObjectPath<'_> {
+    pub fn session_handle(&self) -> &ObjectPath<'_> {
         &self.session_handle
     }
 }
@@ -202,7 +202,7 @@ pub struct SelectedDevices {
     default_path = "/org/freedesktop/portal/desktop"
 )]
 /// The interface lets sandboxed applications create remote desktop sessions.
-pub trait RemoteDesktop {
+trait RemoteDesktop {
     /// Create a remote desktop session.
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.

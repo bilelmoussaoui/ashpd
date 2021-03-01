@@ -64,9 +64,8 @@
 //!         .create_session(CreateSessionOptions::default().session_handle_token(session_token))?;
 //!
 //!     request.connect_response(|response: Response<CreateSession>| {
-//!         if let Response::Ok(session) = response {
-//!             select_sources(session.handle(), &proxy)?;
-//!         };
+//!         let response = response.unwrap();
+//!         select_sources(response.session_handle(), &proxy)?;
 //!         Ok(())
 //!     })?;
 //!     Ok(())
@@ -192,7 +191,7 @@ pub struct CreateSession {
 
 impl CreateSession {
     /// The created session handle.
-    pub fn handle(&self) -> &ObjectPath<'_> {
+    pub fn session_handle(&self) -> &ObjectPath<'_> {
         &self.session_handle
     }
 }
