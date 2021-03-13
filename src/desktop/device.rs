@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::device::{AccessDeviceOptions, Device, DeviceProxy};
-//! use ashpd::{BasicResponse as Basic, RequestProxy, Response};
+//! use ashpd::{BasicResponse as Basic, Response};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

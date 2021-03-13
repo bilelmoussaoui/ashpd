@@ -2,7 +2,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::secret::{RetrieveOptions, SecretProxy};
-//! use ashpd::{BasicResponse as Basic, RequestProxy, Response};
+//! use ashpd::{BasicResponse as Basic, Response};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zbus::{fdo::Result, Connection};

@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::print::{PrintOptions, PrintProxy};
-//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, Response, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zbus::{fdo::Result, Connection};

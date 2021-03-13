@@ -2,7 +2,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::location::{LocationAccessOptions, LocationProxy, LocationStartOptions};
-//! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
 //! use std::convert::TryFrom;
 //! use zbus::{self, fdo::Result};
 //!
@@ -16,7 +16,7 @@
 //!     let session = proxy.create_session(options)?;
 //!
 //!     let request = proxy.start(
-//!         session.path(),
+//!         &session,
 //!         WindowIdentifier::default(),
 //!         LocationStartOptions::default(),
 //!     )?;
@@ -215,18 +215,16 @@ trait Location {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session_handle` - A [`SessionProxy`] or [`AsyncSessionProxy].
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A `LocationStartOptions`.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     #[dbus_proxy(object = "Request")]
-    fn start(
-        &self,
-        session_handle: &ObjectPath<'_>,
-        parent_window: WindowIdentifier,
-        options: LocationStartOptions,
-    );
+    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: LocationStartOptions)
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]

@@ -5,7 +5,7 @@
 //! use ashpd::desktop::file_chooser::{
 //!     Choice, FileChooserProxy, FileFilter, OpenFileOptions, SelectedFiles,
 //! };
-//! use ashpd::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
@@ -42,7 +42,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions, SelectedFiles};
-//! use ashpd::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {
@@ -68,7 +68,7 @@
 //! Ask to save multiple files
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions, SelectedFiles};
-//! use ashpd::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{Response, WindowIdentifier};
 //! use zbus::{fdo::Result, Connection};
 //!
 //! fn main() -> Result<()> {

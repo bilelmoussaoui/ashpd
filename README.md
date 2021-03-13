@@ -9,7 +9,7 @@ It provides an alternative to the C library [https://github.com/flatpak/libporta
 
 ```rust
 use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
-use ashpd::{RequestProxy, Response, WindowIdentifier};
+use ashpd::{Response, WindowIdentifier};
 use zbus::fdo::Result;
 
 fn main() -> Result<()> {

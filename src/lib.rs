@@ -8,7 +8,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
-//! use ashpd::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {
