@@ -8,18 +8,18 @@
 //!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
 //! };
-//! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, HandleToken, Response, SessionProxy, WindowIdentifier};
 //! use enumflags2::BitFlags;
 //! use std::convert::TryFrom;
 //! use zbus::{self, fdo::Result};
 //! use zvariant::ObjectPath;
 //!
 //! fn select_sources(
-//!     session_handle: &ObjectPath<'static>,
-//!     proxy: &'static ScreenCastProxy,
+//!     session: &SessionProxy<'c>,
+//!     proxy: &ScreenCastProxy<'c>,
 //! ) -> Result<()> {
 //!     let request = proxy.select_sources(
-//!         session_handle,
+//!         session,
 //!         SelectSourcesOptions::default()
 //!             .multiple(true)
 //!             .cursor_mode(BitFlags::from(CursorMode::Metadata))
@@ -28,7 +28,7 @@
 //!
 //!     request.connect_response(move |response: Response<Basic>| {
 //!         if response.is_ok() {
-//!             start_cast(session_handle, proxy)?;
+//!             start_cast(session, proxy)?;
 //!         }
 //!         Ok(())
 //!     })?;
@@ -36,8 +36,8 @@
 //! }
 //!
 //! fn start_cast(
-//!     session_handle: &ObjectPath<'static>,
-//!     proxy: &'static ScreenCastProxy,
+//!     session: &SessionProxy<'c>,
+//!     proxy: &ScreenCastProxy<'c>,
 //! ) -> Result<()> {
 //!     let request = proxy.start(
 //!         session_handle,
@@ -65,7 +65,8 @@
 //!
 //!     request.connect_response(|response: Response<CreateSession>| {
 //!         let response = response.unwrap();
-//!         select_sources(response.session_handle(), &proxy)?;
+//!         let session = SessionProxy::new_for_path(&connection, response.session_handle())?;
+//!         select_sources(&session, &proxy)?;
 //!         Ok(())
 //!     })?;
 //!     Ok(())
@@ -80,7 +81,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
@@ -259,16 +260,19 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    fn open_pipe_wire_remote(
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
+    fn open_pipe_wire_remote<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
-    ) -> Result<Fd>;
+    ) -> Result<Fd>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Configure what the screen cast session should record.
     /// This method must be called before starting the session.
@@ -279,12 +283,15 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - A `SelectSourcesOptions`.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     #[dbus_proxy(object = "Request")]
-    fn select_sources(&self, session_handle: &ObjectPath<'_>, options: SelectSourcesOptions);
+    fn select_sources<S>(&self, session: &S, options: SelectSourcesOptions)
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Start the screen cast session.
     ///
@@ -295,18 +302,16 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A `StartScreenCastOptions`.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     #[dbus_proxy(object = "Request")]
-    fn start(
-        &self,
-        session_handle: &ObjectPath<'_>,
-        parent_window: WindowIdentifier,
-        options: StartCastOptions,
-    );
+    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: StartCastOptions)
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Available cursor mode.
     #[dbus_proxy(property)]

@@ -47,7 +47,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a create inhibit monitor request.
@@ -212,10 +212,13 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     ///
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    fn query_end_response(&self, session_handle: &ObjectPath<'_>) -> zbus::Result<()>;
+    fn query_end_response<S>(&self, session: &S) -> zbus::Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
