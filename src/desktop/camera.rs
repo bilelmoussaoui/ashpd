@@ -2,7 +2,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::camera::{CameraAccessOptions, CameraProxy};
-//! use ashpd::{BasicResponse as Basic, RequestProxy, Response};
+//! use ashpd::{BasicResponse as Basic, Response};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

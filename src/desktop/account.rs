@@ -2,7 +2,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::account::{AccountProxy, UserInfo, UserInfoOptions};
-//! use ashpd::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

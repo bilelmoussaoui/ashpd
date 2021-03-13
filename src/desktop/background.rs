@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::background::{Background, BackgroundOptions, BackgroundProxy};
-//! use ashpd::{RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! fn main() -> Result<()> {

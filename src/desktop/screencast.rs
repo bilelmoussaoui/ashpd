@@ -8,7 +8,7 @@
 //!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
 //! };
-//! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
 //! use enumflags2::BitFlags;
 //! use std::convert::TryFrom;
 //! use zbus::{self, fdo::Result};

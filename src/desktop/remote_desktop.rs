@@ -5,7 +5,7 @@
 //!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy,
 //!     SelectDevicesOptions, SelectedDevices, StartRemoteOptions,
 //! };
-//! use ashpd::{BasicResponse as Basic, HandleToken, RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
 //! use std::collections::HashMap;
 //! use std::convert::TryFrom;
 //! use zbus::{fdo::Result, Connection};

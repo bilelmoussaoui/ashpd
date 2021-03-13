@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, Response, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zbus::{self, fdo::Result};
@@ -35,7 +35,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use ashpd::{BasicResponse as Basic, RequestProxy, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse as Basic, Response, WindowIdentifier};
 //! use zbus::{self, fdo::Result};
 //!
 //! fn main() -> Result<()> {
