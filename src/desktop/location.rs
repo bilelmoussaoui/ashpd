@@ -215,7 +215,7 @@ trait Location {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] or [`AsyncSessionProxy].
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A `LocationStartOptions`.
     ///

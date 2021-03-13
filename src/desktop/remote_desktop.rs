@@ -80,7 +80,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -221,21 +221,24 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_keyboard_keycode(
+    fn notify_keyboard_keycode<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         keycode: i32,
         state: KeyState,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify keyboard symbol.
     /// May only be called if KEYBOARD access was provided after starting the
@@ -243,21 +246,24 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_keyboard_keysym(
+    fn notify_keyboard_keysym<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         keysym: i32,
         state: KeyState,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify pointer axis.
     /// The axis movement from a "smooth scroll" device, such as a touchpad.
@@ -269,21 +275,24 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_pointer_axis(
+    fn notify_pointer_axis<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         dx: f64,
         dy: f64,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify pointer axis discrete.
     /// May only be called if POINTER access was provided after starting the
@@ -291,20 +300,23 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `axis` - The axis that was scrolled.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_pointer_axis_discrete(
+    fn notify_pointer_axis_discrete<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         axis: Axis,
         steps: i32,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify pointer button.
     /// The pointer button is encoded according to Linux Evdev button codes.
@@ -314,21 +326,24 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_pointer_button(
+    fn notify_pointer_button<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         button: i32,
         state: KeyState,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify about a new relative pointer motion event.
     /// The (dx, dy) vector represents the new pointer position in the streams
@@ -336,21 +351,24 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_pointer_motion(
+    fn notify_pointer_motion<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         dx: f64,
         dy: f64,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify about a new absolute pointer motion event.
     /// The (x, y) position represents the new pointer position in the streams
@@ -358,23 +376,26 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_pointer_motion_absolute(
+    fn notify_pointer_motion_absolute<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         stream: u32,
         x: f64,
         y: f64,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify about a new touch down event.
     /// The (x, y) position represents the new touch point position in the
@@ -385,7 +406,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
@@ -393,17 +414,20 @@ trait RemoteDesktop {
     /// * `y` - Touch down y coordinate.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_touch_down(
+    fn notify_touch_down<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         stream: u32,
         slot: u32,
         x: f64,
         y: f64,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify about a new touch motion event.
     /// The (x, y) position represents where the touch point position in the
@@ -414,7 +438,7 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
@@ -422,17 +446,20 @@ trait RemoteDesktop {
     /// * `y` - Touch motion y coordinate.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_touch_motion(
+    fn notify_touch_motion<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         stream: u32,
         slot: u32,
         x: f64,
         y: f64,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Notify about a new touch up event.
     ///
@@ -441,31 +468,37 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - ?
     /// * `slot` - Touch slot where touch point appeared.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_touch_up(
+    fn notify_touch_up<S>(
         &self,
-        session_handle: &ObjectPath<'_>,
+        session: &S,
         options: HashMap<&str, Value<'_>>,
         slot: u32,
-    ) -> Result<()>;
+    ) -> Result<()>
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Select input devices to remote control.
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `options` - [`SelectDevicesOptions`].
     ///
     /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     #[dbus_proxy(object = "Request")]
-    fn select_devices(&self, session_handle: &ObjectPath<'_>, options: SelectDevicesOptions);
+    fn select_devices<S>(&self, session: &S, options: SelectDevicesOptions)
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     ///  Start the remote desktop session.
     ///
@@ -475,19 +508,17 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session_handle` - A [`SessionProxy`] object path.
+    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `parent_window` - The application window identifier.
     /// * `options` - [`StartRemoteOptions`].
     ///
     /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     #[dbus_proxy(object = "Request")]
-    fn start(
-        &self,
-        session_handle: &ObjectPath<'_>,
-        parent_window: WindowIdentifier,
-        options: StartRemoteOptions,
-    );
+    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: StartRemoteOptions)
+    where
+        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Available source types.
     #[dbus_proxy(property)]
