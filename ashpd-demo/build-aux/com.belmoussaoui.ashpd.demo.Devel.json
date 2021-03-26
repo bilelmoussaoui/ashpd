@@ -1,0 +1,45 @@
+{
+    "app-id": "com.belmoussaoui.ashpd.demo.Devel",
+    "runtime": "org.gnome.Platform",
+    "runtime-version": "40",
+    "sdk": "org.gnome.Sdk",
+    "sdk-extensions": ["org.freedesktop.Sdk.Extension.rust-stable"],
+    "command": "ashpd-demo",
+    "finish-args" : [
+        "--socket=fallback-x11",
+        "--socket=wayland",
+        "--device=dri",
+        "--talk-name=org.a11y.Bus",
+        "--env=RUST_LOG=ashpd-demo=debug",
+        "--env=G_MESSAGES_DEBUG=none"
+    ],
+    "build-options" : {
+        "append-path" : "/usr/lib/sdk/rust-stable/bin",
+        "build-args" : [
+            "--share=network"
+        ],
+        "test-args": [
+            "--socket=x11",
+            "--share=network"
+        ],
+        "env" : {
+            "CARGO_HOME" : "/run/build/ashpd-demo/cargo",
+            "RUST_BACKTRACE": "1",
+            "RUSTFLAGS": "-L=/app/lib"
+        }
+    },
+    "modules": [
+        {
+            "name": "ashpd-demo",
+            "buildsystem": "meson",
+            "run-tests": true,
+            "config-opts": ["-Dprofile=development"],
+            "sources": [
+                {
+                    "type": "dir",
+                    "path": "../"
+                }
+            ]
+        }
+    ]
+}
