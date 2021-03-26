@@ -315,11 +315,11 @@ trait ScreenCast {
 
     /// Available cursor mode.
     #[dbus_proxy(property)]
-    fn available_cursor_modes(&self) -> Result<u32>;
+    fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>>;
 
     /// Available source types.
     #[dbus_proxy(property)]
-    fn available_source_types(&self) -> Result<u32>;
+    fn available_source_types(&self) -> Result<BitFlags<SourceType>>;
 
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]

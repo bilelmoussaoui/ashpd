@@ -214,7 +214,7 @@ trait Flatpak {
 
     /// Flags marking what optional features are available.
     #[dbus_proxy(property)]
-    fn supports(&self) -> Result<u32>;
+    fn supports(&self) -> Result<BitFlags<SupportsFlags>>;
 
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]

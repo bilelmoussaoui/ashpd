@@ -522,7 +522,7 @@ trait RemoteDesktop {
 
     /// Available source types.
     #[dbus_proxy(property)]
-    fn available_device_types(&self) -> Result<u32>;
+    fn available_device_types(&self) -> Result<BitFlags<DeviceType>>;
 
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
