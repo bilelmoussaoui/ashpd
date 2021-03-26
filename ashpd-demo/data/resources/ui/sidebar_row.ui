@@ -1,0 +1,9 @@
+<interface>
+  <template class="SidebarRow" parent="GtkListBoxRow">
+    <child>
+      <object class="GtkLabel" id="label">
+        <property name="halign">start</property>
+      </object>
+    </child>
+  </template>
+</interface>
