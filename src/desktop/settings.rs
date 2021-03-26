@@ -8,7 +8,7 @@
 //!
 //!     println!(
 //!         "{:#?}",
-//!         proxy.read("org.gnome.desktop.interface", "clock-format")?
+//!         proxy.read::<String>("org.gnome.desktop.interface", "clock-format")?
 //!     );
 //!     println!("{:#?}", proxy.read_all(&["org.gnome.desktop.interface"])?);
 //!
@@ -22,9 +22,9 @@
 //! }
 //! ```
 
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryFrom};
 
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
@@ -93,7 +93,9 @@ trait Settings {
     ///
     /// * `namespace` - Namespace to look up key in.
     /// * `key` - The key to get.
-    fn read(&self, namespace: &str, key: &str) -> zbus::Result<zvariant::OwnedValue>;
+    fn read<T>(&self, namespace: &str, key: &str) -> zbus::Result<T>
+    where
+        T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type;
 
     #[dbus_proxy(signal)]
     /// Signal emitted when a setting changes.
