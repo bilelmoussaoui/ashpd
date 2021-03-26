@@ -14,14 +14,20 @@ use zvariant_derive::Type;
 ///
 /// [`RequestProxy`]: ./struct.RequestProxy.html
 #[derive(Debug)]
-pub enum Response<T> {
+pub enum Response<T>
+where
+    T: DeserializeOwned + zvariant::Type,
+{
     /// Success, the request is carried out.
     Ok(T),
     /// The user cancelled the request or something else happened.
     Err(ResponseError),
 }
 
-impl<T> Response<T> {
+impl<T> Response<T>
+where
+    T: DeserializeOwned + zvariant::Type,
+{
     /// Whether the request was successful.
     pub fn is_ok(&self) -> bool {
         matches!(self, Response::Ok(_))
@@ -45,7 +51,10 @@ impl<T> Response<T> {
     }
 }
 
-impl<T> zvariant::Type for Response<T> {
+impl<T> zvariant::Type for Response<T>
+where
+    T: DeserializeOwned + zvariant::Type,
+{
     fn signature() -> zvariant::Signature<'static> {
         <(ResponseType, OwnedValue)>::signature()
     }
