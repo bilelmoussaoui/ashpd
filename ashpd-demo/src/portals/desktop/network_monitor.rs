@@ -57,13 +57,17 @@ mod imp {
     impl ObjectImpl for NetworkMonitorPage {
         fn constructed(&self, obj: &Self::Type) {
             let proxy = NetworkMonitorProxy::new(&self.connection).unwrap();
-            let network_status = proxy.get_status().unwrap();
+            obj.set_sensitive(!ashpd::is_sandboxed());
 
-            self.network_available
-                .set_text(&network_status.available.to_string());
-            self.metered.set_text(&network_status.metered.to_string());
-            self.connectivity
-                .set_text(&network_status.connectivity.to_string());
+            /// This portal is not available inside a sandbox
+            if !ashpd::is_sandboxed() {
+                self.network_available
+                    .set_text(&proxy.get_available().unwrap().to_string());
+                self.metered
+                    .set_text(&proxy.get_metered().unwrap().to_string());
+                self.connectivity
+                    .set_text(&proxy.get_connectivity().unwrap().to_string());
+            }
         }
     }
     impl WidgetImpl for NetworkMonitorPage {}

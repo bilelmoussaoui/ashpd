@@ -9,7 +9,7 @@
         <property name="label">Take a Screenshot</property>
         <property name="halign">start</property>
         <style>
-          <class name="title-2"/>
+          <class name="title-1"/>
         </style>
       </object>
     </child>
@@ -53,8 +53,9 @@
       <object class="GtkLabel">
         <property name="label">Color Picker</property>
         <property name="halign">start</property>
+        <property name="margin-top">18</property>
         <style>
-          <class name="title-2"/>
+          <class name="title-1"/>
         </style>
       </object>
     </child>

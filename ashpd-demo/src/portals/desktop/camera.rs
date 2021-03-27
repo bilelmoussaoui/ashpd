@@ -1,5 +1,9 @@
-use ashpd::desktop::camera::{CameraAccessOptions, CameraProxy};
 use ashpd::zbus;
+use ashpd::{
+    desktop::camera::{CameraAccessOptions, CameraProxy},
+    desktop::device::{AccessDeviceOptions, Device, DeviceProxy},
+    BasicResponse,
+};
 use ashpd::{RequestProxy, Response, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
@@ -35,9 +39,13 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.install_action("camera.select", None, move |page, _action, _target| {
-                //page.pick_color().unwrap();
-            });
+            klass.install_action(
+                "camera.start-stream",
+                None,
+                move |page, _action, _target| {
+                    page.start_stream().unwrap();
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -64,5 +72,22 @@ glib::wrapper! {
 impl CameraPage {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a CameraPage")
+    }
+
+    pub fn start_stream(&self) -> zbus::fdo::Result<()> {
+        let self_ = imp::CameraPage::from_instance(self);
+
+        let proxy = CameraProxy::new(&self_.connection)?;
+        let request = proxy.access_camera(CameraAccessOptions::default())?;
+
+        // let fd = proxy.open_pipe_wire_remote(std::collections::HashMap::new())?;
+        request.connect_response(|response: Response<BasicResponse>| {
+            println!("{:#?}", response);
+            if let Response::Ok(info) = response {
+                println!("{:#?}", info);
+            }
+            Ok(())
+        })?;
+        Ok(())
     }
 }

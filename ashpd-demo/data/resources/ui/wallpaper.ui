@@ -9,13 +9,13 @@
         <property name="label">Wallpaper</property>
         <property name="halign">start</property>
         <style>
-          <class name="title-2"/>
+          <class name="title-1"/>
         </style>
       </object>
     </child>
     <child>
       <object class="GtkLabel">
-        <property name="label">Request user informations</property>
+        <property name="label">Set a file as a wallpaper</property>
         <property name="halign">start</property>
       </object>
     </child>
@@ -30,19 +30,10 @@
     </child>
     <child>
       <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <property name="spacing">12</property>
+        <property name="orientation">horizontal</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Reason</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkTextView" id="reason">
-            <style>
-              <class name="custom-text-view" />
-            </style>
+          <object class="GtkCheckButton">
+            <property name="label">Show Preview</property>
           </object>
         </child>
       </object>

@@ -21,6 +21,7 @@ run_command(
 sources = files(
   'portals/desktop/account.rs',
   'portals/desktop/camera.rs',
+  'portals/desktop/device.rs',
   'portals/desktop/mod.rs',
   'portals/desktop/network_monitor.rs',
   'portals/desktop/screenshot.rs',

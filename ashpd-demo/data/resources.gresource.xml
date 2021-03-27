@@ -7,6 +7,7 @@
 
         <file compressed="true" preprocess="xml-stripblanks" alias="account.ui">resources/ui/account.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="camera.ui">resources/ui/camera.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="device.ui">resources/ui/device.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="network_monitor.ui">resources/ui/network_monitor.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screenshot.ui">resources/ui/screenshot.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="wallpaper.ui">resources/ui/wallpaper.ui</file>

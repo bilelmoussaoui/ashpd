@@ -9,7 +9,7 @@
         <property name="label">Camera</property>
         <property name="halign">start</property>
         <style>
-          <class name="title-2"/>
+          <class name="title-1"/>
         </style>
       </object>
     </child>
@@ -35,7 +35,7 @@
       <object class="GtkButton">
         <property name="label">Start a stream over PipeWire</property>
         <property name="halign">start</property>
-        <property name="action-name">camera.select</property>
+        <property name="action-name">camera.start-stream</property>
       </object>
     </child>
   </template>
