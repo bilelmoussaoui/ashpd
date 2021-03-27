@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="ScreenshotPage" parent="GtkBox">
     <property name="hexpand">True</property>
@@ -46,8 +47,6 @@
       <object class="GtkButton">
         <property name="label">Take a Screenshot</property>
         <property name="halign">start</property>
-        <property name="margin-top">18</property>
-        <property name="margin-bottom">18</property>
       </object>
     </child>
     <child>
@@ -69,8 +68,6 @@
       <object class="GtkButton">
         <property name="label">Pick a Color</property>
         <property name="halign">start</property>
-        <property name="margin-top">18</property>
-        <property name="margin-bottom">18</property>
         <property name="action-name">screenshot.pick-color</property>
       </object>
     </child>

@@ -19,8 +19,12 @@ run_command(
 )
 
 sources = files(
+  'portals/desktop/account.rs',
+  'portals/desktop/camera.rs',
   'portals/desktop/mod.rs',
+  'portals/desktop/network_monitor.rs',
   'portals/desktop/screenshot.rs',
+  'portals/desktop/wallpaper.rs',
   'application.rs',
   'config.rs',
   'main.rs',

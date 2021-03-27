@@ -1,4 +1,5 @@
-.title-header{
-  font-size: 36px;
-  font-weight: bold;
+.custom-text-view {
+    border: 1px solid @borders;
+    border-radius: 8px;
+    padding: 12px;
 }
