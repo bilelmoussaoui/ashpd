@@ -1,6 +1,8 @@
 use crate::application::ExampleApplication;
 use crate::config::{APP_ID, PROFILE};
-use crate::portals::desktop::ScreenshotPage;
+use crate::portals::desktop::{
+    AccountPage, CameraPage, NetworkMonitorPage, ScreenshotPage, WallpaperPage,
+};
 use crate::sidebar_row::SidebarRow;
 use glib::signal::Inhibit;
 use gtk::subclass::prelude::*;
@@ -45,6 +47,10 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             SidebarRow::static_type();
+            CameraPage::static_type();
+            WallpaperPage::static_type();
+            AccountPage::static_type();
+            NetworkMonitorPage::static_type();
             Self::bind_template(klass);
         }
 
@@ -68,10 +74,10 @@ mod imp {
             }
 
             self.listbox
-                .connect_row_selected(clone!(@weak obj as win => move |_, row| {
+                .connect_row_activated(clone!(@weak obj as win => move |_, row| {
                     win.sidebar_row_selected(row);
                 }));
-
+            self.stack.set_visible_child_name("welcome");
             // load latest window state
             obj.load_window_size();
         }
@@ -135,12 +141,9 @@ impl ExampleApplicationWindow {
         }
     }
 
-    pub fn sidebar_row_selected(&self, row: Option<&gtk::ListBoxRow>) {
+    pub fn sidebar_row_selected(&self, row: &gtk::ListBoxRow) {
         let self_ = imp::ExampleApplicationWindow::from_instance(self);
-        let page_name = row
-            .then(|r| r.downcast_ref::<SidebarRow>().unwrap().name())
-            .unwrap_or("welcome");
-
-        self_.stack.set_visible_child_name(page_name);
+        let page_name = row.downcast_ref::<SidebarRow>().unwrap().name();
+        self_.stack.set_visible_child_name(&page_name);
     }
 }

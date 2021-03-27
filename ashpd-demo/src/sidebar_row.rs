@@ -89,10 +89,10 @@ impl SidebarRow {
     }
 
     pub fn name(&self) -> String {
-        self.get_property("name")
+        self.get_property("page-name")
             .unwrap()
             .get::<String>()
             .unwrap()
-            .unwrap()
+            .unwrap_or_else(|| "welcome".to_string())
     }
 }

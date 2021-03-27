@@ -1,17 +1,20 @@
 use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
 use ashpd::zbus;
-use ashpd::{Response, WindowIdentifier};
+use ashpd::{RequestProxy, Response, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
+use gtk::subclass::prelude::*;
 
 mod imp {
     use super::*;
-    use gtk::subclass::prelude::*;
     use gtk::CompositeTemplate;
+    use std::cell::RefCell;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screenshot.ui")]
-    pub struct ScreenshotPage {}
+    pub struct ScreenshotPage {
+        pub request: RefCell<Option<zbus::Connection>>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for ScreenshotPage {
@@ -49,9 +52,12 @@ impl ScreenshotPage {
     }
 
     pub fn pick_color(&self) -> zbus::fdo::Result<()> {
+        let self_ = imp::ScreenshotPage::from_instance(self);
+
         let connection = zbus::Connection::new_session()?;
         let proxy = ScreenshotProxy::new(&connection)?;
         let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
+        println!("{:#?}", request.path());
         request.connect_response(|response: Response<Color>| {
             println!("{:#?}", response);
             if let Response::Ok(color) = response {
@@ -59,6 +65,7 @@ impl ScreenshotPage {
             }
             Ok(())
         })?;
+        self_.request.replace(Some(connection));
         Ok(())
     }
 }
