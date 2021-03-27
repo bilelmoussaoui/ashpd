@@ -55,6 +55,13 @@ mod window_identifier;
 pub use zbus;
 pub use zvariant;
 
+/// Check whether the application is running inside a sandbox.
+///
+/// **Note** The check is very stupid as is for now.
+pub fn is_sandboxed() -> bool {
+    std::path::Path::new("/.flatpak-info").exists()
+}
+
 pub use self::handle_token::HandleToken;
 pub use self::request::{AsyncRequestProxy, BasicResponse, RequestProxy, Response, ResponseError};
 pub use self::session::{AsyncSessionProxy, SessionProxy};
