@@ -22,6 +22,7 @@
 //! }
 //! ```
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::fmt;
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -48,6 +49,18 @@ pub enum Connectivity {
     CaptivePortal = 3,
     /// The host connected to a network, and can reach the full internet.
     FullNetwork = 4,
+}
+
+impl fmt::Display for Connectivity {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let connectivity = match self {
+            Self::Local => "local",
+            Self::Limited => "limited",
+            Self::CaptivePortal => "captive portal",
+            Self::FullNetwork => "full network",
+        };
+        f.write_str(connectivity)
+    }
 }
 
 #[dbus_proxy(
