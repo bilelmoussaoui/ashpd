@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="AccountPage" parent="GtkBox">
+  <template class="DevicePage" parent="GtkBox">
     <property name="hexpand">True</property>
     <property name="spacing">12</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkLabel">
-        <property name="label">User information</property>
+        <property name="label">Device Access</property>
         <property name="halign">start</property>
         <style>
           <class name="title-1"/>
@@ -15,7 +15,7 @@
     </child>
     <child>
       <object class="GtkLabel">
-        <property name="label">Request user informations</property>
+        <property name="label">Take a screenshot of a window or an area</property>
         <property name="halign">start</property>
       </object>
     </child>
@@ -30,28 +30,28 @@
     </child>
     <child>
       <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <property name="spacing">12</property>
+        <property name="orientation">horizontal</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Reason</property>
-            <property name="halign">start</property>
+          <object class="GtkCheckButton">
+            <property name="label">Camera</property>
           </object>
         </child>
         <child>
-          <object class="GtkTextView" id="reason">
-            <style>
-              <class name="custom-text-view" />
-            </style>
+          <object class="GtkCheckButton">
+            <property name="label">Headphones</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton">
+            <property name="label">Microphone</property>
           </object>
         </child>
       </object>
     </child>
     <child>
       <object class="GtkButton">
-        <property name="label">Request</property>
+        <property name="label">Request Access</property>
         <property name="halign">start</property>
-        <property name="action-name">account.information</property>
       </object>
     </child>
   </template>

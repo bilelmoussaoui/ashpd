@@ -11,7 +11,8 @@
         "--device=dri",
         "--talk-name=org.a11y.Bus",
         "--env=RUST_LOG=ashpd-demo=debug",
-        "--env=G_MESSAGES_DEBUG=none"
+        "--env=G_MESSAGES_DEBUG=none",
+        "--share=network"
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",

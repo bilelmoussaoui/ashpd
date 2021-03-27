@@ -1,7 +1,7 @@
 use crate::application::ExampleApplication;
 use crate::config::{APP_ID, PROFILE};
 use crate::portals::desktop::{
-    AccountPage, CameraPage, NetworkMonitorPage, ScreenshotPage, WallpaperPage,
+    AccountPage, CameraPage, DevicePage, NetworkMonitorPage, ScreenshotPage, WallpaperPage,
 };
 use crate::sidebar_row::SidebarRow;
 use glib::signal::Inhibit;
@@ -49,6 +49,7 @@ mod imp {
             SidebarRow::static_type();
             CameraPage::static_type();
             WallpaperPage::static_type();
+            DevicePage::static_type();
             AccountPage::static_type();
             NetworkMonitorPage::static_type();
             Self::bind_template(klass);
