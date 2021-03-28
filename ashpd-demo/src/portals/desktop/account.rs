@@ -8,19 +8,20 @@ use gtk::subclass::prelude::*;
 mod imp {
     use super::*;
     use gtk::CompositeTemplate;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/account.ui")]
     pub struct AccountPage {
         #[template_child]
-        pub reason: TemplateChild<gtk::TextView>,
+        pub reason: TemplateChild<gtk::Entry>,
     }
 
     #[glib::object_subclass]
     impl ObjectSubclass for AccountPage {
         const NAME: &'static str = "AccountPage";
         type Type = super::AccountPage;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -39,11 +40,11 @@ mod imp {
     }
     impl ObjectImpl for AccountPage {}
     impl WidgetImpl for AccountPage {}
-    impl BoxImpl for AccountPage {}
+    impl BinImpl for AccountPage {}
 }
 
 glib::wrapper! {
-    pub struct AccountPage(ObjectSubclass<imp::AccountPage>) @extends gtk::Widget, gtk::Box;
+    pub struct AccountPage(ObjectSubclass<imp::AccountPage>) @extends gtk::Widget, adw::Bin;
 }
 
 impl AccountPage {
@@ -53,9 +54,7 @@ impl AccountPage {
 
     pub fn get_user_information(&self) -> zbus::fdo::Result<()> {
         let self_ = imp::AccountPage::from_instance(self);
-        let buffer = self_.reason.get_buffer();
-        let bounds = buffer.get_bounds();
-        let reason = buffer.get_text(&bounds.0, &bounds.1, true);
+        let reason = self_.reason.get_text();
         let options = UserInfoOptions::default().reason(&reason);
 
         let connection = zbus::Connection::new_session()?;

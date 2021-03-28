@@ -8,10 +8,15 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="account.ui">resources/ui/account.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="camera.ui">resources/ui/camera.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="device.ui">resources/ui/device.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="location.ui">resources/ui/location.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="network_monitor.ui">resources/ui/network_monitor.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="notification.ui">resources/ui/notification.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screenshot.ui">resources/ui/screenshot.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="wallpaper.ui">resources/ui/wallpaper.ui</file>
 
         <file compressed="true" alias="style.css">resources/style.css</file>
+    </gresource>
+    <gresource prefix="/com/belmoussaoui/ashpd/demo/icons/16x16/actions/">
+        <file compressed="true" preprocess="xml-stripblanks" alias="portals-symbolic.svg">resources/portals-symbolic.svg</file>
     </gresource>
 </gresources>

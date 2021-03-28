@@ -8,7 +8,7 @@ use gtk::subclass::prelude::*;
 mod imp {
     use super::*;
     use gtk::CompositeTemplate;
-    use std::cell::RefCell;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/network_monitor.ui")]
@@ -37,7 +37,7 @@ mod imp {
     impl ObjectSubclass for NetworkMonitorPage {
         const NAME: &'static str = "NetworkMonitorPage";
         type Type = super::NetworkMonitorPage;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -71,11 +71,11 @@ mod imp {
         }
     }
     impl WidgetImpl for NetworkMonitorPage {}
-    impl BoxImpl for NetworkMonitorPage {}
+    impl BinImpl for NetworkMonitorPage {}
 }
 
 glib::wrapper! {
-    pub struct NetworkMonitorPage(ObjectSubclass<imp::NetworkMonitorPage>) @extends gtk::Widget, gtk::Box;
+    pub struct NetworkMonitorPage(ObjectSubclass<imp::NetworkMonitorPage>) @extends gtk::Widget, adw::Bin;
 }
 
 impl NetworkMonitorPage {

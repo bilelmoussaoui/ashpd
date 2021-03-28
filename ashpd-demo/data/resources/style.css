@@ -1,5 +1,4 @@
-.custom-text-view {
-    border: 1px solid @borders;
-    border-radius: 8px;
-    padding: 12px;
+row:selected{
+    background: @theme_selected_bg_color;
+    color: @theme_selected_fg_color;
 }

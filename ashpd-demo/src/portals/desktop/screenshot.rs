@@ -8,19 +8,18 @@ use gtk::subclass::prelude::*;
 mod imp {
     use super::*;
     use gtk::CompositeTemplate;
-    use std::cell::RefCell;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screenshot.ui")]
     pub struct ScreenshotPage {
-        pub request: RefCell<Option<zbus::Connection>>,
     }
 
     #[glib::object_subclass]
     impl ObjectSubclass for ScreenshotPage {
         const NAME: &'static str = "ScreenshotPage";
         type Type = super::ScreenshotPage;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -39,11 +38,11 @@ mod imp {
     }
     impl ObjectImpl for ScreenshotPage {}
     impl WidgetImpl for ScreenshotPage {}
-    impl BoxImpl for ScreenshotPage {}
+    impl BinImpl for ScreenshotPage {}
 }
 
 glib::wrapper! {
-    pub struct ScreenshotPage(ObjectSubclass<imp::ScreenshotPage>) @extends gtk::Widget, gtk::Box;
+    pub struct ScreenshotPage(ObjectSubclass<imp::ScreenshotPage>) @extends gtk::Widget, adw::Bin;
 }
 
 impl ScreenshotPage {
@@ -57,7 +56,6 @@ impl ScreenshotPage {
         let connection = zbus::Connection::new_session()?;
         let proxy = ScreenshotProxy::new(&connection)?;
         let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
-        println!("{:#?}", request.path());
         request.connect_response(|response: Response<Color>| {
             println!("{:#?}", response);
             if let Response::Ok(color) = response {
@@ -65,7 +63,6 @@ impl ScreenshotPage {
             }
             Ok(())
         })?;
-        self_.request.replace(Some(connection));
         Ok(())
     }
 }

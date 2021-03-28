@@ -7,7 +7,7 @@ use gtk::subclass::prelude::*;
 mod imp {
     use super::*;
     use gtk::CompositeTemplate;
-    use std::cell::RefCell;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/device.ui")]
@@ -17,7 +17,7 @@ mod imp {
     impl ObjectSubclass for DevicePage {
         const NAME: &'static str = "DevicePage";
         type Type = super::DevicePage;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -36,11 +36,11 @@ mod imp {
         }
     }
     impl WidgetImpl for DevicePage {}
-    impl BoxImpl for DevicePage {}
+    impl BinImpl for DevicePage {}
 }
 
 glib::wrapper! {
-    pub struct DevicePage(ObjectSubclass<imp::DevicePage>) @extends gtk::Widget, gtk::Box;
+    pub struct DevicePage(ObjectSubclass<imp::DevicePage>) @extends gtk::Widget, adw::Bin;
 }
 
 impl DevicePage {

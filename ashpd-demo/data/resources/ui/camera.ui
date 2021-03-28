@@ -1,41 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="CameraPage" parent="GtkBox">
-    <property name="hexpand">True</property>
-    <property name="spacing">12</property>
-    <property name="orientation">vertical</property>
-    <child>
-      <object class="GtkLabel">
-        <property name="label">Camera</property>
-        <property name="halign">start</property>
-        <style>
-          <class name="title-1"/>
-        </style>
-      </object>
-    </child>
+  <template class="CameraPage" parent="AdwBin">
     <child>
       <object class="GtkBox">
-        <property name="orientation">horizontal</property>
+        <property name="hexpand">True</property>
         <property name="spacing">12</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkLabel">
-            <property name="label">Is a camera available?</property>
+            <property name="label">Camera</property>
             <property name="halign">start</property>
+            <style>
+              <class name="title-2"/>
+            </style>
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="camera_available">
-            <property name="label">Undefined</property>
-            <property name="halign">start</property>
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Is a camera available?</property>
+                <property name="halign">start</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="camera_available">
+                <property name="label">Undefined</property>
+                <property name="halign">start</property>
+              </object>
+            </child>
           </object>
         </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkButton">
-        <property name="label">Start a stream over PipeWire</property>
-        <property name="halign">start</property>
-        <property name="action-name">camera.start-stream</property>
+        <child>
+          <object class="GtkButton">
+            <property name="label">Start a stream over PipeWire</property>
+            <property name="halign">start</property>
+            <property name="action-name">camera.start-stream</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>

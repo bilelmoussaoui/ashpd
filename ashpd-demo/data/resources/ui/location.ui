@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="ScreenshotPage" parent="AdwBin">
+  <template class="LocationPage" parent="AdwBin">
     <child>
       <object class="GtkBox">
         <property name="hexpand">True</property>
@@ -8,7 +8,7 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkLabel">
-            <property name="label">Screenshot</property>
+            <property name="label">Location</property>
             <property name="halign">start</property>
             <style>
               <class name="title-2"/>
@@ -17,7 +17,7 @@
         </child>
         <child>
           <object class="GtkLabel">
-            <property name="label">Take a screenshot of a window or an area</property>
+            <property name="label">Request the user location</property>
             <property name="halign">start</property>
           </object>
         </child>
@@ -36,10 +36,10 @@
             <property name="selection-mode">none</property>
             <child>
               <object class="AdwActionRow">
-                <property name="title">Interactive</property>
-                <property name="activatable-widget">interactive_switch</property>
+                <property name="title">Distance Treshold</property>
+                <property name="activatable-widget">distance_spin</property>
                 <child>
-                  <object class="GtkSwitch" id="interactive_switch">
+                  <object class="GtkSpinButton" id="distance_spin">
                     <property name="valign">center</property>
                   </object>
                 </child>
@@ -47,10 +47,21 @@
             </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title">Modal</property>
-                <property name="activatable-widget">modal_switch</property>
+                <property name="title">Time Treshold</property>
+                <property name="activatable-widget">time_spin</property>
                 <child>
-                  <object class="GtkSwitch" id="modal_switch">
+                  <object class="GtkSpinButton" id="time_spin">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Accuracy</property>
+                <property name="activatable-widget">accuracy_combo</property>
+                <child>
+                  <object class="GtkComboBox" id="accuracy_combo">
                     <property name="valign">center</property>
                   </object>
                 </child>
@@ -63,31 +74,8 @@
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Take a Screenshot</property>
+            <property name="label">Locate</property>
             <property name="halign">start</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Color Picker</property>
-            <property name="halign">start</property>
-            <property name="margin-top">18</property>
-            <style>
-              <class name="title-2"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Ask the compositor to pick a color</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Pick a Color</property>
-            <property name="halign">start</property>
-            <property name="action-name">screenshot.pick-color</property>
           </object>
         </child>
       </object>
