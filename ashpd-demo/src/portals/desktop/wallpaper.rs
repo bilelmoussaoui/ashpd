@@ -8,6 +8,7 @@ mod imp {
     use super::*;
     use gtk::CompositeTemplate;
     use std::cell::RefCell;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/wallpaper.ui")]
@@ -17,7 +18,7 @@ mod imp {
     impl ObjectSubclass for WallpaperPage {
         const NAME: &'static str = "WallpaperPage";
         type Type = super::WallpaperPage;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -32,11 +33,11 @@ mod imp {
     }
     impl ObjectImpl for WallpaperPage {}
     impl WidgetImpl for WallpaperPage {}
-    impl BoxImpl for WallpaperPage {}
+    impl BinImpl for WallpaperPage {}
 }
 
 glib::wrapper! {
-    pub struct WallpaperPage(ObjectSubclass<imp::WallpaperPage>) @extends gtk::Widget, gtk::Box;
+    pub struct WallpaperPage(ObjectSubclass<imp::WallpaperPage>) @extends gtk::Widget, adw::Bin;
 }
 
 impl WallpaperPage {

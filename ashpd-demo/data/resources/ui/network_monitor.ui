@@ -1,77 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="NetworkMonitorPage" parent="GtkBox">
-    <property name="hexpand">True</property>
-    <property name="spacing">12</property>
-    <property name="orientation">vertical</property>
-    <child>
-      <object class="GtkLabel">
-        <property name="label">Network Monitor</property>
-        <property name="halign">start</property>
-        <style>
-          <class name="title-1"/>
-        </style>
-      </object>
-    </child>
+  <template class="NetworkMonitorPage" parent="AdwBin">
     <child>
       <object class="GtkBox">
-        <property name="orientation">horizontal</property>
+        <property name="hexpand">True</property>
         <property name="spacing">12</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkLabel">
-            <property name="label">Is Available?</property>
+            <property name="label">Network Monitor</property>
             <property name="halign">start</property>
+            <style>
+              <class name="title-2"/>
+            </style>
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="network_available">
-            <property name="label">Undefined</property>
-            <property name="halign">start</property>
+          <object class="GtkListBox">
+            <property name="selection-mode">none</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Is Available?</property>
+                <child>
+                  <object class="GtkLabel" id="network_available">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Is Metered?</property>
+                <child>
+                  <object class="GtkLabel" id="metered">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Connectivity</property>
+                <child>
+                  <object class="GtkLabel" id="connectivity">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <style>
+              <class name="content"/>
+            </style>
           </object>
         </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkBox">
-        <property name="orientation">horizontal</property>
-        <property name="spacing">12</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Is Metered?</property>
+          <object class="GtkButton">
+            <property name="label">Start a stream over PipeWire</property>
             <property name="halign">start</property>
+            <property name="action-name">camera.select</property>
           </object>
         </child>
-        <child>
-          <object class="GtkLabel" id="metered">
-            <property name="label">Undefined</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkBox">
-        <property name="orientation">horizontal</property>
-        <property name="spacing">12</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Connectivity</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="connectivity">
-            <property name="label">Undefined</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkButton">
-        <property name="label">Start a stream over PipeWire</property>
-        <property name="halign">start</property>
-        <property name="action-name">camera.select</property>
       </object>
     </child>
   </template>

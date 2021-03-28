@@ -1,5 +1,5 @@
-use crate::config;
-use crate::window::ExampleApplicationWindow;
+use std::env;
+
 use gio::ApplicationFlags;
 use glib::clone;
 use glib::WeakRef;
@@ -9,7 +9,9 @@ use gtk::{gdk, gio, glib};
 use gtk_macros::action;
 use log::{debug, info};
 use once_cell::sync::OnceCell;
-use std::env;
+
+use crate::config;
+use crate::window::ExampleApplicationWindow;
 
 mod imp {
     use super::*;
@@ -39,10 +41,6 @@ mod imp {
                 window.present();
                 return;
             }
-
-            app.set_resource_base_path(Some("/com/belmoussaoui/ashpd/demo/"));
-            app.setup_css();
-
             let window = ExampleApplicationWindow::new(app);
             self.window
                 .set(window.downgrade())
@@ -57,6 +55,20 @@ mod imp {
         fn startup(&self, app: &Self::Type) {
             debug!("GtkApplication<ExampleApplication>::startup");
             self.parent_startup(app);
+            adw::init();
+            let provider = gtk::CssProvider::new();
+            provider.load_from_resource("/com/belmoussaoui/ashpd/demo/style.css");
+            app.set_resource_base_path(Some("/com/belmoussaoui/ashpd/demo/"));
+
+            if let Some(ref display) = gtk::gdk::Display::get_default() {
+                let theme = gtk::IconTheme::get_for_display(display).unwrap();
+                theme.add_resource_path("/com/belmoussaoui/ashpd/demo/icons/");
+                gtk::StyleContext::add_provider_for_display(
+                    &display,
+                    &provider,
+                    gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+                );
+            }
         }
     }
 
@@ -72,7 +84,7 @@ impl ExampleApplication {
     pub fn new() -> Self {
         glib::Object::new(&[
             ("application-id", &Some(config::APP_ID)),
-            ("flags", &ApplicationFlags::empty()),
+            ("flags", &ApplicationFlags::FLAGS_NONE),
         ])
         .expect("Application initialization failed...")
     }
@@ -109,18 +121,6 @@ impl ExampleApplication {
     fn setup_accels(&self) {
         self.set_accels_for_action("app.quit", &["<primary>q"]);
         self.set_accels_for_action("win.show-help-overlay", &["<primary>question"]);
-    }
-
-    fn setup_css(&self) {
-        let provider = gtk::CssProvider::new();
-        provider.load_from_resource("/com/belmoussaoui/ashpd/demo/style.css");
-        if let Some(display) = gdk::Display::get_default() {
-            gtk::StyleContext::add_provider_for_display(
-                &display,
-                &provider,
-                gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-            );
-        }
     }
 
     fn show_about_dialog(&self) {

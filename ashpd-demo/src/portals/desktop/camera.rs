@@ -12,7 +12,7 @@ use gtk::subclass::prelude::*;
 mod imp {
     use super::*;
     use gtk::CompositeTemplate;
-    use std::cell::RefCell;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/camera.ui")]
@@ -35,7 +35,7 @@ mod imp {
     impl ObjectSubclass for CameraPage {
         const NAME: &'static str = "CameraPage";
         type Type = super::CameraPage;
-        type ParentType = gtk::Box;
+        type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -62,11 +62,11 @@ mod imp {
         }
     }
     impl WidgetImpl for CameraPage {}
-    impl BoxImpl for CameraPage {}
+    impl BinImpl for CameraPage {}
 }
 
 glib::wrapper! {
-    pub struct CameraPage(ObjectSubclass<imp::CameraPage>) @extends gtk::Widget, gtk::Box;
+    pub struct CameraPage(ObjectSubclass<imp::CameraPage>) @extends gtk::Widget, adw::Bin;
 }
 
 impl CameraPage {

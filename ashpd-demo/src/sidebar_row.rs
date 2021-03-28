@@ -55,7 +55,7 @@ mod imp {
         }
         fn get_property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.get_name() {
-                "label" => self.label.get().to_value(),
+                "label" => self.label.get_label().to_value(),
                 "page-name" => self.name.borrow().to_value(),
                 _ => unimplemented!(),
             }
@@ -86,6 +86,13 @@ glib::wrapper! {
 impl SidebarRow {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a SidebarRow")
+    }
+
+    pub fn title(&self) -> Option<String> {
+        self.get_property("label")
+            .unwrap()
+            .get::<String>()
+            .unwrap()
     }
 
     pub fn name(&self) -> String {

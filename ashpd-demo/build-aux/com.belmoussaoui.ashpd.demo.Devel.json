@@ -24,12 +24,29 @@
             "--share=network"
         ],
         "env" : {
-            "CARGO_HOME" : "/run/build/ashpd-demo/cargo",
-            "RUST_BACKTRACE": "1",
-            "RUSTFLAGS": "-L=/app/lib"
+            "RUST_BACKTRACE": "1"
         }
     },
     "modules": [
+        {
+            "name": "libadwaita",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dintrospection=disabled",
+                "-Dgtk_doc=false",
+                "-Dtests=false",
+                "-Dexamples=false",
+                "-Dvapi=false",
+                "-Dglade_catalog=disabled"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://gitlab.gnome.org/exalm/libadwaita.git",
+                    "branch": "main"
+                }
+            ]
+        },
         {
             "name": "ashpd-demo",
             "buildsystem": "meson",
