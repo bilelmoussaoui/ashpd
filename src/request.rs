@@ -195,7 +195,11 @@ impl From<ResponseError> for ResponseType {
 /// This ensures that applications will work with both old and new versions of
 /// xdg-desktop-portal.
 
-#[dbus_proxy(default_path = "/org/freedesktop/portal/desktop")]
+#[dbus_proxy(
+    default_service = "org.freedesktop.portal.Desktop",
+    interface = "org.freedesktop.portal.Request",
+    default_path = "/org/freedesktop/portal/desktop"
+)]
 trait Request {
     #[dbus_proxy(signal)]
     /// A signal emitted when the portal interaction is over.

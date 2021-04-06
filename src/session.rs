@@ -29,7 +29,11 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// A client who started a session vanishing from the D-Bus is equivalent to
 /// closing all active sessions made by said client.
 
-#[dbus_proxy(default_path = "/org/freedesktop/portal/desktop")]
+#[dbus_proxy(
+    default_service = "org.freedesktop.portal.Desktop",
+    interface = "org.freedesktop.portal.Session",
+    default_path = "/org/freedesktop/portal/desktop"
+)]
 trait Session {
     #[dbus_proxy(signal)]
     /// Emitted when a session is closed.
