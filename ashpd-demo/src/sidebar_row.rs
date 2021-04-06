@@ -2,12 +2,14 @@ use gtk::glib;
 use gtk::prelude::*;
 
 mod imp {
-    use super::*;
+    use std::cell::RefCell;
+
     use glib::{ParamFlags, ParamSpec, Value};
     use gtk::subclass::prelude::*;
     use gtk::CompositeTemplate;
     use once_cell::sync::Lazy;
-    use std::cell::RefCell;
+
+    use super::*;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/sidebar_row.ui")]
@@ -89,10 +91,7 @@ impl SidebarRow {
     }
 
     pub fn title(&self) -> Option<String> {
-        self.get_property("label")
-            .unwrap()
-            .get::<String>()
-            .unwrap()
+        self.get_property("label").unwrap().get::<String>().unwrap()
     }
 
     pub fn name(&self) -> String {
