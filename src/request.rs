@@ -74,7 +74,7 @@ where
         where
             T: Deserialize<'de>,
         {
-            type Value = (ResponseType, T);
+            type Value = (ResponseType, Option<T>);
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 write!(
@@ -90,27 +90,33 @@ where
                 let type_: ResponseType = seq.next_element()?.ok_or_else(|| A::Error::custom(
                     "Failed to deserialize the response. Expected a numeric (u) value as the first item of the returned tuple",
                 ))?;
-                let data: T = seq.next_element()?.ok_or_else(|| A::Error::custom(
-                    "Failed to deserialize the response. Expected a vardict (a{sv}) with the returned results",
-                ))?;
-                Ok((type_, data))
+                if type_ == ResponseType::Success {
+                    let data: T = seq.next_element()?.ok_or_else(|| A::Error::custom(
+                        "Failed to deserialize the response. Expected a vardict (a{sv}) with the returned results",
+                    ))?;
+                    Ok((type_, Some(data)))
+                } else {
+                    Ok((type_, None))
+                }
             }
         }
 
         let visitor = ResponseVisitor::<T>(PhantomData);
-        let response: (ResponseType, T) = deserializer.deserialize_tuple(2, visitor)?;
+        let response: (ResponseType, Option<T>) = deserializer.deserialize_tuple(2, visitor)?;
         Ok(response.into())
     }
 }
 
 #[doc(hidden)]
-impl<T> From<(ResponseType, T)> for Response<T>
+impl<T> From<(ResponseType, Option<T>)> for Response<T>
 where
     T: DeserializeOwned + zvariant::Type,
 {
-    fn from(f: (ResponseType, T)) -> Self {
+    fn from(f: (ResponseType, Option<T>)) -> Self {
         match f.0 {
-            ResponseType::Success => Response::Ok(f.1),
+            ResponseType::Success => {
+                Response::Ok(f.1.expect("Expected a valid response, found nothing."))
+            }
             ResponseType::Cancelled => Response::Err(ResponseError::Cancelled),
             ResponseType::Other => Response::Err(ResponseError::Other),
         }
