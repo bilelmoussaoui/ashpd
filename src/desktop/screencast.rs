@@ -81,7 +81,7 @@ use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
+use crate::{AsyncRequestProxy, AsyncSessionProxy, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
@@ -272,7 +272,7 @@ trait ScreenCast {
         options: HashMap<&str, Value<'_>>,
     ) -> Result<Fd>
     where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Configure what the screen cast session should record.
     /// This method must be called before starting the session.
@@ -291,7 +291,7 @@ trait ScreenCast {
     #[dbus_proxy(object = "Request")]
     fn select_sources<S>(&self, session: &S, options: SelectSourcesOptions)
     where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Start the screen cast session.
     ///
@@ -311,7 +311,7 @@ trait ScreenCast {
     #[dbus_proxy(object = "Request")]
     fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: StartCastOptions)
     where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// Available cursor mode.
     #[dbus_proxy(property)]
