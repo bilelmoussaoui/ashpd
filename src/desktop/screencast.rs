@@ -73,12 +73,14 @@
 //! }
 //! ```
 use std::collections::HashMap;
+use std::os::unix::io::FromRawFd;
+use std::os::unix::prelude::RawFd;
 
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, ObjectPath, OwnedObjectPath, Value};
+use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use crate::{AsyncRequestProxy, AsyncSessionProxy, HandleToken, RequestProxy, WindowIdentifier};
@@ -187,12 +189,13 @@ impl StartCastOptions {
 /// A response to the create session request.
 pub struct CreateSession {
     /// A string that will be used as the last element of the session handle.
-    session_handle: OwnedObjectPath,
+    // TODO: investigate why this doesn't return an ObjectPath
+    session_handle: String,
 }
 
 impl CreateSession {
     /// The created session handle.
-    pub fn session_handle(&self) -> &ObjectPath<'_> {
+    pub fn session_handle(&self) -> &str {
         &self.session_handle
     }
 }
@@ -216,8 +219,8 @@ pub struct Stream(u32, StreamProperties);
 
 impl Stream {
     /// The PipeWire stream node
-    pub fn pipewire_node_id(&self) -> u32 {
-        self.0
+    pub fn pipewire_node_id(&self) -> RawFd {
+        unsafe { RawFd::from_raw_fd(self.0 as i32) }
     }
 
     /// The stream properties.
