@@ -5,7 +5,7 @@ use glib::clone;
 use glib::WeakRef;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{gdk, gio, glib};
+use gtk::{gio, glib};
 use gtk_macros::action;
 use log::{debug, info};
 use once_cell::sync::OnceCell;

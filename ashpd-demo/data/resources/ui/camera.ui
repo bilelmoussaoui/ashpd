@@ -37,6 +37,11 @@
             <property name="action-name">camera.start-stream</property>
           </object>
         </child>
+        <child>
+          <object class="GtkPicture" id="picture">
+            <property name="height-request">300</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>

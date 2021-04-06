@@ -1,32 +1,42 @@
+use std::os::unix::io;
+use std::os::unix::io::AsRawFd;
+use std::{collections::HashMap, sync::Arc};
+
 use ashpd::zbus;
 use ashpd::{
-    desktop::camera::{CameraAccessOptions, CameraProxy},
-    desktop::device::{AccessDeviceOptions, Device, DeviceProxy},
-    BasicResponse,
+    desktop::camera::{AsyncCameraProxy, CameraAccessOptions, CameraProxy},
+    BasicResponse, Response,
 };
-use ashpd::{RequestProxy, Response, WindowIdentifier};
+use futures::{lock::Mutex, FutureExt};
+use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
+use crate::widgets::CameraPaintable;
+
 mod imp {
-    use super::*;
-    use gtk::CompositeTemplate;
     use adw::subclass::prelude::*;
+    use gtk::CompositeTemplate;
+
+    use super::*;
 
     #[derive(Debug, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/camera.ui")]
     pub struct CameraPage {
         #[template_child]
         pub camera_available: TemplateChild<gtk::Label>,
-        pub connection: zbus::Connection,
+        #[template_child]
+        pub picture: TemplateChild<gtk::Picture>,
+        pub paintable: CameraPaintable,
     }
 
     impl Default for CameraPage {
         fn default() -> Self {
             Self {
                 camera_available: TemplateChild::default(),
-                connection: zbus::Connection::new_session().unwrap(),
+                picture: TemplateChild::default(),
+                paintable: CameraPaintable::new(),
             }
         }
     }
@@ -43,7 +53,7 @@ mod imp {
                 "camera.start-stream",
                 None,
                 move |page, _action, _target| {
-                    page.start_stream().unwrap();
+                    page.start_stream();
                 },
             );
         }
@@ -53,12 +63,14 @@ mod imp {
         }
     }
     impl ObjectImpl for CameraPage {
-        fn constructed(&self, obj: &Self::Type) {
-            let camera_proxy = CameraProxy::new(&self.connection).unwrap();
+        fn constructed(&self, _obj: &Self::Type) {
+            let connection = zbus::Connection::new_session().unwrap();
+            let camera_proxy = CameraProxy::new(&connection).unwrap();
             let camera_available = camera_proxy.is_camera_present().unwrap();
 
             self.camera_available
                 .set_text(&camera_available.to_string());
+            self.picture.set_paintable(Some(&self.paintable));
         }
     }
     impl WidgetImpl for CameraPage {}
@@ -74,20 +86,46 @@ impl CameraPage {
         glib::Object::new(&[]).expect("Failed to create a CameraPage")
     }
 
-    pub fn start_stream(&self) -> zbus::fdo::Result<()> {
+    pub fn start_stream(&self) {
         let self_ = imp::CameraPage::from_instance(self);
 
-        let proxy = CameraProxy::new(&self_.connection)?;
-        let request = proxy.access_camera(CameraAccessOptions::default())?;
-
-        // let fd = proxy.open_pipe_wire_remote(std::collections::HashMap::new())?;
-        request.connect_response(|response: Response<BasicResponse>| {
-            println!("{:#?}", response);
-            if let Response::Ok(info) = response {
-                println!("{:#?}", info);
+        let ctx = glib::MainContext::default();
+        let paintable = &self_.paintable;
+        ctx.spawn_local(clone!(@weak paintable => async move {
+            if let Ok(Response::Ok(stream_fd)) = start_stream().await {
+                println!("{:#?}", stream_fd);
+                paintable.set_pipewire_fd(stream_fd);
             }
-            Ok(())
-        })?;
-        Ok(())
+        }));
     }
+}
+
+pub async fn start_stream() -> zbus::Result<Response<io::RawFd>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncCameraProxy::new(&connection)?;
+    let request = proxy.access_camera(CameraAccessOptions::default()).await?;
+
+    let (request_sender, request_receiver) = futures::channel::oneshot::channel();
+    let request_sender = Arc::new(Mutex::new(Some(request_sender)));
+    let request_id = request
+        .connect_response(move |response: Response<BasicResponse>| {
+            let s = request_sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(request_id).await?;
+
+    if let Response::Err(err) = request_receiver.await.unwrap() {
+        return Ok(Response::Err(err));
+    }
+    let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+    Ok(Response::Ok(remote_fd.as_raw_fd()))
 }
