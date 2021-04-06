@@ -56,7 +56,7 @@ where
     T: DeserializeOwned + zvariant::Type,
 {
     fn signature() -> zvariant::Signature<'static> {
-        <(ResponseType, OwnedValue)>::signature()
+        <(ResponseType, HashMap<&str, OwnedValue>)>::signature()
     }
 }
 
