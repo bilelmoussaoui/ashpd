@@ -7,69 +7,49 @@
         <property name="spacing">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Location</property>
-            <property name="halign">start</property>
-            <style>
-              <class name="title-2"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Request the user location</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Options</property>
-            <property name="halign">start</property>
-            <property name="margin-top">12</property>
-            <style>
-              <class name="title-4"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkListBox">
-            <property name="selection-mode">none</property>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Request the user location</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title">Distance Treshold</property>
-                <property name="activatable-widget">distance_spin</property>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
                 <child>
-                  <object class="GtkSpinButton" id="distance_spin">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title">Distance Treshold</property>
+                    <property name="activatable-widget">distance_spin</property>
+                    <child>
+                      <object class="GtkSpinButton" id="distance_spin">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title">Time Treshold</property>
-                <property name="activatable-widget">time_spin</property>
                 <child>
-                  <object class="GtkSpinButton" id="time_spin">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title">Time Treshold</property>
+                    <property name="activatable-widget">time_spin</property>
+                    <child>
+                      <object class="GtkSpinButton" id="time_spin">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title">Accuracy</property>
-                <property name="activatable-widget">accuracy_combo</property>
                 <child>
-                  <object class="GtkComboBox" id="accuracy_combo">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title">Accuracy</property>
+                    <property name="activatable-widget">accuracy_combo</property>
+                    <child>
+                      <object class="GtkComboBox" id="accuracy_combo">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
+                <style>
+                  <class name="content" />
+                </style>
               </object>
             </child>
-            <style>
-              <class name="content" />
-            </style>
           </object>
         </child>
         <child>

@@ -6,8 +6,10 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="window.ui">resources/ui/window.ui</file>
 
         <file compressed="true" preprocess="xml-stripblanks" alias="account.ui">resources/ui/account.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="background.ui">resources/ui/background.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="camera.ui">resources/ui/camera.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="device.ui">resources/ui/device.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="email.ui">resources/ui/email.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="location.ui">resources/ui/location.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="network_monitor.ui">resources/ui/network_monitor.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="notification.ui">resources/ui/notification.ui</file>

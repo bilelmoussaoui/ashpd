@@ -7,28 +7,25 @@
         <property name="spacing">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Camera</property>
-            <property name="halign">start</property>
-            <style>
-              <class name="title-2"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="orientation">horizontal</property>
-            <property name="spacing">12</property>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Camera</property>
             <child>
-              <object class="GtkLabel">
-                <property name="label">Is a camera available?</property>
-                <property name="halign">start</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel" id="camera_available">
-                <property name="label">Undefined</property>
-                <property name="halign">start</property>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title">Is a camera available?</property>
+                    <child>
+                      <object class="GtkLabel" id="camera_available">
+                        <property name="label">Undefined</property>
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="content"/>
+                </style>
               </object>
             </child>
           </object>

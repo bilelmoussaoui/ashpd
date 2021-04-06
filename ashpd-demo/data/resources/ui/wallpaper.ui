@@ -7,47 +7,27 @@
         <property name="spacing">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Wallpaper</property>
-            <property name="halign">start</property>
-            <style>
-              <class name="title-2"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Set a file as a wallpaper</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Options</property>
-            <property name="halign">start</property>
-            <property name="margin-top">12</property>
-            <style>
-              <class name="title-4"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkListBox">
-            <property name="selection-mode">none</property>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Set a file as a wallpaper</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title">Show Preview</property>
-                <property name="activatable-widget">preview_switch</property>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
                 <child>
-                  <object class="GtkSwitch" id="preview_switch">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title">Show Preview</property>
+                    <property name="activatable-widget">preview_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="preview_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
+                <style>
+                  <class name="content" />
+                </style>
               </object>
             </child>
-            <style>
-              <class name="content" />
-            </style>
           </object>
         </child>
         <child>

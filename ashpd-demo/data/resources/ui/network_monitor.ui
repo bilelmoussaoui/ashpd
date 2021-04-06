@@ -7,60 +7,49 @@
         <property name="spacing">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Network Monitor</property>
-            <property name="halign">start</property>
-            <style>
-              <class name="title-2"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkListBox">
-            <property name="selection-mode">none</property>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Network Monitor</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title">Is Available?</property>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
                 <child>
-                  <object class="GtkLabel" id="network_available">
-                    <property name="label">Undefined</property>
-                    <property name="halign">start</property>
+                  <object class="AdwActionRow">
+                    <property name="title">Is Available?</property>
+                    <child>
+                      <object class="GtkLabel" id="network_available">
+                        <property name="label">Undefined</property>
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title">Is Metered?</property>
                 <child>
-                  <object class="GtkLabel" id="metered">
-                    <property name="label">Undefined</property>
-                    <property name="halign">start</property>
+                  <object class="AdwActionRow">
+                    <property name="title">Is Metered?</property>
+                    <child>
+                      <object class="GtkLabel" id="metered">
+                        <property name="label">Undefined</property>
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title">Connectivity</property>
                 <child>
-                  <object class="GtkLabel" id="connectivity">
-                    <property name="label">Undefined</property>
-                    <property name="halign">start</property>
+                  <object class="AdwActionRow">
+                    <property name="title">Connectivity</property>
+                    <child>
+                      <object class="GtkLabel" id="connectivity">
+                        <property name="label">Undefined</property>
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
+                <style>
+                  <class name="content"/>
+                </style>
               </object>
             </child>
-            <style>
-              <class name="content"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Start a stream over PipeWire</property>
-            <property name="halign">start</property>
-            <property name="action-name">camera.select</property>
           </object>
         </child>
       </object>
