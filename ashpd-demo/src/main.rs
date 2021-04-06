@@ -3,6 +3,7 @@ mod application;
 mod config;
 mod portals;
 mod sidebar_row;
+mod widgets;
 mod window;
 
 use application::ExampleApplication;

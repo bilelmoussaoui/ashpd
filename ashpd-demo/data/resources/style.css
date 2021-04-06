@@ -2,3 +2,9 @@ row:selected{
     background: @theme_selected_bg_color;
     color: @theme_selected_fg_color;
 }
+picture {
+    border-radius: 12px;
+}
+color {
+    border-radius: 4px;
+}

@@ -10,3 +10,7 @@ Cargo.lock
 **/*.rs.bk
 demo/target/
 demo/
+ashpd-demo/.flatpak
+ashpd-demo/.vscode
+.flatpak
+.vscode

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="NotificationPage" parent="AdwBin">
+  <template class="BackgroundPage" parent="AdwBin">
     <child>
       <object class="GtkBox">
         <property name="hexpand">True</property>
@@ -8,16 +8,16 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Notification</property>
+            <property name="title">Run the application in background</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">ID</property>
-                    <property name="activatable-widget">id_entry</property>
+                    <property name="title">Reason</property>
+                    <property name="activatable-widget">reason_entry</property>
                     <child>
-                      <object class="GtkEntry" id="id_entry">
+                      <object class="GtkEntry" id="reason_entry">
                         <property name="valign">center</property>
                       </object>
                     </child>
@@ -25,10 +25,10 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Title</property>
-                    <property name="activatable-widget">title_entry</property>
+                    <property name="title">Auto Start</property>
+                    <property name="activatable-widget">auto_start_switch</property>
                     <child>
-                      <object class="GtkEntry" id="title_entry">
+                      <object class="GtkSwitch" id="auto_start_switch">
                         <property name="valign">center</property>
                       </object>
                     </child>
@@ -36,10 +36,10 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Body</property>
-                    <property name="activatable-widget">body_entry</property>
+                    <property name="title">DBus Activatable</property>
+                    <property name="activatable-widget">dbus_activatable_switch</property>
                     <child>
-                      <object class="GtkEntry" id="body_entry">
+                      <object class="GtkSwitch" id="dbus_activatable_switch">
                         <property name="valign">center</property>
                       </object>
                     </child>
@@ -47,10 +47,11 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Priority</property>
-                    <property name="activatable-widget">priority_combo</property>
+                    <property name="title">Command</property>
+                    <property name="subtitle">Comma separated args otherwise the Exec line from desktop file is used</property>
+                    <property name="activatable-widget">command_entry</property>
                     <child>
-                      <object class="GtkComboBox" id="priority_combo">
+                      <object class="GtkEntry" id="command_entry">
                         <property name="valign">center</property>
                       </object>
                     </child>
@@ -65,9 +66,9 @@
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Send</property>
+            <property name="label">Request</property>
             <property name="halign">start</property>
-            <property name="action-name">notification.send</property>
+            <property name="action-name">background.request</property>
           </object>
         </child>
       </object>

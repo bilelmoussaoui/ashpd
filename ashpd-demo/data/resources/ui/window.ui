@@ -213,6 +213,14 @@
                         </child>
                         <child>
                           <object class="GtkStackPage">
+                            <property name="name">background</property>
+                            <property name="child">
+                              <object class="BackgroundPage" id="background" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
                             <property name="name">camera</property>
                             <property name="child">
                               <object class="CameraPage" id="camera" />
@@ -224,6 +232,14 @@
                             <property name="name">device</property>
                             <property name="child">
                               <object class="DevicePage" id="device" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">email</property>
+                            <property name="child">
+                              <object class="EmailPage" id="email" />
                             </property>
                           </object>
                         </child>
