@@ -23,6 +23,11 @@
                     </child>
                   </object>
                 </child>
+                <child>
+                  <object class="AdwComboRow" id="set_on_combo">
+                    <property name="title">Set On</property>
+                  </object>
+                </child>
                 <style>
                   <class name="content" />
                 </style>
