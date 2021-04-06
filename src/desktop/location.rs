@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::location::{LocationAccessOptions, LocationProxy, LocationStartOptions};
+//! use ashpd::desktop::location::{CreateSessionOptions, LocationProxy, SessionStartOptions};
 //! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
 //! use std::convert::TryFrom;
 //! use zbus::{self, fdo::Result};
@@ -10,7 +10,7 @@
 //!     let connection = zbus::Connection::new_session()?;
 //!     let proxy = LocationProxy::new(&connection)?;
 //!
-//!     let options = LocationAccessOptions::default()
+//!     let options = CreateSessionOptions::default()
 //!         .session_handle_token(HandleToken::try_from("token").unwrap());
 //!
 //!     let session = proxy.create_session(options)?;
@@ -18,7 +18,7 @@
 //!     let request = proxy.start(
 //!         &session,
 //!         WindowIdentifier::default(),
-//!         LocationStartOptions::default(),
+//!         SessionStartOptions::default(),
 //!     )?;
 //!
 //!     request.connect_response(move |response: Response<Basic>| {
@@ -64,7 +64,7 @@ pub enum Accuracy {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a location access request.
-pub struct LocationAccessOptions {
+pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
     session_handle_token: Option<HandleToken>,
     /// Distance threshold in meters. Default is 0.
@@ -75,7 +75,7 @@ pub struct LocationAccessOptions {
     accuracy: Option<Accuracy>,
 }
 
-impl LocationAccessOptions {
+impl CreateSessionOptions {
     /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
         self.session_handle_token = Some(session_handle_token);
@@ -103,12 +103,12 @@ impl LocationAccessOptions {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a location session start request.
-pub struct LocationStartOptions {
+pub struct SessionStartOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
 }
 
-impl LocationStartOptions {
+impl SessionStartOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
         self.handle_token = Some(handle_token);
@@ -118,9 +118,9 @@ impl LocationStartOptions {
 
 #[derive(Debug, Serialize, Deserialize, Type)]
 /// The response received on a `location_updated` signal.
-pub struct LocationResponse(OwnedObjectPath, Location);
+pub struct Location(OwnedObjectPath, LocationInner);
 
-impl LocationResponse {
+impl Location {
     /// A `SessionProxy` object path.
     pub fn session_handle(&self) -> &ObjectPath<'_> {
         &self.0
@@ -169,7 +169,7 @@ impl LocationResponse {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-struct Location {
+struct LocationInner {
     #[zvariant(rename = "Accuracy")]
     accuracy: f64,
     #[zvariant(rename = "Altitude")]
@@ -198,17 +198,17 @@ struct Location {
 trait Location {
     #[dbus_proxy(signal)]
     /// Signal emitted when the user location is updated.
-    fn location_updated(&self, location: LocationResponse) -> Result<()>;
+    fn location_updated(&self, location: Location) -> Result<()>;
 
     /// Create a location session.
     ///
     /// # Arguments
     ///
-    /// * `options` - A [`LocationAccessOptions`]
+    /// * `options` - A [`CreateSessionOptions`]
     ///
-    /// [`LocationAccessOptions`]: ./struct.LocationAccessOptions.html
+    /// [`CreateSessionOptions`]: ./struct.CreateSessionOptions.html
     #[dbus_proxy(object = "Session")]
-    fn create_session(&self, options: LocationAccessOptions);
+    fn create_session(&self, options: CreateSessionOptions);
 
     /// Start the location session.
     /// An application can only attempt start a session once.
@@ -217,14 +217,14 @@ trait Location {
     ///
     /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
     /// * `parent_window` - Identifier for the application window.
-    /// * `options` - A `LocationStartOptions`.
+    /// * `options` - A `SessionStartOptions`.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     #[dbus_proxy(object = "Request")]
-    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: LocationStartOptions)
+    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: SessionStartOptions)
     where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
 
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
