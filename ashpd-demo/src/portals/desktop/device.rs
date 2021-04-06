@@ -5,9 +5,10 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {
-    use super::*;
-    use gtk::CompositeTemplate;
     use adw::subclass::prelude::*;
+    use gtk::CompositeTemplate;
+
+    use super::*;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/device.ui")]
