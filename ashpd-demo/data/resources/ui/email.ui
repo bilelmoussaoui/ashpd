@@ -60,7 +60,7 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">CC</property>
+                    <property name="title">BCC</property>
                     <property name="subtitle">Comma separated emails</property>
                     <property name="activatable-widget">bcc_entry</property>
                     <child>
