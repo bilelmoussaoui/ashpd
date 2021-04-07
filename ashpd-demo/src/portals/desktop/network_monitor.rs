@@ -1,6 +1,5 @@
 use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 use ashpd::zbus;
-use ashpd::{RequestProxy, Response, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -45,7 +44,7 @@ mod imp {
             klass.install_action(
                 "network_monitor.lookup",
                 None,
-                move |page, _action, _target| {
+                move |_page, _action, _target| {
                     //page.pick_color().unwrap();
                 },
             );
@@ -60,7 +59,7 @@ mod imp {
             let proxy = NetworkMonitorProxy::new(&self.connection).unwrap();
             obj.set_sensitive(!ashpd::is_sandboxed());
 
-            /// This portal is not available inside a sandbox
+            // This portal is not available inside a sandbox
             if !ashpd::is_sandboxed() {
                 self.network_available
                     .set_text(&proxy.get_available().unwrap().to_string());

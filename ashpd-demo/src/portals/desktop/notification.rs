@@ -1,6 +1,5 @@
 use ashpd::desktop::notification::{Notification, NotificationProxy};
 use ashpd::zbus;
-use ashpd::{RequestProxy, Response, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -39,9 +38,7 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for NotificationPage {
-        fn constructed(&self, obj: &Self::Type) {}
-    }
+    impl ObjectImpl for NotificationPage {}
     impl WidgetImpl for NotificationPage {}
     impl BinImpl for NotificationPage {}
 }

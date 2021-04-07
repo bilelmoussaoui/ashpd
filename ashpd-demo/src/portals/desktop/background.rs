@@ -1,6 +1,3 @@
-use ashpd::desktop::network_monitor::NetworkMonitorProxy;
-use ashpd::zbus;
-use ashpd::{RequestProxy, Response, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -29,9 +26,13 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.install_action("background.request", None, move |page, _action, _target| {
-                //page.pick_color().unwrap();
-            });
+            klass.install_action(
+                "background.request",
+                None,
+                move |_page, _action, _target| {
+                    //page.pick_color().unwrap();
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

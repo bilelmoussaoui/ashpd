@@ -63,7 +63,7 @@ mod imp {
         }
     }
     impl ObjectImpl for ScreenshotPage {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self, _obj: &Self::Type) {
             self.screenshot_photo.set_overflow(gtk::Overflow::Hidden);
         }
     }
