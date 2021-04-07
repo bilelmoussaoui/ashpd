@@ -29,6 +29,7 @@ sources = files(
   'portals/desktop/network_monitor.rs',
   'portals/desktop/notification.rs',
   'portals/desktop/screenshot.rs',
+  'portals/desktop/screencast.rs',
   'portals/desktop/wallpaper.rs',
   'widgets/color_widget.rs',
   'widgets/gst_paintable.rs',
