@@ -277,6 +277,14 @@
                         </child>
                         <child>
                           <object class="GtkStackPage">
+                            <property name="name">screencast</property>
+                            <property name="child">
+                              <object class="ScreenCastPage" id="screencast" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
                             <property name="name">wallpaper</property>
                             <property name="child">
                               <object class="WallpaperPage" id="wallpaper" />

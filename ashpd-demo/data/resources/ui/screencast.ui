@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="ScreenCastPage" parent="AdwBin">
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">True</property>
+        <property name="spacing">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Screen Cast</property>
+            <child>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title">Show Preview</property>
+                    <property name="activatable-widget">preview_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="preview_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="set_on_combo">
+                    <property name="title">Set On</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="content" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="label">Start Stream</property>
+            <property name="halign">start</property>
+            <property name="action-name">screencast.start</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="response_group">
+            <property name="title">Response</property>
+            <property name="visible">False</property>
+            <property name="margin-top">24</property>
+            <child>
+              <object class="GtkPicture" id="picture">
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
