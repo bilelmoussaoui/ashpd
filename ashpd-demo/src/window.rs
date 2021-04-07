@@ -8,7 +8,7 @@ use crate::application::ExampleApplication;
 use crate::config::{APP_ID, PROFILE};
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, LocationPage,
-    NetworkMonitorPage, NotificationPage, ScreenshotPage, WallpaperPage,
+    NetworkMonitorPage, NotificationPage, ScreenCastPage, ScreenshotPage, WallpaperPage,
 };
 use crate::sidebar_row::SidebarRow;
 
@@ -59,6 +59,7 @@ mod imp {
             LocationPage::static_type();
             NotificationPage::static_type();
             BackgroundPage::static_type();
+            ScreenCastPage::static_type();
             AccountPage::static_type();
             NetworkMonitorPage::static_type();
             EmailPage::static_type();
