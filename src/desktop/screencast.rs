@@ -206,18 +206,18 @@ pub struct Streams {
 
 impl Streams {
     /// The available streams.
-    pub fn streams(&self) -> &Vec<Stream> {
+    pub fn streams(&self) -> &[Stream] {
         &self.streams
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug)]
+#[derive(Serialize, Deserialize, Type, Debug, Clone)]
 /// A PipeWire stream.
 pub struct Stream(u32, StreamProperties);
 
 impl Stream {
-    /// The PipeWire stream node
-    pub fn pipewire_node_id(&self) -> u32 {
+    /// The PipeWire stream Node ID
+    pub fn pipe_wire_node_id(&self) -> u32 {
         self.0
     }
 
@@ -227,7 +227,7 @@ impl Stream {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone)]
 /// The stream properties.
 pub struct StreamProperties {
     /// A tuple consisting of the position (x, y) in the compositor coordinate
