@@ -199,6 +199,7 @@
                     <property name="hexpand">True</property>
                     <child>
                       <object class="GtkStack" id="stack">
+                        <property name="vhomogeneous">False</property>
                         <property name="margin-top">24</property>
                         <property name="margin-bottom">24</property>
                         <property name="margin-start">12</property>
@@ -264,6 +265,14 @@
                             <property name="name">notification</property>
                             <property name="child">
                               <object class="NotificationPage" id="notification" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">open_uri</property>
+                            <property name="child">
+                              <object class="OpenUriPage" id="open_uri" />
                             </property>
                           </object>
                         </child>

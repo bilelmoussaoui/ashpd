@@ -8,7 +8,8 @@ use crate::application::ExampleApplication;
 use crate::config::{APP_ID, PROFILE};
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, LocationPage,
-    NetworkMonitorPage, NotificationPage, ScreenCastPage, ScreenshotPage, WallpaperPage,
+    NetworkMonitorPage, NotificationPage, OpenUriPage, ScreenCastPage, ScreenshotPage,
+    WallpaperPage,
 };
 use crate::sidebar_row::SidebarRow;
 
@@ -63,6 +64,7 @@ mod imp {
             AccountPage::static_type();
             NetworkMonitorPage::static_type();
             EmailPage::static_type();
+            OpenUriPage::static_type();
             Self::bind_template(klass);
 
             klass.install_action("win.back", None, |win, _, _| {

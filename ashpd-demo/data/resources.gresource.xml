@@ -13,6 +13,7 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="location.ui">resources/ui/location.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="network_monitor.ui">resources/ui/network_monitor.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="notification.ui">resources/ui/notification.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="open_uri.ui">resources/ui/open_uri.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screenshot.ui">resources/ui/screenshot.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screencast.ui">resources/ui/screencast.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="wallpaper.ui">resources/ui/wallpaper.ui</file>
