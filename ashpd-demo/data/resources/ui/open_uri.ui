@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="OpenUriPage" parent="AdwBin">
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">True</property>
+        <property name="spacing">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Open a URI</property>
+            <child>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title">Writeable</property>
+                    <property name="subtitle">Whether the file should be writeable or not</property>
+                    <property name="activatable-widget">writeable_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="writeable_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title">Ask</property>
+                    <property name="subtitle">Whether to always ask the user which application to use or not</property>
+                    <property name="activatable-widget">ask_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="ask_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="content" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="label">Open</property>
+            <property name="halign">start</property>
+            <property name="action-name">open_uri.uri</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
