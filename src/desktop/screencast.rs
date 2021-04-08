@@ -73,8 +73,6 @@
 //! }
 //! ```
 use std::collections::HashMap;
-use std::os::unix::io::FromRawFd;
-use std::os::unix::prelude::RawFd;
 
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
@@ -219,8 +217,8 @@ pub struct Stream(u32, StreamProperties);
 
 impl Stream {
     /// The PipeWire stream node
-    pub fn pipewire_node_id(&self) -> RawFd {
-        unsafe { RawFd::from_raw_fd(self.0 as i32) }
+    pub fn pipewire_node_id(&self) -> u32 {
+        self.0
     }
 
     /// The stream properties.
