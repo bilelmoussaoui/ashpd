@@ -144,7 +144,6 @@ impl ExampleApplication {
         info!("Version: {} ({})", config::VERSION, config::PROFILE);
         info!("Datadir: {}", config::PKGDATADIR);
 
-        let args: Vec<String> = env::args().collect();
-        ApplicationExtManual::run(self, &args);
+        ApplicationExtManual::run(self);
     }
 }

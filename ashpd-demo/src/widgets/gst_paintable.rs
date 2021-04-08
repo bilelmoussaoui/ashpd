@@ -191,7 +191,7 @@ mod imp {
 
     pub struct CameraPaintable {
         pub sink: camera_sink::CameraSink,
-        pub pipeline: gst::Pipeline,
+        pub pipeline: RefCell<Option<gst::Pipeline>>,
         pub sender: Sender<camera_sink::Action>,
         pub image: RefCell<Option<gdk::Paintable>>,
         pub size: RefCell<Option<(u32, u32)>>,
@@ -204,7 +204,7 @@ mod imp {
             let receiver = RefCell::new(Some(r));
 
             Self {
-                pipeline: gst::Pipeline::new(Some("camera")),
+                pipeline: RefCell::default(),
                 sink: camera_sink::CameraSink::new(sender.clone()),
                 image: RefCell::new(None),
                 sender,
@@ -227,8 +227,8 @@ mod imp {
             obj.init_widgets();
             self.parent_constructed(obj);
         }
-        fn dispose(&self, _obj: &Self::Type) {
-            self.pipeline.set_state(gst::State::Null).unwrap();
+        fn dispose(&self, paintable: &Self::Type) {
+            paintable.close_pipeline();
         }
     }
 
@@ -285,29 +285,41 @@ impl CameraPaintable {
         self.init_pipeline(pipewire_element);
     }
 
+    pub fn set_pipewire_node_id<F: AsRawFd>(&self, fd: F, node_id: u32) {
+        let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
+        pipewire_element
+            .set_property("fd", &fd.as_raw_fd())
+            .unwrap();
+        pipewire_element
+            .set_property("path", &node_id.to_string())
+            .unwrap();
+        self.init_pipeline(pipewire_element);
+    }
+
     fn init_pipeline(&self, pipewire_src: gst::Element) {
         let self_ = imp::CameraPaintable::from_instance(self);
+        let pipeline = gst::Pipeline::new(None);
         let convert = gst::ElementFactory::make("videoconvert", None).unwrap();
-        let queue = gst::ElementFactory::make("queue", None).unwrap();
-        self_
-            .pipeline
+        let queue1 = gst::ElementFactory::make("queue", None).unwrap();
+        let queue2 = gst::ElementFactory::make("queue", None).unwrap();
+        pipeline
             .add_many(&[
                 &pipewire_src,
+                &queue1,
                 &convert,
-                &queue,
+                &queue2,
                 &self_.sink.clone().upcast(),
             ])
             .unwrap();
 
-        pipewire_src.link(&convert).unwrap();
-        convert.link(&queue).unwrap();
-        queue.link(&self_.sink).unwrap();
-        self_.pipeline.set_state(gst::State::Playing).unwrap();
+        pipewire_src.link(&queue1).unwrap();
+        queue1.link(&convert).unwrap();
+        convert.link(&queue2).unwrap();
+        queue2.link(&self_.sink).unwrap();
 
-        let bus = self_.pipeline.get_bus().unwrap();
+        let bus = pipeline.get_bus().unwrap();
         bus.add_watch_local(move |_, msg| {
             use gst::MessageView;
-            //println!("{:#?}", msg);
             match msg.view() {
                 MessageView::Error(err) => {
                     println!(
@@ -323,6 +335,15 @@ impl CameraPaintable {
             glib::Continue(true)
         })
         .expect("Failed to add bus watch");
+        pipeline.set_state(gst::State::Playing).ok();
+        self_.pipeline.replace(Some(pipeline));
+    }
+
+    pub fn close_pipeline(&self) {
+        let self_ = imp::CameraPaintable::from_instance(self);
+        if let Some(pipeline) = self_.pipeline.borrow_mut().take() {
+            pipeline.set_state(gst::State::Null).unwrap();
+        }
     }
 
     pub fn init_widgets(&self) {

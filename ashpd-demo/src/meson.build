@@ -28,6 +28,7 @@ sources = files(
   'portals/desktop/mod.rs',
   'portals/desktop/network_monitor.rs',
   'portals/desktop/notification.rs',
+  'portals/desktop/open_uri.rs',
   'portals/desktop/screenshot.rs',
   'portals/desktop/screencast.rs',
   'portals/desktop/wallpaper.rs',
