@@ -1,35 +1,27 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::account::{AccountProxy, UserInfo, UserInfoOptions};
-//! use ashpd::{Response, WindowIdentifier};
+//! use ashpd::{desktop::account, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = AccountProxy::new(&connection)?;
-//!     let request = proxy.get_user_information(
-//!         WindowIdentifier::default(),
-//!         UserInfoOptions::default().reason("Fractal would like access to your information"),
-//!     )?;
-//!     request.connect_response(|response: Response<UserInfo>| {
-//!         let user_info = response.unwrap();
-//!
-//!         println!("{}", user_info.id);
-//!         println!("{}", user_info.name);
-//!         println!("{}", user_info.image);
-//!
-//!         Ok(())
-//!     })?;
+//! async fn run() -> Result<()> {
+//!     let identifier = WindowIdentifier::default();
+//!     if let Ok(Response::Ok(user_info)) =
+//!         account::get_user_information(identifier, "App would like to access user information").await
+//!     {
+//!         println!("Name: {}", user_info.name);
+//!         println!("ID: {}", user_info.id);
+//!     }
 //!     Ok(())
 //! }
 //! ```
+use std::sync::Arc;
+
+use futures::{lock::Mutex, FutureExt};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{AsyncRequestProxy, HandleToken, RequestProxy, Response, WindowIdentifier};
-use std::sync::Arc;
-use futures::{lock::Mutex, FutureExt};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// The possible options for a get user information request.
@@ -92,10 +84,10 @@ trait Account {
     fn version(&self) -> Result<u32>;
 }
 
-
 /// Get the user information
 ///
-/// An async wrapper around the `AsyncAccountProxy::get_user_information` function.
+/// An async wrapper around the `AsyncAccountProxy::get_user_information`
+/// function.
 pub async fn get_user_information(
     window_identifier: WindowIdentifier,
     reason: &str,
