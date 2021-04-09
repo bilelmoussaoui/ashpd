@@ -5,8 +5,8 @@
 //! use zbus::fdo::Result;
 //!
 //! async fn run() -> Result<()> {
-//!     if let Ok(Response::Ok(pipewire_fd)) = camera::stream() {
-//!         /// Use the PipeWire file descriptor with GStreamer for example
+//!     if let Ok(Response::Ok(pipewire_fd)) = camera::stream().await {
+//!         // Use the PipeWire file descriptor with GStreamer for example
 //!     }
 //!     Ok(())
 //! }
