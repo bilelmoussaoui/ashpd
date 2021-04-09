@@ -3,45 +3,28 @@
 //! Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screenshot::{Screenshot, ScreenshotOptions, ScreenshotProxy};
-//! use ashpd::{Response, WindowIdentifier};
+//! use ashpd::{desktop::screenshot, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = ScreenshotProxy::new(&connection)?;
-//!     let request = proxy.screenshot(
-//!         WindowIdentifier::default(),
-//!         ScreenshotOptions::default().interactive(true),
-//!     )?;
-//!
-//!     request.connect_response(|response: Response<Screenshot>| {
-//!         println!("{}", response.unwrap().uri);
-//!         Ok(())
-//!     })?;
+//! async fn run() -> Result<()> {
+//!     let identifier = WindowIdentifier::default();
+//!     if let Ok(Response::Ok(screenshot)) = screenshot::take(identifier, true, false).await {
+//!         println!("URI: {}", screenshot.uri);
+//!     }
 //!     Ok(())
 //! }
 //! ```
 //!
 //! Picking a color
-//!```no_run,rust
-//! use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
-//! use ashpd::{Response, WindowIdentifier};
+//! ```rust,no_run
+//! use ashpd::{desktop::screenshot, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = ScreenshotProxy::new(&connection)?;
-//!
-//!     let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
-//!
-//!     request.connect_response(|response: Response<Color>| {
-//!         if let Response::Ok(color) = response {
-//!             println!("({}, {}, {})", color.red(), color.green(), color.blue());
-//!         }
-//!         Ok(())
-//!     })?;
-//!
+//! async fn run() -> Result<()> {
+//!     let identifier = WindowIdentifier::default();
+//!     if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
+//!         println!("({}, {}, {})", color.red(), color.green(), color.blue());
+//!     }
 //!     Ok(())
 //! }
 //! ```
@@ -236,7 +219,7 @@ pub async fn pick_color(window_identifier: WindowIdentifier) -> zbus::Result<Res
 /// Request a screenshot.
 ///
 /// An async function around the `AsyncScreenshotProxy::screenshot`.
-pub async fn screenshot(
+pub async fn take(
     window_identifier: WindowIdentifier,
     interactive: bool,
     modal: bool,
