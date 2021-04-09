@@ -17,9 +17,12 @@
 //!     Ok(())
 //! }
 //! ```
+use std::os::unix::io::AsRawFd;
+
+use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Fd;
+use zvariant::Type;
 use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -101,7 +104,11 @@ trait GameMode {
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   information.
     #[dbus_proxy(name = "QueryStatusByPIDFd")]
-    fn query_status_by_pidfd(&self, target: Fd, requester: Fd) -> Result<GameModeStatus>;
+    fn query_status_by_pidfd<F: AsRawFd + Type + Serialize>(
+        &self,
+        target: F,
+        requester: F,
+    ) -> Result<GameModeStatus>;
 
     /// Query the GameMode status for a process.
     ///
@@ -131,7 +138,11 @@ trait GameMode {
     /// * `requester` - Process file descriptor of the process requesting the
     ///   registration.
     #[dbus_proxy(name = "RegisterGameByPIDFd")]
-    fn register_game_by_pidfd(&self, target: Fd, requester: Fd) -> Result<RegisterStatus>;
+    fn register_game_by_pidfd<F: AsRawFd + Type + Serialize>(
+        &self,
+        target: F,
+        requester: F,
+    ) -> Result<RegisterStatus>;
 
     /// Register a game with GameMode.
     ///
@@ -160,7 +171,11 @@ trait GameMode {
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   un-registration.
     #[dbus_proxy(name = "UnregisterGameByPIDFd")]
-    fn unregister_game_by_pidfd(&self, target: Fd, requester: Fd) -> Result<UnregisterStatus>;
+    fn unregister_game_by_pidfd<F: AsRawFd + Type + Serialize>(
+        &self,
+        target: F,
+        requester: F,
+    ) -> Result<UnregisterStatus>;
 
     /// Un-register a game from GameMode.
     ///
