@@ -3,30 +3,19 @@
 //! Open a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use ashpd::{BasicResponse as Basic, Response, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use zbus::{self, fdo::Result};
-//! use zvariant::Fd;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = OpenURIProxy::new(&connection)?;
+//! use ashpd::{desktop::open_uri, Response, WindowIdentifier};
+//! use zbus::fdo::Result;
 //!
+//! async fn run() -> Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     let identifier = WindowIdentifier::default();
 //!
-//!     let request = proxy.open_file(
-//!         WindowIdentifier::default(),
-//!         Fd::from(file.as_raw_fd()),
-//!         OpenFileOptions::default(),
-//!     )?;
-//!
-//!     request.connect_response(|response: Response<Basic>| {
-//!         println!("{}", response.is_ok());
-//!         Ok(())
-//!     })?;
-//!
+//!     if let Ok(Response::Ok(_)) = open_uri::open_file(identifier, file.as_raw_fd(), false, true).await {
+//!         // Success!
+//!     }
 //!     Ok(())
 //! }
 //! ```
@@ -34,33 +23,36 @@
 //! Open a file from a URI
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::open_uri::{OpenFileOptions, OpenURIProxy};
-//! use ashpd::{BasicResponse as Basic, Response, WindowIdentifier};
-//! use zbus::{self, fdo::Result};
+//! use ashpd::{desktop::open_uri, Response, WindowIdentifier};
+//! use zbus::fdo::Result;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = OpenURIProxy::new(&connection)?;
+//! async fn run() -> Result<()> {
 //!
-//!     let request = proxy.open_uri(
+//!     if let Ok(Response::Ok(_)) = open_uri::open_uri(
 //!         WindowIdentifier::default(),
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!         OpenFileOptions::default(),
-//!     )?;
-//!
-//!     request.connect_response(|response: Response<Basic>| {
-//!         println!("{}", response.is_ok());
-//!         Ok(())
-//!     })?;
-//!
+//!         false,
+//!         true,
+//!     )
+//!     .await
+//!     {
+//!         // Success!
+//!     }
 //!     Ok(())
 //! }
 //! ```
+use std::os::unix::prelude::AsRawFd;
+use std::sync::Arc;
+
+use futures::{lock::Mutex, FutureExt};
+use serde::Serialize;
 use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Fd;
+use zvariant::Type;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    AsyncRequestProxy, BasicResponse, HandleToken, RequestProxy, Response, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for an open directory request.
@@ -126,24 +118,32 @@ trait OpenURI {
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window.
-    /// * `fd` - File descriptor for a file.
+    /// * `directory` - File descriptor for a file.
     /// * `options` - [`OpenDirOptions`].
     ///
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
     #[dbus_proxy(object = "Request")]
-    fn open_directory(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenDirOptions);
+    fn open_directory<F>(
+        &self,
+        parent_window: WindowIdentifier,
+        directory: F,
+        options: OpenDirOptions,
+    ) where
+        F: AsRawFd + Serialize + Type;
 
     /// Asks to open a local file.
     ///
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window.
-    /// * `fd` - File descriptor for the file to open.
+    /// * `file` - File descriptor for the file to open.
     /// * `options` - [`OpenFileOptions`].
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
     #[dbus_proxy(object = "Request")]
-    fn open_file(&self, parent_window: WindowIdentifier, fd: Fd, options: OpenFileOptions);
+    fn open_file<F>(&self, parent_window: WindowIdentifier, file: F, options: OpenFileOptions)
+    where
+        F: AsRawFd + Serialize + Type;
 
     /// Asks to open a local file.
     ///
@@ -160,4 +160,124 @@ trait OpenURI {
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
+}
+
+/// Open a URI.
+///
+/// A helper wrapper around `AsyncOpenUriProxy::open_uri`.
+pub async fn open_uri(
+    window_identifier: WindowIdentifier,
+    uri: &str,
+    writable: bool,
+    ask: bool,
+) -> zbus::Result<Response<BasicResponse>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncOpenURIProxy::new(&connection)?;
+    let request = proxy
+        .open_uri(
+            window_identifier,
+            uri,
+            OpenFileOptions::default().writeable(writable).ask(ask),
+        )
+        .await?;
+
+    let (sender, receiver) = futures::channel::oneshot::channel();
+
+    let sender = Arc::new(Mutex::new(Some(sender)));
+    let signal_id = request
+        .connect_response(move |response: Response<BasicResponse>| {
+            let s = sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(signal_id).await?;
+
+    let response = receiver.await.unwrap();
+    Ok(response)
+}
+
+/// Open a file.
+///
+/// A helper wrapper around `AsyncOpenUriProxy::open_file`.
+pub async fn open_file<F: AsRawFd + Serialize + Type>(
+    window_identifier: WindowIdentifier,
+    file: F,
+    writable: bool,
+    ask: bool,
+) -> zbus::Result<Response<BasicResponse>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncOpenURIProxy::new(&connection)?;
+    let request = proxy
+        .open_file(
+            window_identifier,
+            file,
+            OpenFileOptions::default().writeable(writable).ask(ask),
+        )
+        .await?;
+
+    let (sender, receiver) = futures::channel::oneshot::channel();
+
+    let sender = Arc::new(Mutex::new(Some(sender)));
+    let signal_id = request
+        .connect_response(move |response: Response<BasicResponse>| {
+            let s = sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(signal_id).await?;
+
+    let response = receiver.await.unwrap();
+    Ok(response)
+}
+
+/// Open a directory.
+///
+/// A helper wrapper around `AsyncOpenUriProxy::open_directory`.
+pub async fn open_directory<F: AsRawFd + Serialize + Type>(
+    window_identifier: WindowIdentifier,
+    directory: F,
+) -> zbus::Result<Response<BasicResponse>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncOpenURIProxy::new(&connection)?;
+    let request = proxy
+        .open_directory(window_identifier, directory, OpenDirOptions::default())
+        .await?;
+
+    let (sender, receiver) = futures::channel::oneshot::channel();
+
+    let sender = Arc::new(Mutex::new(Some(sender)));
+    let signal_id = request
+        .connect_response(move |response: Response<BasicResponse>| {
+            let s = sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(signal_id).await?;
+
+    let response = receiver.await.unwrap();
+    Ok(response)
 }
