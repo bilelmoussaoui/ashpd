@@ -21,8 +21,9 @@
 //!     Ok(())
 //! }
 //! ```
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt;
+
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
