@@ -68,14 +68,24 @@ impl From<gtk3::Window> for WindowIdentifier {
     }
 }
 
-#[cfg(feature = "feature_gtk4")]
-impl From<gtk4::Window> for WindowIdentifier {
-    fn from(win: gtk4::Window) -> Self {
+impl WindowIdentifier {
+    #[cfg(feature = "feature_gtk4")]
+    /// Creates a `WindowIdentifier` from a `gtk::Window`
+    ///
+    /// The constructor returns a valid handle under both Wayland & x11.
+    ///
+    /// **Note** The function has to be async as the Wayland handle retrieval
+    /// API is async as well.
+    pub async fn from_window(win: gtk4::Window) -> Self {
+        use std::sync::Arc;
+
+        use futures::lock::Mutex;
+        use gtk4::glib;
         use gtk4::prelude::{Cast, NativeExt, ObjectExt};
 
         let surface = win
             .get_surface()
-            .expect("The window has to be mapped first.");
+            .expect("The window has to be mapped first");
 
         let handle = match surface
             .get_display()
@@ -89,12 +99,23 @@ impl From<gtk4::Window> for WindowIdentifier {
                 As the wayland api is async, let's wait till zbus is async ready before
                 we do enable it.
                 Note: we need to un-export the handle once it's not used anymore automatically
-                        using level.unexport_handle();
-                let top_level = surface.downcast::<gdk4wayland::WaylandTopLevel>().unwrap();
-                top_level.export_handle(move |level, handle| {
-                    Some(format!("wayland:{}", handle))
-                });*/
-                None
+                        using level.unexport_handle();*/
+
+                let (sender, receiver) = futures::channel::oneshot::channel::<String>();
+                let sender = Arc::new(Mutex::new(Some(sender)));
+
+                let top_level = surface.downcast::<gdk4wayland::WaylandToplevel>().unwrap();
+
+                top_level.export_handle(glib::clone!(@strong sender => move |_level, handle| {
+                    let wayland_handle = format!("wayland:{}", handle);
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(glib::clone!(@strong sender, @strong wayland_handle => async move {
+                        if let Some(m) = sender.lock().await.take() {
+                            let _ = m.send(wayland_handle);
+                        }
+                    }));
+                }));
+                receiver.await.ok()
             }
             "GdkX11Display" => match surface
                 .downcast::<gdk4x11::X11Surface>()
