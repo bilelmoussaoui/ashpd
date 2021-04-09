@@ -1,7 +1,6 @@
-use serde::{Deserialize, Serialize};
-use zvariant_derive::Type;
+use serde::{ser::Serializer, Serialize};
 
-#[derive(Type, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
@@ -23,12 +22,51 @@ use zvariant_derive::Type;
 /// implementations for other toolkits.
 ///
 /// [`WindowIdentifier`]: ./struct.WindowIdentifier.html
-pub struct WindowIdentifier(String);
+pub enum WindowIdentifier {
+    /// Gtk 4 Window Identifier
+    #[cfg(feature = "feature_gtk4")]
+    Gtk {
+        /// The top level window
+        root: gtk4::Root,
+        /// The exported window handle
+        handle: String,
+    },
+    /// GTK 3 Window Identifier
+    #[cfg(feature = "feature_gtk3")]
+    Gtk {
+        /// The exported window handle
+        handle: String,
+    },
+    /// For Other Toolkits
+    Other(String),
+}
+
+impl zvariant::Type for WindowIdentifier {
+    fn signature() -> zvariant::Signature<'static> {
+        String::signature()
+    }
+}
+
+impl Serialize for WindowIdentifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let handle = match self {
+            #[cfg(feature = "feature_gtk4")]
+            Self::Gtk { root: _, handle } => handle,
+            #[cfg(feature = "feature_gtk3")]
+            Self::Gtk { handle: String } => handle,
+            Self::Other(handle) => handle,
+        };
+        serializer.serialize_str(handle)
+    }
+}
 
 impl WindowIdentifier {
     /// Create a new window identifier
     pub fn new(identifier: &str) -> Self {
-        Self(identifier.to_string())
+        Self::Other(identifier.to_string())
     }
 }
 
@@ -62,7 +100,7 @@ impl From<gtk3::Window> for WindowIdentifier {
         };
 
         match handle {
-            Some(h) => WindowIdentifier(h),
+            Some(h) => WindowIdentifier::Gtk(h),
             None => WindowIdentifier::default(),
         }
     }
@@ -71,7 +109,8 @@ impl From<gtk3::Window> for WindowIdentifier {
 impl WindowIdentifier {
     #[cfg(feature = "feature_gtk4")]
     /// Creates a `WindowIdentifier` from a [`gtk::Root`](https://gnome.pages.gitlab.gnome.org/gtk/gtk4/iface.Root.html).
-    /// `gtk::Root` is the interface implemented by all the widgets that can act as a top level widget.
+    /// `gtk::Root` is the interface implemented by all the widgets that can act
+    /// as a top level widget.
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
     ///
@@ -97,12 +136,6 @@ impl WindowIdentifier {
             .as_ref()
         {
             "GdkWaylandDisplay" => {
-                /*
-                As the wayland api is async, let's wait till zbus is async ready before
-                we do enable it.
-                Note: we need to un-export the handle once it's not used anymore automatically
-                        using level.unexport_handle();*/
-
                 let (sender, receiver) = futures::channel::oneshot::channel::<String>();
                 let sender = Arc::new(Mutex::new(Some(sender)));
 
@@ -130,8 +163,39 @@ impl WindowIdentifier {
         };
 
         match handle {
-            Some(h) => WindowIdentifier(h),
+            Some(h) => WindowIdentifier::Gtk {
+                root: win.as_ref().clone(),
+                handle: h.to_string(),
+            },
             None => WindowIdentifier::default(),
+        }
+    }
+}
+
+impl Drop for WindowIdentifier {
+    fn drop(&mut self) {
+        match self {
+            #[cfg(feature = "feature_gtk4")]
+            Self::Gtk { root, handle: _ } => {
+                use gtk4::prelude::{Cast, NativeExt, ObjectExt};
+
+                let surface = root
+                    .get_surface()
+                    .expect("The window has to be mapped first");
+                if surface
+                    .get_display()
+                    .expect("Surface has to be attached to a display")
+                    .get_type()
+                    .name()
+                    == "GdkWaylandDisplay"
+                {
+                    let top_level = surface.downcast::<gdk4wayland::WaylandToplevel>().unwrap();
+                    top_level.unexport_handle();
+                }
+            }
+            #[cfg(feature = "feature_gtk3")]
+            Self::Gtk { handle: String } => {}
+            _ => (), // Do nothing for other toolkits
         }
     }
 }
