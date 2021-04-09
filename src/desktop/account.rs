@@ -27,7 +27,9 @@
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, Response, WindowIdentifier};
+use std::sync::Arc;
+use futures::{lock::Mutex, FutureExt};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// The possible options for a get user information request.
@@ -88,4 +90,44 @@ trait Account {
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
+}
+
+
+/// Get the user information
+///
+/// An async wrapper around the `AsyncAccountProxy::get_user_information` function.
+pub async fn get_user_information(
+    window_identifier: WindowIdentifier,
+    reason: &str,
+) -> zbus::Result<Response<UserInfo>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncAccountProxy::new(&connection)?;
+    let request = proxy
+        .get_user_information(
+            window_identifier,
+            UserInfoOptions::default().reason(&reason),
+        )
+        .await?;
+
+    let (sender, receiver) = futures::channel::oneshot::channel();
+
+    let sender = Arc::new(Mutex::new(Some(sender)));
+    let signal_id = request
+        .connect_response(move |response: Response<UserInfo>| {
+            let s = sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(signal_id).await?;
+
+    let user_information = receiver.await.unwrap();
+    Ok(user_information)
 }
