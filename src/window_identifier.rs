@@ -70,13 +70,14 @@ impl From<gtk3::Window> for WindowIdentifier {
 
 impl WindowIdentifier {
     #[cfg(feature = "feature_gtk4")]
-    /// Creates a `WindowIdentifier` from a `gtk::Window`
+    /// Creates a `WindowIdentifier` from a [`gtk::Root`](https://gnome.pages.gitlab.gnome.org/gtk/gtk4/iface.Root.html).
+    /// `gtk::Root` is the interface implemented by all the widgets that can act as a top level widget.
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
     ///
     /// **Note** The function has to be async as the Wayland handle retrieval
     /// API is async as well.
-    pub async fn from_window(win: gtk4::Window) -> Self {
+    pub async fn from_window<W: gtk4::glib::IsA<gtk4::Root>>(win: &W) -> Self {
         use std::sync::Arc;
 
         use futures::lock::Mutex;
@@ -84,6 +85,7 @@ impl WindowIdentifier {
         use gtk4::prelude::{Cast, NativeExt, ObjectExt};
 
         let surface = win
+            .as_ref()
             .get_surface()
             .expect("The window has to be mapped first");
 
