@@ -31,3 +31,5 @@ strum_macros = "0.20"
 zbus = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main"}
 zvariant = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main", features = ["enumflags2"]}
 zvariant_derive = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main"}
+
+futures = "0.3"
