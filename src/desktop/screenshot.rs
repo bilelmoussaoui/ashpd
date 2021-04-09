@@ -45,10 +45,13 @@
 //!     Ok(())
 //! }
 //! ```
+use std::sync::Arc;
+
+use futures::{lock::Mutex, FutureExt};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{AsyncRequestProxy, HandleToken, RequestProxy, Response, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options on a screenshot request.
@@ -195,4 +198,79 @@ trait Screenshot {
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
+}
+
+/// Ask the compositor to pick a color.
+///
+/// A helper function around the `AsyncScreenshotProxy::pick_color`.
+pub async fn pick_color(window_identifier: WindowIdentifier) -> zbus::Result<Response<Color>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncScreenshotProxy::new(&connection)?;
+    let request = proxy
+        .pick_color(window_identifier, PickColorOptions::default())
+        .await?;
+
+    let (sender, receiver) = futures::channel::oneshot::channel();
+
+    let sender = Arc::new(Mutex::new(Some(sender)));
+    let signal_id = request
+        .connect_response(move |response: Response<Color>| {
+            let s = sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(signal_id).await?;
+
+    let color = receiver.await.unwrap();
+    Ok(color)
+}
+
+/// Request a screenshot.
+///
+/// An async function around the `AsyncScreenshotProxy::screenshot`.
+pub async fn screenshot(
+    window_identifier: WindowIdentifier,
+    interactive: bool,
+    modal: bool,
+) -> zbus::Result<Response<Screenshot>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncScreenshotProxy::new(&connection)?;
+    let request = proxy
+        .screenshot(
+            window_identifier,
+            ScreenshotOptions::default()
+                .interactive(interactive)
+                .modal(modal),
+        )
+        .await?;
+
+    let (sender, receiver) = futures::channel::oneshot::channel();
+
+    let sender = Arc::new(Mutex::new(Some(sender)));
+    let signal_id = request
+        .connect_response(move |response: Response<Screenshot>| {
+            let s = sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(signal_id).await?;
+
+    let screenshot = receiver.await.unwrap();
+    Ok(screenshot)
 }
