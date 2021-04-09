@@ -43,7 +43,7 @@ pub enum SandboxFlags {
     /// Share the sound access (PulseAudio) with the caller.
     SoundAccess = 2,
     /// Share the gpu access with the caller.
-    GPUAccess = 4,
+    GpuAccess = 4,
     /// Allow sandbox access to (filtered) session bus.
     SessionBusAccess = 8,
     /// Allow sandbox access to accessibility bus.
