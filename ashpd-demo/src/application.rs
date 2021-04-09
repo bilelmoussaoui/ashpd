@@ -1,5 +1,3 @@
-use std::env;
-
 use gio::ApplicationFlags;
 use glib::clone;
 use glib::WeakRef;

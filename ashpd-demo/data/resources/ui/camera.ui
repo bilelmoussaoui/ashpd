@@ -8,7 +8,7 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Camera</property>
+            <property name="title">Information</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>
@@ -31,15 +31,39 @@
           </object>
         </child>
         <child>
-          <object class="GtkButton">
-            <property name="label">Start a stream over PipeWire</property>
-            <property name="halign">start</property>
-            <property name="action-name">camera.start-stream</property>
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
+            <child>
+              <object class="GtkButton" id="start_session_btn">
+                <property name="label">Start Session</property>
+                <property name="halign">start</property>
+                <property name="action-name">camera.start</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="close_session_btn">
+                <property name="label">Close Session</property>
+                <property name="halign">start</property>
+                <property name="sensitive">False</property>
+                <property name="action-name">camera.stop</property>
+                <property name="halign">end</property>
+                <property name="hexpand">True</property>
+                <style>
+                  <class name="destructive-action" />
+                </style>
+              </object>
+            </child>
           </object>
         </child>
         <child>
-          <object class="GtkPicture" id="picture">
-            <property name="height-request">300</property>
+          <object class="GtkRevealer" id="revealer">
+            <property name="reveal-child">False</property>
+            <property name="transition-type">crossfade</property>
+            <child>
+              <object class="GtkPicture" id="picture">
+                <property name="height-request">300</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

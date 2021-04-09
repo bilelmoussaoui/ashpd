@@ -44,18 +44,22 @@
         <child>
           <object class="GtkButton">
             <property name="label">Take a Screenshot</property>
+            <property name="margin-bottom">18</property>
             <property name="halign">start</property>
             <property name="action-name">screenshot.screenshot</property>
           </object>
         </child>
         <child>
-          <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title">Response</property>
+          <object class="GtkRevealer" id="revealer">
+            <property name="reveal-child">False</property>
             <property name="visible">False</property>
-            <property name="margin-top">24</property>
+            <property name="transition-type">crossfade</property>
             <child>
-              <object class="GtkPicture" id="screenshot_photo">
-
+              <object class="AdwPreferencesGroup" id="response_group">
+                <property name="title">Response</property>
+                <child>
+                  <object class="GtkPicture" id="screenshot_photo" />
+                </child>
               </object>
             </child>
           </object>
