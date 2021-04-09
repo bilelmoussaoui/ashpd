@@ -66,11 +66,12 @@ impl EmailPage {
         let addresses = self_.addresses.get().get_text();
         let bcc = self_.bcc_entry.get().get_text();
         let cc = self_.cc_entry.get().get_text();
-
+        let root = self.get_root().unwrap();
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
+            let identifier = WindowIdentifier::from_window(&root).await;
             if let Ok(Response::Ok(color)) = compose_email(
-                WindowIdentifier::default(),
+                identifier,
                 EmailOptions::default()
                     .subject(&subject)
                     .addresses(

@@ -99,10 +99,11 @@ impl LocationPage {
         let distance_threshold = self_.distance_spin.get_value() as u32;
         let time_threshold = self_.time_spin.get_value() as u32;
         let accuracy = unsafe { std::mem::transmute(self_.accuracy_combo.get_selected()) };
+        let root = self.get_root().unwrap();
 
         ctx.spawn_local(clone!(@weak self as page => async move {
-            if let Ok(Response::Ok(location)) = locate(WindowIdentifier::default(), Some(distance_threshold), Some(time_threshold), Some(accuracy)).await {
-                println!("{:#?}", location);
+            let identifier = WindowIdentifier::from_window(&root).await;
+            if let Ok(Response::Ok(location)) = locate(identifier, distance_threshold, time_threshold, accuracy).await {
                 let self_ = imp::LocationPage::from_instance(&page);
 
                 self_.response_group.show();
@@ -121,9 +122,9 @@ impl LocationPage {
 
 pub async fn locate(
     window_identifier: WindowIdentifier,
-    distance_threshold: Option<u32>,
-    time_threshold: Option<u32>,
-    accuracy: Option<Accuracy>,
+    distance_threshold: u32,
+    time_threshold: u32,
+    accuracy: Accuracy,
 ) -> zbus::Result<Response<Location>> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = AsyncLocationProxy::new(&connection)?;
@@ -131,9 +132,9 @@ pub async fn locate(
         .create_session(
             CreateSessionOptions::default()
                 .session_handle_token(HandleToken::try_from("sometokenstuff").unwrap())
-                .distance_threshold(distance_threshold.unwrap_or(0))
-                .time_threshold(time_threshold.unwrap_or(0))
-                .accuracy(accuracy.unwrap_or(Accuracy::Exact)),
+                .distance_threshold(distance_threshold)
+                .time_threshold(time_threshold)
+                .accuracy(accuracy),
         )
         .await?;
 

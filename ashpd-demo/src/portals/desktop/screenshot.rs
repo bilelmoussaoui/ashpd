@@ -7,6 +7,7 @@ use ashpd::zbus;
 use ashpd::{Response, WindowIdentifier};
 use futures::lock::Mutex;
 use futures::FutureExt;
+use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
@@ -31,7 +32,7 @@ mod imp {
         #[template_child]
         pub screenshot_photo: TemplateChild<gtk::Picture>,
         #[template_child]
-        pub response_group: TemplateChild<adw::PreferencesGroup>,
+        pub revealer: TemplateChild<gtk::Revealer>,
     }
 
     #[glib::object_subclass]
@@ -85,8 +86,11 @@ impl ScreenshotPage {
 
         let ctx = glib::MainContext::default();
         let color_widget = self_.color_widget.get();
+        // used for retrieving a window identifier
+        let root = self.get_root().unwrap();
         ctx.spawn_local(async move {
-            if let Ok(Response::Ok(color)) = pick_color(WindowIdentifier::default()).await {
+            let identifier = WindowIdentifier::from_window(&root).await;
+            if let Ok(Response::Ok(color)) = pick_color(identifier).await {
                 color_widget.set_rgba(color.into());
             }
         });
@@ -98,18 +102,23 @@ impl ScreenshotPage {
         let interactive = self_.interactive_switch.get_active();
         let modal = self_.modal_switch.get_active();
         let screenshot_photo = self_.screenshot_photo.get();
-        let response_group = self_.response_group.get();
+        let revealer = self_.revealer.get();
+        // used for retrieving a window identifier
+        let root = self.get_root().unwrap();
 
         let ctx = glib::MainContext::default();
-        ctx.spawn_local(async move {
-            if let Ok(Response::Ok(screenshot)) =
-                screenshot(WindowIdentifier::default(), interactive, modal).await
+        ctx.spawn_local(clone!(@weak root => async move {
+            let identifier = WindowIdentifier::from_window(&root).await;
+            if let Ok(Response::Ok(screenshot)) = screenshot(identifier, interactive, modal).await
             {
                 let file = gio::File::new_for_uri(&screenshot.uri);
                 screenshot_photo.set_file(Some(&file));
-                response_group.show();
+                revealer.show(); // Revealer has a weird issue where it still
+                                 // takes space even if it's child is hidden
+
+                revealer.set_reveal_child(true);
             }
-        });
+        }));
     }
 }
 

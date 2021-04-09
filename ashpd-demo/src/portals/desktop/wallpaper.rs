@@ -6,6 +6,7 @@ use ashpd::zbus;
 use ashpd::{BasicResponse, Response, WindowIdentifier};
 use futures::{lock::Mutex, FutureExt};
 use gtk::glib;
+use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -82,14 +83,16 @@ impl WallpaperPage {
                 .get_string(),
         )
         .unwrap();
+        let root = self.get_root().unwrap();
 
-        file_chooser.connect_response(move |dialog, response| {
+        file_chooser.connect_response(clone!(@weak root => move |dialog, response| {
             if response == gtk::ResponseType::Accept {
                 let wallpaper_uri = dialog.get_file().unwrap().get_uri();
                 let ctx = glib::MainContext::default();
-                ctx.spawn_local(async move {
+                ctx.spawn_local(clone!(@weak root => async move {
+                    let identifier = WindowIdentifier::from_window(&root).await;
                     if let Ok(Response::Ok(color)) = set_wallpaper_uri(
-                        WindowIdentifier::default(),
+                        identifier,
                         &wallpaper_uri,
                         show_preview,
                         set_on,
@@ -99,10 +102,10 @@ impl WallpaperPage {
                         // TODO: display a notification saying the action went fine
                         println!("{:#?}", color);
                     }
-                });
+                }));
             };
             dialog.destroy();
-        });
+        }));
         file_chooser.show();
         self_.dialog.replace(Some(file_chooser));
     }
