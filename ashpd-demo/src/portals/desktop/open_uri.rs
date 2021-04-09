@@ -57,11 +57,12 @@ impl OpenUriPage {
         let self_ = imp::OpenUriPage::from_instance(self);
         let writable = self_.writeable_switch.get_active();
         let ask = self_.ask_switch.get_active();
-
+        let root = self.get_root().unwrap();
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
+            let identifier = WindowIdentifier::from_window(&root).await;
             if let Ok(Response::Ok(color)) = open_uri(
-                WindowIdentifier::default(),
+                identifier,
                 "https://google.com",
                 writable,
                 ask,

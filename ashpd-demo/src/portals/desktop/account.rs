@@ -74,9 +74,10 @@ impl AccountPage {
         let name_label = self_.name_label.get();
         let response_group = self_.response_group.get();
         let avatar = self_.avatar.get();
+        let root = self.get_root().unwrap();
         ctx.spawn_local(clone!(@weak id_label, @weak name_label => async move {
-            if let Ok(Response::Ok(user_info)) =
-                get_user_information(WindowIdentifier::default(), &reason).await
+            let identifier = WindowIdentifier::from_window(&root).await;
+            if let Ok(Response::Ok(user_info)) = get_user_information(identifier, &reason).await
             {
                 id_label.set_text(&user_info.id);
                 name_label.set_text(&user_info.name);

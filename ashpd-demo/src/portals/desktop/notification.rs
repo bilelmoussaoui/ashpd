@@ -1,5 +1,11 @@
-use ashpd::desktop::notification::{Notification, NotificationProxy};
-use ashpd::zbus;
+use ashpd::{
+    desktop::notification::{Button, Priority},
+    zbus,
+};
+use ashpd::{
+    desktop::notification::{Notification, NotificationProxy},
+    zvariant::Value,
+};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -61,7 +67,16 @@ impl NotificationPage {
 
         let connection = zbus::Connection::new_session()?;
         let proxy = NotificationProxy::new(&connection)?;
-        proxy.add_notification(&notification_id, Notification::new(&title).body(&body))?;
+        proxy.add_notification(
+            &notification_id,
+            Notification::new("Contrast")
+                .default_action("open")
+                .default_action_target(Value::U32(100).into())
+                .body("color copied to clipboard")
+                .priority(Priority::High)
+                .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
+                .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
+        )?;
 
         Ok(())
     }

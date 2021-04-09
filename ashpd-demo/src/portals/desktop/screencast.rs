@@ -124,9 +124,14 @@ impl ScreenCastPage {
             1 => BitFlags::<CursorMode>::from_flag(CursorMode::Embedded),
             _ => BitFlags::<CursorMode>::from_flag(CursorMode::Metadata),
         };
+
         ctx.spawn_local(
             clone!(@weak streams_carousel, @weak response_group, @weak self as page => async move {
-                if let Ok((streams, fd, session)) = screencast(multiple, types, cursor_mode).await {
+                let root = page.get_root().unwrap();
+
+                let identifier = WindowIdentifier::from_window(&root).await;
+
+                if let Ok((streams, fd, session)) = screencast(identifier, multiple, types, cursor_mode).await {
                     streams.iter().for_each(|stream| {
                         let paintable = CameraPaintable::new();
                         let picture = gtk::Picture::new();
@@ -248,11 +253,12 @@ pub async fn select_sources(
 pub async fn start_session(
     session: &AsyncSessionProxy<'_>,
     proxy: &AsyncScreenCastProxy<'_>,
+    window_identifier: WindowIdentifier,
 ) -> zbus::Result<(Vec<Stream>, zvariant::Fd)> {
     let request = proxy
         .start(
             session,
-            WindowIdentifier::default(),
+            window_identifier,
             StartCastOptions::default(),
         )
         .await?;
@@ -285,6 +291,7 @@ pub async fn start_session(
 }
 
 pub async fn screencast(
+    window_identifier: WindowIdentifier,
     multiple: bool,
     types: BitFlags<SourceType>,
     cursor_mode: BitFlags<CursorMode>,
@@ -294,6 +301,6 @@ pub async fn screencast(
     let session = create_session(&connection, &proxy).await?;
     select_sources(&session, &proxy, multiple, types, cursor_mode).await?;
 
-    let (streams, pipewire_fd) = start_session(&session, &proxy).await?;
+    let (streams, pipewire_fd) = start_session(&session, &proxy, window_identifier).await?;
     Ok((streams, pipewire_fd.as_raw_fd(), session))
 }
