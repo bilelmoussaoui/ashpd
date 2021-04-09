@@ -1,37 +1,27 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::camera::{CameraAccessOptions, CameraProxy};
-//! use ashpd::{BasicResponse as Basic, Response};
+//! use ashpd::{desktop::camera, Response};
 //! use zbus::fdo::Result;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = CameraProxy::new(&connection)?;
-//!
-//!     println!("{}", proxy.is_camera_present()?);
-//!
-//!     let request = proxy.access_camera(CameraAccessOptions::default())?;
-//!
-//!     request.connect_response(move |response: Response<Basic>| {
-//!         if response.is_ok() {
-//!             //let options: HashMap<&str, zvariant::Value> = HashMap::new();
-//!             //FIXME: update this once we know which kind of options it takes
-//!             //let req = proxy.open_pipe_wire_remote(options).unwrap();
-//!             //println!("{:#?}", req);
-//!         }
-//!         Ok(())
-//!     })?;
+//! async fn run() -> Result<()> {
+//!     if let Ok(Response::Ok(pipewire_fd)) = camera::stream() {
+//!         /// Use the PipeWire file descriptor with GStreamer for example
+//!     }
 //!     Ok(())
 //! }
 //! ```
 use std::collections::HashMap;
+use std::os::unix::io;
+use std::os::unix::io::AsRawFd;
+use std::sync::Arc;
 
+use futures::{lock::Mutex, FutureExt};
 use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
+use crate::{AsyncRequestProxy, BasicResponse, HandleToken, RequestProxy, Response};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_camera` request.
@@ -84,4 +74,38 @@ trait Camera {
     /// The version of this DBus interface.
     #[dbus_proxy(property, name = "version")]
     fn version(&self) -> Result<u32>;
+}
+
+/// Request access to the camera and start a stream.
+///
+/// An async function around the `AsyncCameraProxy::access_camera`
+/// and `AsyncCameraProxy::open_pipe_wire_remote`.
+pub async fn stream() -> zbus::Result<Response<io::RawFd>> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncCameraProxy::new(&connection)?;
+    let request = proxy.access_camera(CameraAccessOptions::default()).await?;
+
+    let (sender, receiver) = futures::channel::oneshot::channel();
+    let sender = Arc::new(Mutex::new(Some(sender)));
+    let request_id = request
+        .connect_response(move |response: Response<BasicResponse>| {
+            let s = sender.clone();
+            async move {
+                if let Some(m) = s.lock().await.take() {
+                    let _ = m.send(response);
+                }
+                Ok(())
+            }
+            .boxed()
+        })
+        .await?;
+
+    while request.next_signal().await?.is_some() {}
+    request.disconnect_signal(request_id).await?;
+
+    if let Response::Err(err) = receiver.await.unwrap() {
+        return Ok(Response::Err(err));
+    }
+    let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+    Ok(Response::Ok(remote_fd.as_raw_fd()))
 }
