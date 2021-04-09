@@ -7,21 +7,28 @@ the XDG portals DBus interfaces. The library aims to provide an easy way to
 interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
 It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
 
-```rust
-use ashpd::desktop::screenshot::{Color, PickColorOptions, ScreenshotProxy};
-use ashpd::{Response, WindowIdentifier};
+```rust,no_run
+use ashpd::{desktop::screenshot, Response, WindowIdentifier};
 use zbus::fdo::Result;
 
-fn main() -> Result<()> {
-    let connection = zbus::Connection::new_session()?;
-    let proxy = ScreenshotProxy::new(&connection)?;
-    let request = proxy.pick_color(WindowIdentifier::default(), PickColorOptions::default())?;
-    request.connect_response(|response: Response<Color>| {
-        if let Response::Ok(color) = response {
-            println!("({}, {}, {})", color.red(), color.green(), color.blue());
-        }
-        Ok(())
-    })?;
+async fn run() -> Result<()> {
+    let identifier = WindowIdentifier::default();
+    if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
+        println!("({}, {}, {})", color.red(), color.green(), color.blue());
+    }
+    Ok(())
+}
+```
+
+```rust,no_run
+use ashpd::{desktop::camera, Response, WindowIdentifier};
+use zbus::fdo::Result;
+
+async fn run() -> Result<()> {
+    let identifier = WindowIdentifier::default();
+    if let Ok(Response::Ok(pipewire_node_id)) = camera::stream().await {
+        // Render the stream with GStreamer for example, see the demo
+    }
     Ok(())
 }
 ```
