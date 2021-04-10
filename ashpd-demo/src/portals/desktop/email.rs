@@ -61,11 +61,11 @@ impl EmailPage {
 
     pub fn compose_mail(&self) {
         let self_ = imp::EmailPage::from_instance(self);
-        let subject = self_.subject.get().get_text();
-        let body = self_.body.get().get_text();
-        let addresses = self_.addresses.get().get_text();
-        let bcc = self_.bcc_entry.get().get_text();
-        let cc = self_.cc_entry.get().get_text();
+        let subject = self_.subject.get_text();
+        let body = self_.body.get_text();
+        let addresses = self_.addresses.get_text();
+        let bcc = self_.bcc_entry.get_text();
+        let cc = self_.cc_entry.get_text();
         let root = self.get_root().unwrap();
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {

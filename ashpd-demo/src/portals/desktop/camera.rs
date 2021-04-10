@@ -63,20 +63,16 @@ mod imp {
     }
     impl ObjectImpl for CameraPage {
         fn constructed(&self, _obj: &Self::Type) {
-            let camera_label = self.camera_available.get();
-            let start_session_btn = self.start_session_btn.get();
             let ctx = glib::MainContext::default();
-            ctx.spawn_local(
-                clone!(@weak camera_label, @weak start_session_btn => async move {
-                    let is_present = camera::is_present().await.unwrap_or(false);
-                    if is_present {
-                        camera_label.set_text("Yes");
-                    } else {
-                        camera_label.set_text("No");
-                    }
-                    start_session_btn.set_sensitive(is_present);
-                }),
-            );
+            ctx.spawn_local(clone!(@weak self as page => async move {
+                let is_present = camera::is_present().await.unwrap_or(false);
+                if is_present {
+                    page.camera_label.set_text("Yes");
+                } else {
+                    page.camera_label.set_text("No");
+                }
+                page.start_session_btn.set_sensitive(is_present);
+            }));
 
             self.picture.set_paintable(Some(&self.paintable));
         }
@@ -95,23 +91,17 @@ impl CameraPage {
     }
 
     pub fn start_stream(&self) {
-        let self_ = imp::CameraPage::from_instance(self);
-
         let ctx = glib::MainContext::default();
-        let start_session_btn = self_.start_session_btn.get();
-        let close_session_btn = self_.close_session_btn.get();
-        let paintable = &self_.paintable;
-        let revealer = self_.revealer.get();
-        ctx.spawn_local(
-            clone!(@weak paintable, @weak start_session_btn, @weak close_session_btn, @weak revealer => async move {
-                if let Ok(Response::Ok(stream_fd)) = camera::stream().await {
-                    paintable.set_pipewire_fd(stream_fd);
-                    start_session_btn.set_sensitive(false);
-                    close_session_btn.set_sensitive(true);
-                    revealer.set_reveal_child(true);
-                }
-            }),
-        );
+        ctx.spawn_local(clone!(@weak self as page => async move {
+            let self_ = imp::CameraPage::from_instance(&page);
+
+            if let Ok(Response::Ok(stream_fd)) = camera::stream().await {
+                self_.paintable.set_pipewire_fd(stream_fd);
+                self_.start_session_btn.set_sensitive(false);
+                self_.close_session_btn.set_sensitive(true);
+                self_.revealer.set_reveal_child(true);
+            }
+        }));
     }
 
     pub fn stop_stream(&self) {

@@ -75,41 +75,37 @@ impl ScreenshotPage {
     }
 
     pub fn pick_color(&self) {
-        let self_ = imp::ScreenshotPage::from_instance(self);
-
         let ctx = glib::MainContext::default();
-        let color_widget = self_.color_widget.get();
         // used for retrieving a window identifier
         let root = self.get_root().unwrap();
-        ctx.spawn_local(async move {
+        ctx.spawn_local(clone!(@weak self as page => async move {
+            let self_ = imp::ScreenshotPage::from_instance(&page);
             let identifier = WindowIdentifier::from_window(&root).await;
             if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
-                color_widget.set_rgba(color.into());
+                self_.color_widget.set_rgba(color.into());
             }
-        });
+        }));
     }
 
     pub fn screenshot(&self) {
-        let self_ = imp::ScreenshotPage::from_instance(self);
-
-        let interactive = self_.interactive_switch.get_active();
-        let modal = self_.modal_switch.get_active();
-        let screenshot_photo = self_.screenshot_photo.get();
-        let revealer = self_.revealer.get();
-        // used for retrieving a window identifier
-        let root = self.get_root().unwrap();
-
         let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak root => async move {
+        ctx.spawn_local(clone!(@weak self as page => async move {
+            let self_ = imp::ScreenshotPage::from_instance(&page);
+            // used for retrieving a window identifier
+            let root = page.get_root().unwrap();
             let identifier = WindowIdentifier::from_window(&root).await;
+
+            let interactive = self_.interactive_switch.get_active();
+            let modal = self_.modal_switch.get_active();
+
             if let Ok(Response::Ok(screenshot)) = screenshot::take(identifier, interactive, modal).await
             {
                 let file = gio::File::new_for_uri(&screenshot.uri);
-                screenshot_photo.set_file(Some(&file));
-                revealer.show(); // Revealer has a weird issue where it still
+                self_.screenshot_photo.set_file(Some(&file));
+                self_.revealer.show(); // Revealer has a weird issue where it still
                                  // takes space even if it's child is hidden
 
-                revealer.set_reveal_child(true);
+                self_.revealer.set_reveal_child(true);
             }
         }));
     }

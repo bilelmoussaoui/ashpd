@@ -107,28 +107,22 @@ impl ScreenCastPage {
     }
 
     pub fn start_session(&self) {
-        let self_ = imp::ScreenCastPage::from_instance(self);
-
         let ctx = glib::MainContext::default();
-        let streams_carousel = self_.streams_carousel.get();
-        let response_group = self_.response_group.get();
-        let close_button = self_.close_session_btn.get();
-        let multiple = self_.multiple_switch.get_active();
-        let types = match self_.types_comborow.get_selected() {
-            0 => BitFlags::<SourceType>::from_flag(SourceType::Monitor),
-            1 => BitFlags::<SourceType>::from_flag(SourceType::Window),
-            _ => SourceType::Monitor | SourceType::Window,
-        };
-        let cursor_mode = match self_.cursor_comborow.get_selected() {
-            0 => BitFlags::<CursorMode>::from_flag(CursorMode::Hidden),
-            1 => BitFlags::<CursorMode>::from_flag(CursorMode::Embedded),
-            _ => BitFlags::<CursorMode>::from_flag(CursorMode::Metadata),
-        };
+        ctx.spawn_local(clone!(@weak self as page => async move {
+            let self_ = imp::ScreenCastPage::from_instance(&page);
+                let types = match self_.types_comborow.get_selected() {
+                    0 => BitFlags::<SourceType>::from_flag(SourceType::Monitor),
+                    1 => BitFlags::<SourceType>::from_flag(SourceType::Window),
+                    _ => SourceType::Monitor | SourceType::Window,
+                };
+                let cursor_mode = match self_.cursor_comborow.get_selected() {
+                    0 => BitFlags::<CursorMode>::from_flag(CursorMode::Hidden),
+                    1 => BitFlags::<CursorMode>::from_flag(CursorMode::Embedded),
+                    _ => BitFlags::<CursorMode>::from_flag(CursorMode::Metadata),
+                };
+                let multiple = self_.multiple_switch.get_active();
 
-        ctx.spawn_local(
-            clone!(@weak streams_carousel, @weak response_group, @weak self as page => async move {
                 let root = page.get_root().unwrap();
-
                 let identifier = WindowIdentifier::from_window(&root).await;
 
                 if let Ok((streams, fd, session)) = screencast(identifier, multiple, types, cursor_mode).await {
@@ -138,13 +132,12 @@ impl ScreenCastPage {
                         picture.set_paintable(Some(&paintable));
                         picture.set_size_request(400, 400);
                         paintable.set_pipewire_node_id(fd, stream.pipe_wire_node_id());
-                        streams_carousel.append(&picture);
+                        self_.streams_carousel.append(&picture);
                     });
 
-                    let self_ = imp::ScreenCastPage::from_instance(&page);
-                    response_group.show();
+                    self_.response_group.show();
                     self_.session.lock().await.replace(session);
-                    close_button.set_sensitive(true);
+                    self_.close_button.set_sensitive(true);
                 }
             }),
         );
@@ -153,23 +146,18 @@ impl ScreenCastPage {
     pub fn stop_session(&self) {
         let self_ = imp::ScreenCastPage::from_instance(self);
         let ctx = glib::MainContext::default();
-        let response_group = self_.response_group.get();
-        let close_button = self_.close_session_btn.get();
-        let streams_carousel = &self_.streams_carousel.get();
-        ctx.spawn_local(
-            clone!(@weak streams_carousel, @weak response_group, @weak self as page => async move {
-                let self_ = imp::ScreenCastPage::from_instance(&page);
-                if let Some(session) = self_.session.lock().await.take() {
-                    let _ = session.close().await;
-                }
-                while let Some(child) = streams_carousel.get_next_sibling() {
-                    streams_carousel.remove(&child);
-                }
-                //paintable.close_pipeline();
-                response_group.hide();
-                close_button.set_sensitive(false);
-            }),
-        );
+        ctx.spawn_local(clone!(@weak self as page => async move {
+            let self_ = imp::ScreenCastPage::from_instance(&page);
+            if let Some(session) = self_.session.lock().await.take() {
+                let _ = session.close().await;
+            }
+            while let Some(child) = self_.streams_carousel.get_next_sibling() {
+                self_.streams_carousel.remove(&child);
+            }
+            //paintable.close_pipeline();
+            self_.response_group.hide();
+            self_.close_button.set_sensitive(false);
+        }));
     }
 }
 

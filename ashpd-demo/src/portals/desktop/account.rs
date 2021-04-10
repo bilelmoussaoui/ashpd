@@ -61,24 +61,21 @@ impl AccountPage {
     }
 
     pub fn get_user_information(&self) {
-        let self_ = imp::AccountPage::from_instance(self);
-        let reason = self_.reason.get_text();
         let ctx = glib::MainContext::default();
-        let id_label = self_.id_label.get();
-        let name_label = self_.name_label.get();
-        let response_group = self_.response_group.get();
-        let avatar = self_.avatar.get();
         let root = self.get_root().unwrap();
-        ctx.spawn_local(clone!(@weak id_label, @weak name_label => async move {
+        ctx.spawn_local(clone!(@weak self as page => async move {
+            let self_ = imp::AccountPage::from_instance(&page);
             let identifier = WindowIdentifier::from_window(&root).await;
+            let reason = self_.reason.get_text();
+
             if let Ok(Response::Ok(user_info)) = account::get_user_information(identifier, &reason).await
             {
-                id_label.set_text(&user_info.id);
-                name_label.set_text(&user_info.name);
+                self_.id_label.set_text(&user_info.id);
+                self_.name_label.set_text(&user_info.name);
                 let file = gio::File::new_for_uri(&user_info.image);
                 let icon = gio::FileIcon::new(&file);
-                avatar.set_from_gicon(&icon);
-                response_group.show();
+                self_.avatar.set_from_gicon(&icon);
+                self_.response_group.show();
             }
         }));
     }

@@ -71,7 +71,7 @@ impl WallpaperPage {
         filter.set_name(Some("images"));
         file_chooser.add_filter(&filter);
 
-        let show_preview = self_.preview_switch.get().get_active();
+        let show_preview = self_.preview_switch.get_active();
         let selected_item = self_.set_on_combo.get_selected_item().unwrap();
         let set_on = wallpaper::SetOn::from_str(
             &selected_item
