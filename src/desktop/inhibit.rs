@@ -2,7 +2,7 @@
 //!
 //! How to inhibit logout/user switch
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use ashpd::desktop::inhibit::{
 //!     CreateMonitorOptions, InhibitFlags, InhibitOptions, InhibitProxy, InhibitState, SessionState,
 //! };
