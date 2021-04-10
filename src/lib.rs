@@ -6,6 +6,9 @@
 //!
 //! It provides an alternative to the C library <https://github.com/flatpak/libportal>.
 //!
+//! # Examples
+//!
+//! Ask the compositor to pick a color
 //! ```rust,no_run
 //! use ashpd::{desktop::screenshot, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
@@ -19,20 +22,25 @@
 //! }
 //! ```
 //!
+//! Start a PipeWire stream from the user's camera
 //! ```rust,no_run
 //! use ashpd::{desktop::camera, Response, WindowIdentifier};
 //! use zbus::fdo::Result;
 //!
 //! async fn run() -> Result<()> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Ok(Response::Ok(pipewire_node_id)) = camera::stream().await {
-//!         // Render the stream with GStreamer for example, see the demo
+//!     if camera::is_present().await? {
+//!         if let Ok(Response::Ok(pipewire_fd)) = camera::stream().await {
+//!             // Render the stream with GStreamer for example, see the demo
+//!         }
 //!     }
 //!     Ok(())
 //! }
 //! ```
 //!
-//! ## Optional features
+//! For a tour of the various portals, see the ASHPD demo application.
+//!
+//! # Optional features
 //!
 //! | Feature | Description |
 //! | ---     | ----------- |
@@ -40,10 +48,6 @@
 //! |  | Implement `From<gtk3::Window>` for [`WindowIdentifier`] |
 //! | feature_gtk4 | Implement `From<Color>` for `gdk4::RGBA` |
 //! |  | Provides [`WindowIdentifier::from_window`] |
-//!
-//!
-//! [`Color`]: ./desktop/screenshot/struct.Color.html
-//! [`WindowIdentifier`]: ./window_identifier/struct.WindowIdentifier.html
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
 compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 
