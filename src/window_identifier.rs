@@ -25,7 +25,7 @@ use serde::{ser::Serializer, Serialize};
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
     #[cfg(feature = "feature_gtk4")]
-    Gtk {
+    Gtk4 {
         /// The top level window
         root: gtk4::Root,
         /// The exported window handle
@@ -33,7 +33,7 @@ pub enum WindowIdentifier {
     },
     /// GTK 3 Window Identifier
     #[cfg(feature = "feature_gtk3")]
-    Gtk {
+    Gtk3 {
         /// The exported window handle
         handle: String,
     },
@@ -54,9 +54,9 @@ impl Serialize for WindowIdentifier {
     {
         let handle = match self {
             #[cfg(feature = "feature_gtk4")]
-            Self::Gtk { root: _, handle } => handle,
+            Self::Gtk4 { root: _, handle } => handle,
             #[cfg(feature = "feature_gtk3")]
-            Self::Gtk { handle } => handle,
+            Self::Gtk3 { handle } => handle,
             Self::Other(handle) => handle,
         };
         serializer.serialize_str(handle)
@@ -100,7 +100,7 @@ impl From<gtk3::Window> for WindowIdentifier {
         };
 
         match handle {
-            Some(h) => WindowIdentifier::Gtk { handle: h },
+            Some(h) => WindowIdentifier::Gtk3 { handle: h },
             None => WindowIdentifier::default(),
         }
     }
@@ -163,7 +163,7 @@ impl WindowIdentifier {
         };
 
         match handle {
-            Some(h) => WindowIdentifier::Gtk {
+            Some(h) => WindowIdentifier::Gtk4 {
                 root: win.as_ref().clone(),
                 handle: h,
             },
@@ -175,7 +175,7 @@ impl WindowIdentifier {
 impl Drop for WindowIdentifier {
     fn drop(&mut self) {
         #[cfg(feature = "feature_gtk4")]
-        if let Self::Gtk { root, handle: _ } = self {
+        if let Self::Gtk4 { root, handle: _ } = self {
             use gtk4::prelude::{Cast, NativeExt, ObjectExt};
 
             let surface = root
