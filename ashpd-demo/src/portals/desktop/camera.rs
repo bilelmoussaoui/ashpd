@@ -1,5 +1,3 @@
-use std::os::unix::io;
-
 use ashpd::{desktop::camera, Response};
 use glib::clone;
 use gtk::glib;
@@ -66,20 +64,21 @@ mod imp {
     impl ObjectImpl for CameraPage {
         fn constructed(&self, _obj: &Self::Type) {
             let camera_label = self.camera_available.get();
+            let start_session_btn = self.start_session_btn.get();
             let ctx = glib::MainContext::default();
             ctx.spawn_local(
-                clone!(@weak camera_label=> async move {
+                clone!(@weak camera_label, @weak start_session_btn => async move {
                     let is_present = camera::is_present().await.unwrap_or(false);
                     if is_present {
                         camera_label.set_text("Yes");
                     } else {
                         camera_label.set_text("No");
                     }
+                    start_session_btn.set_sensitive(is_present);
                 }),
             );
 
             self.picture.set_paintable(Some(&self.paintable));
-            self.start_session_btn.set_sensitive(camera_available);
         }
     }
     impl WidgetImpl for CameraPage {}
