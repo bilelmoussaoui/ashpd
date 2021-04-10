@@ -40,7 +40,7 @@ async fn run() -> Result<()> {
 | feature_gtk3 | Implement `From<Color>` for [`gdk3::RGBA`] |
 |  | Implement `From<gtk3::Window>` for [`WindowIdentifier`] |
 | feature_gtk4 | Implement `From<Color>` for [`gdk4::RGBA`] |
-|  | Provides ['WindowIdentifier::from_window] |
+|  | Provides [`WindowIdentifier::from_window`] |
 
 [`Color`]: https://bilelmoussaoui.github.io/ashpd/ashpd/desktop/screenshot/struct.Color.html
 [`WindowIdentifier`]: https://bilelmoussaoui.github.io/ashpd/ashpd/struct.WindowIdentifier.html
