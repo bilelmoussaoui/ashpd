@@ -64,12 +64,12 @@ mod imp {
     impl ObjectImpl for CameraPage {
         fn constructed(&self, _obj: &Self::Type) {
             let ctx = glib::MainContext::default();
-            ctx.spawn_local(clone!(@weak self as page => async move {
+            ctx.spawn_local(clone!(@strong self as page => async move {
                 let is_present = camera::is_present().await.unwrap_or(false);
                 if is_present {
-                    page.camera_label.set_text("Yes");
+                    page.camera_available.set_text("Yes");
                 } else {
-                    page.camera_label.set_text("No");
+                    page.camera_available.set_text("No");
                 }
                 page.start_session_btn.set_sensitive(is_present);
             }));

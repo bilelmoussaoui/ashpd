@@ -137,7 +137,7 @@ impl ScreenCastPage {
 
                     self_.response_group.show();
                     self_.session.lock().await.replace(session);
-                    self_.close_button.set_sensitive(true);
+                    self_.close_session_btn.set_sensitive(true);
                 }
             }),
         );
@@ -156,7 +156,7 @@ impl ScreenCastPage {
             }
             //paintable.close_pipeline();
             self_.response_group.hide();
-            self_.close_button.set_sensitive(false);
+            self_.close_session_btn.set_sensitive(false);
         }));
     }
 }
