@@ -1,12 +1,6 @@
-use std::os::unix::io;
-use std::os::unix::io::AsRawFd;
 use std::{collections::HashMap, sync::Arc};
 
-use ashpd::zbus;
-use ashpd::{
-    desktop::camera::{AsyncCameraProxy, CameraAccessOptions, CameraProxy},
-    BasicResponse, Response,
-};
+use ashpd::{desktop::camera, Response};
 use futures::{lock::Mutex, FutureExt};
 use glib::clone;
 use gtk::glib;
@@ -108,7 +102,7 @@ impl CameraPage {
         let revealer = self_.revealer.get();
         ctx.spawn_local(
             clone!(@weak paintable, @weak start_session_btn, @weak close_session_btn, @weak revealer => async move {
-                if let Ok(Response::Ok(stream_fd)) = start_stream().await {
+                if let Ok(Response::Ok(stream_fd)) = camera::stream().await {
                     paintable.set_pipewire_fd(stream_fd);
                     start_session_btn.set_sensitive(false);
                     close_session_btn.set_sensitive(true);
@@ -126,34 +120,4 @@ impl CameraPage {
         self_.start_session_btn.set_sensitive(true);
         self_.revealer.set_reveal_child(false);
     }
-}
-
-pub async fn start_stream() -> zbus::Result<Response<io::RawFd>> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncCameraProxy::new(&connection)?;
-    let request = proxy.access_camera(CameraAccessOptions::default()).await?;
-
-    let (request_sender, request_receiver) = futures::channel::oneshot::channel();
-    let request_sender = Arc::new(Mutex::new(Some(request_sender)));
-    let request_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = request_sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(request_id).await?;
-
-    if let Response::Err(err) = request_receiver.await.unwrap() {
-        return Ok(Response::Err(err));
-    }
-    let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
-    Ok(Response::Ok(remote_fd.as_raw_fd()))
 }

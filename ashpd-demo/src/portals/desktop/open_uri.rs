@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use ashpd::desktop::open_uri::{AsyncOpenURIProxy, OpenFileOptions};
-use ashpd::{zbus, BasicResponse, Response, WindowIdentifier};
+use ashpd::{desktop::open_uri, Response, WindowIdentifier};
 use futures::{lock::Mutex, FutureExt};
 use gtk::glib;
 use gtk::prelude::*;
@@ -61,56 +60,12 @@ impl OpenUriPage {
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(color)) = open_uri(
-                identifier,
-                "https://google.com",
-                writable,
-                ask,
-            )
-            .await
+            if let Ok(Response::Ok(color)) =
+                open_uri::open_uri(identifier, "https://google.com", writable, ask).await
             {
                 //TODO: handle the response
                 println!("{:#?}", color);
             }
         });
     }
-}
-
-pub async fn open_uri(
-    window_identifier: WindowIdentifier,
-    uri: &str,
-    writable: bool,
-    ask: bool,
-) -> zbus::Result<Response<BasicResponse>> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncOpenURIProxy::new(&connection)?;
-    let request = proxy
-        .open_uri(
-            window_identifier,
-            uri,
-            OpenFileOptions::default().writeable(writable).ask(ask),
-        )
-        .await?;
-
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let response = receiver.await.unwrap();
-    Ok(response)
 }
