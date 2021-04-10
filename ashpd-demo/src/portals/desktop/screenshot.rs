@@ -1,9 +1,6 @@
 use std::sync::Arc;
 
-use ashpd::desktop::screenshot::{
-    AsyncScreenshotProxy, Color, PickColorOptions, Screenshot, ScreenshotOptions,
-};
-use ashpd::zbus;
+use ashpd::desktop::screenshot;
 use ashpd::{Response, WindowIdentifier};
 use futures::lock::Mutex;
 use futures::FutureExt;
@@ -90,7 +87,7 @@ impl ScreenshotPage {
         let root = self.get_root().unwrap();
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(color)) = pick_color(identifier).await {
+            if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
                 color_widget.set_rgba(color.into());
             }
         });
@@ -109,7 +106,7 @@ impl ScreenshotPage {
         let ctx = glib::MainContext::default();
         ctx.spawn_local(clone!(@weak root => async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(screenshot)) = screenshot(identifier, interactive, modal).await
+            if let Ok(Response::Ok(screenshot)) = screenshot::take(identifier, interactive, modal).await
             {
                 let file = gio::File::new_for_uri(&screenshot.uri);
                 screenshot_photo.set_file(Some(&file));
@@ -120,73 +117,4 @@ impl ScreenshotPage {
             }
         }));
     }
-}
-
-pub async fn pick_color(window_identifier: WindowIdentifier) -> zbus::Result<Response<Color>> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenshotProxy::new(&connection)?;
-    let request = proxy
-        .pick_color(window_identifier, PickColorOptions::default())
-        .await?;
-
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<Color>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let color = receiver.await.unwrap();
-    Ok(color)
-}
-
-pub async fn screenshot(
-    window_identifier: WindowIdentifier,
-    interactive: bool,
-    modal: bool,
-) -> zbus::Result<Response<Screenshot>> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenshotProxy::new(&connection)?;
-    let request = proxy
-        .screenshot(
-            window_identifier,
-            ScreenshotOptions::default()
-                .interactive(interactive)
-                .modal(modal),
-        )
-        .await?;
-
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<Screenshot>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let screenshot = receiver.await.unwrap();
-    Ok(screenshot)
 }

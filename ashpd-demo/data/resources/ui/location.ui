@@ -24,7 +24,7 @@
                 <property name="selection-mode">none</property>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Distance Treshold</property>
+                    <property name="title">Distance Threshold</property>
                     <property name="subtitle">In meters</property>
                     <property name="activatable-widget">distance_spin</property>
                     <child>
@@ -37,7 +37,7 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Time Treshold</property>
+                    <property name="title">Time Threshold</property>
                     <property name="subtitle">In meters</property>
                     <property name="activatable-widget">time_spin</property>
                     <child>

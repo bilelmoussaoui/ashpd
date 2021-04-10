@@ -1,12 +1,10 @@
 use std::{cell::RefCell, str::FromStr, sync::Arc};
 
 use adw::prelude::*;
-use ashpd::desktop::wallpaper::{AsyncWallpaperProxy, SetOn, WallpaperOptions};
-use ashpd::zbus;
-use ashpd::{BasicResponse, Response, WindowIdentifier};
+use ashpd::{desktop::wallpaper, Response, WindowIdentifier};
 use futures::{lock::Mutex, FutureExt};
-use gtk::glib;
 use glib::clone;
+use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -76,7 +74,7 @@ impl WallpaperPage {
 
         let show_preview = self_.preview_switch.get().get_active();
         let selected_item = self_.set_on_combo.get_selected_item().unwrap();
-        let set_on = SetOn::from_str(
+        let set_on = wallpaper::SetOn::from_str(
             &selected_item
                 .downcast_ref::<gtk::StringObject>()
                 .unwrap()
@@ -91,7 +89,7 @@ impl WallpaperPage {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak root => async move {
                     let identifier = WindowIdentifier::from_window(&root).await;
-                    if let Ok(Response::Ok(color)) = set_wallpaper_uri(
+                    if let Ok(Response::Ok(color)) = wallpaper::set_wallpaper_uri(
                         identifier,
                         &wallpaper_uri,
                         show_preview,
@@ -109,45 +107,4 @@ impl WallpaperPage {
         file_chooser.show();
         self_.dialog.replace(Some(file_chooser));
     }
-}
-
-pub async fn set_wallpaper_uri(
-    window_identifier: WindowIdentifier,
-    wallpaper_uri: &str,
-    show_preview: bool,
-    set_on: SetOn,
-) -> zbus::Result<Response<BasicResponse>> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncWallpaperProxy::new(&connection)?;
-    let request = proxy
-        .set_wallpaper_uri(
-            window_identifier,
-            wallpaper_uri,
-            WallpaperOptions::default()
-                .show_preview(show_preview)
-                .set_on(set_on),
-        )
-        .await?;
-
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let wallpaper = receiver.await.unwrap();
-    Ok(wallpaper)
 }

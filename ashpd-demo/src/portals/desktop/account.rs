@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use ashpd::desktop::account::{AsyncAccountProxy, UserInfo, UserInfoOptions};
-use ashpd::zbus;
-use ashpd::{Response, WindowIdentifier};
+use ashpd::{desktop::account, Response, WindowIdentifier};
 use futures::lock::Mutex;
 use futures::FutureExt;
 use glib::clone;
@@ -77,7 +75,7 @@ impl AccountPage {
         let root = self.get_root().unwrap();
         ctx.spawn_local(clone!(@weak id_label, @weak name_label => async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(user_info)) = get_user_information(identifier, &reason).await
+            if let Ok(Response::Ok(user_info)) = account::get_user_information(identifier, &reason).await
             {
                 id_label.set_text(&user_info.id);
                 name_label.set_text(&user_info.name);
@@ -88,40 +86,4 @@ impl AccountPage {
             }
         }));
     }
-}
-
-pub async fn get_user_information(
-    window_identifier: WindowIdentifier,
-    reason: &str,
-) -> zbus::Result<Response<UserInfo>> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncAccountProxy::new(&connection)?;
-    let request = proxy
-        .get_user_information(
-            window_identifier,
-            UserInfoOptions::default().reason(&reason),
-        )
-        .await?;
-
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<UserInfo>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let color = receiver.await.unwrap();
-    Ok(color)
 }

@@ -256,11 +256,7 @@ pub async fn start_session(
     window_identifier: WindowIdentifier,
 ) -> zbus::Result<(Vec<Stream>, zvariant::Fd)> {
     let request = proxy
-        .start(
-            session,
-            window_identifier,
-            StartCastOptions::default(),
-        )
+        .start(session, window_identifier, StartCastOptions::default())
         .await?;
     let (sender, receiver) = futures::channel::oneshot::channel();
 
