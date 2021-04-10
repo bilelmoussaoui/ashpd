@@ -7,6 +7,10 @@ the XDG portals DBus interfaces. The library aims to provide an easy way to
 interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
 It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
 
+## Examples
+
+Ask the compositor to pick a color 
+
 ```rust,no_run
 use ashpd::{desktop::screenshot, Response, WindowIdentifier};
 use zbus::fdo::Result;
@@ -19,6 +23,8 @@ async fn run() -> Result<()> {
     Ok(())
 }
 ```
+
+Start a PipeWire stream from the user's camera
 
 ```rust,no_run
 use ashpd::{desktop::camera, Response};
