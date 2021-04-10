@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use ashpd::desktop::location::{CreateSessionOptions, LocationProxy, SessionStartOptions};
 //! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
 //! use std::convert::TryFrom;

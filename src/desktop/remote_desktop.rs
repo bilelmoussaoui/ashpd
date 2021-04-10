@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use ashpd::desktop::remote_desktop::{
 //!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy,
 //!     SelectDevicesOptions, SelectedDevices, StartRemoteOptions,

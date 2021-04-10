@@ -3,7 +3,7 @@
 //! How to create a screen cast session & start it.
 //! The portal is currently useless without PipeWire & Rust support.
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use ashpd::desktop::screencast::{
 //!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
