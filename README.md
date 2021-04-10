@@ -21,13 +21,13 @@ async fn run() -> Result<()> {
 ```
 
 ```rust,no_run
-use ashpd::{desktop::camera, Response, WindowIdentifier};
+use ashpd::{desktop::camera, Response};
 use zbus::fdo::Result;
-
 async fn run() -> Result<()> {
-    let identifier = WindowIdentifier::default();
-    if let Ok(Response::Ok(pipewire_node_id)) = camera::stream().await {
-        // Render the stream with GStreamer for example, see the demo
+    if camera::is_present().await? {
+        if let Ok(Response::Ok(pipewire_fd)) = camera::stream().await {
+            // Use the PipeWire file descriptor with GStreamer for example
+        }
     }
     Ok(())
 }
