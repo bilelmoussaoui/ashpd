@@ -13,7 +13,7 @@
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let identifier = WindowIdentifier::default();
 //!
-//!     if let Ok(Response::Ok(_)) = open_uri::open_file(identifier, file.as_raw_fd(), false, true).await {
+//!     if let Response::Ok(_) = open_uri::open_file(identifier, file.as_raw_fd(), false, true).await? {
 //!         // Success!
 //!     }
 //!     Ok(())
@@ -28,13 +28,13 @@
 //!
 //! async fn run() -> Result<()> {
 //!
-//!     if let Ok(Response::Ok(_)) = open_uri::open_uri(
+//!     if let Response::Ok(_) = open_uri::open_uri(
 //!         WindowIdentifier::default(),
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
 //!         false,
 //!         true,
 //!     )
-//!     .await
+//!     .await?
 //!     {
 //!         // Success!
 //!     }

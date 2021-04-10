@@ -6,8 +6,8 @@
 //!
 //! async fn run() -> Result<()> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Ok(Response::Ok(user_info)) =
-//!         account::get_user_information(identifier, "App would like to access user information").await
+//!     if let Response::Ok(user_info) =
+//!         account::get_user_information(identifier, "App would like to access user information").await?
 //!     {
 //!         println!("Name: {}", user_info.name);
 //!         println!("ID: {}", user_info.id);

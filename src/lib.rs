@@ -15,7 +15,7 @@
 //!
 //! async fn run() -> Result<()> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
+//!     if let Response::Ok(color) = screenshot::pick_color(identifier).await? {
 //!         println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!     }
 //!     Ok(())
@@ -30,7 +30,7 @@
 //! async fn run() -> Result<()> {
 //!     let identifier = WindowIdentifier::default();
 //!     if camera::is_present().await? {
-//!         if let Ok(Response::Ok(pipewire_fd)) = camera::stream().await {
+//!         if let Response::Ok(pipewire_fd) = camera::stream().await? {
 //!             // Render the stream with GStreamer for example, see the demo
 //!         }
 //!     }

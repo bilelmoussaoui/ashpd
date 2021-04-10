@@ -17,7 +17,7 @@ use zbus::fdo::Result;
 
 async fn run() -> Result<()> {
     let identifier = WindowIdentifier::default();
-    if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
+    if let Response::Ok(color) = screenshot::pick_color(identifier).await? {
         println!("({}, {}, {})", color.red(), color.green(), color.blue());
     }
     Ok(())
@@ -30,10 +30,8 @@ Start a PipeWire stream from the user's camera
 use ashpd::{desktop::camera, Response};
 use zbus::fdo::Result;
 async fn run() -> Result<()> {
-    if camera::is_present().await? {
-        if let Ok(Response::Ok(pipewire_fd)) = camera::stream().await {
-            // Use the PipeWire file descriptor with GStreamer for example
-        }
+    if let Response::Ok(pipewire_fd) = camera::stream().await? {
+        // Use the PipeWire file descriptor with GStreamer for example
     }
     Ok(())
 }

@@ -13,13 +13,13 @@
 //!     let wallpaper =
 //!         File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
 //!
-//!     if let Ok(Response::Ok(_)) = wallpaper::set_from_file(
+//!     if let Response::Ok(_) = wallpaper::set_from_file(
 //!         identifier,
 //!         wallpaper.as_raw_fd(),
 //!         true,
 //!         wallpaper::SetOn::Both,
 //!     )
-//!     .await
+//!     .await?
 //!     {
 //!         // wallpaper was set successfully
 //!     }
@@ -35,13 +35,13 @@
 //!
 //! async fn run() -> Result<()> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Ok(Response::Ok(_)) = wallpaper::set_from_uri(
+//!     if let Response::Ok(_) = wallpaper::set_from_uri(
 //!         identifier,
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
 //!         true,
 //!         wallpaper::SetOn::Both,
 //!     )
-//!     .await
+//!     .await?
 //!     {
 //!         // wallpaper was set successfully
 //!     }

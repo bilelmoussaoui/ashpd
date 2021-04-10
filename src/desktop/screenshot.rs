@@ -8,7 +8,7 @@
 //!
 //! async fn run() -> Result<()> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Ok(Response::Ok(screenshot)) = screenshot::take(identifier, true, false).await {
+//!     if let Response::Ok(screenshot) = screenshot::take(identifier, true, false).await? {
 //!         println!("URI: {}", screenshot.uri);
 //!     }
 //!     Ok(())
@@ -22,7 +22,7 @@
 //!
 //! async fn run() -> Result<()> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
+//!     if let Response::Ok(color) = screenshot::pick_color(identifier).await? {
 //!         println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!     }
 //!     Ok(())
