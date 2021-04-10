@@ -36,9 +36,9 @@
 //!
 //! | Feature | Description |
 //! | ---     | ----------- |
-//! | feature_gtk3 | Implement `Into<gdk3::RGBA>` for [`Color`] |
+//! | feature_gtk3 | Implement `From<Color>` for [`gdk3::RGBA`] |
 //! |  | Implement `From<gtk3::Window>` for [`WindowIdentifier`] |
-//! | feature_gtk4 | Implement `Into<gdk4::RGBA>` for [`Color`] |
+//! | feature_gtk4 | Implement `From<Color>` for [`gdk4::RGBA`] |
 //! |  | Provides ['WindowIdentifier::from_window] |
 //!
 //!

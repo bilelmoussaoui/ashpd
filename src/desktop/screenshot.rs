@@ -116,24 +116,24 @@ impl Color {
 }
 
 #[cfg(feature = "feature_gtk3")]
-impl Into<gtk3::gdk::RGBA> for Color {
-    fn into(self) -> gtk3::gdk::RGBA {
+impl From<Color> for gtk3::gdk::RGBA {
+    fn from(color: Color) -> gtk3::gdk::RGBA {
         gtk3::gdk::RGBA {
-            red: self.red(),
-            green: self.green(),
-            blue: self.blue(),
-            alpha: 1_f64,
+            red: color.red(),
+            green: color.green(),
+            blue: color.blue(),
+            alpha: 1.0,
         }
     }
 }
 
 #[cfg(feature = "feature_gtk4")]
-impl Into<gtk4::gdk::RGBA> for Color {
-    fn into(self) -> gtk4::gdk::RGBA {
+impl From<Color> for gtk4::gdk::RGBA {
+    fn from(color: Color) -> gtk4::gdk::RGBA {
         gtk4::gdk::RGBA {
-            red: self.red() as f32,
-            green: self.green() as f32,
-            blue: self.blue() as f32,
+            red: color.red() as f32,
+            green: color.green() as f32,
+            blue: color.blue() as f32,
             alpha: 1_f32,
         }
     }

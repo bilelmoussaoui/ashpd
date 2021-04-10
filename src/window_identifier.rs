@@ -15,8 +15,7 @@ use serde::{ser::Serializer, Serialize};
 /// For other windowing systems, or if you don't have a suitable handle, just
 /// use the `Default` implementation.
 ///
-/// Please **note** that the `From<gtk3::Window>` and `From<gtk4::Window>`
-/// implementation are x11 only for now.
+/// Please **note** that the `From<gtk3::Window>` implementation is x11 only for now.
 ///
 /// We would love merge requests that adds other `From<T> for WindowIdentifier`
 /// implementations for other toolkits.
@@ -56,7 +55,7 @@ impl Serialize for WindowIdentifier {
             #[cfg(feature = "feature_gtk4")]
             Self::Gtk { root: _, handle } => handle,
             #[cfg(feature = "feature_gtk3")]
-            Self::Gtk { handle: String } => handle,
+            Self::Gtk { handle } => handle,
             Self::Other(handle) => handle,
         };
         serializer.serialize_str(handle)
@@ -100,7 +99,7 @@ impl From<gtk3::Window> for WindowIdentifier {
         };
 
         match handle {
-            Some(h) => WindowIdentifier::Gtk(h),
+            Some(h) => WindowIdentifier::Gtk { handle: h },
             None => WindowIdentifier::default(),
         }
     }
@@ -165,7 +164,7 @@ impl WindowIdentifier {
         match handle {
             Some(h) => WindowIdentifier::Gtk {
                 root: win.as_ref().clone(),
-                handle: h.to_string(),
+                handle: h,
             },
             None => WindowIdentifier::default(),
         }
@@ -174,28 +173,23 @@ impl WindowIdentifier {
 
 impl Drop for WindowIdentifier {
     fn drop(&mut self) {
-        match self {
-            #[cfg(feature = "feature_gtk4")]
-            Self::Gtk { root, handle: _ } => {
-                use gtk4::prelude::{Cast, NativeExt, ObjectExt};
+        #[cfg(feature = "feature_gtk4")]
+        if let Self::Gtk { root, handle: _ } = self {
+            use gtk4::prelude::{Cast, NativeExt, ObjectExt};
 
-                let surface = root
-                    .get_surface()
-                    .expect("The window has to be mapped first");
-                if surface
-                    .get_display()
-                    .expect("Surface has to be attached to a display")
-                    .get_type()
-                    .name()
-                    == "GdkWaylandDisplay"
-                {
-                    let top_level = surface.downcast::<gdk4wayland::WaylandToplevel>().unwrap();
-                    top_level.unexport_handle();
-                }
+            let surface = root
+                .get_surface()
+                .expect("The window has to be mapped first");
+            if surface
+                .get_display()
+                .expect("Surface has to be attached to a display")
+                .get_type()
+                .name()
+                == "GdkWaylandDisplay"
+            {
+                let top_level = surface.downcast::<gdk4wayland::WaylandToplevel>().unwrap();
+                top_level.unexport_handle();
             }
-            #[cfg(feature = "feature_gtk3")]
-            Self::Gtk { handle: String } => {}
-            _ => (), // Do nothing for other toolkits
         }
     }
 }
