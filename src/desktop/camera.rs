@@ -109,3 +109,13 @@ pub async fn stream() -> zbus::Result<Response<io::RawFd>> {
     let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
     Ok(Response::Ok(remote_fd.as_raw_fd()))
 }
+
+
+/// Check whether a camera is present.
+///
+/// An helper around the `AsyncCameraProxy::is_camera_present` property.
+pub async fn is_present() -> zbus::Result<bool> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AsyncCameraProxy::new(&connection)?;
+    proxy.is_camera_present().await
+}
