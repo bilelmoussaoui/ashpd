@@ -110,7 +110,6 @@ pub async fn stream() -> zbus::Result<Response<io::RawFd>> {
     Ok(Response::Ok(remote_fd.as_raw_fd()))
 }
 
-
 /// Check whether a camera is present.
 ///
 /// An helper around the `AsyncCameraProxy::is_camera_present` property.

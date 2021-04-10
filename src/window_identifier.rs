@@ -15,7 +15,8 @@ use serde::{ser::Serializer, Serialize};
 /// For other windowing systems, or if you don't have a suitable handle, just
 /// use the `Default` implementation.
 ///
-/// Please **note** that the `From<gtk3::Window>` implementation is x11 only for now.
+/// Please **note** that the `From<gtk3::Window>` implementation is x11 only for
+/// now.
 ///
 /// We would love merge requests that adds other `From<T> for WindowIdentifier`
 /// implementations for other toolkits.
