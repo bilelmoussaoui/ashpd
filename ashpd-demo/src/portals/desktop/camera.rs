@@ -1,7 +1,6 @@
-use std::{collections::HashMap, sync::Arc};
+use std::os::unix::io;
 
 use ashpd::{desktop::camera, Response};
-use futures::{lock::Mutex, FutureExt};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -66,15 +65,19 @@ mod imp {
     }
     impl ObjectImpl for CameraPage {
         fn constructed(&self, _obj: &Self::Type) {
-            let connection = zbus::Connection::new_session().unwrap();
-            let camera_proxy = CameraProxy::new(&connection).unwrap();
-            let camera_available = camera_proxy.is_camera_present().unwrap();
+            let camera_label = self.camera_available.get();
+            let ctx = glib::MainContext::default();
+            ctx.spawn_local(
+                clone!(@weak camera_label=> async move {
+                    let is_present = camera::is_present().await.unwrap_or(false);
+                    if is_present {
+                        camera_label.set_text("Yes");
+                    } else {
+                        camera_label.set_text("No");
+                    }
+                }),
+            );
 
-            if camera_available {
-                self.camera_available.set_text("Yes");
-            } else {
-                self.camera_available.set_text("No");
-            }
             self.picture.set_paintable(Some(&self.paintable));
             self.start_session_btn.set_sensitive(camera_available);
         }

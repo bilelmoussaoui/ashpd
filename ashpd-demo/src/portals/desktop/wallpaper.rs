@@ -1,8 +1,7 @@
-use std::{cell::RefCell, str::FromStr, sync::Arc};
+use std::{cell::RefCell, str::FromStr};
 
 use adw::prelude::*;
 use ashpd::{desktop::wallpaper, Response, WindowIdentifier};
-use futures::{lock::Mutex, FutureExt};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -89,7 +88,7 @@ impl WallpaperPage {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak root => async move {
                     let identifier = WindowIdentifier::from_window(&root).await;
-                    if let Ok(Response::Ok(color)) = wallpaper::set_wallpaper_uri(
+                    if let Ok(Response::Ok(color)) = wallpaper::set_from_uri(
                         identifier,
                         &wallpaper_uri,
                         show_preview,
