@@ -1,7 +1,4 @@
-use std::sync::Arc;
-
 use ashpd::{desktop::open_uri, Response, WindowIdentifier};
-use futures::{lock::Mutex, FutureExt};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;

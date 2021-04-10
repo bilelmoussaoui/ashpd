@@ -1,9 +1,5 @@
-use std::sync::Arc;
-
 use ashpd::desktop::screenshot;
 use ashpd::{Response, WindowIdentifier};
-use futures::lock::Mutex;
-use futures::FutureExt;
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
