@@ -11,7 +11,7 @@
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
 //!
-//!     let proxy = FileChooserProxy::new(&connection)?;
+//!     let proxy = FileChooserProxy::new(&connection);
 //!     let request = proxy.open_file(
 //!         WindowIdentifier::default(),
 //!         "open a file to read",
@@ -47,7 +47,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!     let proxy = FileChooserProxy::new(&connection)?;
+//!     let proxy = FileChooserProxy::new(&connection);
 //!     let request = proxy.save_file(
 //!         WindowIdentifier::default(),
 //!         "open a file to write",
@@ -74,7 +74,7 @@
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
 //!
-//!     let proxy = FileChooserProxy::new(&connection)?;
+//!     let proxy = FileChooserProxy::new(&connection);
 //!     let request = proxy.save_files(
 //!         WindowIdentifier::default(),
 //!         "open files to write",

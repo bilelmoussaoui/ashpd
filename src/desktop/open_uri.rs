@@ -172,7 +172,7 @@ pub async fn open_uri(
     ask: bool,
 ) -> zbus::Result<Response<BasicResponse>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncOpenURIProxy::new(&connection)?;
+    let proxy = AsyncOpenURIProxy::new(&connection);
     let request = proxy
         .open_uri(
             window_identifier,
@@ -214,7 +214,7 @@ pub async fn open_file<F: AsRawFd + Serialize + Type>(
     ask: bool,
 ) -> zbus::Result<Response<BasicResponse>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncOpenURIProxy::new(&connection)?;
+    let proxy = AsyncOpenURIProxy::new(&connection);
     let request = proxy
         .open_file(
             window_identifier,
@@ -254,7 +254,7 @@ pub async fn open_directory<F: AsRawFd + Serialize + Type>(
     directory: F,
 ) -> zbus::Result<Response<BasicResponse>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncOpenURIProxy::new(&connection)?;
+    let proxy = AsyncOpenURIProxy::new(&connection);
     let request = proxy
         .open_directory(window_identifier, directory, OpenDirOptions::default())
         .await?;

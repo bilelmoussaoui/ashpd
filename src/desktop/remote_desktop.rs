@@ -56,7 +56,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!     let proxy = RemoteDesktopProxy::new(&connection)?;
+//!     let proxy = RemoteDesktopProxy::new(&connection);
 //!
 //!     let request = proxy.create_session(
 //!         CreateRemoteOptions::default()

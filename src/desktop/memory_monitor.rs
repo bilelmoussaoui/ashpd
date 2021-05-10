@@ -6,7 +6,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = MemoryMonitorProxy::new(&connection)?;
+//!     let proxy = MemoryMonitorProxy::new(&connection);
 //!     proxy.connect_low_memory_warning(move |level| {
 //!         println!("{:#?}", level);
 //!         Ok(())

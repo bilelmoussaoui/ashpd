@@ -188,7 +188,7 @@ trait Screenshot {
 /// A helper function around the `AsyncScreenshotProxy::pick_color`.
 pub async fn pick_color(window_identifier: WindowIdentifier) -> zbus::Result<Response<Color>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenshotProxy::new(&connection)?;
+    let proxy = AsyncScreenshotProxy::new(&connection);
     let request = proxy
         .pick_color(window_identifier, PickColorOptions::default())
         .await?;
@@ -225,7 +225,7 @@ pub async fn take(
     modal: bool,
 ) -> zbus::Result<Response<Screenshot>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenshotProxy::new(&connection)?;
+    let proxy = AsyncScreenshotProxy::new(&connection);
     let request = proxy
         .screenshot(
             window_identifier,

@@ -281,7 +281,7 @@ pub async fn screencast(
     cursor_mode: BitFlags<CursorMode>,
 ) -> zbus::Result<(Vec<Stream>, RawFd, AsyncSessionProxy<'static>)> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenCastProxy::new(&connection)?;
+    let proxy = AsyncScreenCastProxy::new(&connection);
     let session = create_session(&connection, &proxy).await?;
     select_sources(&session, &proxy, multiple, types, cursor_mode).await?;
 

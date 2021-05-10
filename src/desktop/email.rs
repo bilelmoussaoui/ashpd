@@ -12,7 +12,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!     let proxy = EmailProxy::new(&connection)?;
+//!     let proxy = EmailProxy::new(&connection);
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let request = proxy.compose_email(
 //!         WindowIdentifier::default(),

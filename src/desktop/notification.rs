@@ -8,7 +8,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = NotificationProxy::new(&connection)?;
+//!     let proxy = NotificationProxy::new(&connection);
 //!
 //!     let notification_id = "org.gnome.design.Contrast";
 //!     proxy.add_notification(

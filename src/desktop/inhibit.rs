@@ -13,7 +13,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = InhibitProxy::new(&connection)?;
+//!     let proxy = InhibitProxy::new(&connection);
 //!     let session_token = HandleToken::try_from("sessiontoken").unwrap();
 //!     proxy.create_monitor(
 //!         WindowIdentifier::default(),

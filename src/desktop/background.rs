@@ -9,7 +9,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = BackgroundProxy::new(&connection)?;
+//!     let proxy = BackgroundProxy::new(&connection);
 //!
 //!     let request = proxy.request_background(
 //!         WindowIdentifier::default(),

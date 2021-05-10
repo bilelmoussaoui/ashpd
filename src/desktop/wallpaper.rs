@@ -175,7 +175,7 @@ pub async fn set_from_file<F: AsRawFd + Type + Serialize>(
     set_on: SetOn,
 ) -> zbus::Result<Response<BasicResponse>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncWallpaperProxy::new(&connection)?;
+    let proxy = AsyncWallpaperProxy::new(&connection);
     let request = proxy
         .set_wallpaper_file(
             window_identifier,
@@ -219,7 +219,7 @@ pub async fn set_from_uri(
     set_on: SetOn,
 ) -> zbus::Result<Response<BasicResponse>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncWallpaperProxy::new(&connection)?;
+    let proxy = AsyncWallpaperProxy::new(&connection);
     let request = proxy
         .set_wallpaper_uri(
             window_identifier,

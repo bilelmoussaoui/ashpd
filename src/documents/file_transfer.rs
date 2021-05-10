@@ -10,7 +10,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!     let proxy = FileTransferProxy::new(&connection)?;
+//!     let proxy = FileTransferProxy::new(&connection);
 //!
 //!     let key = proxy.start_transfer(TransferOptions::default().writeable(true).auto_stop(true))?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();

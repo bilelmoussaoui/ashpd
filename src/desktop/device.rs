@@ -9,7 +9,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = DeviceProxy::new(&connection)?;
+//!     let proxy = DeviceProxy::new(&connection);
 //!     let request = proxy.access_device(6879, &[Device::Speakers], AccessDeviceOptions::default())?;
 //!
 //!     request.connect_response(|response: Response<Basic>| {

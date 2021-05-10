@@ -127,7 +127,7 @@ pub async fn locate(
     accuracy: Accuracy,
 ) -> zbus::Result<Response<Location>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncLocationProxy::new(&connection)?;
+    let proxy = AsyncLocationProxy::new(&connection);
     let session = proxy
         .create_session(
             CreateSessionOptions::default()

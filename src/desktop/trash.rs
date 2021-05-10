@@ -61,6 +61,6 @@ trait Trash {
 /// A helper function around the `AsyncTrashProxy::trash_file`.
 pub async fn trash_file<F: AsRawFd + Type + Serialize>(file: F) -> Result<TrashStatus> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncTrashProxy::new(&connection)?;
+    let proxy = AsyncTrashProxy::new(&connection);
     proxy.trash_file(file).await
 }

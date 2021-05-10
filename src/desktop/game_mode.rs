@@ -4,7 +4,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = GameModeProxy::new(&connection)?;
+//!     let proxy = GameModeProxy::new(&connection);
 //!
 //!     println!("{:#?}", proxy.register_game(246612)?);
 //!

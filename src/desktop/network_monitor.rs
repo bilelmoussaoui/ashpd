@@ -6,7 +6,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = NetworkMonitorProxy::new(&connection)?;
+//!     let proxy = NetworkMonitorProxy::new(&connection);
 //!
 //!     println!("{}", proxy.can_reach("www.google.com", 80)?);
 //!

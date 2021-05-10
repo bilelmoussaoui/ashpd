@@ -10,7 +10,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!     let proxy = FlatpakProxy::new(&connection)?;
+//!     let proxy = FlatpakProxy::new(&connection);
 //!
 //!     proxy.spawn(
 //!         "contrast".into(),

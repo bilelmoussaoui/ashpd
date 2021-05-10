@@ -56,7 +56,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = ScreenCastProxy::new(&connection)?;
+//!     let proxy = ScreenCastProxy::new(&connection);
 //!
 //!     let session_token = HandleToken::try_from("session120").unwrap();
 //!

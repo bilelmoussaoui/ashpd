@@ -93,7 +93,7 @@ pub async fn get_user_information(
     reason: &str,
 ) -> zbus::Result<Response<UserInfo>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncAccountProxy::new(&connection)?;
+    let proxy = AsyncAccountProxy::new(&connection);
     let request = proxy
         .get_user_information(
             window_identifier,

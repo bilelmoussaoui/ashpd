@@ -4,7 +4,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = SettingsProxy::new(&connection)?;
+//!     let proxy = SettingsProxy::new(&connection);
 //!
 //!     println!(
 //!         "{:#?}",

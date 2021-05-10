@@ -7,7 +7,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!     let proxy = DocumentsProxy::new(&connection)?;
+//!     let proxy = DocumentsProxy::new(&connection);
 //!
 //!     println!("{:#?}", proxy.get_mount_point()?);
 //!

@@ -66,7 +66,7 @@ impl NotificationPage {
         let body = self_.body_entry.get_text();
 
         let connection = zbus::Connection::new_session()?;
-        let proxy = NotificationProxy::new(&connection)?;
+        let proxy = NotificationProxy::new(&connection);
         proxy.add_notification(
             &notification_id,
             Notification::new("Contrast")

@@ -10,7 +10,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let connection = Connection::new_session()?;
-//!     let proxy = SecretProxy::new(&connection)?;
+//!     let proxy = SecretProxy::new(&connection);
 //!
 //!     let file = File::open("test.txt").unwrap();
 //!

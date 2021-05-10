@@ -82,7 +82,7 @@ trait Camera {
 /// and `AsyncCameraProxy::open_pipe_wire_remote`.
 pub async fn stream() -> zbus::Result<Response<io::RawFd>> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncCameraProxy::new(&connection)?;
+    let proxy = AsyncCameraProxy::new(&connection);
     let request = proxy.access_camera(CameraAccessOptions::default()).await?;
 
     let (sender, receiver) = futures::channel::oneshot::channel();
@@ -115,6 +115,6 @@ pub async fn stream() -> zbus::Result<Response<io::RawFd>> {
 /// An helper around the `AsyncCameraProxy::is_camera_present` property.
 pub async fn is_present() -> Result<bool> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncCameraProxy::new(&connection)?;
+    let proxy = AsyncCameraProxy::new(&connection);
     proxy.is_camera_present().await
 }
