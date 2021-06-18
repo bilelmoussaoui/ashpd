@@ -42,7 +42,7 @@
 //! | feature_gtk3 | Implement `From<Color>` for `gdk3::RGBA` |
 //! |  | Implement `From<gtk3::Window>` for [`WindowIdentifier`] |
 //! | feature_gtk4 | Implement `From<Color>` for `gdk4::RGBA` |
-//! |  | Provides [`WindowIdentifier::from_window`] |
+//! |  | Provides `WindowIdentifier::from_window` |
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
 compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 
