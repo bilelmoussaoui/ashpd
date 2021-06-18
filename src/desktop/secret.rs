@@ -2,32 +2,27 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::secret::{RetrieveOptions, SecretProxy};
-//! use ashpd::{BasicResponse as Basic, Response};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use zbus::{fdo::Result, Connection};
 //! use zvariant::Fd;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = SecretProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = SecretProxy::new(&connection).await?;
 //!
 //!     let file = File::open("test.txt").unwrap();
 //!
-//!     let request = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())?;
-//!     request.connect_response(|r: Response<Basic>| {
-//!         println!("{:#?}", r);
-//!         Ok(())
-//!     })?;
+//!     let request = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default()).await?;
+//!     let response = request.receive_response::<ashpd::BasicResponse>().await?;
 //!
+//!     println!("{:#?}", response);
 //!     Ok(())
 //! }
 //! ```
-use zbus::{dbus_proxy, fdo::Result};
-use zvariant::Fd;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, RequestProxy};
+use crate::{Error, RequestProxy};
+use std::os::unix::prelude::AsRawFd;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on a retrieve secret request.
@@ -44,15 +39,22 @@ impl RetrieveOptions {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Secret",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications retrieve a per-application secret.
 /// The secret can then be used for encrypting confidential data inside the
 /// sandbox.
-trait Secret {
+pub struct SecretProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> SecretProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<SecretProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Secret")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Retrieves a master secret for a sandboxed application.
     ///
     /// # Arguments
@@ -61,10 +63,24 @@ trait Secret {
     /// * `options` - A `RetrieveOptions`.
     ///
     /// [`RetrieveOptions`]: ./struct.RetrieveOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn retrieve_secret(&self, fd: Fd, options: RetrieveOptions);
+    pub async fn retrieve_secret<F: AsRawFd + serde::Serialize + zvariant::Type>(
+        &self,
+        fd: F,
+        options: RetrieveOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("RetrieveSecret", &(fd.as_raw_fd(), options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

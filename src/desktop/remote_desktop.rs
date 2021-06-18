@@ -1,73 +1,38 @@
 //! # Examples
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{
-//!     CreateRemoteOptions, CreateSession, DeviceType, KeyState, RemoteDesktopProxy,
+//!     CreateRemoteOptions, DeviceType, KeyState, RemoteDesktopProxy,
 //!     SelectDevicesOptions, SelectedDevices, StartRemoteOptions,
 //! };
-//! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse, HandleToken, WindowIdentifier};
 //! use std::collections::HashMap;
 //! use std::convert::TryFrom;
-//! use zbus::{fdo::Result, Connection};
-//! use zvariant::ObjectPath;
 //!
-//! fn select_devices(
-//!     handle: &'static ObjectPath<'_>,
-//!     proxy: &'static RemoteDesktopProxy,
-//! ) -> Result<()> {
-//!     let request = proxy.select_devices(handle,
-//!         SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
-//!     )?;
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!
-//!     request.connect_response(move |r: Response<Basic>| {
-//!         if r.is_ok() {
-//!             start_remote(handle, proxy)?;
-//!         }
-//!         Ok(())
-//!     })?;
-//!
-//!     Ok(())
-//! }
-//!
-//! fn start_remote(
-//!     handle: &'static ObjectPath<'_>,
-//!     proxy: &'static RemoteDesktopProxy,
-//! ) -> Result<()> {
-//!     let request = proxy.start(
-//!         handle,
-//!         WindowIdentifier::default(),
-//!         StartRemoteOptions::default(),
-//!     )?;
-//!
-//!     request.connect_response(move |r: Response<SelectedDevices>| {
-//!         proxy.notify_keyboard_keycode(
-//!             handle,
-//!             HashMap::new(),
-//!             13, // Enter key code
-//!             KeyState::Pressed,
-//!         )?;
-//!
-//!         println!("{:#?}", r.unwrap().devices);
-//!         Ok(())
-//!     })?;
-//!
-//!     Ok(())
-//! }
-//!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = RemoteDesktopProxy::new(&connection);
-//!
-//!     let request = proxy.create_session(
+//!     let session = proxy.create_session(
 //!         CreateRemoteOptions::default()
 //!             .session_handle_token(HandleToken::try_from("token").unwrap()),
-//!     )?;
+//!     ).await?;
 //!
-//!     request.connect_response(move |r: Response<CreateSession>| {
-//!         let response = r.unwrap();
-//!         select_devices(response.session_handle(), &proxy)?;
-//!         Ok(())
-//!     })?;
+//!     let request = proxy.select_devices(&session,
+//!         SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
+//!     ).await?;
+//!     let _ = request.receive_response::<BasicResponse>().await?;
+//!
+//!     let request = proxy.start(
+//!         &session,
+//!         WindowIdentifier::default(),
+//!         StartRemoteOptions::default(),
+//!     ).await?;
+//!     let devices = request.receive_response::<SelectedDevices>().await?;
+//!     println!("{:#?}", devices);
+//!
+//!     // 13 for Enter key code
+//!     proxy.notify_keyboard_keycode(&session, HashMap::new(), 13, KeyState::Pressed).await?;
 //!
 //!     Ok(())
 //! }
@@ -76,11 +41,10 @@ use std::collections::HashMap;
 
 use enumflags2::BitFlags;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{ObjectPath, OwnedObjectPath, Value};
+use zvariant::{OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
+use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -139,16 +103,9 @@ impl CreateRemoteOptions {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to a `create_session` request.
-pub struct CreateSession {
+struct CreateSession {
     /// A string that will be used as the last element of the session handle.
-    session_handle: OwnedObjectPath,
-}
-
-impl CreateSession {
-    /// The created session handle.
-    pub fn session_handle(&self) -> &ObjectPath<'_> {
-        &self.session_handle
-    }
+    pub(crate) session_handle: OwnedObjectPath,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -196,13 +153,22 @@ pub struct SelectedDevices {
     pub devices: BitFlags<DeviceType>,
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.RemoteDesktop",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications create remote desktop sessions.
-trait RemoteDesktop {
+pub struct RemoteDesktopProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> RemoteDesktopProxy<'a> {
+    pub async fn new(
+        connection: &zbus::azync::Connection,
+    ) -> Result<RemoteDesktopProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.RemoteDesktop")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Create a remote desktop session.
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.
@@ -212,8 +178,69 @@ trait RemoteDesktop {
     /// * `options` - A [`CreateRemoteOptions`].
     ///
     /// [`CreateRemoteOptions`]: ./struct.CreateRemoteOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn create_session(&self, options: CreateRemoteOptions);
+    pub async fn create_session(
+        &self,
+        options: CreateRemoteOptions,
+    ) -> Result<SessionProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("CreateSession", &(options))
+            .await?
+            .body()?;
+        let request = RequestProxy::new(self.0.connection(), path).await?;
+        let session = request.receive_response::<CreateSession>().await?;
+        SessionProxy::new(self.0.connection(), session.session_handle).await
+    }
+
+    /// Select input devices to remote control.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - [`SelectDevicesOptions`].
+    ///
+    /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    pub async fn select_devices(
+        &self,
+        session: &SessionProxy<'_>,
+        options: SelectDevicesOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("SelectDevices", &(session, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
+
+    ///  Start the remote desktop session.
+    ///
+    /// This will typically result in the portal presenting a dialog letting
+    /// the user select what to share, including devices and optionally screen
+    /// content if screen cast sources was selected.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `parent_window` - The application window identifier.
+    /// * `options` - [`StartRemoteOptions`].
+    ///
+    /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    pub async fn start(
+        &self,
+        session: &SessionProxy<'_>,
+        parent_window: WindowIdentifier,
+        options: StartRemoteOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("Start", &(session, parent_window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Notify keyboard code.
     /// May only be called if KEYBOARD access was provided after starting the
@@ -221,24 +248,27 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     /// * `options` - ?
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_keyboard_keycode<S>(
+    pub async fn notify_keyboard_keycode(
         &self,
-        session: &S,
+        session: &SessionProxy<'_>,
         options: HashMap<&str, Value<'_>>,
         keycode: i32,
         state: KeyState,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyKeyboardKeycode", &(session, options, keycode, state))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Notify keyboard symbol.
     /// May only be called if KEYBOARD access was provided after starting the
@@ -246,24 +276,245 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     /// * `options` - ?
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_keyboard_keysym<S>(
+    pub async fn notify_keyboard_keysym(
         &self,
-        session: &S,
+        session: &SessionProxy<'_>,
         options: HashMap<&str, Value<'_>>,
         keysym: i32,
         state: KeyState,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyKeyboardKeysym", &(session, options, keysym, state))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Notify about a new touch up event.
+    ///
+    /// May only be called if TOUCHSCREEN access was provided after starting the
+    /// session.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - ?
+    /// * `slot` - Touch slot where touch point appeared.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
+    pub async fn notify_touch_up(
+        &self,
+        session: &SessionProxy<'_>,
+        options: HashMap<&str, Value<'_>>,
+        slot: u32,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyTouchUp", &(session, options, slot))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Notify about a new touch down event.
+    /// The (x, y) position represents the new touch point position in the
+    /// streams logical coordinate space.
+    ///
+    /// May only be called if TOUCHSCREEN access was provided after starting the
+    /// session.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - ?
+    /// * `stream` - The PipeWire stream node the coordinate is relative to.
+    /// * `slot` - Touch slot where touch point appeared.
+    /// * `x` - Touch down x coordinate.
+    /// * `y` - Touch down y coordinate.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
+    pub async fn notify_touch_down(
+        &self,
+        session: &SessionProxy<'_>,
+        options: HashMap<&str, Value<'_>>,
+        stream: u32,
+        slot: u32,
+        x: f64,
+        y: f64,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyTouchDown", &(session, options, stream, slot, x, y))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Notify about a new touch motion event.
+    /// The (x, y) position represents where the touch point position in the
+    /// streams logical coordinate space moved.
+    ///
+    /// May only be called if TOUCHSCREEN access was provided after starting the
+    /// session.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - ?
+    /// * `stream` - The PipeWire stream node the coordinate is relative to.
+    /// * `slot` - Touch slot where touch point appeared.
+    /// * `x` - Touch motion x coordinate.
+    /// * `y` - Touch motion y coordinate.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
+    pub async fn notify_touch_motion(
+        &self,
+        session: &SessionProxy<'_>,
+        options: HashMap<&str, Value<'_>>,
+        stream: u32,
+        slot: u32,
+        x: f64,
+        y: f64,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyTouchMotion", &(session, options, stream, slot, x, y))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Notify about a new absolute pointer motion event.
+    /// The (x, y) position represents the new pointer position in the streams
+    /// logical coordinate space.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - ?
+    /// * `stream` - The PipeWire stream node the coordinate is relative to.
+    /// * `x` - Pointer motion x coordinate.
+    /// * `y` - Pointer motion y coordinate.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
+    pub async fn notify_pointer_motion_absolute(
+        &self,
+        session: &SessionProxy<'_>,
+        options: HashMap<&str, Value<'_>>,
+        stream: u32,
+        x: f64,
+        y: f64,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method(
+                "NotifyPointerMotionAbsolute",
+                &(session, options, stream, x, y),
+            )
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Notify about a new relative pointer motion event.
+    /// The (dx, dy) vector represents the new pointer position in the streams
+    /// logical coordinate space.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - ?
+    /// * `dx` - Relative movement on the x axis.
+    /// * `dy` - Relative movement on the y axis.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
+    pub async fn notify_pointer_motion(
+        &self,
+        session: &SessionProxy<'_>,
+        options: HashMap<&str, Value<'_>>,
+        dx: f64,
+        dy: f64,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyPointerMotionAbsolute", &(session, options, dx, dy))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Notify pointer button.
+    /// The pointer button is encoded according to Linux Evdev button codes.
+    ///
+    ///  May only be called if POINTER access was provided after starting the
+    /// session.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - ?
+    /// * `button` - The pointer button was pressed or released.
+    /// * `state` - The new state of the keyboard code.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
+    pub async fn notify_pointer_button(
+        &self,
+        session: &SessionProxy<'_>,
+        options: HashMap<&str, Value<'_>>,
+        button: i32,
+        state: KeyState,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyPointerButton", &(session, options, button, state))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Notify pointer axis discrete.
+    /// May only be called if POINTER access was provided after starting the
+    /// session.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`SessionProxy`].
+    /// * `options` - ?
+    /// * `axis` - The axis that was scrolled.
+    ///
+    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    ///
+    /// FIXME: figure out the options we can take here
+    pub async fn notify_pointer_axis_discrete(
+        &self,
+        session: &SessionProxy<'_>,
+        options: HashMap<&str, Value<'_>>,
+        axis: Axis,
+        steps: i32,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method(
+                "NotifyPointerAxisDiscrete",
+                &(session, options, axis, steps),
+            )
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Notify pointer axis.
     /// The axis movement from a "smooth scroll" device, such as a touchpad.
@@ -275,256 +526,41 @@ trait RemoteDesktop {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     /// * `options` - ?
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
-    fn notify_pointer_axis<S>(
+    pub async fn notify_pointer_axis(
         &self,
-        session: &S,
+        session: &SessionProxy<'_>,
         options: HashMap<&str, Value<'_>>,
         dx: f64,
         dy: f64,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Notify pointer axis discrete.
-    /// May only be called if POINTER access was provided after starting the
-    /// session.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - ?
-    /// * `axis` - The axis that was scrolled.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    ///
-    /// FIXME: figure out the options we can take here
-    fn notify_pointer_axis_discrete<S>(
-        &self,
-        session: &S,
-        options: HashMap<&str, Value<'_>>,
-        axis: Axis,
-        steps: i32,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Notify pointer button.
-    /// The pointer button is encoded according to Linux Evdev button codes.
-    ///
-    ///  May only be called if POINTER access was provided after starting the
-    /// session.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - ?
-    /// * `button` - The pointer button was pressed or released.
-    /// * `state` - The new state of the keyboard code.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    ///
-    /// FIXME: figure out the options we can take here
-    fn notify_pointer_button<S>(
-        &self,
-        session: &S,
-        options: HashMap<&str, Value<'_>>,
-        button: i32,
-        state: KeyState,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Notify about a new relative pointer motion event.
-    /// The (dx, dy) vector represents the new pointer position in the streams
-    /// logical coordinate space.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - ?
-    /// * `dx` - Relative movement on the x axis.
-    /// * `dy` - Relative movement on the y axis.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    ///
-    /// FIXME: figure out the options we can take here
-    fn notify_pointer_motion<S>(
-        &self,
-        session: &S,
-        options: HashMap<&str, Value<'_>>,
-        dx: f64,
-        dy: f64,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Notify about a new absolute pointer motion event.
-    /// The (x, y) position represents the new pointer position in the streams
-    /// logical coordinate space.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - ?
-    /// * `stream` - The PipeWire stream node the coordinate is relative to.
-    /// * `x` - Pointer motion x coordinate.
-    /// * `y` - Pointer motion y coordinate.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    ///
-    /// FIXME: figure out the options we can take here
-    fn notify_pointer_motion_absolute<S>(
-        &self,
-        session: &S,
-        options: HashMap<&str, Value<'_>>,
-        stream: u32,
-        x: f64,
-        y: f64,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Notify about a new touch down event.
-    /// The (x, y) position represents the new touch point position in the
-    /// streams logical coordinate space.
-    ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the
-    /// session.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - ?
-    /// * `stream` - The PipeWire stream node the coordinate is relative to.
-    /// * `slot` - Touch slot where touch point appeared.
-    /// * `x` - Touch down x coordinate.
-    /// * `y` - Touch down y coordinate.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    ///
-    /// FIXME: figure out the options we can take here
-    fn notify_touch_down<S>(
-        &self,
-        session: &S,
-        options: HashMap<&str, Value<'_>>,
-        stream: u32,
-        slot: u32,
-        x: f64,
-        y: f64,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Notify about a new touch motion event.
-    /// The (x, y) position represents where the touch point position in the
-    /// streams logical coordinate space moved.
-    ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the
-    /// session.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - ?
-    /// * `stream` - The PipeWire stream node the coordinate is relative to.
-    /// * `slot` - Touch slot where touch point appeared.
-    /// * `x` - Touch motion x coordinate.
-    /// * `y` - Touch motion y coordinate.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    ///
-    /// FIXME: figure out the options we can take here
-    fn notify_touch_motion<S>(
-        &self,
-        session: &S,
-        options: HashMap<&str, Value<'_>>,
-        stream: u32,
-        slot: u32,
-        x: f64,
-        y: f64,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Notify about a new touch up event.
-    ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the
-    /// session.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - ?
-    /// * `slot` - Touch slot where touch point appeared.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    ///
-    /// FIXME: figure out the options we can take here
-    fn notify_touch_up<S>(
-        &self,
-        session: &S,
-        options: HashMap<&str, Value<'_>>,
-        slot: u32,
-    ) -> Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    /// Select input devices to remote control.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `options` - [`SelectDevicesOptions`].
-    ///
-    /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    #[dbus_proxy(object = "Request")]
-    fn select_devices<S>(&self, session: &S, options: SelectDevicesOptions)
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
-
-    ///  Start the remote desktop session.
-    ///
-    /// This will typically result in the portal presenting a dialog letting
-    /// the user select what to share, including devices and optionally screen
-    /// content if screen cast sources was selected.
-    ///
-    /// # Arguments
-    ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
-    /// * `parent_window` - The application window identifier.
-    /// * `options` - [`StartRemoteOptions`].
-    ///
-    /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    #[dbus_proxy(object = "Request")]
-    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: StartRemoteOptions)
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("NotifyPointerAxis", &(session, options, dx, dy))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Available source types.
-    #[dbus_proxy(property)]
-    fn available_device_types(&self) -> Result<BitFlags<DeviceType>>;
+    pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
+        self.0
+            .get_property::<BitFlags<DeviceType>>("AvailableDeviceTypes")
+            .await
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

@@ -1,48 +1,42 @@
 //! # Examples
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use ashpd::desktop::location::{CreateSessionOptions, LocationProxy, SessionStartOptions};
-//! use ashpd::{BasicResponse as Basic, HandleToken, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse, HandleToken, WindowIdentifier};
 //! use std::convert::TryFrom;
-//! use zbus::{self, fdo::Result};
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = LocationProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = LocationProxy::new(&connection).await?;
 //!
 //!     let options = CreateSessionOptions::default()
 //!         .session_handle_token(HandleToken::try_from("token").unwrap());
 //!
-//!     let session = proxy.create_session(options)?;
+//!     let session = proxy.create_session(options).await?;
 //!
 //!     let request = proxy.start(
 //!         &session,
 //!         WindowIdentifier::default(),
 //!         SessionStartOptions::default(),
-//!     )?;
+//!     ).await?;
 //!
-//!     request.connect_response(move |response: Response<Basic>| {
-//!         proxy.connect_location_updated(move |location| {
-//!             println!("{}", location.accuracy());
-//!             println!("{}", location.longitude());
-//!             println!("{}", location.latitude());
-//!             Ok(())
-//!         })?;
-//!         Ok(())
-//!     })?;
+//!     let _ = request.receive_response::<BasicResponse>().await?;
+//!     let location = proxy.receive_location_updated().await?;
+//!
+//!     println!("{}", location.accuracy());
+//!     println!("{}", location.longitude());
+//!     println!("{}", location.latitude());
 //!
 //!     Ok(())
 //! }
 //! ```
+use futures_lite::StreamExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{
-    AsyncRequestProxy, AsyncSessionProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier,
-};
+use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -188,17 +182,27 @@ struct LocationInner {
     timestamp: (u64, u64),
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Location",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications query basic information about the
 /// location.
-trait Location {
-    #[dbus_proxy(signal)]
+pub struct LocationProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> LocationProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<LocationProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Location")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Signal emitted when the user location is updated.
-    fn location_updated(&self, location: Location) -> Result<()>;
+    pub async fn receive_location_updated(&self) -> Result<Location, Error> {
+        let mut stream = self.0.receive_signal("LocationUpdated").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<Location>().map_err(From::from)
+    }
 
     /// Create a location session.
     ///
@@ -207,26 +211,47 @@ trait Location {
     /// * `options` - A [`CreateSessionOptions`]
     ///
     /// [`CreateSessionOptions`]: ./struct.CreateSessionOptions.html
-    #[dbus_proxy(object = "Session")]
-    fn create_session(&self, options: CreateSessionOptions);
+    pub async fn create_session(
+        &self,
+        options: CreateSessionOptions,
+    ) -> Result<SessionProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("CreateSession", &(options))
+            .await?
+            .body()?;
+        SessionProxy::new(self.0.connection(), path).await
+    }
 
     /// Start the location session.
     /// An application can only attempt start a session once.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A `SessionStartOptions`.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    #[dbus_proxy(object = "Request")]
-    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: SessionStartOptions)
-    where
-        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    pub async fn start(
+        &self,
+        session: &SessionProxy<'_>,
+        parent_window: WindowIdentifier,
+        options: SessionStartOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("Start", &(session, parent_window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

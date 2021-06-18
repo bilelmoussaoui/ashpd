@@ -3,38 +3,34 @@
 //! Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::screenshot, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Response::Ok(screenshot) = screenshot::take(identifier, true, false).await? {
-//!         println!("URI: {}", screenshot.uri);
-//!     }
+//!     let screenshot = screenshot::take(identifier, true, false).await?;
+//!     println!("URI: {}", screenshot.uri);
+//!
 //!     Ok(())
 //! }
 //! ```
 //!
 //! Picking a color
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::screenshot, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Response::Ok(color) = screenshot::pick_color(identifier).await? {
-//!         println!("({}, {}, {})", color.red(), color.green(), color.blue());
-//!     }
+//!
+//!     let color = screenshot::pick_color(identifier).await?;
+//!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
+//!
 //!     Ok(())
 //! }
 //! ```
-use std::sync::Arc;
 
-use futures::{lock::Mutex, FutureExt};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, Response, WindowIdentifier};
+use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options on a screenshot request.
@@ -149,13 +145,20 @@ impl std::fmt::Debug for Color {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Screenshot",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications request a screenshot.
-trait Screenshot {
+pub struct ScreenshotProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> ScreenshotProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenshotProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Screenshot")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Obtains the color of a single pixel.
     ///
     /// # Arguments
@@ -164,8 +167,18 @@ trait Screenshot {
     /// * `options` - A [`PickColorOptions`].
     ///
     /// [`PickColorOptions`]: ./struct.PickColorOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn pick_color(&self, parent_window: WindowIdentifier, options: PickColorOptions);
+    pub async fn pick_color(
+        &self,
+        parent_window: WindowIdentifier,
+        options: PickColorOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("PickColor", &(parent_window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Takes a screenshot.
     ///
@@ -175,57 +188,52 @@ trait Screenshot {
     /// * `options` - A [`ScreenshotOptions`].
     ///
     /// [`ScreenshotOptions`]: ./struct.ScreenshotOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn screenshot(&self, parent_window: WindowIdentifier, options: ScreenshotOptions);
+    pub async fn screenshot(
+        &self,
+        parent_window: WindowIdentifier,
+        options: ScreenshotOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("Screenshot", &(parent_window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
 
 /// Ask the compositor to pick a color.
 ///
-/// A helper function around the `AsyncScreenshotProxy::pick_color`.
-pub async fn pick_color(window_identifier: WindowIdentifier) -> zbus::Result<Response<Color>> {
+/// A helper function around the `ScreenshotProxy::pick_color`.
+pub async fn pick_color(window_identifier: WindowIdentifier) -> Result<Color, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenshotProxy::new(&connection);
+    let proxy = ScreenshotProxy::new(&connection).await?;
     let request = proxy
         .pick_color(window_identifier, PickColorOptions::default())
         .await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<Color>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let color = receiver.await.unwrap();
+    let color = request.receive_response::<Color>().await?;
     Ok(color)
 }
 
 /// Request a screenshot.
 ///
-/// An async function around the `AsyncScreenshotProxy::screenshot`.
+/// An async function around the `ScreenshotProxy::screenshot`.
 pub async fn take(
     window_identifier: WindowIdentifier,
     interactive: bool,
     modal: bool,
-) -> zbus::Result<Response<Screenshot>> {
+) -> Result<Screenshot, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenshotProxy::new(&connection);
+    let proxy = ScreenshotProxy::new(&connection).await?;
     let request = proxy
         .screenshot(
             window_identifier,
@@ -235,25 +243,6 @@ pub async fn take(
         )
         .await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<Screenshot>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let screenshot = receiver.await.unwrap();
+    let screenshot = request.receive_response::<Screenshot>().await?;
     Ok(screenshot)
 }

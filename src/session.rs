@@ -1,7 +1,8 @@
+use crate::Error;
+use futures_lite::StreamExt;
+use serde::{Serialize, Serializer};
 use std::collections::HashMap;
-
-use zbus::{dbus_proxy, fdo::Result};
-use zvariant::OwnedValue;
+use zvariant::{OwnedObjectPath, OwnedValue, Signature};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
 
@@ -28,22 +29,55 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 ///
 /// A client who started a session vanishing from the D-Bus is equivalent to
 /// closing all active sessions made by said client.
+pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>);
 
-#[dbus_proxy(
-    default_service = "org.freedesktop.portal.Desktop",
-    interface = "org.freedesktop.portal.Session",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
-trait Session {
-    #[dbus_proxy(signal)]
-    /// Emitted when a session is closed.
-    fn closed(&self, details: SessionDetails) -> Result<()>;
+impl<'a> SessionProxy<'a> {
+    pub async fn new(
+        connection: &zbus::azync::Connection,
+        path: OwnedObjectPath,
+    ) -> Result<SessionProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Session")
+            .path(path)?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
+    pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
+        let mut stream = self.0.receive_signal("Closed").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<SessionDetails>().map_err(From::from)
+    }
 
     /// Closes the portal session to which this object refers and ends all
     /// related user interaction (dialogs, etc).
-    fn close(&self) -> zbus::Result<()>;
+    pub async fn close(&self) -> Result<(), Error> {
+        self.0.call_method("Close", &()).await?;
+        Ok(())
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
+}
+
+impl<'a> Serialize for SessionProxy<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        zvariant::ObjectPath::serialize(self.0.path(), serializer)
+    }
+}
+
+impl<'a> zvariant::Type for SessionProxy<'a> {
+    fn signature() -> Signature<'static> {
+        zvariant::ObjectPath::signature()
+    }
 }

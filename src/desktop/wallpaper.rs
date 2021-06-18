@@ -5,21 +5,19 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use ashpd::{desktop::wallpaper, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::wallpaper, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
 //!     let wallpaper =
 //!         File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
 //!
-//!     if let Response::Ok(_) = wallpaper::set_from_file(
+//!     if wallpaper::set_from_file(
 //!         identifier,
 //!         wallpaper.as_raw_fd(),
 //!         true,
 //!         wallpaper::SetOn::Both,
-//!     )
-//!     .await?
+//!     ).await.is_ok()
 //!     {
 //!         // wallpaper was set successfully
 //!     }
@@ -30,35 +28,29 @@
 //! Sets a wallpaper from a URI:
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::wallpaper, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::wallpaper, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Response::Ok(_) = wallpaper::set_from_uri(
+//!     if wallpaper::set_from_uri(
 //!         identifier,
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
 //!         true,
 //!         wallpaper::SetOn::Both,
-//!     )
-//!     .await?
+//!     ).await.is_ok()
 //!     {
 //!         // wallpaper was set successfully
 //!     }
 //!     Ok(())
 //! }
 //! ```
-use std::os::unix::prelude::AsRawFd;
-use std::sync::Arc;
-
-use futures::{lock::Mutex, FutureExt};
 use serde::{self, Deserialize, Serialize, Serializer};
+use std::os::unix::prelude::AsRawFd;
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, BasicResponse, RequestProxy, Response, WindowIdentifier};
+use crate::{BasicResponse, Error, RequestProxy, WindowIdentifier};
 
 #[derive(
     Deserialize, Debug, Clone, Copy, PartialEq, Hash, AsRefStr, EnumString, IntoStaticStr, ToString,
@@ -116,14 +108,21 @@ impl WallpaperOptions {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Wallpaper",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications set the user's desktop background
 /// picture.
-trait Wallpaper {
+pub struct WallpaperProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> WallpaperProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<WallpaperProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Wallpaper")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Sets the lock-screen, background or both wallpaper's from a file
     /// descriptor.
     ///
@@ -134,14 +133,22 @@ trait Wallpaper {
     /// * `options` - A [`WallpaperOptions`].
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn set_wallpaper_file<F>(
+    pub async fn set_wallpaper_file<F>(
         &self,
         parent_window: WindowIdentifier,
         fd: F,
         options: WallpaperOptions,
-    ) where
-        F: AsRawFd + Type + Serialize;
+    ) -> Result<RequestProxy<'_>, Error>
+    where
+        F: AsRawFd + Type + Serialize,
+    {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("AccessDevice", &(parent_window, fd.as_raw_fd(), options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Sets the lock-screen, background or both wallpaper's from an URI.
     ///
@@ -152,30 +159,40 @@ trait Wallpaper {
     /// * `options` - A [`WallpaperOptions`].
     ///
     /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
-    #[dbus_proxy(name = "SetWallpaperURI", object = "Request")]
-    fn set_wallpaper_uri(
+    pub async fn set_wallpaper_uri(
         &self,
         parent_window: WindowIdentifier,
         uri: &str,
         options: WallpaperOptions,
-    );
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("c", &(parent_window, uri, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
 
 /// Set a wallpaper from a file.
 ///
-/// An async function around the `AsyncWallpaperProxy::set_wallpaper_file`.
+/// An async function around the `WallpaperProxy::set_wallpaper_file`.
 pub async fn set_from_file<F: AsRawFd + Type + Serialize>(
     window_identifier: WindowIdentifier,
     wallpaper_file: F,
     show_preview: bool,
     set_on: SetOn,
-) -> zbus::Result<Response<BasicResponse>> {
+) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncWallpaperProxy::new(&connection);
+    let proxy = WallpaperProxy::new(&connection).await?;
     let request = proxy
         .set_wallpaper_file(
             window_identifier,
@@ -185,41 +202,21 @@ pub async fn set_from_file<F: AsRawFd + Type + Serialize>(
                 .set_on(set_on),
         )
         .await?;
-
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let wallpaper = receiver.await.unwrap();
-    Ok(wallpaper)
+    let _wallpaper = request.receive_response::<BasicResponse>().await?;
+    Ok(())
 }
 
 /// Set a wallpaper from a URI.
 ///
-/// An async function around the `AsyncWallpaperProxy::set_wallpaper_uri`.
+/// An async function around the `WallpaperProxy::set_wallpaper_uri`.
 pub async fn set_from_uri(
     window_identifier: WindowIdentifier,
     wallpaper_uri: &str,
     show_preview: bool,
     set_on: SetOn,
-) -> zbus::Result<Response<BasicResponse>> {
+) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncWallpaperProxy::new(&connection);
+    let proxy = WallpaperProxy::new(&connection).await?;
     let request = proxy
         .set_wallpaper_uri(
             window_identifier,
@@ -229,26 +226,6 @@ pub async fn set_from_uri(
                 .set_on(set_on),
         )
         .await?;
-
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let wallpaper = receiver.await.unwrap();
-    Ok(wallpaper)
+    let _wallpaper = request.receive_response::<BasicResponse>().await?;
+    Ok(())
 }

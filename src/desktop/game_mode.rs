@@ -1,27 +1,26 @@
 //! ```rust,no_run
 //! use ashpd::desktop::game_mode::{GameModeProxy, GameModeStatus};
-//! use zbus::{self, fdo::Result};
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = GameModeProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = GameModeProxy::new(&connection).await?;
 //!
-//!     println!("{:#?}", proxy.register_game(246612)?);
+//!     println!("{:#?}", proxy.register_game(246612).await?);
 //!
-//!     println!("{:#?}", proxy.query_status(246612)?);
+//!     println!("{:#?}", proxy.query_status(246612).await?);
 //!
-//!     println!("{:#?}", proxy.unregister_game(246612)?);
+//!     println!("{:#?}", proxy.unregister_game(246612).await?);
 //!
-//!     println!("{:#?}", proxy.query_status(246612)?);
+//!     println!("{:#?}", proxy.query_status(246612).await?);
 //!
 //!     Ok(())
 //! }
 //! ```
 use std::os::unix::io::AsRawFd;
 
+use crate::Error;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Type;
 use zvariant_derive::Type;
 
@@ -59,11 +58,6 @@ pub enum UnregisterStatus {
     Rejected = -1,
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.GameMode",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications access GameMode from within the
 /// sandbox.
 ///
@@ -86,7 +80,19 @@ pub enum UnregisterStatus {
 /// terminates without a call to the 'UnregisterGame' method, GameMode will
 /// automatically un-register the client. This might happen with a (small)
 /// delay.
-trait GameMode {
+pub struct GameModeProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> GameModeProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<GameModeProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.GameMode")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Query the GameMode status for a process.
     /// If the caller is running inside a sandbox with pid namespace isolation,
     /// the pid will be translated to the respective host pid.
@@ -94,7 +100,13 @@ trait GameMode {
     /// # Arguments
     ///
     /// * `pid` - Process id to query the GameMode status of.
-    fn query_status(&self, pid: i32) -> Result<GameModeStatus>;
+    pub async fn query_status(&self, pid: i32) -> Result<GameModeStatus, Error> {
+        self.0
+            .call_method("QueryStatus", &(pid))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Query the GameMode status for a process.
     ///
@@ -103,12 +115,21 @@ trait GameMode {
     /// * `target` - Pid file descriptor to query the GameMode status of.
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   information.
-    #[dbus_proxy(name = "QueryStatusByPIDFd")]
-    fn query_status_by_pidfd<F: AsRawFd + Type + Serialize>(
+    pub async fn query_status_by_pidfd<F, R>(
         &self,
         target: F,
-        requester: F,
-    ) -> Result<GameModeStatus>;
+        requester: R,
+    ) -> Result<GameModeStatus, Error>
+    where
+        F: AsRawFd + Type + Serialize,
+        R: AsRawFd + Type + Serialize,
+    {
+        self.0
+            .call_method("QueryStatusByPIDFd", &(target, requester))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Query the GameMode status for a process.
     ///
@@ -116,7 +137,17 @@ trait GameMode {
     ///
     /// * `target` - Process id to query the GameMode status of.
     /// * `requester` - Process id of the process requesting the information.
-    fn query_status_by_pid(&self, target: i32, requester: i32) -> Result<GameModeStatus>;
+    pub async fn query_status_by_pid(
+        &self,
+        target: i32,
+        requester: i32,
+    ) -> Result<GameModeStatus, Error> {
+        self.0
+            .call_method("QueryStatusByPid", &(target, requester))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Register a game with GameMode and thus request GameMode to be activated.
     /// If the caller is running inside a sandbox with pid namespace isolation,
@@ -128,7 +159,13 @@ trait GameMode {
     /// # Arguments
     ///
     /// * `pid` - Process id of the game to register.
-    fn register_game(&self, pid: i32) -> Result<RegisterStatus>;
+    pub async fn register_game(&self, pid: i32) -> Result<RegisterStatus, Error> {
+        self.0
+            .call_method("RegisterGame", &(pid))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Register a game with GameMode.
     ///
@@ -137,12 +174,21 @@ trait GameMode {
     /// * `target` - Process file descriptor of the game to register.
     /// * `requester` - Process file descriptor of the process requesting the
     ///   registration.
-    #[dbus_proxy(name = "RegisterGameByPIDFd")]
-    fn register_game_by_pidfd<F: AsRawFd + Type + Serialize>(
+    pub async fn register_game_by_pidfd<F, R>(
         &self,
         target: F,
-        requester: F,
-    ) -> Result<RegisterStatus>;
+        requester: R,
+    ) -> Result<RegisterStatus, Error>
+    where
+        F: AsRawFd + Type + Serialize,
+        R: AsRawFd + Type + Serialize,
+    {
+        self.0
+            .call_method("RegisterGameByPIDFd", &(target, requester))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Register a game with GameMode.
     ///
@@ -150,7 +196,17 @@ trait GameMode {
     ///
     /// * `target` - Process id of the game to register.
     /// * `requester` - Process id of the process requesting the registration.
-    fn register_game_by_pid(&self, target: i32, requester: i32) -> Result<RegisterStatus>;
+    pub async fn register_game_by_pid(
+        &self,
+        target: i32,
+        requester: i32,
+    ) -> Result<RegisterStatus, Error> {
+        self.0
+            .call_method("RegisterGameByPid", &(target, requester))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Un-register a game from GameMode.
     /// if the call is successful and there are no other games or clients
@@ -161,7 +217,13 @@ trait GameMode {
     /// # Arguments
     ///
     /// `pid` - Process id of the game to un-register.
-    fn unregister_game(&self, pid: i32) -> Result<UnregisterStatus>;
+    pub async fn unregister_game(&self, pid: i32) -> Result<UnregisterStatus, Error> {
+        self.0
+            .call_method("UnregisterGame", &(pid))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Un-register a game from GameMode.
     ///
@@ -170,12 +232,21 @@ trait GameMode {
     /// * `target` - Pid file descriptor of the game to un-register.
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   un-registration.
-    #[dbus_proxy(name = "UnregisterGameByPIDFd")]
-    fn unregister_game_by_pidfd<F: AsRawFd + Type + Serialize>(
+    pub async fn unregister_game_by_pidfd<F, R>(
         &self,
         target: F,
-        requester: F,
-    ) -> Result<UnregisterStatus>;
+        requester: R,
+    ) -> Result<UnregisterStatus, Error>
+    where
+        F: AsRawFd + Type + Serialize,
+        R: AsRawFd + Type + Serialize,
+    {
+        self.0
+            .call_method("UnregisterGameByPIDFd", &(target, requester))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Un-register a game from GameMode.
     ///
@@ -184,9 +255,23 @@ trait GameMode {
     /// * `target` - Process id of the game to un-register.
     /// * `requester` - Process id of the process requesting the
     ///   un-registration.
-    fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<UnregisterStatus>;
+    pub async fn unregister_game_by_pid(
+        &self,
+        target: i32,
+        requester: i32,
+    ) -> Result<UnregisterStatus, Error> {
+        self.0
+            .call_method("UnregisterGameByPid", &(target, requester))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

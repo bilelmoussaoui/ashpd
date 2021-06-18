@@ -3,13 +3,15 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use ashpd::desktop::trash::{trash_file, TrashStatus};
-//! use zbus::fdo::Result;
+//! use zvariant::Fd;
+//! use ashpd::desktop::trash::{TrashProxy, TrashStatus};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = TrashProxy::new(&connection).await?;
 //!
-//!     match trash_file(file.as_raw_fd()).await? {
+//!     match proxy.trash_file(Fd::from(file.as_raw_fd())).await? {
 //!         TrashStatus::Succeeded => println!("the file was removed!"),
 //!         TrashStatus::Failed => println!("oof, couldn't remove the file"),
 //!     };
@@ -17,11 +19,11 @@
 //!     Ok(())
 //! }
 //! ```
-use std::os::unix::io::AsRawFd;
 
+use crate::Error;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
+use std::os::unix::io::AsRawFd;
 use zvariant::Type;
 use zvariant_derive::Type;
 
@@ -35,13 +37,20 @@ pub enum TrashStatus {
     Succeeded = 1,
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Trash",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications send files to the trashcan.
-trait Trash {
+pub struct TrashProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> TrashProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<TrashProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Trash")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Sends a file to the trashcan.
     /// Applications are allowed to trash a file if they can open it in
     /// read/write mode.
@@ -49,18 +58,22 @@ trait Trash {
     /// # Arguments
     ///
     /// * `fd` - The file descriptor.
-    fn trash_file<F: AsRawFd + Type + Serialize>(&self, fd: F) -> Result<TrashStatus>;
+    pub async fn trash_file<T>(&self, fd: T) -> Result<TrashStatus, Error>
+    where
+        T: AsRawFd + Type + Serialize,
+    {
+        self.0
+            .call_method("TrashFile", &(fd.as_raw_fd()))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
-}
-
-/// Sends a file to the trash
-///
-/// A helper function around the `AsyncTrashProxy::trash_file`.
-pub async fn trash_file<F: AsRawFd + Type + Serialize>(file: F) -> Result<TrashStatus> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncTrashProxy::new(&connection);
-    proxy.trash_file(file).await
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

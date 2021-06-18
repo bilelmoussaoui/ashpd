@@ -4,12 +4,11 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::background::{Background, BackgroundOptions, BackgroundProxy};
-//! use ashpd::{Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::WindowIdentifier;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = BackgroundProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = BackgroundProxy::new(&connection).await?;
 //!
 //!     let request = proxy.request_background(
 //!         WindowIdentifier::default(),
@@ -17,22 +16,19 @@
 //!             .autostart(true)
 //!             .command(&["geary"])
 //!             .reason("Automatically fetch your latest mails"),
-//!     )?;
+//!     ).await?;
 //!
-//!     request.connect_response(|response: Response<Background>| {
-//!         let bg = response.unwrap();
-//!         println!("{}", bg.autostart);
-//!         println!("{}", bg.background);
+//!     let response = request.receive_response::<Background>().await?;
 //!
-//!         Ok(())
-//!     })?;
+//!     println!("{}", response.autostart);
+//!     println!("{}", response.background);
+//!
 //!     Ok(())
 //! }
 //! ```
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
 /// Specified options for a `request_background` request.
@@ -97,15 +93,22 @@ pub struct Background {
     pub autostart: bool,
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Background",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications request that the application
 /// is allowed to run in the background or started automatically when the user
 /// logs in.
-trait Background {
+pub struct BackgroundProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> BackgroundProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<BackgroundProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Background")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Requests that the application is allowed to run in the background.
     ///
     /// # Arguments
@@ -114,10 +117,24 @@ trait Background {
     /// * `options` - [`BackgroundOptions`].
     ///
     /// [`BackgroundOptions`]: ./struct.BackgroundOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn request_background(&self, parent_window: WindowIdentifier, options: BackgroundOptions);
+    pub async fn request_background(
+        &self,
+        parent_window: WindowIdentifier,
+        options: BackgroundOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("RequestBackground", &(parent_window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

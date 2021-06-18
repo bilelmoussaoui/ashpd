@@ -25,6 +25,7 @@ use serde::{ser::Serializer, Serialize};
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
     #[cfg(feature = "feature_gtk4")]
+    #[doc(hidden)]
     Gtk4 {
         /// The top level window
         root: gtk4::Root,
@@ -33,11 +34,13 @@ pub enum WindowIdentifier {
     },
     /// GTK 3 Window Identifier
     #[cfg(feature = "feature_gtk3")]
+    #[doc(hidden)]
     Gtk3 {
         /// The exported window handle
         handle: String,
     },
     /// For Other Toolkits
+    #[doc(hidden)]
     Other(String),
 }
 
