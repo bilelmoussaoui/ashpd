@@ -417,7 +417,7 @@ impl<'a> FileChooserProxy<'a> {
         parent_window: WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("OpenFile", &(parent_window, title, options))
@@ -440,7 +440,7 @@ impl<'a> FileChooserProxy<'a> {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("SaveFile", &(parent_window, title, options))
@@ -468,7 +468,7 @@ impl<'a> FileChooserProxy<'a> {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("SaveFiles", &(parent_window, title, options))

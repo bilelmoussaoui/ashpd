@@ -172,7 +172,7 @@ impl From<ResponseError> for ResponseType {
 /// what it expected, and update its signal subscription if it isn't.
 /// This ensures that applications will work with both old and new versions of
 /// xdg-desktop-portal.
-pub struct RequestProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct RequestProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> RequestProxy<'a> {
     pub async fn new(
@@ -185,7 +185,7 @@ impl<'a> RequestProxy<'a> {
             .destination("org.freedesktop.portal.Desktop")
             .build_async()
             .await?;
-        Ok(Self(proxy))
+        Ok(Self(proxy, connection.clone()))
     }
 
     pub async fn receive_response<R>(&self) -> Result<R, crate::Error>

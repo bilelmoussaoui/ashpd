@@ -121,7 +121,7 @@ impl<'a> BackgroundProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: BackgroundOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("RequestBackground", &(parent_window, options))

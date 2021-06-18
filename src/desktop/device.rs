@@ -99,7 +99,7 @@ impl<'a> DeviceProxy<'a> {
         pid: u32,
         devices: &[Device],
         options: AccessDeviceOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("AccessDevice", &(pid, devices, options))

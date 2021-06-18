@@ -543,7 +543,7 @@ impl<'a> PrintProxy<'a> {
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method(
@@ -574,7 +574,7 @@ impl<'a> PrintProxy<'a> {
         title: &str,
         fd: F,
         options: PrintOptions,
-    ) -> Result<RequestProxy<'_>, Error>
+    ) -> Result<RequestProxy<'a>, Error>
     where
         F: AsRawFd + zvariant::Type + Serialize,
     {

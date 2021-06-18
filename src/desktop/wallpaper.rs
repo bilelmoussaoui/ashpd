@@ -138,7 +138,7 @@ impl<'a> WallpaperProxy<'a> {
         parent_window: WindowIdentifier,
         fd: F,
         options: WallpaperOptions,
-    ) -> Result<RequestProxy<'_>, Error>
+    ) -> Result<RequestProxy<'a>, Error>
     where
         F: AsRawFd + Type + Serialize,
     {
@@ -164,7 +164,7 @@ impl<'a> WallpaperProxy<'a> {
         parent_window: WindowIdentifier,
         uri: &str,
         options: WallpaperOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("c", &(parent_window, uri, options))
