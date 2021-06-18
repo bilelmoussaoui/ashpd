@@ -29,7 +29,7 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 ///
 /// A client who started a session vanishing from the D-Bus is equivalent to
 /// closing all active sessions made by said client.
-pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> SessionProxy<'a> {
     pub async fn new(
@@ -42,7 +42,7 @@ impl<'a> SessionProxy<'a> {
             .destination("org.freedesktop.portal.Desktop")
             .build_async()
             .await?;
-        Ok(Self(proxy))
+        Ok(Self(proxy, connection.clone()))
     }
 
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {

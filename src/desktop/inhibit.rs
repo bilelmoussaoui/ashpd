@@ -184,7 +184,7 @@ impl<'a> InhibitProxy<'a> {
         &self,
         window: WindowIdentifier,
         options: CreateMonitorOptions,
-    ) -> Result<SessionProxy<'_>, Error> {
+    ) -> Result<SessionProxy<'a>, Error> {
         let path: OwnedObjectPath = self
             .0
             .call_method("Inhibit", &(window, options))
@@ -209,7 +209,7 @@ impl<'a> InhibitProxy<'a> {
         window: WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         options: InhibitOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("Inhibit", &(window, flags, options))

@@ -181,7 +181,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     pub async fn create_session(
         &self,
         options: CreateRemoteOptions,
-    ) -> Result<SessionProxy<'_>, Error> {
+    ) -> Result<SessionProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("CreateSession", &(options))
@@ -205,7 +205,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         &self,
         session: &SessionProxy<'_>,
         options: SelectDevicesOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("SelectDevices", &(session, options))
@@ -233,7 +233,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
         options: StartRemoteOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("Start", &(session, parent_window, options))

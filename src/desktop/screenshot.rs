@@ -171,7 +171,7 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: PickColorOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("PickColor", &(parent_window, options))
@@ -192,7 +192,7 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: ScreenshotOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("Screenshot", &(parent_window, options))

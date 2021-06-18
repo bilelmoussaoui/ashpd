@@ -214,7 +214,7 @@ impl<'a> LocationProxy<'a> {
     pub async fn create_session(
         &self,
         options: CreateSessionOptions,
-    ) -> Result<SessionProxy<'_>, Error> {
+    ) -> Result<SessionProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("CreateSession", &(options))
@@ -238,7 +238,7 @@ impl<'a> LocationProxy<'a> {
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
         options: SessionStartOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("Start", &(session, parent_window, options))

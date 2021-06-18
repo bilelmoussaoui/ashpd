@@ -121,7 +121,7 @@ impl<'a> OpenURIProxy<'a> {
         parent_window: WindowIdentifier,
         directory: F,
         options: OpenDirOptions,
-    ) -> Result<RequestProxy<'_>, Error>
+    ) -> Result<RequestProxy<'a>, Error>
     where
         F: AsRawFd + Serialize + Type,
     {
@@ -150,7 +150,7 @@ impl<'a> OpenURIProxy<'a> {
         parent_window: WindowIdentifier,
         file: F,
         options: OpenFileOptions,
-    ) -> Result<RequestProxy<'_>, Error>
+    ) -> Result<RequestProxy<'a>, Error>
     where
         F: AsRawFd + Serialize + Type,
     {
@@ -176,7 +176,7 @@ impl<'a> OpenURIProxy<'a> {
         parent_window: WindowIdentifier,
         uri: &str,
         options: OpenFileOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("OpenURI", &(parent_window, uri, options))

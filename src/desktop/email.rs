@@ -137,7 +137,7 @@ impl<'a> EmailProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: EmailOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("ComposeEmail", &(parent_window, options))

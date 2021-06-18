@@ -227,7 +227,7 @@ impl<'a> ScreenCastProxy<'a> {
     pub async fn create_session(
         &self,
         options: CreateSessionOptions,
-    ) -> Result<SessionProxy<'_>, Error> {
+    ) -> Result<SessionProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("CreateSession", &(options))
@@ -283,7 +283,7 @@ impl<'a> ScreenCastProxy<'a> {
         &self,
         session: &SessionProxy<'_>,
         options: SelectSourcesOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("SelectSources", &(session, options))
@@ -311,7 +311,7 @@ impl<'a> ScreenCastProxy<'a> {
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
         options: StartCastOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("Start", &(session, parent_window, options))

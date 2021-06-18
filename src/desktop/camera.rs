@@ -58,7 +58,7 @@ impl<'a> CameraProxy<'a> {
     pub async fn access_camera(
         &self,
         options: CameraAccessOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("AccessCamera", &(options))

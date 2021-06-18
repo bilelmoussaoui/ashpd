@@ -81,7 +81,7 @@ impl<'a> AccountProxy<'a> {
         &self,
         window: WindowIdentifier,
         options: UserInfoOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("GetUserInformation", &(window, options))

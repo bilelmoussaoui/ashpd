@@ -67,7 +67,7 @@ impl<'a> SecretProxy<'a> {
         &self,
         fd: F,
         options: RetrieveOptions,
-    ) -> Result<RequestProxy<'_>, Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("RetrieveSecret", &(fd.as_raw_fd(), options))
