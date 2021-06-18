@@ -3,17 +3,16 @@
 //!
 //! ```rust,no_run
 //! use ashpd::documents::{DocumentsProxy, Permission};
-//! use zbus::{fdo::Result, Connection};
 //!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = DocumentsProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = DocumentsProxy::new(&connection).await?;
 //!
-//!     println!("{:#?}", proxy.get_mount_point()?);
+//!     println!("{:#?}", proxy.mount_point().await?);
 //!
-//!     for (doc_id, host_path) in proxy.list("org.mozilla.firefox")? {
+//!     for (doc_id, host_path) in proxy.list("org.mozilla.firefox").await? {
 //!         if doc_id == "f2ee988d" {
-//!             let info = proxy.info(&doc_id)?;
+//!             let info = proxy.info(&doc_id).await?;
 //!             println!("{:#?}", info);
 //!         }
 //!     }
@@ -22,10 +21,10 @@
 //!         "f2ee988d",
 //!         "org.mozilla.firefox",
 //!         &[Permission::GrantPermissions],
-//!     )?;
-//!     proxy.revoke_permissions("f2ee988d", "org.mozilla.firefox", &[Permission::Write])?;
+//!     ).await?;
+//!     proxy.revoke_permissions("f2ee988d", "org.mozilla.firefox", &[Permission::Write]).await?;
 //!
-//!     proxy.delete("f2ee988d")?;
+//!     proxy.delete("f2ee988d").await?;
 //!
 //!     Ok(())
 //! }
@@ -34,11 +33,11 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
+use crate::Error;
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Signature};
 use zvariant_derive::Type;
 
@@ -99,11 +98,8 @@ impl<'de> Deserialize<'de> for Permission {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Documents",
-    default_service = "org.freedesktop.portal.Documents",
-    default_path = "/org/freedesktop/portal/documents"
-)]
+trait Documents {}
+
 /// The interface lets sandboxed applications make files from the outside world
 /// available to sandboxed applications in a controlled way.
 ///
@@ -119,7 +115,19 @@ impl<'de> Deserialize<'de> for Permission {
 /// The permissions that the application has for a document store entry (see
 /// `GrantPermissions()`) are reflected in the POSIX mode bits in the fuse
 /// filesystem.
-trait Documents {
+pub struct DocumentsProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> DocumentsProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<DocumentsProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Documents")
+            .path("/org/freedesktop/portal/documents")?
+            .destination("org.freedesktop.portal.Documents")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Adds a file to the document store.
     /// The file is passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.
@@ -133,7 +141,18 @@ trait Documents {
     ///   for the file.
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
-    fn add(&self, o_path_fd: Fd, reuse_existing: bool, persistent: bool) -> Result<String>;
+    pub async fn add(
+        &self,
+        o_path_fd: Fd,
+        reuse_existing: bool,
+        persistent: bool,
+    ) -> Result<String, Error> {
+        self.0
+            .call_method("Add", &(o_path_fd, reuse_existing, persistent))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Adds multiple files to the document store.
     /// The files are passed in the form of an open file descriptor
@@ -148,13 +167,19 @@ trait Documents {
     /// * `flags` - A `Flags`.
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
-    fn add_full(
+    pub async fn add_full(
         &self,
         o_path_fds: &[Fd],
         flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[Permission],
-    ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>)>;
+    ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>), Error> {
+        self.0
+            .call_method("AddFull", &(o_path_fds, flags, app_id, permissions))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Creates an entry in the document store for writing a new file.
     ///
@@ -168,13 +193,22 @@ trait Documents {
     ///   for the file.
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
-    fn add_named(
+    pub async fn add_named(
         &self,
         o_path_parent_fd: Fd,
         filename: &str,
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<String>;
+    ) -> Result<String, Error> {
+        self.0
+            .call_method(
+                "AddNamed",
+                &(o_path_parent_fd, filename, reuse_existing, persistent),
+            )
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Adds multiple files to the document store.
     /// The files are passed in the form of an open file descriptor
@@ -190,14 +224,23 @@ trait Documents {
     /// * `flags` - A `Flags`.
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
-    fn add_named_full(
+    pub async fn add_named_full(
         &self,
         o_path_fd: Fd,
         filename: &str,
         flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[Permission],
-    ) -> Result<(String, HashMap<String, zvariant::OwnedValue>)>;
+    ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error> {
+        self.0
+            .call_method(
+                "AddNamedFull",
+                &(o_path_fd, filename, flags, app_id, permissions),
+            )
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Removes an entry from the document store. The file itself is not
     /// deleted. This call is available inside the sandbox if the
@@ -206,11 +249,23 @@ trait Documents {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
-    fn delete(&self, doc_id: &str) -> Result<()>;
+    pub async fn delete(&self, doc_id: &str) -> Result<(), Error> {
+        self.0
+            .call_method("Delete", &(doc_id))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
     /// This will typically be /run/user/$UID/doc/.
-    fn get_mount_point(&self) -> Result<String>;
+    pub async fn mount_point(&self) -> Result<String, Error> {
+        self.0
+            .call_method("GetMountPoint", &())
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Grants access permissions for a file in the document store to an
     /// application. This call is available inside the sandbox if the
@@ -221,12 +276,18 @@ trait Documents {
     /// * `doc_id` - The ID of the file in the document store.
     /// * `app_id` - The ID of the application to which permissions are granted.
     /// * `permissions` - The permissions to grant.
-    fn grant_permissions(
+    pub async fn grant_permissions(
         &self,
         doc_id: &str,
         app_id: &str,
         permissions: &[Permission],
-    ) -> Result<()>;
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("GrantPermissions", &(doc_id, app_id, permissions))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Gets the filesystem path and application permissions for a document
     /// store entry.
@@ -237,7 +298,13 @@ trait Documents {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
-    fn info(&self, doc_id: &str) -> Result<(String, Permissions)>;
+    pub async fn info(&self, doc_id: &str) -> Result<(String, Permissions), Error> {
+        self.0
+            .call_method("Info", &(doc_id))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Lists documents in the document store for an application (or for all
     /// applications).
@@ -248,7 +315,13 @@ trait Documents {
     /// # Arguments
     ///
     /// * `app-id` - The application ID, or '' to list all documents.
-    fn list(&self, app_id: &str) -> Result<HashMap<String, String>>;
+    pub async fn list(&self, app_id: &str) -> Result<HashMap<String, String>, Error> {
+        self.0
+            .call_method("List", &(app_id))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Looks up the document ID for a file.
     /// This call is not available inside the sandbox.
@@ -259,7 +332,13 @@ trait Documents {
     /// # Arguments
     ///
     /// - `filename` - A path in the host filesystem.
-    fn lookup(&self, filename: &str) -> Result<String>;
+    pub async fn lookup(&self, filename: &str) -> Result<String, Error> {
+        self.0
+            .call_method("Lookup", &(filename))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Revokes access permissions for a file in the document store from an
     /// application. This call is available inside the sandbox if the
@@ -271,16 +350,26 @@ trait Documents {
     /// * `app_id` - The ID of the application from which permissions are
     ///   revoked.
     /// * `permissions` - The permissions to revoke.
-    fn revoke_permissions(
+    pub async fn revoke_permissions(
         &self,
         doc_id: &str,
         app_id: &str,
         permissions: &[Permission],
-    ) -> Result<()>;
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("RevokePermissions", &(doc_id, app_id, permissions))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
 
 /// Interact with `org.freedesktop.portal.FileTransfer` interface.

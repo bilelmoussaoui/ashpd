@@ -5,29 +5,29 @@
 //! use std::collections::HashMap;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use zbus::{fdo::Result, Connection};
 //! use zvariant::Fd;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = FileTransferProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = FileTransferProxy::new(&connection).await?;
 //!
-//!     let key = proxy.start_transfer(TransferOptions::default().writeable(true).auto_stop(true))?;
+//!     let key = proxy.start_transfer(TransferOptions::default().writeable(true).auto_stop(true)).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy.add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new())?;
+//!     proxy.add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new()).await?;
 //!
 //!     // The files would be retrieved by another process
-//!     let files = proxy.retrieve_files(&key, HashMap::new())?;
+//!     let files = proxy.retrieve_files(&key, HashMap::new()).await?;
 //!     println!("{:#?}", files);
 //!
-//!     proxy.stop_transfer(&key)?;
+//!     proxy.stop_transfer(&key).await?;
 //!
 //!     Ok(())
 //! }
 //! ```
 use std::collections::HashMap;
 
-use zbus::{dbus_proxy, fdo::Result};
+use crate::Error;
+use futures_lite::StreamExt;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -57,11 +57,6 @@ impl TransferOptions {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.FileTransfer",
-    default_service = "org.freedesktop.portal.Documents",
-    default_path = "/org/freedesktop/portal/documents"
-)]
 /// The interface operates as a middle-man between apps when transferring files
 /// via drag-and-drop or copy-paste, taking care of the necessary exporting of
 /// files in the document portal.
@@ -75,7 +70,19 @@ impl TransferOptions {
 /// call RetrieveFiles with the key, to obtain the list of files. The portal
 /// will take care of exporting files in the document store as necessary to make
 /// them accessible to the target.
-trait FileTransfer {
+pub struct FileTransferProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> FileTransferProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<FileTransferProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.FileTransfer")
+            .path("/org/freedesktop/portal/documents")?
+            .destination("org.freedesktop.portal.Documents")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Adds files to a session.
     /// This method can be called multiple times on a given session.
     /// **Note** that only regular files (not directories) can be added.
@@ -86,7 +93,18 @@ trait FileTransfer {
     /// * `fds` - A list of file descriptors of the files to register.
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
-    fn add_files(&self, key: &str, fds: &[Fd], options: HashMap<&str, Value<'_>>) -> Result<()>;
+    pub async fn add_files(
+        &self,
+        key: &str,
+        fds: &[Fd],
+        options: HashMap<&str, Value<'_>>,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("AddFiles", &(key, fds, options))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Retrieves files that were previously added to the session with
     /// `add_files`. The files will be exported in the document portal
@@ -100,15 +118,31 @@ trait FileTransfer {
     /// * `key` - A key returned by `start_transfer`.
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
-    fn retrieve_files(&self, key: &str, options: HashMap<&str, Value<'_>>) -> Result<Vec<String>>;
-
+    pub async fn retrieve_files(
+        &self,
+        key: &str,
+        options: HashMap<&str, Value<'_>>,
+    ) -> Result<Vec<String>, Error> {
+        self.0
+            .call_method("RetrieveFiles", &(key, options))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
     /// Starts a session for a file transfer.
     /// The caller should call `add_files` at least once, to add files to this
     /// session.
     ///
-    /// Returns a key that can be passed to `retrieve_files` to obtain the
-    /// files.
-    fn start_transfer(&self, options: TransferOptions) -> Result<String>;
+    /// # Returns
+    ///
+    /// a key that can be passed to [`FileTransferProxy::retrieve_files`] to obtain the files.
+    pub async fn start_transfer(&self, options: TransferOptions) -> Result<String, Error> {
+        self.0
+            .call_method("StartTransfer", &(options))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Ends the transfer.
     /// Further calls to `add_files` or `retrieve_files` for this key will
@@ -117,12 +151,30 @@ trait FileTransfer {
     /// # Arguments
     ///
     /// * `key` - A key returned by `start_transfer`.
-    fn stop_transfer(&self, key: &str) -> Result<()>;
+    pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
+        self.0
+            .call_method("StopTransfer", &(key))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
-    #[dbus_proxy(signal)]
-    fn transfer_closed(&self, key: &str) -> Result<()>;
+    /// Emitted when the transfer is closed.
+    ///
+    /// # Returns
+    ///
+    /// * The key returned by [`FileTransferProxy::start`]
+    pub async fn transfer_closed(&self) -> Result<String, Error> {
+        let mut stream = self.0.receive_signal("TransferClosed").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<String>().map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
