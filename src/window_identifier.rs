@@ -84,18 +84,16 @@ impl From<gtk3::Window> for WindowIdentifier {
     fn from(win: gtk3::Window) -> Self {
         use gtk3::prelude::{Cast, ObjectExt, WidgetExt};
 
-        let window = win
-            .get_window()
-            .expect("The window has to be mapped first.");
+        let window = win.window().expect("The window has to be mapped first.");
 
-        let handle = match window.get_display().get_type().name().as_ref() {
+        let handle = match window.display().type_().name().as_ref() {
             /*
             TODO: implement the get_wayland handle
             "GdkWaylandDisplay" => {
                 let handle = get_wayland_handle(win).unwrap();
                 WindowIdentifier(format!("wayland:{}", handle))
             }*/
-            "GdkX11Display" => match window.downcast::<gdk3x11::X11Window>().map(|w| w.get_xid()) {
+            "GdkX11Display" => match window.downcast::<gdk3x11::X11Window>().map(|w| w.xid()) {
                 Ok(xid) => Some(format!("x11:{}", xid)),
                 Err(_) => None,
             },
@@ -124,17 +122,17 @@ impl WindowIdentifier {
 
         use futures::lock::Mutex;
         use gtk4::glib;
-        use gtk4::prelude::{Cast, NativeExt, ObjectExt};
+        use gtk4::prelude::{Cast, NativeExt, ObjectExt, SurfaceExt};
 
         let surface = win
             .as_ref()
-            .get_surface()
+            .surface()
             .expect("The window has to be mapped first");
 
         let handle = match surface
-            .get_display()
+            .display()
             .expect("Surface has to be attached to a display")
-            .get_type()
+            .type_()
             .name()
             .as_ref()
         {
@@ -155,10 +153,7 @@ impl WindowIdentifier {
                 }));
                 receiver.await.ok()
             }
-            "GdkX11Display" => match surface
-                .downcast::<gdk4x11::X11Surface>()
-                .map(|w| w.get_xid())
-            {
+            "GdkX11Display" => match surface.downcast::<gdk4x11::X11Surface>().map(|w| w.xid()) {
                 Ok(xid) => Some(format!("x11:{}", xid)),
                 Err(_) => None,
             },
@@ -179,15 +174,13 @@ impl Drop for WindowIdentifier {
     fn drop(&mut self) {
         #[cfg(feature = "feature_gtk4")]
         if let Self::Gtk4 { root, handle: _ } = self {
-            use gtk4::prelude::{Cast, NativeExt, ObjectExt};
+            use gtk4::prelude::{Cast, NativeExt, ObjectExt, SurfaceExt};
 
-            let surface = root
-                .get_surface()
-                .expect("The window has to be mapped first");
+            let surface = root.surface().expect("The window has to be mapped first");
             if surface
-                .get_display()
+                .display()
                 .expect("Surface has to be attached to a display")
-                .get_type()
+                .type_()
                 .name()
                 == "GdkWaylandDisplay"
             {
