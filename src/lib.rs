@@ -1,5 +1,5 @@
 #![deny(broken_intra_doc_links)]
-#![deny(missing_docs)]
+//#![deny(missing_docs)]
 //! ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus) wrapper of
 //! the XDG portals DBus interfaces. The library aims to provide an easy way to
 //! interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
@@ -10,30 +10,25 @@
 //!
 //! Ask the compositor to pick a color
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::screenshot, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Response::Ok(color) = screenshot::pick_color(identifier).await? {
-//!         println!("({}, {}, {})", color.red(), color.green(), color.blue());
-//!     }
+//!     let color = screenshot::pick_color(identifier).await?;
+//!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!     Ok(())
 //! }
 //! ```
 //!
 //! Start a PipeWire stream from the user's camera
 //! ```rust,no_run
-//! use ashpd::{desktop::camera, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::camera, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     if camera::is_present().await? {
-//!         if let Response::Ok(pipewire_fd) = camera::stream().await? {
-//!             // Render the stream with GStreamer for example, see the demo
-//!         }
-//!     }
+//!     let pipewire_fd = camera::stream().await?;
+//!     // Render the stream with GStreamer for example, see the demo
+//!
 //!     Ok(())
 //! }
 //! ```
@@ -56,6 +51,7 @@ compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;
+mod error;
 /// Spawn commands outside the sandbox or monitor if the running application has
 /// received an update & install it.
 pub mod flatpak;
@@ -74,7 +70,8 @@ pub fn is_sandboxed() -> bool {
     std::path::Path::new("/.flatpak-info").exists()
 }
 
+pub use self::error::Error;
 pub use self::handle_token::HandleToken;
-pub use self::request::{AsyncRequestProxy, BasicResponse, RequestProxy, Response, ResponseError};
-pub use self::session::{AsyncSessionProxy, SessionProxy};
+pub use self::request::{BasicResponse, RequestProxy, ResponseError};
+pub use self::session::SessionProxy;
 pub use self::window_identifier::WindowIdentifier;

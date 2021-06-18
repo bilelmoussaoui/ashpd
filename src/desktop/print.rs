@@ -4,15 +4,14 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::print::{PrintOptions, PrintProxy};
-//! use ashpd::{BasicResponse as Basic, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use zbus::{fdo::Result, Connection};
 //! use zvariant::Fd;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = PrintProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = PrintProxy::new(&connection).await?;
 //!
 //!     let file = File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
 //!
@@ -22,25 +21,22 @@
 //!             "test",
 //!             Fd::from(file.as_raw_fd()),
 //!             PrintOptions::default(),
-//!         )
-//!         .unwrap();
+//!         ).await?;
 //!
-//!     request.connect_response(|r: Response<Basic>| {
-//!         println!("{:#?}", r.is_ok());
-//!         Ok(())
-//!     })?;
+//!     assert!(request.receive_response::<BasicResponse>().await.is_ok());
 //!
 //!     Ok(())
 //! }
 //! ```
 
+use std::os::unix::prelude::AsRawFd;
+
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zbus::{dbus_proxy, fdo::Result};
-use zvariant::{Fd, Signature};
+use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(
     Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
@@ -512,13 +508,20 @@ pub struct PreparePrint {
     pub token: u32,
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Print",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications print.
-trait Print {
+pub struct PrintProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> PrintProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<PrintProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Print")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Presents a print dialog to the user and returns print settings and page
     /// setup.
     ///
@@ -533,15 +536,24 @@ trait Print {
     /// [`Settings`]: ./struct.Settings.html
     /// [`PageSetup`]: ./struct.PageSetup.html
     /// [`PreparePrintOptions`]: ./struct.PreparePrintOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn prepare_print(
+    pub async fn prepare_print(
         &self,
         parent_window: WindowIdentifier,
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
-    );
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method(
+                "PreparePrint",
+                &(parent_window, title, settings, page_setup, options),
+            )
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Asks to print a file.
     /// The file must be passed in the form of a file descriptor open for
@@ -556,10 +568,29 @@ trait Print {
     /// * `options` - [`PrintOptions`].
     ///
     /// [`PrintOptions`]: ./struct.PrintOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn print(&self, parent_window: WindowIdentifier, title: &str, fd: Fd, options: PrintOptions);
+    pub async fn print<F>(
+        &self,
+        parent_window: WindowIdentifier,
+        title: &str,
+        fd: F,
+        options: PrintOptions,
+    ) -> Result<RequestProxy<'_>, Error>
+    where
+        F: AsRawFd + zvariant::Type + Serialize,
+    {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("Print", &(parent_window, title, fd.as_raw_fd(), options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

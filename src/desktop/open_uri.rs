@@ -5,17 +5,14 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
+//! use zvariant::Fd;
+//! use ashpd::{desktop::open_uri, WindowIdentifier};
 //!
-//! use ashpd::{desktop::open_uri, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
-//!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let identifier = WindowIdentifier::default();
 //!
-//!     if let Response::Ok(_) = open_uri::open_file(identifier, file.as_raw_fd(), false, true).await? {
-//!         // Success!
-//!     }
+//!     open_uri::open_file(identifier, Fd::from(file.as_raw_fd()), false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -23,36 +20,26 @@
 //! Open a file from a URI
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::open_uri, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::open_uri, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
-//!
-//!     if let Response::Ok(_) = open_uri::open_uri(
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     open_uri::open_uri(
 //!         WindowIdentifier::default(),
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
 //!         false,
 //!         true,
-//!     )
-//!     .await?
-//!     {
-//!         // Success!
-//!     }
+//!     ).await?;
+//!
 //!     Ok(())
 //! }
 //! ```
 use std::os::unix::prelude::AsRawFd;
-use std::sync::Arc;
 
-use futures::{lock::Mutex, FutureExt};
 use serde::Serialize;
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Type;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{
-    AsyncRequestProxy, BasicResponse, HandleToken, RequestProxy, Response, WindowIdentifier,
-};
+use crate::{BasicResponse, Error, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for an open directory request.
@@ -104,15 +91,22 @@ impl OpenFileOptions {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.OpenURI",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications open URIs
 /// (e.g. a http: link to the applications homepage) under the control of the
 /// user.
-trait OpenURI {
+pub struct OpenURIProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> OpenURIProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<OpenURIProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.OpenURI")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Asks to open the directory containing a local file in the file browser.
     ///
     /// # Arguments
@@ -122,14 +116,25 @@ trait OpenURI {
     /// * `options` - [`OpenDirOptions`].
     ///
     /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn open_directory<F>(
+    pub async fn open_directory<F>(
         &self,
         parent_window: WindowIdentifier,
         directory: F,
         options: OpenDirOptions,
-    ) where
-        F: AsRawFd + Serialize + Type;
+    ) -> Result<RequestProxy<'_>, Error>
+    where
+        F: AsRawFd + Serialize + Type,
+    {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method(
+                "OpenDirectory",
+                &(parent_window, directory.as_raw_fd(), options),
+            )
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Asks to open a local file.
     ///
@@ -140,10 +145,22 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`].
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn open_file<F>(&self, parent_window: WindowIdentifier, file: F, options: OpenFileOptions)
+    pub async fn open_file<F>(
+        &self,
+        parent_window: WindowIdentifier,
+        file: F,
+        options: OpenFileOptions,
+    ) -> Result<RequestProxy<'_>, Error>
     where
-        F: AsRawFd + Serialize + Type;
+        F: AsRawFd + Serialize + Type,
+    {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("OpenFile", &(parent_window, file.as_raw_fd(), options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Asks to open a local file.
     ///
@@ -154,12 +171,27 @@ trait OpenURI {
     /// * `options` - [`OpenFileOptions`].
     ///
     /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
-    #[dbus_proxy(name = "OpenURI", object = "Request")]
-    fn open_uri(&self, parent_window: WindowIdentifier, uri: &str, options: OpenFileOptions);
+    pub async fn open_uri(
+        &self,
+        parent_window: WindowIdentifier,
+        uri: &str,
+        options: OpenFileOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("OpenURI", &(parent_window, uri, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
 
 /// Open a URI.
@@ -170,9 +202,9 @@ pub async fn open_uri(
     uri: &str,
     writable: bool,
     ask: bool,
-) -> zbus::Result<Response<BasicResponse>> {
+) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncOpenURIProxy::new(&connection);
+    let proxy = OpenURIProxy::new(&connection).await?;
     let request = proxy
         .open_uri(
             window_identifier,
@@ -181,27 +213,8 @@ pub async fn open_uri(
         )
         .await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let response = receiver.await.unwrap();
-    Ok(response)
+    let _response = request.receive_response::<BasicResponse>().await?;
+    Ok(())
 }
 
 /// Open a file.
@@ -212,9 +225,9 @@ pub async fn open_file<F: AsRawFd + Serialize + Type>(
     file: F,
     writable: bool,
     ask: bool,
-) -> zbus::Result<Response<BasicResponse>> {
+) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncOpenURIProxy::new(&connection);
+    let proxy = OpenURIProxy::new(&connection).await?;
     let request = proxy
         .open_file(
             window_identifier,
@@ -223,27 +236,8 @@ pub async fn open_file<F: AsRawFd + Serialize + Type>(
         )
         .await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let response = receiver.await.unwrap();
-    Ok(response)
+    let _response = request.receive_response::<BasicResponse>().await?;
+    Ok(())
 }
 
 /// Open a directory.
@@ -252,32 +246,13 @@ pub async fn open_file<F: AsRawFd + Serialize + Type>(
 pub async fn open_directory<F: AsRawFd + Serialize + Type>(
     window_identifier: WindowIdentifier,
     directory: F,
-) -> zbus::Result<Response<BasicResponse>> {
+) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncOpenURIProxy::new(&connection);
+    let proxy = OpenURIProxy::new(&connection).await?;
     let request = proxy
         .open_directory(window_identifier, directory, OpenDirOptions::default())
         .await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let response = receiver.await.unwrap();
-    Ok(response)
+    let _response = request.receive_response::<BasicResponse>().await?;
+    Ok(())
 }

@@ -3,12 +3,11 @@
 //! ```rust,no_run
 //! use ashpd::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
 //! use std::{thread, time};
-//! use zbus::{self, fdo::Result};
 //! use zvariant::Value;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = NotificationProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = NotificationProxy::new(&connection).await?;
 //!
 //!     let notification_id = "org.gnome.design.Contrast";
 //!     proxy.add_notification(
@@ -20,30 +19,29 @@
 //!             .priority(Priority::High)
 //!             .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
 //!             .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
-//!     )?;
+//!     ).await?;
 //!
-//!     proxy.connect_action_invoked(|action: Action| {
-//!         match action.name() {
-//!             "copy" => (),   // Copy something to clipboard
-//!             "delete" => (), // Delete the file
-//!             _ => (),
-//!         };
-//!         println!("{:#?}", action.id());
-//!         println!(
-//!             "{:#?}",
-//!             action.parameter().get(0).unwrap().downcast_ref::<u32>()
-//!         );
-//!         Ok(())
-//!     })?;
+//!     let action = proxy.receive_action_invoked().await?;
+//!     match action.name() {
+//!         "copy" => (),   // Copy something to clipboard
+//!         "delete" => (), // Delete the file
+//!         _ => (),
+//!     };
+//!     println!("{:#?}", action.id());
+//!     println!(
+//!         "{:#?}",
+//!         action.parameter().get(0).unwrap().downcast_ref::<u32>()
+//!     );
 //!
-//!     thread::sleep(time::Duration::from_secs(1));
-//!     proxy.remove_notification(notification_id)?;
+//!     proxy.remove_notification(notification_id).await?;
 //!     Ok(())
 //! }
 //! ```
+
+use crate::Error;
+use futures_lite::StreamExt;
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{OwnedValue, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -216,11 +214,6 @@ impl Action {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Desktop",
-    default_service = "org.freedesktop.portal.Notification",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications send and withdraw notifications.
 ///
 /// It is not possible for the application to learn if the notification was
@@ -237,10 +230,25 @@ impl Action {
 /// interface. Other actions are activated by sending the
 ///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the
 /// application.
-trait Notification {
-    #[dbus_proxy(signal)]
+pub struct NotificationProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> NotificationProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<NotificationProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Notification")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Signal emitted when a particular action is invoked.
-    fn action_invoked(&self, action: Action) -> Result<()>;
+    pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
+        let mut stream = self.0.receive_signal("ActionInvoked").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<Action>().map_err(From::from)
+    }
 
     /// Sends a notification.
     ///
@@ -252,16 +260,36 @@ trait Notification {
     ///
     /// * `id` - Application-provided ID for this notification.
     /// * `notification` - The notification.
-    fn add_notification(&self, id: &str, notification: Notification) -> Result<()>;
+    pub async fn add_notification(
+        &self,
+        id: &str,
+        notification: Notification,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("AddNotification", &(id, notification))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Withdraws a notification.
     ///
     /// # Arguments
     ///
     /// * `id` - Application-provided ID for this notification.
-    fn remove_notification(&self, id: &str) -> Result<()>;
+    pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
+        self.0
+            .call_method("RemoveNotification", &(id))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

@@ -3,85 +3,58 @@
 //! How to create a screen cast session & start it.
 //! The portal is currently useless without PipeWire & Rust support.
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use ashpd::desktop::screencast::{
-//!     CreateSession, CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
+//!     CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
 //! };
-//! use ashpd::{BasicResponse as Basic, HandleToken, Response, SessionProxy, WindowIdentifier};
+//! use ashpd::{BasicResponse, HandleToken, SessionProxy, WindowIdentifier};
 //! use enumflags2::BitFlags;
 //! use std::convert::TryFrom;
-//! use zbus::{self, fdo::Result};
 //! use zvariant::ObjectPath;
 //!
-//! fn select_sources(
-//!     session: &SessionProxy<'c>,
-//!     proxy: &ScreenCastProxy<'c>,
-//! ) -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = ScreenCastProxy::new(&connection).await?;
+//!
+//!     let session_token = HandleToken::try_from("session120").unwrap();
+//!
+//!     let session = proxy
+//!         .create_session(CreateSessionOptions::default().session_handle_token(session_token)).await?;
+//!
 //!     let request = proxy.select_sources(
-//!         session,
+//!         &session,
 //!         SelectSourcesOptions::default()
 //!             .multiple(true)
 //!             .cursor_mode(BitFlags::from(CursorMode::Metadata))
 //!             .types(SourceType::Monitor | SourceType::Window),
-//!     )?;
+//!     ).await?;
 //!
-//!     request.connect_response(move |response: Response<Basic>| {
-//!         if response.is_ok() {
-//!             start_cast(session, proxy)?;
-//!         }
-//!         Ok(())
-//!     })?;
-//!     Ok(())
-//! }
-//!
-//! fn start_cast(
-//!     session: &SessionProxy<'c>,
-//!     proxy: &ScreenCastProxy<'c>,
-//! ) -> Result<()> {
+//!     let _ = request.receive_response::<BasicResponse>().await?;
 //!     let request = proxy.start(
-//!         session_handle,
+//!         &session,
 //!         WindowIdentifier::default(),
 //!         StartCastOptions::default(),
-//!     )?;
-//!     request.connect_response(move |r: Response<Streams>| {
-//!         r.unwrap().streams().iter().for_each(|stream| {
-//!             println!("{}", stream.pipewire_node_id());
-//!             println!("{:#?}", stream.properties());
-//!         });
-//!         Ok(())
-//!     })?;
-//!     Ok(())
-//! }
+//!     ).await?;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = ScreenCastProxy::new(&connection);
-//!
-//!     let session_token = HandleToken::try_from("session120").unwrap();
-//!
-//!     let request = proxy
-//!         .create_session(CreateSessionOptions::default().session_handle_token(session_token))?;
-//!
-//!     request.connect_response(|response: Response<CreateSession>| {
-//!         let response = response.unwrap();
-//!         let session = SessionProxy::new_for_path(&connection, response.session_handle())?;
-//!         select_sources(&session, &proxy)?;
-//!         Ok(())
-//!     })?;
+//!     let response = request.receive_response::<Streams>().await?;
+//!     response.streams().iter().for_each(|stream| {
+//!         println!("{}", stream.pipe_wire_node_id());
+//!         println!("{:#?}", stream.properties());
+//!     });
 //!     Ok(())
 //! }
 //! ```
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{AsyncRequestProxy, AsyncSessionProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
@@ -185,17 +158,10 @@ impl StartCastOptions {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to the create session request.
-pub struct CreateSession {
+struct CreateSession {
     /// A string that will be used as the last element of the session handle.
     // TODO: investigate why this doesn't return an ObjectPath
-    session_handle: String,
-}
-
-impl CreateSession {
-    /// The created session handle.
-    pub fn session_handle(&self) -> &str {
-        &self.session_handle
-    }
+    pub(crate) session_handle: String,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -243,16 +209,38 @@ pub struct StreamProperties {
     pub size: (i32, i32),
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.ScreenCast",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications create screen cast sessions.
-trait ScreenCast {
+pub struct ScreenCastProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> ScreenCastProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenCastProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.ScreenCast")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Create a screen cast session.
-    #[dbus_proxy(object = "Request")]
-    fn create_session(&self, options: CreateSessionOptions);
+    pub async fn create_session(
+        &self,
+        options: CreateSessionOptions,
+    ) -> Result<SessionProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("CreateSession", &(options))
+            .await?
+            .body()?;
+        let request = RequestProxy::new(self.0.connection(), path).await?;
+        let session = request.receive_response::<CreateSession>().await?;
+        SessionProxy::new(
+            self.0.connection(),
+            zvariant::OwnedObjectPath::try_from(session.session_handle)?,
+        )
+        .await
+    }
 
     /// Open a file descriptor to the PipeWire remote where the screen cast
     /// streams are available.
@@ -261,19 +249,22 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    fn open_pipe_wire_remote<S>(
+    pub async fn open_pipe_wire_remote(
         &self,
-        session: &S,
+        session: &SessionProxy<'_>,
         options: HashMap<&str, Value<'_>>,
-    ) -> Result<Fd>
-    where
-        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    ) -> Result<Fd, Error> {
+        self.0
+            .call_method("OpenPipeWireRemote", &(session, options))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Configure what the screen cast session should record.
     /// This method must be called before starting the session.
@@ -284,15 +275,22 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     /// * `options` - A `SelectSourcesOptions`.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    #[dbus_proxy(object = "Request")]
-    fn select_sources<S>(&self, session: &S, options: SelectSourcesOptions)
-    where
-        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    pub async fn select_sources(
+        &self,
+        session: &SessionProxy<'_>,
+        options: SelectSourcesOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("SelectSources", &(session, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Start the screen cast session.
     ///
@@ -303,26 +301,46 @@ trait ScreenCast {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A `StartScreenCastOptions`.
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
-    #[dbus_proxy(object = "Request")]
-    fn start<S>(&self, session: &S, parent_window: WindowIdentifier, options: StartCastOptions)
-    where
-        S: Into<AsyncSessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    pub async fn start(
+        &self,
+        session: &SessionProxy<'_>,
+        parent_window: WindowIdentifier,
+        options: StartCastOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("Start", &(session, parent_window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Available cursor mode.
-    #[dbus_proxy(property)]
-    fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>>;
+    pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
+        self.0
+            .get_property::<BitFlags<CursorMode>>("AvailableCursorModes")
+            .await
+            .map_err(From::from)
+    }
 
     /// Available source types.
-    #[dbus_proxy(property)]
-    fn available_source_types(&self) -> Result<BitFlags<SourceType>>;
+    pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
+        self.0
+            .get_property::<BitFlags<SourceType>>("AvailableSourceTypes")
+            .await
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

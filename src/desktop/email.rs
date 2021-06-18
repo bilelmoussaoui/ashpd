@@ -4,15 +4,14 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::email::{EmailOptions, EmailProxy};
-//! use ashpd::{BasicResponse as Basic, Response, WindowIdentifier};
+//! use ashpd::{BasicResponse, WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use zbus::{fdo::Result, Connection};
 //! use zvariant::Fd;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = EmailProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = EmailProxy::new(&connection).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let request = proxy.compose_email(
 //!         WindowIdentifier::default(),
@@ -21,19 +20,17 @@
 //!             .subject("email subject")
 //!             .body("the pre-filled email body")
 //!             .attach(Fd::from(file.as_raw_fd())),
-//!     )?;
-//!     request.connect_response(|r: Response<Basic>| {
-//!         println!("{}", r.is_ok());
-//!         Ok(())
-//!     })?;
+//!     ).await?;
+//!
+//!     let response = request.receive_response::<ashpd::BasicResponse>().await?;
+//!     println!("{:#?}", response);
 //!     Ok(())
 //! }
 //! ```
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a compose email request.
@@ -111,13 +108,20 @@ impl EmailOptions {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Email",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications request sending an email.
-trait Email {
+pub struct EmailProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> EmailProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<EmailProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Email")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Presents a window that lets the user compose an email.
     ///
     /// **Note** that the default email client for the host will need to support
@@ -129,10 +133,24 @@ trait Email {
     /// * `options` - [`EmailOptions`].
     ///
     /// [`EmailOptions`]: ./struct.EmailOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn compose_email(&self, parent_window: WindowIdentifier, options: EmailOptions);
+    pub async fn compose_email(
+        &self,
+        parent_window: WindowIdentifier,
+        options: EmailOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("ComposeEmail", &(parent_window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

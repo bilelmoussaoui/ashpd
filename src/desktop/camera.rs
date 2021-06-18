@@ -1,27 +1,22 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::camera, Response};
-//! use zbus::fdo::Result;
+//! use ashpd::desktop::camera;
 //!
-//! async fn run() -> Result<()> {
-//!     if let Response::Ok(pipewire_fd) = camera::stream().await? {
-//!         // Use the PipeWire file descriptor with GStreamer for example
-//!     }
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let pipewire_fd = camera::stream().await?;
+//!     // Use the PipeWire file descriptor with GStreamer for example
 //!     Ok(())
 //! }
 //! ```
 use std::collections::HashMap;
 use std::os::unix::io;
 use std::os::unix::io::AsRawFd;
-use std::sync::Arc;
 
-use futures::{lock::Mutex, FutureExt};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, BasicResponse, HandleToken, RequestProxy, Response};
+use crate::{BasicResponse, Error, HandleToken, RequestProxy};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_camera` request.
@@ -38,14 +33,21 @@ impl CameraAccessOptions {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Camera",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications access camera devices, such as web
 /// cams.
-trait Camera {
+pub struct CameraProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> CameraProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<CameraProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Camera")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Requests an access to the camera.
     ///
     /// # Arguments
@@ -53,8 +55,17 @@ trait Camera {
     /// * `options` - A [`CameraAccessOptions`].
     ///
     /// [`CameraAccessOptions`]: ./struct.CameraAccessOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn access_camera(&self, options: CameraAccessOptions);
+    pub async fn access_camera(
+        &self,
+        options: CameraAccessOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("AccessCamera", &(options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Open a file descriptor to the PipeWire remote where the camera nodes are
     /// available.
@@ -65,56 +76,43 @@ trait Camera {
     ///
     /// * `options` - ?
     /// FIXME: figure out what are the possible options
-    fn open_pipe_wire_remote(&self, options: HashMap<&str, Value<'_>>) -> Result<Fd>;
+    pub async fn open_pipe_wire_remote(
+        &self,
+        options: HashMap<&str, Value<'_>>,
+    ) -> Result<Fd, Error> {
+        self.0
+            .call_method("OpenPipeWireRemote", &(options))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// A boolean stating whether there is any cameras available.
-    #[dbus_proxy(property)]
-    fn is_camera_present(&self) -> Result<bool>;
+    pub async fn is_camera_present(&self) -> Result<bool, Error> {
+        let present = self.0.get_property::<bool>("IsCameraPresent").await?;
+        Ok(present)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
 
 /// Request access to the camera and start a stream.
 ///
-/// An async function around the `AsyncCameraProxy::access_camera`
-/// and `AsyncCameraProxy::open_pipe_wire_remote`.
-pub async fn stream() -> zbus::Result<Response<io::RawFd>> {
+/// A wrapper around the [`CameraProxy::access_camera`]
+/// and [`CameraProxy::open_pipe_wire_remote`].
+pub async fn stream() -> Result<io::RawFd, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncCameraProxy::new(&connection);
+    let proxy = CameraProxy::new(&connection).await?;
     let request = proxy.access_camera(CameraAccessOptions::default()).await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let request_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
+    let _ = request.receive_response::<BasicResponse>().await?;
 
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(request_id).await?;
-
-    if let Response::Err(err) = receiver.await.unwrap() {
-        return Ok(Response::Err(err));
-    }
     let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
-    Ok(Response::Ok(remote_fd.as_raw_fd()))
-}
-
-/// Check whether a camera is present.
-///
-/// An helper around the `AsyncCameraProxy::is_camera_present` property.
-pub async fn is_present() -> Result<bool> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncCameraProxy::new(&connection);
-    proxy.is_camera_present().await
+    Ok(remote_fd.as_raw_fd())
 }

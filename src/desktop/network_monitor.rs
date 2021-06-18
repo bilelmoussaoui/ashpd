@@ -2,29 +2,27 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
-//! use zbus::fdo::Result;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = NetworkMonitorProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = NetworkMonitorProxy::new(&connection).await?;
 //!
-//!     println!("{}", proxy.can_reach("www.google.com", 80)?);
+//!     println!("{}", proxy.can_reach("www.google.com", 80).await?);
 //!
-//!     println!("{}", proxy.get_available()?);
+//!     println!("{}", proxy.get_available().await?);
 //!
-//!     println!("{:#?}", proxy.get_connectivity()?);
+//!     println!("{:#?}", proxy.get_connectivity().await?);
 //!
-//!     println!("{}", proxy.get_metered()?);
+//!     println!("{}", proxy.get_metered().await?);
 //!
-//!     println!("{:#?}", proxy.get_status()?);
+//!     println!("{:#?}", proxy.get_status().await?);
 //!
 //!     Ok(())
 //! }
 //! ```
-use std::fmt;
-
+use crate::Error;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
+use std::fmt;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -64,41 +62,84 @@ impl fmt::Display for Connectivity {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.NetworkMonitor",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface provides network status information to sandboxed applications.
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib `GNetworkMonitor` interface.
-trait NetworkMonitor {
+pub struct NetworkMonitorProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> NetworkMonitorProxy<'a> {
+    pub async fn new(
+        connection: &zbus::azync::Connection,
+    ) -> Result<NetworkMonitorProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.NetworkMonitor")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Returns whether the given hostname is believed to be reachable.
     ///
     /// # Arguments
     ///
     /// * `hostname` - The hostname to reach.
     /// * `port` - The port to reach.
-    fn can_reach(&self, hostname: &str, port: u32) -> Result<bool>;
+    pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
+        self.0
+            .call_method("CanReach", &(hostname, port))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Returns whether the network is considered available.
     /// That is, whether the system as a default route for at least one of IPv4
     /// or IPv6.
-    fn get_available(&self) -> Result<bool>;
+    pub async fn get_available(&self) -> Result<bool, Error> {
+        self.0
+            .call_method("GetAvailable", &())
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Returns more detailed information about the host's network connectivity
-    fn get_connectivity(&self) -> Result<Connectivity>;
+    pub async fn get_connectivity(&self) -> Result<Connectivity, Error> {
+        self.0
+            .call_method("GetConnectivity", &())
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Returns whether the network is considered metered.
     /// That is, whether the system as traffic flowing through the default
     /// connection that is subject to limitations by service providers.
-    fn get_metered(&self) -> Result<bool>;
+    pub async fn get_metered(&self) -> Result<bool, Error> {
+        self.0
+            .call_method("GetMetered", &())
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Returns the three values all at once.
-    fn get_status(&self) -> Result<NetworkStatus>;
+    pub async fn get_status(&self) -> Result<NetworkStatus, Error> {
+        self.0
+            .call_method("GetStatus", &())
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

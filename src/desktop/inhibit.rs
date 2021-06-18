@@ -2,52 +2,50 @@
 //!
 //! How to inhibit logout/user switch
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use ashpd::desktop::inhibit::{
 //!     CreateMonitorOptions, InhibitFlags, InhibitOptions, InhibitProxy, InhibitState, SessionState,
 //! };
 //! use ashpd::{HandleToken, WindowIdentifier};
 //! use std::convert::TryFrom;
 //! use std::{thread, time};
-//! use zbus::{self, fdo::Result};
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = InhibitProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = InhibitProxy::new(&connection).await?;
 //!     let session_token = HandleToken::try_from("sessiontoken").unwrap();
-//!     proxy.create_monitor(
+//!     let session = proxy.create_monitor(
 //!         WindowIdentifier::default(),
 //!         CreateMonitorOptions::default().session_handle_token(session_token),
-//!     )?;
-//!     proxy.connect_state_changed(move |state: InhibitState| {
-//!         match state.session_state() {
-//!             SessionState::Running => (),
-//!             SessionState::QueryEnd => {
-//!                 proxy.inhibit(
-//!                     WindowIdentifier::default(),
-//!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
-//!                     InhibitOptions::default().reason("please save the opened project first"),
-//!                 )?;
-//!                 thread::sleep(time::Duration::from_secs(1));
-//!                 proxy.query_end_response(state.session_handle())?;
-//!             }
-//!             SessionState::Ending => {
-//!                 println!("ending the session");
-//!             }
+//!     ).await?;
+//!
+//!     let state = proxy.receive_state_changed().await?;
+//!     match state.session_state() {
+//!         SessionState::Running => (),
+//!         SessionState::QueryEnd => {
+//!             proxy.inhibit(
+//!                 WindowIdentifier::default(),
+//!                 InhibitFlags::Logout | InhibitFlags::UserSwitch,
+//!                 InhibitOptions::default().reason("please save the opened project first"),
+//!             ).await?;
+//!             thread::sleep(time::Duration::from_secs(1));
+//!             proxy.query_end_response(&session).await?;
 //!         }
-//!         Ok(())
-//!     })?;
+//!         SessionState::Ending => {
+//!             println!("ending the session");
+//!         }
+//!     }
 //!     Ok(())
 //! }
 //! ```
 use enumflags2::BitFlags;
+use futures_lite::StreamExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
+use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a create inhibit monitor request.
@@ -111,15 +109,8 @@ pub enum InhibitFlags {
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
 /// A response to a `create_monitor` request.
-pub struct CreateMonitor {
-    session_handle: OwnedObjectPath,
-}
-
-impl CreateMonitor {
-    /// The created session handle.
-    pub fn session_handle(&self) -> &ObjectPath<'_> {
-        &self.session_handle
-    }
+struct CreateMonitor {
+    pub(crate) session_handle: OwnedObjectPath,
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
@@ -164,14 +155,21 @@ pub enum SessionState {
     Ending = 3,
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Desktop",
-    default_service = "org.freedesktop.portal.Inhibit",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications inhibit the user session from
 /// ending, suspending, idling or getting switched away.
-trait Inhibit {
+pub struct InhibitProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> InhibitProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<InhibitProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Inhibit")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Creates a monitoring session.
     /// While this session is active, the caller will receive `state_changed`
     /// signals with updates on the session state.
@@ -182,8 +180,20 @@ trait Inhibit {
     /// * `options` - [`CreateMonitorOptions`].
     ///
     /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn create_monitor(&self, window: WindowIdentifier, options: CreateMonitorOptions);
+    pub async fn create_monitor(
+        &self,
+        window: WindowIdentifier,
+        options: CreateMonitorOptions,
+    ) -> Result<SessionProxy<'_>, Error> {
+        let path: OwnedObjectPath = self
+            .0
+            .call_method("Inhibit", &(window, options))
+            .await?
+            .body()?;
+        let request = RequestProxy::new(self.0.connection(), path).await?;
+        let monitor = request.receive_response::<CreateMonitor>().await?;
+        SessionProxy::new(self.0.connection(), monitor.session_handle).await
+    }
 
     /// Inhibits a session status changes.
     ///
@@ -194,17 +204,26 @@ trait Inhibit {
     /// * `options` - A [`InhibitOptions`].
     ///
     /// [`InhibitOptions`]: ./struct.InhibitOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn inhibit(
+    pub async fn inhibit(
         &self,
         window: WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         options: InhibitOptions,
-    );
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("Inhibit", &(window, flags, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// Signal emitted when the session state changes.
-    #[dbus_proxy(signal)]
-    fn state_changed(&self, state: InhibitState) -> Result<()>;
+    pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
+        let mut stream = self.0.receive_signal("StateChanged").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<InhibitState>().map_err(From::from)
+    }
 
     /// Acknowledges that the caller received the "state_changed" signal.
     /// This method should be called within one second after receiving a
@@ -212,15 +231,22 @@ trait Inhibit {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`] or [`AsyncSessionProxy`].
+    /// * `session` - A [`SessionProxy`].
     ///
-    /// [`AsyncSessionProxy`]: ../../session/struct.AsyncSessionProxy.html
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    fn query_end_response<S>(&self, session: &S) -> zbus::Result<()>
-    where
-        S: Into<SessionProxy<'c>> + serde::ser::Serialize + zvariant::Type;
+    pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
+        self.0
+            .call_method("QueryEndResponse", &(session))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

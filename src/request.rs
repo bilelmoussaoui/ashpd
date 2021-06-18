@@ -1,11 +1,10 @@
-use std::{collections::HashMap, fmt, marker::PhantomData};
-
+use futures_lite::StreamExt;
 use serde::{
     de::{self, DeserializeOwned, Error, Visitor},
     Deserialize, Deserializer, Serialize,
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::dbus_proxy;
+use std::{collections::HashMap, fmt, marker::PhantomData};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
@@ -14,7 +13,7 @@ use zvariant_derive::Type;
 ///
 /// [`RequestProxy`]: ./struct.RequestProxy.html
 #[derive(Debug)]
-pub enum Response<T>
+enum Response<T>
 where
     T: DeserializeOwned + zvariant::Type,
 {
@@ -22,33 +21,6 @@ where
     Ok(T),
     /// The user cancelled the request or something else happened.
     Err(ResponseError),
-}
-
-impl<T> Response<T>
-where
-    T: DeserializeOwned + zvariant::Type,
-{
-    /// Whether the request was successful.
-    pub fn is_ok(&self) -> bool {
-        matches!(self, Response::Ok(_))
-    }
-
-    /// Whether the request failed.
-    pub fn is_err(&self) -> bool {
-        matches!(self, Response::Err(_))
-    }
-
-    /// Unwrap the inner response if the request was successful
-    ///
-    /// # Panic
-    ///
-    /// The function panics if the request failed and there's no valid response.
-    pub fn unwrap(&self) -> &T {
-        match self {
-            Self::Ok(response) => response,
-            Self::Err(_) => panic!("Called Response::unwrap on a Response::Err"),
-        }
-    }
 }
 
 impl<T> zvariant::Type for Response<T>
@@ -200,21 +172,40 @@ impl From<ResponseError> for ResponseType {
 /// what it expected, and update its signal subscription if it isn't.
 /// This ensures that applications will work with both old and new versions of
 /// xdg-desktop-portal.
+pub struct RequestProxy<'a>(zbus::azync::Proxy<'a>);
 
-#[dbus_proxy(
-    default_service = "org.freedesktop.portal.Desktop",
-    interface = "org.freedesktop.portal.Request",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
-trait Request {
-    #[dbus_proxy(signal)]
-    /// A signal emitted when the portal interaction is over.
-    fn response<T>(&self, response: Response<T>) -> Result<()>
+impl<'a> RequestProxy<'a> {
+    pub async fn new(
+        connection: &zbus::azync::Connection,
+        path: zvariant::OwnedObjectPath,
+    ) -> Result<RequestProxy<'a>, crate::Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Request")
+            .path(path)?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
+    pub async fn receive_response<R>(&self) -> Result<R, crate::Error>
     where
-        T: DeserializeOwned + zvariant::Type;
+        R: DeserializeOwned + zvariant::Type,
+    {
+        let mut stream = self.0.receive_signal("Response").await?;
+        let message = stream.next().await.ok_or(crate::Error::NoResponse)?;
+        let body = message.body::<Response<R>>()?;
+        match body {
+            Response::Err(e) => Err(e.into()),
+            Response::Ok(r) => Ok(r),
+        }
+    }
 
     /// Closes the portal request to which this object refers and ends all
     /// related user interaction (dialogs, etc). A Response signal will not
     /// be emitted in this case.
-    fn close(&self) -> zbus::Result<()>;
+    pub async fn close(&self) -> Result<(), crate::Error> {
+        self.0.call_method("Close", &()).await?;
+        Ok(())
+    }
 }

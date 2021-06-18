@@ -1,27 +1,21 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::account, Response, WindowIdentifier};
-//! use zbus::fdo::Result;
+//! use ashpd::{desktop::account, WindowIdentifier};
 //!
-//! async fn run() -> Result<()> {
+//! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     if let Response::Ok(user_info) =
-//!         account::get_user_information(identifier, "App would like to access user information").await?
-//!     {
-//!         println!("Name: {}", user_info.name);
-//!         println!("ID: {}", user_info.id);
-//!     }
+//!     let user_info = account::user_information(identifier, "App would like to access user information").await?;
+//!
+//!     println!("Name: {}", user_info.name);
+//!     println!("ID: {}", user_info.id);
+//!
 //!     Ok(())
 //! }
 //! ```
-use std::sync::Arc;
 
-use futures::{lock::Mutex, FutureExt};
-use zbus::{dbus_proxy, fdo::Result};
+use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy, Response, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// The possible options for a get user information request.
@@ -47,7 +41,7 @@ impl UserInfoOptions {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, Clone, TypeDict)]
-/// The response of a `get_user_information` request.
+/// The response of a `user_information` request.
 pub struct UserInfo {
     /// User identifier.
     pub id: String,
@@ -57,17 +51,24 @@ pub struct UserInfo {
     pub image: String,
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Account",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets sandboxed applications query basic information about the
 /// user, like his name and avatar photo.
 ///
 /// The portal backend will present the user with a dialog to confirm which (if
 /// any) information to share.
-trait Account {
+pub struct AccountProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> AccountProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<AccountProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Account")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Gets information about the user.
     ///
     /// # Arguments
@@ -76,50 +77,45 @@ trait Account {
     /// * `options` - A [`UserInfoOptions`].
     ///
     /// [`UserInfoOptions`]: ./struct.UserInfoOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn get_user_information(&self, window: WindowIdentifier, options: UserInfoOptions);
+    pub async fn user_information(
+        &self,
+        window: WindowIdentifier,
+        options: UserInfoOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("GetUserInformation", &(window, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
 
 /// Get the user information
 ///
-/// An async wrapper around the `AsyncAccountProxy::get_user_information`
+/// An async wrapper around the [`AccountProxy::user_information`]
 /// function.
-pub async fn get_user_information(
+pub async fn user_information(
     window_identifier: WindowIdentifier,
     reason: &str,
-) -> zbus::Result<Response<UserInfo>> {
+) -> Result<UserInfo, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncAccountProxy::new(&connection);
+    let proxy = AccountProxy::new(&connection).await?;
     let request = proxy
-        .get_user_information(
+        .user_information(
             window_identifier,
             UserInfoOptions::default().reason(&reason),
         )
         .await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<UserInfo>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let user_information = receiver.await.unwrap();
+    let user_information = request.receive_response::<UserInfo>().await?;
     Ok(user_information)
 }

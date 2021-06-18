@@ -3,7 +3,7 @@
 //! How to monitor if there's a new update and install it.
 //! Only available for Flatpak applications.
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use ashpd::flatpak::update_monitor::{
 //!     UpdateInfo, UpdateMonitorProxy, UpdateOptions, UpdateProgress,
 //! };

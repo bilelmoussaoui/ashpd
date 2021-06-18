@@ -1,33 +1,35 @@
 //! ```rust,no_run
 //! use ashpd::desktop::settings::SettingsProxy;
-//! use zbus::{self, fdo::Result};
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = SettingsProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = SettingsProxy::new(&connection).await?;
 //!
 //!     println!(
 //!         "{:#?}",
-//!         proxy.read::<String>("org.gnome.desktop.interface", "clock-format")?
+//!         proxy.read::<String>("org.gnome.desktop.interface", "clock-format").await?
 //!     );
-//!     println!("{:#?}", proxy.read_all(&["org.gnome.desktop.interface"])?);
 //!
-//!     proxy.connect_setting_changed(|setting| {
-//!         println!("{}", setting.namespace());
-//!         println!("{}", setting.key());
-//!         println!("{:#?}", setting.value());
-//!         Ok(())
-//!     })?;
+//!     let settings = proxy.read_all(&["org.gnome.desktop.interface"]).await?;
+//!     println!("{:#?}", settings);
+//!
+//!     let setting = proxy.receive_setting_changed().await?;
+//!     println!("{}", setting.namespace());
+//!     println!("{}", setting.key());
+//!     println!("{:#?}", setting.value());
+//!
 //!     Ok(())
 //! }
 //! ```
 
 use std::{collections::HashMap, convert::TryFrom};
 
+use futures_lite::StreamExt;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
+
+use crate::Error;
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -63,15 +65,22 @@ impl std::fmt::Debug for Setting {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Desktop",
-    default_service = "org.freedesktop.portal.Settings",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
 /// settings.
-trait Settings {
+pub struct SettingsProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> SettingsProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<SettingsProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Settings")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
     /// Returns a `HashMap` of namespaces to its keys and values.
@@ -83,7 +92,13 @@ trait Settings {
     /// If `namespaces` is an empty array or contains an empty string it matches
     /// all. Globing is supported but only for trailing sections, e.g.
     /// "org.example.*".
-    fn read_all(&self, namespaces: &[&str]) -> zbus::Result<HashMap<String, Namespace>>;
+    pub async fn read_all(&self, namespaces: &[&str]) -> Result<HashMap<String, Namespace>, Error> {
+        self.0
+            .call_method("ReadAll", &(namespaces))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
@@ -93,15 +108,29 @@ trait Settings {
     ///
     /// * `namespace` - Namespace to look up key in.
     /// * `key` - The key to get.
-    fn read<T>(&self, namespace: &str, key: &str) -> zbus::Result<T>
+    pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
-        T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type;
+        T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type,
+    {
+        self.0
+            .call_method("Read", &(namespace, key))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
-    #[dbus_proxy(signal)]
     /// Signal emitted when a setting changes.
-    fn setting_changed(&self, setting: Setting) -> Result<()>;
+    pub async fn receive_setting_changed(&self) -> Result<Setting, Error> {
+        let mut stream = self.0.receive_signal("SettingChanged").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<Setting>().map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }

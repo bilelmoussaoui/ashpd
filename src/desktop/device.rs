@@ -4,29 +4,24 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::device::{AccessDeviceOptions, Device, DeviceProxy};
-//! use ashpd::{BasicResponse as Basic, Response};
-//! use zbus::fdo::Result;
 //!
-//! fn main() -> Result<()> {
-//!     let connection = zbus::Connection::new_session()?;
-//!     let proxy = DeviceProxy::new(&connection);
-//!     let request = proxy.access_device(6879, &[Device::Speakers], AccessDeviceOptions::default())?;
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = DeviceProxy::new(&connection).await?;
+//!     let request = proxy.access_device(6879, &[Device::Speakers], AccessDeviceOptions::default()).await?;
 //!
-//!     request.connect_response(|response: Response<Basic>| {
-//!         println!("{}", response.is_ok());
-//!         Ok(())
-//!     })?;
+//!     let response = request.receive_response::<ashpd::BasicResponse>().await?;
+//!     println!("{:#?}", response);
 //!     Ok(())
 //! }
 //! ```
 //! [`Device`]: ./enum.Device.html
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{AsyncRequestProxy, HandleToken, RequestProxy};
+use crate::{Error, HandleToken, RequestProxy};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_device` request.
@@ -72,16 +67,23 @@ impl Serialize for Device {
     }
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Device",
-    default_service = "org.freedesktop.portal.Desktop",
-    default_path = "/org/freedesktop/portal/desktop"
-)]
 /// The interface lets services ask if an application should get access to
 /// devices such as microphones, speakers or cameras. Not a portal in the strict
 /// sense, since the API is not directly accessible to applications inside the
 /// sandbox.
-trait Device {
+pub struct DeviceProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> DeviceProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<DeviceProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Device")
+            .path("/org/freedesktop/portal/desktop")?
+            .destination("org.freedesktop.portal.Desktop")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Asks for access to a device.
     ///
     /// # Arguments
@@ -92,10 +94,25 @@ trait Device {
     /// * `options` - A [`AccessDeviceOptions`].
     ///
     /// [`AccessDeviceOptions`]: ./struct.AccessDeviceOptions.html
-    #[dbus_proxy(object = "Request")]
-    fn access_device(&self, pid: u32, devices: &[Device], options: AccessDeviceOptions);
+    pub async fn access_device(
+        &self,
+        pid: u32,
+        devices: &[Device],
+        options: AccessDeviceOptions,
+    ) -> Result<RequestProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("AccessDevice", &(pid, devices, options))
+            .await?
+            .body()?;
+        RequestProxy::new(self.0.connection(), path).await
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
