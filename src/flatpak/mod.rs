@@ -6,11 +6,10 @@
 //! use ashpd::flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions};
 //! use enumflags2::BitFlags;
 //! use std::collections::HashMap;
-//! use zbus::{fdo::Result, Connection};
 //!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = FlatpakProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = FlatpakProxy::new(&connection).await?;
 //!
 //!     proxy.spawn(
 //!         "contrast".into(),
@@ -19,7 +18,7 @@
 //!         HashMap::new(),
 //!         SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
 //!         SpawnOptions::default(),
-//!     )?;
+//!     ).await?;
 //!
 //!     Ok(())
 //! }
@@ -27,12 +26,13 @@
 use std::collections::HashMap;
 
 use enumflags2::BitFlags;
+use futures_lite::StreamExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::flatpak::update_monitor::{AsyncUpdateMonitorProxy, UpdateMonitorProxy};
+use crate::flatpak::update_monitor::UpdateMonitorProxy;
+use crate::Error;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
@@ -154,20 +154,52 @@ impl SpawnOptions {
 /// Currently there are no possible options yet.
 pub struct CreateMonitorOptions {}
 
-#[dbus_proxy(
-    interface = "org.freedesktop.portal.Flatpak",
-    default_service = "org.freedesktop.portal.Flatpak",
-    default_path = "/org/freedesktop/portal/Flatpak"
-)]
+trait Flatpak {}
+
 /// The interface exposes some interactions with Flatpak on the host to the
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
-trait Flatpak {
+pub struct FlatpakProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> FlatpakProxy<'a> {
+    pub async fn new(connection: &zbus::azync::Connection) -> Result<FlatpakProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Flatpak")
+            .path("/org/freedesktop/portal/Flatpak")?
+            .destination("org.freedesktop.portal.Flatpak")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// Creates an update monitor object that will emit signals
     /// when an update for the caller becomes available, and can be used to
     /// install it.
-    #[dbus_proxy(object = "UpdateMonitor")]
-    fn create_update_monitor(&self, options: CreateMonitorOptions);
+    pub async fn create_update_monitor(
+        &self,
+        options: CreateMonitorOptions,
+    ) -> Result<UpdateMonitorProxy<'_>, Error> {
+        let path: zvariant::OwnedObjectPath = self
+            .0
+            .call_method("CreateUpdateMonitors", &(options))
+            .await?
+            .body()?;
+        UpdateMonitorProxy::new(self.0.connection(), path).await
+    }
+
+    /// Emitted when a process starts by [`FlatpakProxy::spawn`].
+    pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
+        let mut stream = self.0.receive_signal("SpawnStarted").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<(u32, u32)>().map_err(From::from)
+    }
+
+    /// Emitted when a process started by [`FlatpakProxy::spawn`] exits.
+    pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
+        let mut stream = self.0.receive_signal("SpawnExited").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<(u32, u32)>().map_err(From::from)
+    }
 
     /// This methods let you start a new instance of your application,
     /// optionally enabling a tighter sandbox.
@@ -186,7 +218,7 @@ trait Flatpak {
     /// * `options` - A [`SpawnOptions`].
     ///
     /// [`SpawnOptions`]: ./struct.SpawnOptions.html
-    fn spawn(
+    pub async fn spawn(
         &self,
         cwd_path: &str,
         argv: &[&str],
@@ -194,8 +226,13 @@ trait Flatpak {
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
-    ) -> Result<u32>;
-
+    ) -> Result<u32, Error> {
+        self.0
+            .call_method("Spawn", &(cwd_path, argv, fds, envs, flags, options))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
     /// This methods let you send a Unix signal to a process that was started
     /// `spawn`.
     ///
@@ -204,21 +241,34 @@ trait Flatpak {
     /// * `pid` - The PID of the process to send the signal to.
     /// * `signal` - The signal to send.
     /// * `to_process_group` - Whether to send the signal to the process group.
-    fn spawn_signal(&self, pid: u32, signal: u32, to_process_group: bool) -> Result<()>;
-
-    #[dbus_proxy(signal)]
-    fn spawn_started(&self, pid: u32, relpid: u32) -> Result<()>;
-
-    #[dbus_proxy(signal)]
-    fn spawn_existed(&self, pid: u32, exit_status: u32) -> Result<()>;
+    pub async fn spawn_signal(
+        &self,
+        pid: u32,
+        signal: u32,
+        to_process_group: bool,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("SpawnSignal", &(pid, signal, to_process_group))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 
     /// Flags marking what optional features are available.
-    #[dbus_proxy(property)]
-    fn supports(&self) -> Result<BitFlags<SupportsFlags>>;
+    pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
+        self.0
+            .get_property::<BitFlags<SupportsFlags>>("supports")
+            .await
+            .map_err(From::from)
+    }
 
     /// The version of this DBus interface.
-    #[dbus_proxy(property, name = "version")]
-    fn version(&self) -> Result<u32>;
+    pub async fn version(&self) -> Result<u32, Error> {
+        self.0
+            .get_property::<u32>("version")
+            .await
+            .map_err(From::from)
+    }
 }
 
 /// Monitor if there's an update it and install it.

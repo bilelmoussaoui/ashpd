@@ -9,34 +9,26 @@
 //! };
 //! use ashpd::flatpak::{CreateMonitorOptions, FlatpakProxy};
 //! use ashpd::WindowIdentifier;
-//! use zbus::{fdo::Result, Connection};
 //!
-//! fn main() -> Result<()> {
-//!     let connection = Connection::new_session()?;
-//!     let proxy = FlatpakProxy::new(&connection);
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = FlatpakProxy::new(&connection).await?;
 //!
-//!     let monitor = proxy.create_update_monitor(CreateMonitorOptions::default())?;
+//!     let monitor = proxy.create_update_monitor(CreateMonitorOptions::default()).await?;
+//!     let info = monitor.receive_update_available().await?;
 //!
-//!     monitor.connect_progress(move |p: UpdateProgress| {
-//!         if p.progress == Some(100) {
-//!             monitor.close()?;
-//!         }
-//!         Ok(())
-//!     })?;
-//!
-//!     monitor.connect_update_available(move |_: UpdateInfo| {
-//!         monitor.update(WindowIdentifier::default(), UpdateOptions::default())?;
-//!         Ok(())
-//!     })?;
+//!     monitor.update(WindowIdentifier::default(), UpdateOptions::default()).await?;
+//!     let progress = monitor.receive_progress().await?;
+//!     println!("{:#?}", progress);
 //!
 //!     Ok(())
 //! }
 //! ```
+use crate::{Error, WindowIdentifier};
+use futures_lite::StreamExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::{dbus_proxy, fdo::Result};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
-
-use crate::WindowIdentifier;
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options on an update request.
@@ -90,25 +82,61 @@ pub struct UpdateProgress {
     pub error_message: Option<String>,
 }
 
-#[dbus_proxy(default_path = "/org/freedesktop/portal/Flatpak")]
 /// The interface exposes some interactions with Flatpak on the host to the
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
-trait UpdateMonitor {
-    #[dbus_proxy(signal)]
+pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);
+
+impl<'a> UpdateMonitorProxy<'a> {
+    pub async fn new(
+        connection: &zbus::azync::Connection,
+        path: OwnedObjectPath,
+    ) -> Result<UpdateMonitorProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.UpdateMonitor")
+            .path(path)?
+            .destination("org.freedesktop.portal.Flatpak.UpdateMonitor")
+            .build_async()
+            .await?;
+        Ok(Self(proxy))
+    }
+
     /// A signal received when there's progress during the application update.
-    fn progress(&self, progress: UpdateProgress) -> Result<()>;
+    pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
+        let mut stream = self.0.receive_signal("Progress").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<UpdateProgress>().map_err(From::from)
+    }
 
-    #[dbus_proxy(signal)]
     /// A signal received when there's an application update.
-    fn update_available(&self, update_info: UpdateInfo) -> Result<()>;
-
-    /// Ends the update monitoring and cancels any ongoing installation.
-    fn close(&self) -> Result<()>;
+    pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
+        let mut stream = self.0.receive_signal("UpdateAvailable").await?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
+        message.body::<UpdateInfo>().map_err(From::from)
+    }
 
     /// Asks to install an update of the calling app.
     ///
     /// **Note** that updates are only allowed if the new version
     /// has the same permissions (or less) than the currently installed version.
-    fn update(&self, parent_window: WindowIdentifier, options: UpdateOptions) -> Result<()>;
+    pub async fn update(
+        &self,
+        parent_window: WindowIdentifier,
+        options: UpdateOptions,
+    ) -> Result<(), Error> {
+        self.0
+            .call_method("Update", &(parent_window, options))
+            .await?
+            .body()
+            .map_err(From::from)
+    }
+
+    /// Ends the update monitoring and cancels any ongoing installation.
+    pub async fn close(&self) -> Result<(), Error> {
+        self.0
+            .call_method("Close", &())
+            .await?
+            .body()
+            .map_err(From::from)
+    }
 }
