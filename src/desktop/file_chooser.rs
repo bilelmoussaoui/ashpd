@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{
-//!     Choice, FileChooserProxy, FileFilter, OpenFileOptions, SelectedFiles,
+//!     Choice, FileChooserProxy, FileFilter, OpenFileOptions,
 //! };
 //! use ashpd::WindowIdentifier;
 //!
@@ -12,7 +12,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
-//!     let request = proxy.open_file(
+//!     let files = proxy.open_file(
 //!         WindowIdentifier::default(),
 //!         "open a file to read",
 //!         OpenFileOptions::default()
@@ -29,7 +29,6 @@
 //!             .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
 //!     ).await?;
 //!
-//!     let files = request.receive_response::<SelectedFiles>().await?;
 //!     println!("{:#?}", files);
 //!
 //!     Ok(())
@@ -39,13 +38,13 @@
 //! Ask to save a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions, SelectedFiles};
+//! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions};
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FileChooserProxy::new(&connection).await?;
-//!     let request = proxy.save_file(
+//!     let files = proxy.save_file(
 //!         WindowIdentifier::default(),
 //!         "open a file to write",
 //!         SaveFileOptions::default()
@@ -55,7 +54,6 @@
 //!             .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
 //!     ).await?;
 //!
-//!     let files = request.receive_response::<SelectedFiles>().await?;
 //!     println!("{:#?}", files);
 //!
 //!     Ok(())
@@ -65,14 +63,14 @@
 //! Ask to save multiple files
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions, SelectedFiles};
+//! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions};
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
-//!     let request = proxy.save_files(
+//!     let files = proxy.save_files(
 //!         WindowIdentifier::default(),
 //!         "open files to write",
 //!         SaveFilesOptions::default()
@@ -82,7 +80,6 @@
 //!             .files(&["test.jpg", "awesome.png"]),
 //!     ).await?;
 //!
-//!     let files = request.receive_response::<SelectedFiles>().await?;
 //!     println!("{:#?}", files);
 //!
 //!     Ok(())
@@ -92,7 +89,10 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_request_method, property},
+    Error, HandleToken, WindowIdentifier,
+};
 
 #[derive(Serialize, Deserialize, Type, Clone, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -417,13 +417,8 @@ impl<'a> FileChooserProxy<'a> {
         parent_window: WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("OpenFile", &(parent_window, title, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<SelectedFiles, Error> {
+        call_request_method(&self.0, "OpenFile", &(parent_window, title, options)).await
     }
 
     /// Asks for a location to save a file.
@@ -440,13 +435,8 @@ impl<'a> FileChooserProxy<'a> {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("SaveFile", &(parent_window, title, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<SelectedFiles, Error> {
+        call_request_method(&self.0, "SaveFile", &(parent_window, title, options)).await
     }
 
     /// Asks for a folder as a location to save one or more files.
@@ -468,20 +458,12 @@ impl<'a> FileChooserProxy<'a> {
         parent_window: WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("SaveFiles", &(parent_window, title, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<SelectedFiles, Error> {
+        call_request_method(&self.0, "SaveFiles", &(parent_window, title, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

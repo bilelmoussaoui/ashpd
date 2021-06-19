@@ -38,7 +38,10 @@
 //! }
 //! ```
 
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use futures_lite::StreamExt;
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
@@ -265,11 +268,7 @@ impl<'a> NotificationProxy<'a> {
         id: &str,
         notification: Notification,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("AddNotification", &(id, notification))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "AddNotification", &(id, notification)).await
     }
 
     /// Withdraws a notification.
@@ -278,18 +277,11 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// * `id` - Application-provided ID for this notification.
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
-        self.0
-            .call_method("RemoveNotification", &(id))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "RemoveNotification", &(id)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

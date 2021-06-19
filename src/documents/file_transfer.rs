@@ -26,7 +26,10 @@
 //! ```
 use std::collections::HashMap;
 
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use futures_lite::StreamExt;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -99,11 +102,7 @@ impl<'a> FileTransferProxy<'a> {
         fds: &[Fd],
         options: HashMap<&str, Value<'_>>,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("AddFiles", &(key, fds, options))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "AddFiles", &(key, fds, options)).await
     }
 
     /// Retrieves files that were previously added to the session with
@@ -123,11 +122,7 @@ impl<'a> FileTransferProxy<'a> {
         key: &str,
         options: HashMap<&str, Value<'_>>,
     ) -> Result<Vec<String>, Error> {
-        self.0
-            .call_method("RetrieveFiles", &(key, options))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "RetrieveFiles", &(key, options)).await
     }
     /// Starts a session for a file transfer.
     /// The caller should call `add_files` at least once, to add files to this
@@ -137,11 +132,7 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// a key that can be passed to [`FileTransferProxy::retrieve_files`] to obtain the files.
     pub async fn start_transfer(&self, options: TransferOptions) -> Result<String, Error> {
-        self.0
-            .call_method("StartTransfer", &(options))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "StartTransfer", &(options)).await
     }
 
     /// Ends the transfer.
@@ -152,11 +143,7 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
     pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
-        self.0
-            .call_method("StopTransfer", &(key))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "StopTransfer", &(key)).await
     }
 
     /// Emitted when the transfer is closed.
@@ -172,9 +159,6 @@ impl<'a> FileTransferProxy<'a> {
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

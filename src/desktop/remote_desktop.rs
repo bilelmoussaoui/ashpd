@@ -3,9 +3,9 @@
 //! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{
 //!     CreateRemoteOptions, DeviceType, KeyState, RemoteDesktopProxy,
-//!     SelectDevicesOptions, SelectedDevices, StartRemoteOptions,
+//!     SelectDevicesOptions, StartRemoteOptions,
 //! };
-//! use ashpd::{BasicResponse, HandleToken, WindowIdentifier};
+//! use ashpd::{HandleToken, WindowIdentifier};
 //! use std::collections::HashMap;
 //! use std::convert::TryFrom;
 //!
@@ -18,17 +18,15 @@
 //!             .session_handle_token(HandleToken::try_from("token").unwrap()),
 //!     ).await?;
 //!
-//!     let request = proxy.select_devices(&session,
+//!     proxy.select_devices(&session,
 //!         SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
 //!     ).await?;
-//!     let _ = request.receive_response::<BasicResponse>().await?;
 //!
-//!     let request = proxy.start(
+//!     let devices = proxy.start(
 //!         &session,
 //!         WindowIdentifier::default(),
 //!         StartRemoteOptions::default(),
 //!     ).await?;
-//!     let devices = request.receive_response::<SelectedDevices>().await?;
 //!     println!("{:#?}", devices);
 //!
 //!     // 13 for Enter key code
@@ -44,7 +42,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, call_method, call_request_method, property},
+    Error, HandleToken, SessionProxy, WindowIdentifier,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -182,14 +183,9 @@ impl<'a> RemoteDesktopProxy<'a> {
         &self,
         options: CreateRemoteOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("CreateSession", &(options))
-            .await?
-            .body()?;
-        let request = RequestProxy::new(self.0.connection(), path).await?;
-        let session = request.receive_response::<CreateSession>().await?;
-        SessionProxy::new(self.0.connection(), session.session_handle).await
+        let session: CreateSession =
+            call_request_method(&self.0, "CreateSession", &(options)).await?;
+        SessionProxy::new(self.0.connection(), session.session_handle.into_inner()).await
     }
 
     /// Select input devices to remote control.
@@ -205,13 +201,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         &self,
         session: &SessionProxy<'_>,
         options: SelectDevicesOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("SelectDevices", &(session, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "SelectDevices", &(session, options)).await
     }
 
     ///  Start the remote desktop session.
@@ -233,13 +224,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
         options: StartRemoteOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("Start", &(session, parent_window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<BitFlags<DeviceType>, Error> {
+        call_request_method(&self.0, "Start", &(session, parent_window, options)).await
     }
 
     /// Notify keyboard code.
@@ -263,11 +249,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         keycode: i32,
         state: KeyState,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyKeyboardKeycode", &(session, options, keycode, state))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyKeyboardKeycode",
+            &(session, options, keycode, state),
+        )
+        .await
     }
 
     /// Notify keyboard symbol.
@@ -291,11 +278,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         keysym: i32,
         state: KeyState,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyKeyboardKeysym", &(session, options, keysym, state))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyKeyboardKeysym",
+            &(session, options, keysym, state),
+        )
+        .await
     }
 
     /// Notify about a new touch up event.
@@ -318,11 +306,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         options: HashMap<&str, Value<'_>>,
         slot: u32,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyTouchUp", &(session, options, slot))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "NotifyTouchUp", &(session, options, slot)).await
     }
 
     /// Notify about a new touch down event.
@@ -353,11 +337,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyTouchDown", &(session, options, stream, slot, x, y))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyTouchDown",
+            &(session, options, stream, slot, x, y),
+        )
+        .await
     }
 
     /// Notify about a new touch motion event.
@@ -388,11 +373,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyTouchMotion", &(session, options, stream, slot, x, y))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyTouchMotion",
+            &(session, options, stream, slot, x, y),
+        )
+        .await
     }
 
     /// Notify about a new absolute pointer motion event.
@@ -418,14 +404,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
-        self.0
-            .call_method(
-                "NotifyPointerMotionAbsolute",
-                &(session, options, stream, x, y),
-            )
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyPointerMotionAbsolute",
+            &(session, options, stream, x, y),
+        )
+        .await
     }
 
     /// Notify about a new relative pointer motion event.
@@ -449,11 +433,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         dx: f64,
         dy: f64,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyPointerMotionAbsolute", &(session, options, dx, dy))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyPointerMotionAbsolute",
+            &(session, options, dx, dy),
+        )
+        .await
     }
 
     /// Notify pointer button.
@@ -479,11 +464,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         button: i32,
         state: KeyState,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyPointerButton", &(session, options, button, state))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyPointerButton",
+            &(session, options, button, state),
+        )
+        .await
     }
 
     /// Notify pointer axis discrete.
@@ -506,14 +492,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         axis: Axis,
         steps: i32,
     ) -> Result<(), Error> {
-        self.0
-            .call_method(
-                "NotifyPointerAxisDiscrete",
-                &(session, options, axis, steps),
-            )
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "NotifyPointerAxisDiscrete",
+            &(session, options, axis, steps),
+        )
+        .await
     }
 
     /// Notify pointer axis.
@@ -541,26 +525,16 @@ impl<'a> RemoteDesktopProxy<'a> {
         dx: f64,
         dy: f64,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("NotifyPointerAxis", &(session, options, dx, dy))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "NotifyPointerAxis", &(session, options, dx, dy)).await
     }
 
     /// Available source types.
     pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
-        self.0
-            .get_property::<BitFlags<DeviceType>>("AvailableDeviceTypes")
-            .await
-            .map_err(From::from)
+        property(&self.0, "AvailableDeviceTypes").await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

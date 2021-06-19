@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::print::{PrintOptions, PrintProxy};
-//! use ashpd::{BasicResponse, WindowIdentifier};
+//! use ashpd::{WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -15,7 +15,7 @@
 //!
 //!     let file = File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
 //!
-//!     let request = proxy
+//!     proxy
 //!         .print(
 //!             WindowIdentifier::default(),
 //!             "test",
@@ -23,7 +23,6 @@
 //!             PrintOptions::default(),
 //!         ).await?;
 //!
-//!     assert!(request.receive_response::<BasicResponse>().await.is_ok());
 //!
 //!     Ok(())
 //! }
@@ -36,7 +35,10 @@ use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, call_request_method, property},
+    Error, HandleToken, WindowIdentifier,
+};
 
 #[derive(
     Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
@@ -543,16 +545,13 @@ impl<'a> PrintProxy<'a> {
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method(
-                "PreparePrint",
-                &(parent_window, title, settings, page_setup, options),
-            )
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<PreparePrint, Error> {
+        call_request_method(
+            &self.0,
+            "PreparePint",
+            &(parent_window, title, settings, page_setup, options),
+        )
+        .await
     }
 
     /// Asks to print a file.
@@ -574,23 +573,20 @@ impl<'a> PrintProxy<'a> {
         title: &str,
         fd: F,
         options: PrintOptions,
-    ) -> Result<RequestProxy<'a>, Error>
+    ) -> Result<(), Error>
     where
         F: AsRawFd + zvariant::Type + Serialize,
     {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("Print", &(parent_window, title, fd.as_raw_fd(), options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+        call_basic_response_method(
+            &self.0,
+            "Print",
+            &(parent_window, title, fd.as_raw_fd(), options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

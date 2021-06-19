@@ -12,15 +12,17 @@
 //!
 //!     let file = File::open("test.txt").unwrap();
 //!
-//!     let request = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default()).await?;
-//!     let response = request.receive_response::<ashpd::BasicResponse>().await?;
+//!     let secret = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default()).await?;
 //!
-//!     println!("{:#?}", response);
+//!     println!("{:#?}", secret);
 //!     Ok(())
 //! }
 //! ```
 
-use crate::{Error, RequestProxy};
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use std::os::unix::prelude::AsRawFd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -67,20 +69,12 @@ impl<'a> SecretProxy<'a> {
         &self,
         fd: F,
         options: RetrieveOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("RetrieveSecret", &(fd.as_raw_fd(), options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_method(&self.0, "RetrieveSecret", &(fd.as_raw_fd(), options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

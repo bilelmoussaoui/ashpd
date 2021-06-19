@@ -8,10 +8,7 @@
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = DeviceProxy::new(&connection).await?;
-//!     let request = proxy.access_device(6879, &[Device::Speakers], AccessDeviceOptions::default()).await?;
-//!
-//!     let response = request.receive_response::<ashpd::BasicResponse>().await?;
-//!     println!("{:#?}", response);
+//!     proxy.access_device(6879, &[Device::Speakers], AccessDeviceOptions::default()).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -21,7 +18,10 @@ use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy};
+use crate::{
+    helpers::{call_basic_response_method, property},
+    Error, HandleToken,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_device` request.
@@ -99,20 +99,12 @@ impl<'a> DeviceProxy<'a> {
         pid: u32,
         devices: &[Device],
         options: AccessDeviceOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("AccessDevice", &(pid, devices, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "AccessDevice", &(pid, devices, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

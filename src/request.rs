@@ -8,12 +8,14 @@ use std::{collections::HashMap, fmt, marker::PhantomData};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
+use crate::helpers::call_method;
+
 /// A typical response returned by the `connect_response` signal of a
 /// `RequestProxy`.
 ///
 /// [`RequestProxy`]: ./struct.RequestProxy.html
 #[derive(Debug)]
-enum Response<T>
+pub(crate) enum Response<T>
 where
     T: DeserializeOwned + zvariant::Type,
 {
@@ -98,13 +100,7 @@ where
 #[derive(Debug, Serialize, Deserialize, Type)]
 /// The most basic response. Used when only the status of the request is what we
 /// receive as a response.
-pub struct BasicResponse(HashMap<String, OwnedValue>);
-
-impl Default for BasicResponse {
-    fn default() -> Self {
-        BasicResponse(HashMap::new())
-    }
-}
+pub(crate) struct BasicResponse(HashMap<String, OwnedValue>);
 
 #[derive(Debug, Copy, PartialEq, Hash, Clone)]
 /// An error returned a portal request caused by either the user cancelling the
@@ -172,12 +168,12 @@ impl From<ResponseError> for ResponseType {
 /// what it expected, and update its signal subscription if it isn't.
 /// This ensures that applications will work with both old and new versions of
 /// xdg-desktop-portal.
-pub struct RequestProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
+pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> RequestProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
-        path: zvariant::OwnedObjectPath,
+        path: zvariant::ObjectPath<'a>,
     ) -> Result<RequestProxy<'a>, crate::Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Request")
@@ -204,8 +200,8 @@ impl<'a> RequestProxy<'a> {
     /// Closes the portal request to which this object refers and ends all
     /// related user interaction (dialogs, etc). A Response signal will not
     /// be emitted in this case.
+    #[allow(dead_code)]
     pub async fn close(&self) -> Result<(), crate::Error> {
-        self.0.call_method("Close", &()).await?;
-        Ok(())
+        call_method(&self.0, "Close", &()).await
     }
 }

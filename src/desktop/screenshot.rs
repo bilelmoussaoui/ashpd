@@ -3,11 +3,14 @@
 //! Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, WindowIdentifier};
+//! use ashpd::{desktop::screenshot::{ScreenshotProxy, ScreenshotOptions}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     let screenshot = screenshot::take(identifier, true, false).await?;
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!
+//!     let proxy = ScreenshotProxy::new(&connection).await?;
+//!     let screenshot = proxy.screenshot(identifier, ScreenshotOptions::default().interactive(true)).await?;
 //!     println!("URI: {}", screenshot.uri);
 //!
 //!     Ok(())
@@ -16,12 +19,14 @@
 //!
 //! Picking a color
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, WindowIdentifier};
+//! use ashpd::{desktop::screenshot::{ScreenshotProxy, PickColorOptions}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
+//!     let connection = zbus::azync::Connection::new_session().await?;
 //!
-//!     let color = screenshot::pick_color(identifier).await?;
+//!     let proxy = ScreenshotProxy::new(&connection).await?;
+//!     let color = proxy.pick_color(identifier, PickColorOptions::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -30,7 +35,10 @@
 
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_request_method, property},
+    Error, HandleToken, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options on a screenshot request.
@@ -171,13 +179,8 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: PickColorOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("PickColor", &(parent_window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<Color, Error> {
+        call_request_method(&self.0, "PickColor", &(parent_window, options)).await
     }
 
     /// Takes a screenshot.
@@ -192,57 +195,12 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: ScreenshotOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("Screenshot", &(parent_window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<Screenshot, Error> {
+        call_request_method(&self.0, "Screenshot", &(parent_window, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
-}
-
-/// Ask the compositor to pick a color.
-///
-/// A helper function around the `ScreenshotProxy::pick_color`.
-pub async fn pick_color(window_identifier: WindowIdentifier) -> Result<Color, Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = ScreenshotProxy::new(&connection).await?;
-    let request = proxy
-        .pick_color(window_identifier, PickColorOptions::default())
-        .await?;
-
-    let color = request.receive_response::<Color>().await?;
-    Ok(color)
-}
-
-/// Request a screenshot.
-///
-/// An async function around the `ScreenshotProxy::screenshot`.
-pub async fn take(
-    window_identifier: WindowIdentifier,
-    interactive: bool,
-    modal: bool,
-) -> Result<Screenshot, Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = ScreenshotProxy::new(&connection).await?;
-    let request = proxy
-        .screenshot(
-            window_identifier,
-            ScreenshotOptions::default()
-                .interactive(interactive)
-                .modal(modal),
-        )
-        .await?;
-
-    let screenshot = request.receive_response::<Screenshot>().await?;
-    Ok(screenshot)
 }

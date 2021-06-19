@@ -1,11 +1,14 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::account, WindowIdentifier};
+//! use ashpd::{desktop::account::{AccountProxy, UserInfoOptions}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     let user_info = account::user_information(identifier, "App would like to access user information").await?;
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!
+//!     let proxy = AccountProxy::new(&connection).await?;
+//!     let user_info = proxy.user_information(identifier, UserInfoOptions::default().reason("App would like to access user information")).await?;
 //!
 //!     println!("Name: {}", user_info.name);
 //!     println!("ID: {}", user_info.id);
@@ -14,7 +17,10 @@
 //! }
 //! ```
 
-use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_request_method, property},
+    Error, HandleToken, WindowIdentifier,
+};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
@@ -81,41 +87,12 @@ impl<'a> AccountProxy<'a> {
         &self,
         window: WindowIdentifier,
         options: UserInfoOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("GetUserInformation", &(window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<UserInfo, Error> {
+        call_request_method(&self.0, "GetUserInformation", &(window, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
-}
-
-/// Get the user information
-///
-/// An async wrapper around the [`AccountProxy::user_information`]
-/// function.
-pub async fn user_information(
-    window_identifier: WindowIdentifier,
-    reason: &str,
-) -> Result<UserInfo, Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AccountProxy::new(&connection).await?;
-    let request = proxy
-        .user_information(
-            window_identifier,
-            UserInfoOptions::default().reason(&reason),
-        )
-        .await?;
-
-    let user_information = request.receive_response::<UserInfo>().await?;
-    Ok(user_information)
 }

@@ -14,7 +14,7 @@
 //! }
 //! ```
 
-use crate::Error;
+use crate::{helpers::property, Error};
 use futures_lite::StreamExt;
 
 /// The interface provides information about low system memory to sandboxed
@@ -46,9 +46,6 @@ impl<'a> MemoryMonitorProxy<'a> {
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

@@ -1,8 +1,11 @@
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use futures_lite::StreamExt;
 use serde::{Serialize, Serializer};
 use std::collections::HashMap;
-use zvariant::{OwnedObjectPath, OwnedValue, Signature};
+use zvariant::{ObjectPath, OwnedValue, Signature};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
 
@@ -34,7 +37,7 @@ pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 impl<'a> SessionProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
-        path: OwnedObjectPath,
+        path: ObjectPath<'a>,
     ) -> Result<SessionProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Session")
@@ -54,16 +57,12 @@ impl<'a> SessionProxy<'a> {
     /// Closes the portal session to which this object refers and ends all
     /// related user interaction (dialogs, etc).
     pub async fn close(&self) -> Result<(), Error> {
-        self.0.call_method("Close", &()).await?;
-        Ok(())
+        call_method(&self.0, "Close", &()).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }
 

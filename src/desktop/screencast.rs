@@ -8,7 +8,7 @@
 //!     CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
 //!     SourceType, StartCastOptions, Streams,
 //! };
-//! use ashpd::{BasicResponse, HandleToken, SessionProxy, WindowIdentifier};
+//! use ashpd::{HandleToken, SessionProxy, WindowIdentifier};
 //! use enumflags2::BitFlags;
 //! use std::convert::TryFrom;
 //! use zvariant::ObjectPath;
@@ -22,7 +22,7 @@
 //!     let session = proxy
 //!         .create_session(CreateSessionOptions::default().session_handle_token(session_token)).await?;
 //!
-//!     let request = proxy.select_sources(
+//!     proxy.select_sources(
 //!         &session,
 //!         SelectSourcesOptions::default()
 //!             .multiple(true)
@@ -30,14 +30,12 @@
 //!             .types(SourceType::Monitor | SourceType::Window),
 //!     ).await?;
 //!
-//!     let _ = request.receive_response::<BasicResponse>().await?;
-//!     let request = proxy.start(
+//!     let response = proxy.start(
 //!         &session,
 //!         WindowIdentifier::default(),
 //!         StartCastOptions::default(),
 //!     ).await?;
 //!
-//!     let response = request.receive_response::<Streams>().await?;
 //!     response.streams().iter().for_each(|stream| {
 //!         println!("{}", stream.pipe_wire_node_id());
 //!         println!("{:#?}", stream.properties());
@@ -54,7 +52,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, call_method, call_request_method, property},
+    Error, HandleToken, SessionProxy, WindowIdentifier,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
@@ -228,16 +229,11 @@ impl<'a> ScreenCastProxy<'a> {
         &self,
         options: CreateSessionOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("CreateSession", &(options))
-            .await?
-            .body()?;
-        let request = RequestProxy::new(self.0.connection(), path).await?;
-        let session = request.receive_response::<CreateSession>().await?;
+        let session: CreateSession =
+            call_request_method(&self.0, "CreateSession", &(options)).await?;
         SessionProxy::new(
             self.0.connection(),
-            zvariant::OwnedObjectPath::try_from(session.session_handle)?,
+            zvariant::OwnedObjectPath::try_from(session.session_handle)?.into_inner(),
         )
         .await
     }
@@ -259,11 +255,7 @@ impl<'a> ScreenCastProxy<'a> {
         session: &SessionProxy<'_>,
         options: HashMap<&str, Value<'_>>,
     ) -> Result<Fd, Error> {
-        self.0
-            .call_method("OpenPipeWireRemote", &(session, options))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "OpenPipeWireRemote", &(session, options)).await
     }
 
     /// Configure what the screen cast session should record.
@@ -283,13 +275,8 @@ impl<'a> ScreenCastProxy<'a> {
         &self,
         session: &SessionProxy<'_>,
         options: SelectSourcesOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("SelectSources", &(session, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "SelectSources", &(session, options)).await
     }
 
     /// Start the screen cast session.
@@ -311,36 +298,22 @@ impl<'a> ScreenCastProxy<'a> {
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
         options: StartCastOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("Start", &(session, parent_window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<Streams, Error> {
+        call_request_method(&self.0, "Start", &(session, parent_window, options)).await
     }
 
     /// Available cursor mode.
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
-        self.0
-            .get_property::<BitFlags<CursorMode>>("AvailableCursorModes")
-            .await
-            .map_err(From::from)
+        property(&self.0, "AvailableCursorModes").await
     }
 
     /// Available source types.
     pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
-        self.0
-            .get_property::<BitFlags<SourceType>>("AvailableSourceTypes")
-            .await
-            .map_err(From::from)
+        property(&self.0, "AvailableSourceTypes").await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

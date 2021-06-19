@@ -18,7 +18,10 @@
 //! ```
 use std::os::unix::io::AsRawFd;
 
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Type;
@@ -101,11 +104,7 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `pid` - Process id to query the GameMode status of.
     pub async fn query_status(&self, pid: i32) -> Result<GameModeStatus, Error> {
-        self.0
-            .call_method("QueryStatus", &(pid))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "QueryStatus", &(pid)).await
     }
 
     /// Query the GameMode status for a process.
@@ -124,11 +123,7 @@ impl<'a> GameModeProxy<'a> {
         F: AsRawFd + Type + Serialize,
         R: AsRawFd + Type + Serialize,
     {
-        self.0
-            .call_method("QueryStatusByPIDFd", &(target, requester))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "QueryStatusByPIDFd", &(target, requester)).await
     }
 
     /// Query the GameMode status for a process.
@@ -142,11 +137,7 @@ impl<'a> GameModeProxy<'a> {
         target: i32,
         requester: i32,
     ) -> Result<GameModeStatus, Error> {
-        self.0
-            .call_method("QueryStatusByPid", &(target, requester))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "QueryStatusByPid", &(target, requester)).await
     }
 
     /// Register a game with GameMode and thus request GameMode to be activated.
@@ -160,11 +151,7 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `pid` - Process id of the game to register.
     pub async fn register_game(&self, pid: i32) -> Result<RegisterStatus, Error> {
-        self.0
-            .call_method("RegisterGame", &(pid))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "RegisterGame", &(pid)).await
     }
 
     /// Register a game with GameMode.
@@ -183,11 +170,7 @@ impl<'a> GameModeProxy<'a> {
         F: AsRawFd + Type + Serialize,
         R: AsRawFd + Type + Serialize,
     {
-        self.0
-            .call_method("RegisterGameByPIDFd", &(target, requester))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "RegisterGameByPIDFd", &(target, requester)).await
     }
 
     /// Register a game with GameMode.
@@ -201,11 +184,7 @@ impl<'a> GameModeProxy<'a> {
         target: i32,
         requester: i32,
     ) -> Result<RegisterStatus, Error> {
-        self.0
-            .call_method("RegisterGameByPid", &(target, requester))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "RegisterGameByPid", &(target, requester)).await
     }
 
     /// Un-register a game from GameMode.
@@ -218,11 +197,7 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// `pid` - Process id of the game to un-register.
     pub async fn unregister_game(&self, pid: i32) -> Result<UnregisterStatus, Error> {
-        self.0
-            .call_method("UnregisterGame", &(pid))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "UnregisterGame", &(pid)).await
     }
 
     /// Un-register a game from GameMode.
@@ -241,11 +216,7 @@ impl<'a> GameModeProxy<'a> {
         F: AsRawFd + Type + Serialize,
         R: AsRawFd + Type + Serialize,
     {
-        self.0
-            .call_method("UnregisterGameByPIDFd", &(target, requester))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "UnregisterGameByPIDFd", &(target, requester)).await
     }
 
     /// Un-register a game from GameMode.
@@ -260,18 +231,11 @@ impl<'a> GameModeProxy<'a> {
         target: i32,
         requester: i32,
     ) -> Result<UnregisterStatus, Error> {
-        self.0
-            .call_method("UnregisterGameByPid", &(target, requester))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }
