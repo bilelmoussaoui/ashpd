@@ -44,7 +44,7 @@ use crate::{
     helpers::{call_method, property},
     Error,
 };
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{OwnedValue, Signature};

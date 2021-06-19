@@ -1,4 +1,4 @@
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 use serde::{
     de::{self, DeserializeOwned, Error, Visitor},
     Deserialize, Deserializer, Serialize,

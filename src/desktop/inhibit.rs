@@ -43,7 +43,7 @@
 //! }
 //! ```
 use enumflags2::BitFlags;
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{ObjectPath, OwnedObjectPath};

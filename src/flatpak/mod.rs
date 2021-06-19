@@ -28,7 +28,7 @@
 use std::collections::HashMap;
 
 use enumflags2::BitFlags;
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
