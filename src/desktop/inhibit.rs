@@ -164,6 +164,7 @@ pub enum SessionState {
 
 /// The interface lets sandboxed applications inhibit the user session from
 /// ending, suspending, idling or getting switched away.
+#[derive(Debug)]
 pub struct InhibitProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> InhibitProxy<'a> {

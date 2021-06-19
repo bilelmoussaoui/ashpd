@@ -394,6 +394,7 @@ pub struct SelectedFiles {
 /// The interface lets sandboxed applications ask the user for access to files
 /// outside the sandbox. The portal backend will present the user with a file
 /// chooser dialog.
+#[derive(Debug)]
 pub struct FileChooserProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FileChooserProxy<'a> {

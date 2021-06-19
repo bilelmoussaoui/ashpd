@@ -43,6 +43,7 @@ impl CameraAccessOptions {
 
 /// The interface lets sandboxed applications access camera devices, such as web
 /// cams.
+#[derive(Debug)]
 pub struct CameraProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> CameraProxy<'a> {

@@ -511,6 +511,7 @@ pub struct PreparePrint {
 }
 
 /// The interface lets sandboxed applications print.
+#[derive(Debug)]
 pub struct PrintProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> PrintProxy<'a> {

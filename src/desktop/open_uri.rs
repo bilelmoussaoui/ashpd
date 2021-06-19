@@ -116,6 +116,7 @@ impl OpenFileOptions {
 /// The interface lets sandboxed applications open URIs
 /// (e.g. a http: link to the applications homepage) under the control of the
 /// user.
+#[derive(Debug)]
 pub struct OpenURIProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {

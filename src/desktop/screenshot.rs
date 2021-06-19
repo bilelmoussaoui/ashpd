@@ -165,6 +165,7 @@ impl std::fmt::Debug for Color {
 }
 
 /// The interface lets sandboxed applications request a screenshot.
+#[derive(Debug)]
 pub struct ScreenshotProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> ScreenshotProxy<'a> {

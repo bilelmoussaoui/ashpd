@@ -188,6 +188,7 @@ struct LocationInner {
 
 /// The interface lets sandboxed applications query basic information about the
 /// location.
+#[derive(Debug)]
 pub struct LocationProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> LocationProxy<'a> {

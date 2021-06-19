@@ -89,6 +89,7 @@ pub struct UpdateProgress {
 /// The interface exposes some interactions with Flatpak on the host to the
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
+#[derive(Debug)]
 pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> UpdateMonitorProxy<'a> {

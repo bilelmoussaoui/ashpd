@@ -69,6 +69,7 @@ impl fmt::Display for Connectivity {
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib `GNetworkMonitor` interface.
+#[derive(Debug)]
 pub struct NetworkMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> NetworkMonitorProxy<'a> {

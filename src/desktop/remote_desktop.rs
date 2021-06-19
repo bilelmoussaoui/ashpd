@@ -164,6 +164,7 @@ pub struct SelectedDevices {
 }
 
 /// The interface lets sandboxed applications create remote desktop sessions.
+#[derive(Debug)]
 pub struct RemoteDesktopProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> RemoteDesktopProxy<'a> {

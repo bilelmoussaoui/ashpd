@@ -41,6 +41,7 @@ pub enum TrashStatus {
 }
 
 /// The interface lets sandboxed applications send files to the trashcan.
+#[derive(Debug)]
 pub struct TrashProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> TrashProxy<'a> {

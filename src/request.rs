@@ -4,7 +4,11 @@ use serde::{
     Deserialize, Deserializer, Serialize,
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::{collections::HashMap, fmt, marker::PhantomData};
+use std::{
+    collections::HashMap,
+    fmt::{self, Debug},
+    marker::PhantomData,
+};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
@@ -166,6 +170,7 @@ impl From<ResponseError> for ResponseType {
 /// what it expected, and update its signal subscription if it isn't.
 /// This ensures that applications will work with both old and new versions of
 /// xdg-desktop-portal.
+#[derive(Debug)]
 pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> RequestProxy<'a> {
@@ -173,22 +178,25 @@ impl<'a> RequestProxy<'a> {
         connection: &zbus::azync::Connection,
         path: zvariant::ObjectPath<'a>,
     ) -> Result<RequestProxy<'a>, crate::Error> {
+        println!("creating a RequestProxy with path: {:#?}", path);
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Request")
             .path(path)?
             .destination("org.freedesktop.portal.Desktop")
             .build_async()
             .await?;
+        println!("RequestProxy created successfully");
         Ok(Self(proxy, connection.clone()))
     }
 
     pub async fn receive_response<R>(&self) -> Result<R, crate::Error>
     where
-        R: DeserializeOwned + zvariant::Type,
+        R: DeserializeOwned + zvariant::Type + Debug,
     {
         let mut stream = self.0.receive_signal("Response").await?;
         let message = stream.next().await.ok_or(crate::Error::NoResponse)?;
         let body = message.body::<Response<R>>()?;
+        println!("received response {:#?}", body);
         match body {
             Response::Err(e) => Err(e.into()),
             Response::Ok(r) => Ok(r),
