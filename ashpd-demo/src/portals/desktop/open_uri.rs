@@ -1,4 +1,4 @@
-use ashpd::{desktop::open_uri, Response, WindowIdentifier};
+use ashpd::{desktop::open_uri, zbus, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -51,18 +51,33 @@ impl OpenUriPage {
 
     pub fn open_uri(&self) {
         let self_ = imp::OpenUriPage::from_instance(self);
-        let writable = self_.writeable_switch.get_active();
-        let ask = self_.ask_switch.get_active();
-        let root = self.get_root().unwrap();
+        let writable = self_.writeable_switch.is_active();
+        let ask = self_.ask_switch.is_active();
+        let root = self.root().unwrap();
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(color)) =
-                open_uri::open_uri(identifier, "https://google.com", writable, ask).await
-            {
-                //TODO: handle the response
-                println!("{:#?}", color);
-            }
+            let _ = open_uri(identifier, "https://google.com", writable, ask).await;
         });
     }
+}
+
+async fn open_uri(
+    window: WindowIdentifier,
+    uri: &str,
+    writeable: bool,
+    ask: bool,
+) -> Result<(), ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = open_uri::OpenURIProxy::new(&connection).await?;
+    proxy
+        .open_uri(
+            window,
+            uri,
+            open_uri::OpenFileOptions::default()
+                .ask(ask)
+                .writeable(writeable),
+        )
+        .await?;
+    Ok(())
 }

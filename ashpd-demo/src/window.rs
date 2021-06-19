@@ -11,6 +11,7 @@ use crate::portals::desktop::{
     NetworkMonitorPage, NotificationPage, OpenUriPage, ScreenCastPage, ScreenshotPage,
     WallpaperPage,
 };
+use crate::portals::DocumentsPage;
 use crate::sidebar_row::SidebarRow;
 
 mod imp {
@@ -64,6 +65,7 @@ mod imp {
             AccountPage::static_type();
             NetworkMonitorPage::static_type();
             EmailPage::static_type();
+            DocumentsPage::static_type();
             OpenUriPage::static_type();
             Self::bind_template(klass);
 
@@ -84,14 +86,14 @@ mod imp {
             self.parent_constructed(obj);
 
             let builder = gtk::Builder::from_resource("/com/belmoussaoui/ashpd/demo/shortcuts.ui");
-            let shortcuts = builder.get_object("shortcuts").unwrap();
+            let shortcuts = builder.object("shortcuts").unwrap();
             obj.set_help_overlay(Some(&shortcuts));
 
             // Devel Profile
             if PROFILE == "Devel" {
-                obj.get_style_context().add_class("devel");
+                obj.add_css_class("devel");
             }
-            let row = self.sidebar.get_row_at_index(0).unwrap();
+            let row = self.sidebar.row_at_index(0).unwrap();
             self.sidebar.unselect_row(&row);
             self.sidebar
                 .connect_row_activated(clone!(@weak obj as win => move |_, row| {
@@ -138,7 +140,7 @@ impl ExampleApplicationWindow {
     pub fn save_window_size(&self) -> Result<(), glib::BoolError> {
         let settings = &imp::ExampleApplicationWindow::from_instance(self).settings;
 
-        let size = self.get_default_size();
+        let size = self.default_size();
 
         settings.set_int("window-width", size.0)?;
         settings.set_int("window-height", size.1)?;
@@ -151,9 +153,9 @@ impl ExampleApplicationWindow {
     fn load_window_size(&self) {
         let settings = &imp::ExampleApplicationWindow::from_instance(self).settings;
 
-        let width = settings.get_int("window-width");
-        let height = settings.get_int("window-height");
-        let is_maximized = settings.get_boolean("is-maximized");
+        let width = settings.int("window-width");
+        let height = settings.int("window-height");
+        let is_maximized = settings.boolean("is-maximized");
 
         self.set_default_size(width, height);
 
@@ -167,7 +169,7 @@ impl ExampleApplicationWindow {
         let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
         self_.leaflet.navigate(adw::NavigationDirection::Forward);
         let page_name = sidebar_row.name();
-        if self_.stack.get_child_by_name(&page_name).is_some() {
+        if self_.stack.child_by_name(&page_name).is_some() {
             self_.stack.set_visible_child_name(&page_name);
             self_.title_label.set_label(&sidebar_row.title().unwrap());
         } else {

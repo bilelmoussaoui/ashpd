@@ -1,7 +1,7 @@
 use std::{cell::RefCell, str::FromStr};
 
 use adw::prelude::*;
-use ashpd::{desktop::wallpaper, Response, WindowIdentifier};
+use ashpd::{desktop::wallpaper, zbus, WindowIdentifier};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -71,34 +71,30 @@ impl WallpaperPage {
         filter.set_name(Some("images"));
         file_chooser.add_filter(&filter);
 
-        let show_preview = self_.preview_switch.get_active();
-        let selected_item = self_.set_on_combo.get_selected_item().unwrap();
+        let show_preview = self_.preview_switch.is_active();
+        let selected_item = self_.set_on_combo.selected_item().unwrap();
         let set_on = wallpaper::SetOn::from_str(
             &selected_item
                 .downcast_ref::<gtk::StringObject>()
                 .unwrap()
-                .get_string(),
+                .string(),
         )
         .unwrap();
-        let root = self.get_root().unwrap();
+        let root = self.root().unwrap();
 
         file_chooser.connect_response(clone!(@weak root => move |dialog, response| {
             if response == gtk::ResponseType::Accept {
-                let wallpaper_uri = dialog.get_file().unwrap().get_uri();
+                let wallpaper_uri = dialog.file().unwrap().uri();
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak root => async move {
                     let identifier = WindowIdentifier::from_window(&root).await;
-                    if let Ok(Response::Ok(color)) = wallpaper::set_from_uri(
+                    let _ =  set_from_uri(
                         identifier,
                         &wallpaper_uri,
                         show_preview,
                         set_on,
                     )
-                    .await
-                    {
-                        // TODO: display a notification saying the action went fine
-                        println!("{:#?}", color);
-                    }
+                    .await;
                 }));
             };
             dialog.destroy();
@@ -106,4 +102,24 @@ impl WallpaperPage {
         file_chooser.show();
         self_.dialog.replace(Some(file_chooser));
     }
+}
+
+async fn set_from_uri(
+    window: WindowIdentifier,
+    uri: &str,
+    show_preview: bool,
+    set_on: wallpaper::SetOn,
+) -> Result<(), ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = wallpaper::WallpaperProxy::new(&connection).await?;
+    proxy
+        .set_wallpaper_uri(
+            window,
+            uri,
+            wallpaper::WallpaperOptions::default()
+                .show_preview(show_preview)
+                .set_on(set_on),
+        )
+        .await?;
+    Ok(())
 }

@@ -56,6 +56,7 @@ mod imp {
     }
     impl ObjectImpl for NetworkMonitorPage {
         fn constructed(&self, obj: &Self::Type) {
+            /*
             let proxy = NetworkMonitorProxy::new(&self.connection).unwrap();
             obj.set_sensitive(!ashpd::is_sandboxed());
 
@@ -68,6 +69,7 @@ mod imp {
                 self.connectivity
                     .set_text(&proxy.get_connectivity().unwrap().to_string());
             }
+             */
         }
     }
     impl WidgetImpl for NetworkMonitorPage {}

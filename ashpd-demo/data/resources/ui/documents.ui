@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="DocumentsPage" parent="AdwBin">
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">True</property>
+        <property name="spacing">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Information</property>
+            <child>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title">Mount point</property>
+                    <child>
+                      <object class="GtkLabel" id="mount_point">
+                        <property name="label">Undefined</property>
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="content"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

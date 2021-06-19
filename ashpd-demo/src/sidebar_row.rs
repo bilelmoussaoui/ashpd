@@ -37,14 +37,14 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpec::string(
+                    ParamSpec::new_string(
                         "label",
                         "Label",
                         "Row Label",
                         Some(""),
                         ParamFlags::READWRITE,
                     ),
-                    ParamSpec::string(
+                    ParamSpec::new_string(
                         "page-name",
                         "Page Name",
                         "Page Name",
@@ -55,23 +55,22 @@ mod imp {
             });
             PROPS.as_ref()
         }
-        fn get_property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
-            match pspec.get_name() {
-                "label" => self.label.get_label().to_value(),
+        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
+            match pspec.name() {
+                "label" => self.label.label().to_value(),
                 "page-name" => self.name.borrow().to_value(),
                 _ => unimplemented!(),
             }
         }
         fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &ParamSpec) {
-            match pspec.get_name() {
+            match pspec.name() {
                 "label" => {
-                    self.label
-                        .set_text(&value.get::<String>().unwrap().unwrap());
+                    self.label.set_text(&value.get::<String>().unwrap());
                 }
                 "page-name" => {
                     self.name
                         .borrow_mut()
-                        .replace(value.get::<String>().unwrap().unwrap());
+                        .replace(value.get::<String>().unwrap());
                 }
                 _ => unimplemented!(),
             }
@@ -91,13 +90,16 @@ impl SidebarRow {
     }
 
     pub fn title(&self) -> Option<String> {
-        self.get_property("label").unwrap().get::<String>().unwrap()
+        self.property("label")
+            .unwrap()
+            .get::<Option<String>>()
+            .unwrap()
     }
 
     pub fn name(&self) -> String {
-        self.get_property("page-name")
+        self.property("page-name")
             .unwrap()
-            .get::<String>()
+            .get::<Option<String>>()
             .unwrap()
             .unwrap_or_else(|| "welcome".to_string())
     }

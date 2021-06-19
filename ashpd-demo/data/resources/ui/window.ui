@@ -119,6 +119,12 @@
                         <property name="page-name">wallpaper</property>
                       </object>
                     </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label">Documents</property>
+                        <property name="page-name">documents</property>
+                      </object>
+                    </child>
                     <style>
                       <class name="navigation-sidebar"/>
                     </style>
@@ -297,6 +303,14 @@
                             <property name="name">wallpaper</property>
                             <property name="child">
                               <object class="WallpaperPage" id="wallpaper" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">documents</property>
+                            <property name="child">
+                              <object class="DocumentsPage" id="documents" />
                             </property>
                           </object>
                         </child>

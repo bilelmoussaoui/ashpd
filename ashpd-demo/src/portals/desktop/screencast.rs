@@ -3,18 +3,17 @@ use std::os::unix::io::RawFd;
 use std::{collections::HashMap, convert::TryFrom, sync::Arc};
 
 use adw::prelude::*;
+use ashpd::zbus;
 use ashpd::{
     desktop::screencast::{
-        AsyncScreenCastProxy, CreateSession, CreateSessionOptions, CursorMode,
-        SelectSourcesOptions, SourceType, StartCastOptions, Stream, Streams,
+        CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions, SourceType,
+        StartCastOptions, Stream,
     },
     enumflags2::BitFlags,
-    BasicResponse, HandleToken,
+    HandleToken,
 };
-use ashpd::{zbus, zvariant};
-use ashpd::{AsyncSessionProxy, Response, WindowIdentifier};
+use ashpd::{SessionProxy, WindowIdentifier};
 use futures::lock::Mutex;
-use futures::FutureExt;
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -41,7 +40,7 @@ mod imp {
         pub cursor_comborow: TemplateChild<adw::ComboRow>,
         #[template_child]
         pub multiple_switch: TemplateChild<gtk::Switch>,
-        pub session: Arc<Mutex<Option<AsyncSessionProxy<'static>>>>,
+        pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
         #[template_child]
         pub close_session_btn: TemplateChild<gtk::Button>,
     }
@@ -108,24 +107,28 @@ impl ScreenCastPage {
 
     pub fn start_session(&self) {
         let ctx = glib::MainContext::default();
+        println!("starting session");
         ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::ScreenCastPage::from_instance(&page);
-                let types = match self_.types_comborow.get_selected() {
-                    0 => BitFlags::<SourceType>::from_flag(SourceType::Monitor),
-                    1 => BitFlags::<SourceType>::from_flag(SourceType::Window),
-                    _ => SourceType::Monitor | SourceType::Window,
-                };
-                let cursor_mode = match self_.cursor_comborow.get_selected() {
-                    0 => BitFlags::<CursorMode>::from_flag(CursorMode::Hidden),
-                    1 => BitFlags::<CursorMode>::from_flag(CursorMode::Embedded),
-                    _ => BitFlags::<CursorMode>::from_flag(CursorMode::Metadata),
-                };
-                let multiple = self_.multiple_switch.get_active();
+        let self_ = imp::ScreenCastPage::from_instance(&page);
+            let types = match self_.types_comborow.selected() {
+                0 => BitFlags::<SourceType>::from_flag(SourceType::Monitor),
+                1 => BitFlags::<SourceType>::from_flag(SourceType::Window),
+                _ => SourceType::Monitor | SourceType::Window,
+            };
+            let cursor_mode = match self_.cursor_comborow.selected() {
+                0 => BitFlags::<CursorMode>::from_flag(CursorMode::Hidden),
+                1 => BitFlags::<CursorMode>::from_flag(CursorMode::Embedded),
+                _ => BitFlags::<CursorMode>::from_flag(CursorMode::Metadata),
+            };
+            let multiple = self_.multiple_switch.is_active();
 
-                let root = page.get_root().unwrap();
-                let identifier = WindowIdentifier::from_window(&root).await;
+            let root = page.root().unwrap();
+            let identifier = WindowIdentifier::from_window(&root).await;
 
-                if let Ok((streams, fd, session)) = screencast(identifier, multiple, types, cursor_mode).await {
+
+
+            match screencast(identifier, multiple, types, cursor_mode).await {
+                Ok((streams, fd, session)) => {
                     streams.iter().for_each(|stream| {
                         let paintable = CameraPaintable::new();
                         let picture = gtk::Picture::new();
@@ -139,8 +142,11 @@ impl ScreenCastPage {
                     self_.session.lock().await.replace(session);
                     self_.close_session_btn.set_sensitive(true);
                 }
-            }),
-        );
+                Err(err) => {
+                    println!("{:#?}", err);
+                }
+            };
+        }));
     }
 
     pub fn stop_session(&self) {
@@ -151,7 +157,7 @@ impl ScreenCastPage {
             if let Some(session) = self_.session.lock().await.take() {
                 let _ = session.close().await;
             }
-            while let Some(child) = self_.streams_carousel.get_next_sibling() {
+            while let Some(child) = self_.streams_carousel.next_sibling() {
                 self_.streams_carousel.remove(&child);
             }
             //paintable.close_pipeline();
@@ -161,130 +167,42 @@ impl ScreenCastPage {
     }
 }
 
-pub async fn create_session(
-    connection: &zbus::azync::Connection,
-    proxy: &AsyncScreenCastProxy<'_>,
-) -> zbus::Result<AsyncSessionProxy<'static>> {
-    let request = proxy
+pub async fn screencast(
+    window_identifier: WindowIdentifier,
+    multiple: bool,
+    types: BitFlags<SourceType>,
+    cursor_mode: BitFlags<CursorMode>,
+) -> Result<(Vec<Stream>, RawFd, SessionProxy<'static>), ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = ScreenCastProxy::new(&connection).await?;
+    println!("screen casting");
+    let session = proxy
         .create_session(
             CreateSessionOptions::default()
                 .session_handle_token(HandleToken::try_from("handletoken").unwrap()),
         )
-        .await?;
+        .await
+        .unwrap();
+    println!("{:#?}", session.version().await?);
+    println!("session created");
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<CreateSession>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let create_session = receiver.await.unwrap();
-    let create_session = create_session.unwrap();
-    let session_handle = create_session.session_handle().to_string();
-
-    let session = AsyncSessionProxy::new_for_owned_path(connection.clone(), session_handle)?;
-
-    Ok(session)
-}
-
-pub async fn select_sources(
-    session: &AsyncSessionProxy<'_>,
-    proxy: &AsyncScreenCastProxy<'_>,
-    multiple: bool,
-    types: BitFlags<SourceType>,
-    cursor_mode: BitFlags<CursorMode>,
-) -> zbus::Result<Response<BasicResponse>> {
-    let request = proxy
+    proxy
         .select_sources(
-            session,
+            &session,
             SelectSourcesOptions::default()
                 .multiple(multiple)
                 .types(types)
                 .cursor_mode(cursor_mode),
         )
         .await?;
-    let (sender, receiver) = futures::channel::oneshot::channel();
+    let streams = proxy
+        .start(&session, window_identifier, StartCastOptions::default())
+        .await?
+        .streams()
+        .to_vec();
 
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
+    let node_id = proxy
+        .open_pipe_wire_remote(&session, HashMap::new())
         .await?;
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let response = receiver.await.unwrap();
-    Ok(response)
-}
-
-pub async fn start_session(
-    session: &AsyncSessionProxy<'_>,
-    proxy: &AsyncScreenCastProxy<'_>,
-    window_identifier: WindowIdentifier,
-) -> zbus::Result<(Vec<Stream>, zvariant::Fd)> {
-    let request = proxy
-        .start(session, window_identifier, StartCastOptions::default())
-        .await?;
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<Streams>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let node_id = proxy.open_pipe_wire_remote(session, HashMap::new()).await?;
-
-    if let Response::Ok(streams) = receiver.await.unwrap() {
-        Ok((streams.streams().to_vec(), node_id))
-    } else {
-        Err(zbus::Error::Unsupported)
-    }
-}
-
-pub async fn screencast(
-    window_identifier: WindowIdentifier,
-    multiple: bool,
-    types: BitFlags<SourceType>,
-    cursor_mode: BitFlags<CursorMode>,
-) -> zbus::Result<(Vec<Stream>, RawFd, AsyncSessionProxy<'static>)> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncScreenCastProxy::new(&connection);
-    let session = create_session(&connection, &proxy).await?;
-    select_sources(&session, &proxy, multiple, types, cursor_mode).await?;
-
-    let (streams, pipewire_fd) = start_session(&session, &proxy, window_identifier).await?;
-    Ok((streams, pipewire_fd.as_raw_fd(), session))
+    Ok((streams, node_id.as_raw_fd(), session))
 }

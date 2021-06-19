@@ -32,6 +32,8 @@ sources = files(
   'portals/desktop/screenshot.rs',
   'portals/desktop/screencast.rs',
   'portals/desktop/wallpaper.rs',
+  'portals/documents.rs',
+  'portals/mod.rs',
   'widgets/color_widget.rs',
   'widgets/gst_paintable.rs',
   'widgets/mod.rs',
