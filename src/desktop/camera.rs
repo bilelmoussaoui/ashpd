@@ -16,7 +16,10 @@ use std::os::unix::io::AsRawFd;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{BasicResponse, Error, HandleToken, RequestProxy};
+use crate::{
+    helpers::{call_basic_response_method, call_method, property},
+    Error, HandleToken,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a `access_camera` request.
@@ -55,16 +58,8 @@ impl<'a> CameraProxy<'a> {
     /// * `options` - A [`CameraAccessOptions`].
     ///
     /// [`CameraAccessOptions`]: ./struct.CameraAccessOptions.html
-    pub async fn access_camera(
-        &self,
-        options: CameraAccessOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("AccessCamera", &(options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    pub async fn access_camera(&self, options: CameraAccessOptions) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "AccessCamera", &(options)).await
     }
 
     /// Open a file descriptor to the PipeWire remote where the camera nodes are
@@ -80,25 +75,17 @@ impl<'a> CameraProxy<'a> {
         &self,
         options: HashMap<&str, Value<'_>>,
     ) -> Result<Fd, Error> {
-        self.0
-            .call_method("OpenPipeWireRemote", &(options))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "OpenPipeWireRemote", &(options)).await
     }
 
     /// A boolean stating whether there is any cameras available.
     pub async fn is_camera_present(&self) -> Result<bool, Error> {
-        let present = self.0.get_property::<bool>("IsCameraPresent").await?;
-        Ok(present)
+        property(&self.0, "IsCameraPresent").await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }
 
@@ -109,9 +96,7 @@ impl<'a> CameraProxy<'a> {
 pub async fn stream() -> Result<io::RawFd, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = CameraProxy::new(&connection).await?;
-    let request = proxy.access_camera(CameraAccessOptions::default()).await?;
-
-    let _ = request.receive_response::<BasicResponse>().await?;
+    proxy.access_camera(CameraAccessOptions::default()).await?;
 
     let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
     Ok(remote_fd.as_raw_fd())

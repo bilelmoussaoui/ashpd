@@ -24,10 +24,10 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{Error, WindowIdentifier};
+use crate::{helpers::call_method, Error, WindowIdentifier};
 use futures_lite::StreamExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::OwnedObjectPath;
+use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -90,7 +90,7 @@ pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> UpdateMonitorProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
-        path: OwnedObjectPath,
+        path: ObjectPath<'a>,
     ) -> Result<UpdateMonitorProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.UpdateMonitor")
@@ -124,19 +124,11 @@ impl<'a> UpdateMonitorProxy<'a> {
         parent_window: WindowIdentifier,
         options: UpdateOptions,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("Update", &(parent_window, options))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "Update", &(parent_window, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.
     pub async fn close(&self) -> Result<(), Error> {
-        self.0
-            .call_method("Close", &())
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "Close", &()).await
     }
 }

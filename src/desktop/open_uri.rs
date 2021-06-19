@@ -6,13 +6,16 @@
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
-//! use ashpd::{desktop::open_uri, WindowIdentifier};
+//! use ashpd::{desktop::open_uri::{OpenFileOptions, OpenURIProxy}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let identifier = WindowIdentifier::default();
 //!
-//!     open_uri::open_file(identifier, Fd::from(file.as_raw_fd()), false, true).await?;
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = OpenURIProxy::new(&connection).await?;
+//!
+//!     proxy.open_file(identifier, Fd::from(file.as_raw_fd()), OpenFileOptions::default().writeable(false).ask(true)).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -20,14 +23,16 @@
 //! Open a file from a URI
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::open_uri, WindowIdentifier};
+//! use ashpd::{desktop::open_uri::{OpenFileOptions, OpenURIProxy}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     open_uri::open_uri(
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = OpenURIProxy::new(&connection).await?;
+//!
+//!     proxy.open_uri(
 //!         WindowIdentifier::default(),
 //!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!         false,
-//!         true,
+//!         OpenFileOptions::default().writeable(false).ask(true),
 //!     ).await?;
 //!
 //!     Ok(())
@@ -39,7 +44,10 @@ use serde::Serialize;
 use zvariant::Type;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{BasicResponse, Error, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, property},
+    Error, HandleToken, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for an open directory request.
@@ -121,19 +129,16 @@ impl<'a> OpenURIProxy<'a> {
         parent_window: WindowIdentifier,
         directory: F,
         options: OpenDirOptions,
-    ) -> Result<RequestProxy<'a>, Error>
+    ) -> Result<(), Error>
     where
         F: AsRawFd + Serialize + Type,
     {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method(
-                "OpenDirectory",
-                &(parent_window, directory.as_raw_fd(), options),
-            )
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+        call_basic_response_method(
+            &self.0,
+            "OpenDirectory",
+            &(parent_window, directory.as_raw_fd(), options),
+        )
+        .await
     }
 
     /// Asks to open a local file.
@@ -150,16 +155,16 @@ impl<'a> OpenURIProxy<'a> {
         parent_window: WindowIdentifier,
         file: F,
         options: OpenFileOptions,
-    ) -> Result<RequestProxy<'a>, Error>
+    ) -> Result<(), Error>
     where
         F: AsRawFd + Serialize + Type,
     {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("OpenFile", &(parent_window, file.as_raw_fd(), options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+        call_basic_response_method(
+            &self.0,
+            "OpenFile",
+            &(parent_window, file.as_raw_fd(), options),
+        )
+        .await
     }
 
     /// Asks to open a local file.
@@ -176,83 +181,12 @@ impl<'a> OpenURIProxy<'a> {
         parent_window: WindowIdentifier,
         uri: &str,
         options: OpenFileOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("OpenURI", &(parent_window, uri, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "OpenURI", &(parent_window, uri, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
-}
-
-/// Open a URI.
-///
-/// A helper wrapper around `AsyncOpenUriProxy::open_uri`.
-pub async fn open_uri(
-    window_identifier: WindowIdentifier,
-    uri: &str,
-    writable: bool,
-    ask: bool,
-) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = OpenURIProxy::new(&connection).await?;
-    let request = proxy
-        .open_uri(
-            window_identifier,
-            uri,
-            OpenFileOptions::default().writeable(writable).ask(ask),
-        )
-        .await?;
-
-    let _response = request.receive_response::<BasicResponse>().await?;
-    Ok(())
-}
-
-/// Open a file.
-///
-/// A helper wrapper around `AsyncOpenUriProxy::open_file`.
-pub async fn open_file<F: AsRawFd + Serialize + Type>(
-    window_identifier: WindowIdentifier,
-    file: F,
-    writable: bool,
-    ask: bool,
-) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = OpenURIProxy::new(&connection).await?;
-    let request = proxy
-        .open_file(
-            window_identifier,
-            file,
-            OpenFileOptions::default().writeable(writable).ask(ask),
-        )
-        .await?;
-
-    let _response = request.receive_response::<BasicResponse>().await?;
-    Ok(())
-}
-
-/// Open a directory.
-///
-/// A helper wrapper around `AsyncOpenUriProxy::open_directory`.
-pub async fn open_directory<F: AsRawFd + Serialize + Type>(
-    window_identifier: WindowIdentifier,
-    directory: F,
-) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = OpenURIProxy::new(&connection).await?;
-    let request = proxy
-        .open_directory(window_identifier, directory, OpenDirOptions::default())
-        .await?;
-
-    let _response = request.receive_response::<BasicResponse>().await?;
-    Ok(())
 }

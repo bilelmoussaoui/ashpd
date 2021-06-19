@@ -29,7 +29,10 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -93,11 +96,7 @@ impl<'a> SettingsProxy<'a> {
     /// all. Globing is supported but only for trailing sections, e.g.
     /// "org.example.*".
     pub async fn read_all(&self, namespaces: &[&str]) -> Result<HashMap<String, Namespace>, Error> {
-        self.0
-            .call_method("ReadAll", &(namespaces))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "ReadAll", &(namespaces)).await
     }
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
@@ -112,11 +111,7 @@ impl<'a> SettingsProxy<'a> {
     where
         T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type,
     {
-        self.0
-            .call_method("Read", &(namespace, key))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "Read", &(namespace, key)).await
     }
 
     /// Signal emitted when a setting changes.
@@ -128,9 +123,6 @@ impl<'a> SettingsProxy<'a> {
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

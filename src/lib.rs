@@ -10,12 +10,16 @@
 //!
 //! Ask the compositor to pick a color
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, WindowIdentifier};
+//! use ashpd::{desktop::screenshot::{ScreenshotProxy, PickColorOptions}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     let color = screenshot::pick_color(identifier).await?;
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!
+//!     let proxy = ScreenshotProxy::new(&connection).await?;
+//!     let color = proxy.pick_color(identifier, PickColorOptions::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
+//!
 //!     Ok(())
 //! }
 //! ```
@@ -56,6 +60,7 @@ mod error;
 /// received an update & install it.
 pub mod flatpak;
 mod handle_token;
+mod helpers;
 mod request;
 mod session;
 mod window_identifier;
@@ -72,6 +77,5 @@ pub fn is_sandboxed() -> bool {
 
 pub use self::error::Error;
 pub use self::handle_token::HandleToken;
-pub use self::request::{BasicResponse, RequestProxy, ResponseError};
 pub use self::session::SessionProxy;
 pub use self::window_identifier::WindowIdentifier;

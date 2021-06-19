@@ -5,22 +5,24 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use ashpd::{desktop::wallpaper, WindowIdentifier};
+//! use ashpd::{desktop::wallpaper::{SetOn, WallpaperProxy, WallpaperOptions}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
 //!     let wallpaper =
 //!         File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
 //!
-//!     if wallpaper::set_from_file(
-//!         identifier,
-//!         wallpaper.as_raw_fd(),
-//!         true,
-//!         wallpaper::SetOn::Both,
-//!     ).await.is_ok()
-//!     {
-//!         // wallpaper was set successfully
-//!     }
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = WallpaperProxy::new(&connection).await?;
+//!     proxy
+//!         .set_wallpaper_file(
+//!             identifier,
+//!             wallpaper.as_raw_fd(),
+//!             WallpaperOptions::default()
+//!                 .show_preview(true)
+//!                 .set_on(SetOn::Both),
+//!         )
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
@@ -28,19 +30,21 @@
 //! Sets a wallpaper from a URI:
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::wallpaper, WindowIdentifier};
+//! use ashpd::{desktop::wallpaper::{SetOn, WallpaperProxy, WallpaperOptions}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
-//!     if wallpaper::set_from_uri(
-//!         identifier,
-//!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!         true,
-//!         wallpaper::SetOn::Both,
-//!     ).await.is_ok()
-//!     {
-//!         // wallpaper was set successfully
-//!     }
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = WallpaperProxy::new(&connection).await?;
+//!     proxy
+//!         .set_wallpaper_uri(
+//!             identifier,
+//!             "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
+//!             WallpaperOptions::default()
+//!                 .show_preview(true)
+//!                 .set_on(SetOn::Both),
+//!         )
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
@@ -50,7 +54,10 @@ use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{BasicResponse, Error, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, property},
+    Error, WindowIdentifier,
+};
 
 #[derive(
     Deserialize, Debug, Clone, Copy, PartialEq, Hash, AsRefStr, EnumString, IntoStaticStr, ToString,
@@ -138,16 +145,16 @@ impl<'a> WallpaperProxy<'a> {
         parent_window: WindowIdentifier,
         fd: F,
         options: WallpaperOptions,
-    ) -> Result<RequestProxy<'a>, Error>
+    ) -> Result<(), Error>
     where
         F: AsRawFd + Type + Serialize,
     {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("AccessDevice", &(parent_window, fd.as_raw_fd(), options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+        call_basic_response_method(
+            &self.0,
+            "SetWallpaperFile",
+            &(parent_window, fd.as_raw_fd(), options),
+        )
+        .await
     }
 
     /// Sets the lock-screen, background or both wallpaper's from an URI.
@@ -164,68 +171,12 @@ impl<'a> WallpaperProxy<'a> {
         parent_window: WindowIdentifier,
         uri: &str,
         options: WallpaperOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("c", &(parent_window, uri, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "SetWallpaperURI", &(parent_window, uri, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
-}
-
-/// Set a wallpaper from a file.
-///
-/// An async function around the `WallpaperProxy::set_wallpaper_file`.
-pub async fn set_from_file<F: AsRawFd + Type + Serialize>(
-    window_identifier: WindowIdentifier,
-    wallpaper_file: F,
-    show_preview: bool,
-    set_on: SetOn,
-) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = WallpaperProxy::new(&connection).await?;
-    let request = proxy
-        .set_wallpaper_file(
-            window_identifier,
-            wallpaper_file,
-            WallpaperOptions::default()
-                .show_preview(show_preview)
-                .set_on(set_on),
-        )
-        .await?;
-    let _wallpaper = request.receive_response::<BasicResponse>().await?;
-    Ok(())
-}
-
-/// Set a wallpaper from a URI.
-///
-/// An async function around the `WallpaperProxy::set_wallpaper_uri`.
-pub async fn set_from_uri(
-    window_identifier: WindowIdentifier,
-    wallpaper_uri: &str,
-    show_preview: bool,
-    set_on: SetOn,
-) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = WallpaperProxy::new(&connection).await?;
-    let request = proxy
-        .set_wallpaper_uri(
-            window_identifier,
-            wallpaper_uri,
-            WallpaperOptions::default()
-                .show_preview(show_preview)
-                .set_on(set_on),
-        )
-        .await?;
-    let _wallpaper = request.receive_response::<BasicResponse>().await?;
-    Ok(())
 }

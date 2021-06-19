@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::email::{EmailOptions, EmailProxy};
-//! use ashpd::{BasicResponse, WindowIdentifier};
+//! use ashpd::{WindowIdentifier};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -13,7 +13,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = EmailProxy::new(&connection).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     let request = proxy.compose_email(
+//!     proxy.compose_email(
 //!         WindowIdentifier::default(),
 //!         EmailOptions::default()
 //!             .address("test@gmail.com")
@@ -22,15 +22,16 @@
 //!             .attach(Fd::from(file.as_raw_fd())),
 //!     ).await?;
 //!
-//!     let response = request.receive_response::<ashpd::BasicResponse>().await?;
-//!     println!("{:#?}", response);
 //!     Ok(())
 //! }
 //! ```
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, property},
+    Error, HandleToken, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a compose email request.
@@ -137,20 +138,12 @@ impl<'a> EmailProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: EmailOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("ComposeEmail", &(parent_window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "ComposeEmail", &(parent_window, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

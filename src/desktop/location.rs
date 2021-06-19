@@ -2,7 +2,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::location::{CreateSessionOptions, LocationProxy, SessionStartOptions};
-//! use ashpd::{BasicResponse, HandleToken, WindowIdentifier};
+//! use ashpd::{HandleToken, WindowIdentifier};
 //! use std::convert::TryFrom;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
@@ -14,13 +14,12 @@
 //!
 //!     let session = proxy.create_session(options).await?;
 //!
-//!     let request = proxy.start(
+//!     proxy.start(
 //!         &session,
 //!         WindowIdentifier::default(),
 //!         SessionStartOptions::default(),
 //!     ).await?;
 //!
-//!     let _ = request.receive_response::<BasicResponse>().await?;
 //!     let location = proxy.receive_location_updated().await?;
 //!
 //!     println!("{}", location.accuracy());
@@ -36,7 +35,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, call_method, property},
+    Error, HandleToken, SessionProxy, WindowIdentifier,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -215,12 +217,8 @@ impl<'a> LocationProxy<'a> {
         &self,
         options: CreateSessionOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("CreateSession", &(options))
-            .await?
-            .body()?;
-        SessionProxy::new(self.0.connection(), path).await
+        let path: OwnedObjectPath = call_method(&self.0, "CreateSession", &(options)).await?;
+        SessionProxy::new(self.0.connection(), path.into_inner()).await
     }
 
     /// Start the location session.
@@ -238,20 +236,12 @@ impl<'a> LocationProxy<'a> {
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
         options: SessionStartOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("Start", &(session, parent_window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "Start", &(session, parent_window, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

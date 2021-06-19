@@ -20,7 +20,10 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -88,58 +91,35 @@ impl<'a> NetworkMonitorProxy<'a> {
     /// * `hostname` - The hostname to reach.
     /// * `port` - The port to reach.
     pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
-        self.0
-            .call_method("CanReach", &(hostname, port))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "CanReach", &(hostname, port)).await
     }
 
     /// Returns whether the network is considered available.
     /// That is, whether the system as a default route for at least one of IPv4
     /// or IPv6.
     pub async fn get_available(&self) -> Result<bool, Error> {
-        self.0
-            .call_method("GetAvailable", &())
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "GetAvailable", &()).await
     }
 
     /// Returns more detailed information about the host's network connectivity
     pub async fn get_connectivity(&self) -> Result<Connectivity, Error> {
-        self.0
-            .call_method("GetConnectivity", &())
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "GetConnectivity", &()).await
     }
 
     /// Returns whether the network is considered metered.
     /// That is, whether the system as traffic flowing through the default
     /// connection that is subject to limitations by service providers.
     pub async fn get_metered(&self) -> Result<bool, Error> {
-        self.0
-            .call_method("GetMetered", &())
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "GetMetered", &()).await
     }
 
     /// Returns the three values all at once.
     pub async fn get_status(&self) -> Result<NetworkStatus, Error> {
-        self.0
-            .call_method("GetStatus", &())
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "GetStatus", &()).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

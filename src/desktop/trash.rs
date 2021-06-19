@@ -20,7 +20,10 @@
 //! }
 //! ```
 
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::io::AsRawFd;
@@ -62,18 +65,11 @@ impl<'a> TrashProxy<'a> {
     where
         T: AsRawFd + Type + Serialize,
     {
-        self.0
-            .call_method("TrashFile", &(fd.as_raw_fd()))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "TrashFile", &(fd.as_raw_fd())).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

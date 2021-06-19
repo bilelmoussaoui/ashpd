@@ -31,8 +31,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::flatpak::update_monitor::UpdateMonitorProxy;
-use crate::Error;
+use crate::{flatpak::update_monitor::UpdateMonitorProxy, helpers::property};
+use crate::{helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
@@ -178,13 +178,13 @@ impl<'a> FlatpakProxy<'a> {
     pub async fn create_update_monitor(
         &self,
         options: CreateMonitorOptions,
-    ) -> Result<UpdateMonitorProxy<'_>, Error> {
+    ) -> Result<UpdateMonitorProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("CreateUpdateMonitors", &(options))
             .await?
             .body()?;
-        UpdateMonitorProxy::new(self.0.connection(), path).await
+        UpdateMonitorProxy::new(self.0.connection(), path.into_inner()).await
     }
 
     /// Emitted when a process starts by [`FlatpakProxy::spawn`].
@@ -227,11 +227,12 @@ impl<'a> FlatpakProxy<'a> {
         flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
     ) -> Result<u32, Error> {
-        self.0
-            .call_method("Spawn", &(cwd_path, argv, fds, envs, flags, options))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "Spawn",
+            &(cwd_path, argv, fds, envs, flags, options),
+        )
+        .await
     }
     /// This methods let you send a Unix signal to a process that was started
     /// `spawn`.
@@ -247,27 +248,17 @@ impl<'a> FlatpakProxy<'a> {
         signal: u32,
         to_process_group: bool,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("SpawnSignal", &(pid, signal, to_process_group))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "SpawnSignal", &(pid, signal, to_process_group)).await
     }
 
     /// Flags marking what optional features are available.
     pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
-        self.0
-            .get_property::<BitFlags<SupportsFlags>>("supports")
-            .await
-            .map_err(From::from)
+        property(&self.0, "supports").await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }
 

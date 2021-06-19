@@ -33,7 +33,10 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use crate::Error;
+use crate::{
+    helpers::{call_method, property},
+    Error,
+};
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -147,11 +150,7 @@ impl<'a> DocumentsProxy<'a> {
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<String, Error> {
-        self.0
-            .call_method("Add", &(o_path_fd, reuse_existing, persistent))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "Add", &(o_path_fd, reuse_existing, persistent)).await
     }
 
     /// Adds multiple files to the document store.
@@ -174,11 +173,12 @@ impl<'a> DocumentsProxy<'a> {
         app_id: &str,
         permissions: &[Permission],
     ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>), Error> {
-        self.0
-            .call_method("AddFull", &(o_path_fds, flags, app_id, permissions))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "AddFull",
+            &(o_path_fds, flags, app_id, permissions),
+        )
+        .await
     }
 
     /// Creates an entry in the document store for writing a new file.
@@ -200,14 +200,12 @@ impl<'a> DocumentsProxy<'a> {
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<String, Error> {
-        self.0
-            .call_method(
-                "AddNamed",
-                &(o_path_parent_fd, filename, reuse_existing, persistent),
-            )
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "AddNamed",
+            &(o_path_parent_fd, filename, reuse_existing, persistent),
+        )
+        .await
     }
 
     /// Adds multiple files to the document store.
@@ -232,14 +230,12 @@ impl<'a> DocumentsProxy<'a> {
         app_id: &str,
         permissions: &[Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error> {
-        self.0
-            .call_method(
-                "AddNamedFull",
-                &(o_path_fd, filename, flags, app_id, permissions),
-            )
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(
+            &self.0,
+            "AddNamedFull",
+            &(o_path_fd, filename, flags, app_id, permissions),
+        )
+        .await
     }
 
     /// Removes an entry from the document store. The file itself is not
@@ -250,21 +246,13 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// * `doc_id` - The ID of the file in the document store.
     pub async fn delete(&self, doc_id: &str) -> Result<(), Error> {
-        self.0
-            .call_method("Delete", &(doc_id))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "Delete", &(doc_id)).await
     }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
     /// This will typically be /run/user/$UID/doc/.
     pub async fn mount_point(&self) -> Result<String, Error> {
-        self.0
-            .call_method("GetMountPoint", &())
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "GetMountPoint", &()).await
     }
 
     /// Grants access permissions for a file in the document store to an
@@ -282,11 +270,7 @@ impl<'a> DocumentsProxy<'a> {
         app_id: &str,
         permissions: &[Permission],
     ) -> Result<(), Error> {
-        self.0
-            .call_method("GrantPermissions", &(doc_id, app_id, permissions))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "GrantPermissions", &(doc_id, app_id, permissions)).await
     }
 
     /// Gets the filesystem path and application permissions for a document
@@ -299,11 +283,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// * `doc_id` - The ID of the file in the document store.
     pub async fn info(&self, doc_id: &str) -> Result<(String, Permissions), Error> {
-        self.0
-            .call_method("Info", &(doc_id))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "Info", &(doc_id)).await
     }
 
     /// Lists documents in the document store for an application (or for all
@@ -316,11 +296,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// * `app-id` - The application ID, or '' to list all documents.
     pub async fn list(&self, app_id: &str) -> Result<HashMap<String, String>, Error> {
-        self.0
-            .call_method("List", &(app_id))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "List", &(app_id)).await
     }
 
     /// Looks up the document ID for a file.
@@ -333,11 +309,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// - `filename` - A path in the host filesystem.
     pub async fn lookup(&self, filename: &str) -> Result<String, Error> {
-        self.0
-            .call_method("Lookup", &(filename))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "Lookup", &(filename)).await
     }
 
     /// Revokes access permissions for a file in the document store from an
@@ -356,19 +328,12 @@ impl<'a> DocumentsProxy<'a> {
         app_id: &str,
         permissions: &[Permission],
     ) -> Result<(), Error> {
-        self.0
-            .call_method("RevokePermissions", &(doc_id, app_id, permissions))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_method(&self.0, "RevokePermissions", &(doc_id, app_id, permissions)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }
 

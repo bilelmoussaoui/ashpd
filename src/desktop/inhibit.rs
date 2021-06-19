@@ -45,7 +45,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, SessionProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, call_request_method, property},
+    Error, HandleToken, SessionProxy, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a create inhibit monitor request.
@@ -185,14 +188,9 @@ impl<'a> InhibitProxy<'a> {
         window: WindowIdentifier,
         options: CreateMonitorOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let path: OwnedObjectPath = self
-            .0
-            .call_method("Inhibit", &(window, options))
-            .await?
-            .body()?;
-        let request = RequestProxy::new(self.0.connection(), path).await?;
-        let monitor = request.receive_response::<CreateMonitor>().await?;
-        SessionProxy::new(self.0.connection(), monitor.session_handle).await
+        let monitor: CreateMonitor =
+            call_request_method(&self.0, "CreateMonitor", &(window, options)).await?;
+        SessionProxy::new(self.0.connection(), monitor.session_handle.into_inner()).await
     }
 
     /// Inhibits a session status changes.
@@ -209,13 +207,8 @@ impl<'a> InhibitProxy<'a> {
         window: WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         options: InhibitOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("Inhibit", &(window, flags, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<(), Error> {
+        call_basic_response_method(&self.0, "Inhibit", &(window, flags, options)).await
     }
 
     /// Signal emitted when the session state changes.
@@ -235,18 +228,11 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
-        self.0
-            .call_method("QueryEndResponse", &(session))
-            .await?
-            .body()
-            .map_err(From::from)
+        call_basic_response_method(&self.0, "QueryEndResponse", &(session)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }

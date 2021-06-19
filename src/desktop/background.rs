@@ -10,15 +10,13 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = BackgroundProxy::new(&connection).await?;
 //!
-//!     let request = proxy.request_background(
+//!     let response = proxy.request_background(
 //!         WindowIdentifier::default(),
 //!         BackgroundOptions::default()
 //!             .autostart(true)
 //!             .command(&["geary"])
 //!             .reason("Automatically fetch your latest mails"),
 //!     ).await?;
-//!
-//!     let response = request.receive_response::<Background>().await?;
 //!
 //!     println!("{}", response.autostart);
 //!     println!("{}", response.background);
@@ -28,7 +26,10 @@
 //! ```
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{Error, HandleToken, RequestProxy, WindowIdentifier};
+use crate::{
+    helpers::{call_request_method, property},
+    Error, HandleToken, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
 /// Specified options for a `request_background` request.
@@ -121,20 +122,12 @@ impl<'a> BackgroundProxy<'a> {
         &self,
         parent_window: WindowIdentifier,
         options: BackgroundOptions,
-    ) -> Result<RequestProxy<'a>, Error> {
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("RequestBackground", &(parent_window, options))
-            .await?
-            .body()?;
-        RequestProxy::new(self.0.connection(), path).await
+    ) -> Result<Background, Error> {
+        call_request_method(&self.0, "RequestBackground", &(parent_window, options)).await
     }
 
     /// The version of this DBus interface.
     pub async fn version(&self) -> Result<u32, Error> {
-        self.0
-            .get_property::<u32>("version")
-            .await
-            .map_err(From::from)
+        property(&self.0, "version").await
     }
 }
