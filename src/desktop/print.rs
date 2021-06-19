@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::print::{PrintOptions, PrintProxy};
-//! use ashpd::{WindowIdentifier};
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -21,8 +21,8 @@
 //!             "test",
 //!             Fd::from(file.as_raw_fd()),
 //!             PrintOptions::default(),
-//!         ).await?;
-//!
+//!         )
+//!         .await?;
 //!
 //!     Ok(())
 //! }
@@ -445,7 +445,7 @@ impl PageSetup {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a prepare print request.
+/// Specified options for a [`PrintProxy::prepare_print`] request.
 pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -468,18 +468,18 @@ impl PreparePrintOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a print request.
+/// Specified options for a [`PrintProxy::print`] request.
 pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
     /// Whether to make the dialog modal.
     modal: Option<bool>,
-    /// Token that was returned by a previous `prepare_print` call.
+    /// Token that was returned by a previous [`PrintProxy::prepare_print`] call.
     token: Option<String>,
 }
 
 impl PrintOptions {
-    /// A token retrieved from a prepare print response.
+    /// A token retrieved from [`PrintProxy::prepare_print`].
     pub fn token(mut self, token: &str) -> Self {
         self.token = Some(token.to_string());
         self
@@ -499,7 +499,7 @@ impl PrintOptions {
 }
 
 #[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
-/// A response returned by a prepare print request.
+/// A response to a [`PrintProxy::prepare_print`] request.
 pub struct PreparePrint {
     /// The printing settings.
     pub settings: Settings,
@@ -514,6 +514,7 @@ pub struct PreparePrint {
 pub struct PrintProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> PrintProxy<'a> {
+    /// Create a new instance of [`PrintProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<PrintProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Print")
@@ -534,10 +535,6 @@ impl<'a> PrintProxy<'a> {
     /// * `settings` - [`Settings`].
     /// * `page_setup` - [`PageSetup`].
     /// * `options` - [`PreparePrintOptions`].
-    ///
-    /// [`Settings`]: ./struct.Settings.html
-    /// [`PageSetup`]: ./struct.PageSetup.html
-    /// [`PreparePrintOptions`]: ./struct.PreparePrintOptions.html
     pub async fn prepare_print(
         &self,
         parent_window: WindowIdentifier,
@@ -565,8 +562,6 @@ impl<'a> PrintProxy<'a> {
     /// * `title` - The title for the print dialog.
     /// * `fd` - File descriptor for reading the content to print.
     /// * `options` - [`PrintOptions`].
-    ///
-    /// [`PrintOptions`]: ./struct.PrintOptions.html
     pub async fn print<F>(
         &self,
         parent_window: WindowIdentifier,

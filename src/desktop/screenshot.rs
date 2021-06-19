@@ -1,32 +1,43 @@
 //! # Examples
 //!
-//! Taking a screenshot
+//! ## Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot::{ScreenshotProxy, ScreenshotOptions}, WindowIdentifier};
+//! use ashpd::{
+//!     desktop::screenshot::{ScreenshotOptions, ScreenshotProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let screenshot = proxy.screenshot(identifier, ScreenshotOptions::default().interactive(true)).await?;
+//!     let screenshot = proxy
+//!         .screenshot(identifier, ScreenshotOptions::default().interactive(true))
+//!         .await?;
 //!     println!("URI: {}", screenshot.uri);
 //!
 //!     Ok(())
 //! }
 //! ```
 //!
-//! Picking a color
+//! ## Picking a color
+//!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot::{ScreenshotProxy, PickColorOptions}, WindowIdentifier};
+//! use ashpd::{
+//!     desktop::screenshot::{PickColorOptions, ScreenshotProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let color = proxy.pick_color(identifier, PickColorOptions::default()).await?;
+//!     let color = proxy
+//!         .pick_color(identifier, PickColorOptions::default())
+//!         .await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -41,7 +52,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
-/// Specified options on a screenshot request.
+/// Specified options for a [`ScreenshotProxy::screenshot`] request.
 pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -74,14 +85,14 @@ impl ScreenshotOptions {
 }
 
 #[derive(DeserializeDict, SerializeDict, Clone, TypeDict, Debug)]
-/// A response to a screenshot request.
+/// A response to a [`ScreenshotProxy::screenshot`] request.
 pub struct Screenshot {
     /// The screenshot uri.
     pub uri: String,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
-/// Specified options on a pick color request.
+/// Specified options for a [`ScreenshotProxy::pick_color`] request.
 pub struct PickColorOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -96,7 +107,7 @@ impl PickColorOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, TypeDict)]
-/// A response to a pick color request.
+/// A response to a [`ScreenshotProxy::pick_color`] request.
 /// **Note** the values are normalized.
 pub struct Color {
     color: ([f64; 3]),
@@ -157,6 +168,7 @@ impl std::fmt::Debug for Color {
 pub struct ScreenshotProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> ScreenshotProxy<'a> {
+    /// Create a new instance of [`ScreenshotProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenshotProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Screenshot")
@@ -173,8 +185,6 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A [`PickColorOptions`].
-    ///
-    /// [`PickColorOptions`]: ./struct.PickColorOptions.html
     pub async fn pick_color(
         &self,
         parent_window: WindowIdentifier,
@@ -189,8 +199,6 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A [`ScreenshotOptions`].
-    ///
-    /// [`ScreenshotOptions`]: ./struct.ScreenshotOptions.html
     pub async fn screenshot(
         &self,
         parent_window: WindowIdentifier,

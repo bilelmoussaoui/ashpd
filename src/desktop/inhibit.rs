@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::inhibit::{
-//!     CreateMonitorOptions, InhibitFlags, InhibitOptions, InhibitProxy, InhibitState, SessionState,
+//!     CreateMonitorOptions, InhibitFlags, InhibitOptions, InhibitProxy, SessionState,
 //! };
 //! use ashpd::{HandleToken, WindowIdentifier};
 //! use std::convert::TryFrom;
@@ -14,20 +14,24 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = InhibitProxy::new(&connection).await?;
 //!     let session_token = HandleToken::try_from("sessiontoken").unwrap();
-//!     let session = proxy.create_monitor(
-//!         WindowIdentifier::default(),
-//!         CreateMonitorOptions::default().session_handle_token(session_token),
-//!     ).await?;
+//!     let session = proxy
+//!         .create_monitor(
+//!             WindowIdentifier::default(),
+//!             CreateMonitorOptions::default().session_handle_token(session_token),
+//!         )
+//!         .await?;
 //!
 //!     let state = proxy.receive_state_changed().await?;
 //!     match state.session_state() {
 //!         SessionState::Running => (),
 //!         SessionState::QueryEnd => {
-//!             proxy.inhibit(
-//!                 WindowIdentifier::default(),
-//!                 InhibitFlags::Logout | InhibitFlags::UserSwitch,
-//!                 InhibitOptions::default().reason("please save the opened project first"),
-//!             ).await?;
+//!             proxy
+//!                 .inhibit(
+//!                     WindowIdentifier::default(),
+//!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
+//!                     InhibitOptions::default().reason("please save the opened project first"),
+//!                 )
+//!                 .await?;
 //!             thread::sleep(time::Duration::from_secs(1));
 //!             proxy.query_end_response(&session).await?;
 //!         }
@@ -51,7 +55,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a create inhibit monitor request.
+/// Specified options for a [`InhibitProxy::create_monitor`] request.
 pub struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -74,7 +78,7 @@ impl CreateMonitorOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options of an `inhibit` request.
+/// Specified options for a [`InhibitProxy::inhibit`] request.
 pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -111,7 +115,7 @@ pub enum InhibitFlags {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-/// A response to a `create_monitor` request.
+/// A response to a [`InhibitProxy::create_monitor`] request.
 struct CreateMonitor {
     pub(crate) session_handle: OwnedObjectPath,
 }
@@ -163,6 +167,7 @@ pub enum SessionState {
 pub struct InhibitProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> InhibitProxy<'a> {
+    /// Create a new instance of [`InhibitProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<InhibitProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Inhibit")
@@ -181,8 +186,6 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// * `window` - The application window identifier.
     /// * `options` - [`CreateMonitorOptions`].
-    ///
-    /// [`CreateMonitorOptions`]: ./struct.CreateMonitorOptions.html
     pub async fn create_monitor(
         &self,
         window: WindowIdentifier,
@@ -200,8 +203,6 @@ impl<'a> InhibitProxy<'a> {
     /// * `window` - The application window identifier.
     /// * `flags` - The flags determine what changes are inhibited.
     /// * `options` - A [`InhibitOptions`].
-    ///
-    /// [`InhibitOptions`]: ./struct.InhibitOptions.html
     pub async fn inhibit(
         &self,
         window: WindowIdentifier,
@@ -225,8 +226,6 @@ impl<'a> InhibitProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
         call_basic_response_method(&self.0, "QueryEndResponse", &(session)).await
     }

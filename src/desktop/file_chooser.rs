@@ -1,33 +1,33 @@
 //! # Examples
 //!
-//! Opening a file
+//! ## Opening a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{
-//!     Choice, FileChooserProxy, FileFilter, OpenFileOptions,
-//! };
+//! use ashpd::desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions};
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
-//!     let files = proxy.open_file(
-//!         WindowIdentifier::default(),
-//!         "open a file to read",
-//!         OpenFileOptions::default()
-//!             .accept_label("read")
-//!             .modal(true)
-//!             .multiple(true)
-//!             .choice(
-//!                 Choice::new("encoding", "Encoding", "latin15")
-//!                     .insert("utf8", "Unicode (UTF-8)")
-//!                     .insert("latin15", "Western"),
-//!             )
-//!             // A trick to have a checkbox
-//!             .choice(Choice::new("re-encode", "Re-encode", "false"))
-//!             .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
-//!     ).await?;
+//!     let files = proxy
+//!         .open_file(
+//!             WindowIdentifier::default(),
+//!             "open a file to read",
+//!             OpenFileOptions::default()
+//!                 .accept_label("read")
+//!                 .modal(true)
+//!                 .multiple(true)
+//!                 .choice(
+//!                     Choice::new("encoding", "Encoding", "latin15")
+//!                         .insert("utf8", "Unicode (UTF-8)")
+//!                         .insert("latin15", "Western"),
+//!                 )
+//!                 // A trick to have a checkbox
+//!                 .choice(Choice::new("re-encode", "Re-encode", "false"))
+//!                 .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
+//!         )
+//!         .await?;
 //!
 //!     println!("{:#?}", files);
 //!
@@ -35,7 +35,7 @@
 //! }
 //! ```
 //!
-//! Ask to save a file
+//! ## Ask to save a file
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions};
@@ -44,15 +44,17 @@
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FileChooserProxy::new(&connection).await?;
-//!     let files = proxy.save_file(
-//!         WindowIdentifier::default(),
-//!         "open a file to write",
-//!         SaveFileOptions::default()
-//!             .accept_label("write")
-//!             .current_name("image.jpg")
-//!             .modal(true)
-//!             .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
-//!     ).await?;
+//!     let files = proxy
+//!         .save_file(
+//!             WindowIdentifier::default(),
+//!             "open a file to write",
+//!             SaveFileOptions::default()
+//!                 .accept_label("write")
+//!                 .current_name("image.jpg")
+//!                 .modal(true)
+//!                 .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
+//!         )
+//!         .await?;
 //!
 //!     println!("{:#?}", files);
 //!
@@ -60,7 +62,7 @@
 //! }
 //! ```
 //!
-//! Ask to save multiple files
+//! ## Ask to save multiple files
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions};
@@ -70,15 +72,17 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
-//!     let files = proxy.save_files(
-//!         WindowIdentifier::default(),
-//!         "open files to write",
-//!         SaveFilesOptions::default()
-//!             .accept_label("write files")
-//!             .modal(true)
-//!             .current_folder("/home/bilelmoussaoui/Pictures")
-//!             .files(&["test.jpg", "awesome.png"]),
-//!     ).await?;
+//!     let files = proxy
+//!         .save_files(
+//!             WindowIdentifier::default(),
+//!             "open files to write",
+//!             SaveFilesOptions::default()
+//!                 .accept_label("write files")
+//!                 .modal(true)
+//!                 .current_folder("/home/bilelmoussaoui/Pictures")
+//!                 .files(&["test.jpg", "awesome.png"]),
+//!         )
+//!         .await?;
 //!
 //!     println!("{:#?}", files);
 //!
@@ -174,7 +178,7 @@ impl Choice {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
-/// Specified options for a `open_file` request.
+/// Specified options for a [`FileChooserProxy::open_file`] request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -245,7 +249,7 @@ impl OpenFileOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a save file request.
+/// Specified options for a [`FileChooserProxy::save_file`] request.
 pub struct SaveFileOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -324,7 +328,7 @@ impl SaveFileOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a save files request.
+/// Specified options for a [`FileChooserProxy::save_files`] request.
 pub struct SaveFilesOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -379,7 +383,7 @@ impl SaveFilesOptions {
 }
 
 #[derive(Debug, TypeDict, SerializeDict, Clone, DeserializeDict)]
-/// A response to an open/save file request.
+/// A response to a [`FileChooserProxy::open_file`]/[`FileChooserProxy::save_file`]/[`FileChooserProxy::save_files`] request.
 pub struct SelectedFiles {
     /// The selected files uris.
     pub uris: Vec<String>,
@@ -393,6 +397,7 @@ pub struct SelectedFiles {
 pub struct FileChooserProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FileChooserProxy<'a> {
+    /// Create a new instance of [`FileChooserProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FileChooserProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.FileChooser")
@@ -410,8 +415,6 @@ impl<'a> FileChooserProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`OpenFileOptions`].
-    ///
-    /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
     pub async fn open_file(
         &self,
         parent_window: WindowIdentifier,
@@ -428,8 +431,6 @@ impl<'a> FileChooserProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`SaveFileOptions`].
-    ///
-    /// [`SaveFileOptions`]: ./struct.SaveFileOptions.html
     pub async fn save_file(
         &self,
         parent_window: WindowIdentifier,
@@ -451,8 +452,6 @@ impl<'a> FileChooserProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`SaveFilesOptions`].
-    ///
-    /// [`SaveFilesOptions`]: ./struct.SaveFilesOptions.html
     pub async fn save_files(
         &self,
         parent_window: WindowIdentifier,

@@ -1,10 +1,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
+//! use ashpd::desktop::trash::{TrashProxy, TrashStatus};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
-//! use ashpd::desktop::trash::{TrashProxy, TrashStatus};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
@@ -44,6 +44,7 @@ pub enum TrashStatus {
 pub struct TrashProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> TrashProxy<'a> {
+    /// Create a new instance of [`TrashProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<TrashProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Trash")

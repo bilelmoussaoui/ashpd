@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use zvariant_derive::Type;
 
 /// A handle token is a DBus Object Path element, specified in the
-/// [`RequestProxy`] or [`SessionProxy`] object path following this format
+/// `RequestProxy` or [`SessionProxy`](crate::session::SessionProxy) object path following this format
 /// `/org/freedesktop/portal/desktop/request/SENDER/TOKEN` where sender is the
 /// caller's unique name and token is the HandleToken.
 ///
@@ -21,9 +21,6 @@ use zvariant_derive::Type;
 ///
 /// assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
 /// ```
-///
-/// [`SessionProxy`]: ./struct.SessionProxy.html
-/// [`RequestProxy`]: ./struct.RequestProxy.html
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
 pub struct HandleToken(String);
 

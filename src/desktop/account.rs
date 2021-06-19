@@ -1,14 +1,22 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::account::{AccountProxy, UserInfoOptions}, WindowIdentifier};
+//! use ashpd::{
+//!     desktop::account::{AccountProxy, UserInfoOptions},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = AccountProxy::new(&connection).await?;
-//!     let user_info = proxy.user_information(identifier, UserInfoOptions::default().reason("App would like to access user information")).await?;
+//!     let user_info = proxy
+//!         .user_information(
+//!             identifier,
+//!             UserInfoOptions::default().reason("App would like to access user information"),
+//!         )
+//!         .await?;
 //!
 //!     println!("Name: {}", user_info.name);
 //!     println!("ID: {}", user_info.id);
@@ -24,7 +32,7 @@ use crate::{
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
-/// The possible options for a get user information request.
+/// Specified options for a [`AccountProxy::user_information`] request.
 pub struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -47,7 +55,7 @@ impl UserInfoOptions {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, Clone, TypeDict)]
-/// The response of a `user_information` request.
+/// The response of a [`AccountProxy::user_information`] request.
 pub struct UserInfo {
     /// User identifier.
     pub id: String,
@@ -65,6 +73,7 @@ pub struct UserInfo {
 pub struct AccountProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> AccountProxy<'a> {
+    /// Create a new instance of [`AccountProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<AccountProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Account")
@@ -81,8 +90,6 @@ impl<'a> AccountProxy<'a> {
     ///
     /// * `window` - Identifier for the window.
     /// * `options` - A [`UserInfoOptions`].
-    ///
-    /// [`UserInfoOptions`]: ./struct.UserInfoOptions.html
     pub async fn user_information(
         &self,
         window: WindowIdentifier,

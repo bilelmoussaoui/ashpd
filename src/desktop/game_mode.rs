@@ -1,3 +1,5 @@
+//! # Examples
+//!
 //! ```rust,no_run
 //! use ashpd::desktop::game_mode::{GameModeProxy, GameModeStatus};
 //!
@@ -86,6 +88,7 @@ pub enum UnregisterStatus {
 pub struct GameModeProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> GameModeProxy<'a> {
+    /// Create a new instance of [`GameModeProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<GameModeProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.GameMode")

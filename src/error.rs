@@ -1,12 +1,19 @@
 use crate::request::ResponseError;
 
 #[derive(Debug)]
+/// The error type for ashpd.
 pub enum Error {
+    /// The portal request didn't succeed.
     Portal(ResponseError),
+    /// A zbus::fdo specific error.
     ZbusFdo(zbus::fdo::Error),
+    /// A zbus specific error.
     Zbus(zbus::Error),
+    /// A conversion error.
     Zvariant(zvariant::Error),
+    /// Failure to parse a response's body.
     DBusMalformedMessage(zbus::MessageError),
+    /// A signal returned no response.
     NoResponse,
 }
 

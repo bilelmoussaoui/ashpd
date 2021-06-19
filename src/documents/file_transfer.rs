@@ -11,9 +11,13 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FileTransferProxy::new(&connection).await?;
 //!
-//!     let key = proxy.start_transfer(TransferOptions::default().writeable(true).auto_stop(true)).await?;
+//!     let key = proxy
+//!         .start_transfer(TransferOptions::default().writeable(true).auto_stop(true))
+//!         .await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy.add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new()).await?;
+//!     proxy
+//!         .add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new())
+//!         .await?;
 //!
 //!     // The files would be retrieved by another process
 //!     let files = proxy.retrieve_files(&key, HashMap::new()).await?;
@@ -35,12 +39,12 @@ use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a start transfer request.
+/// Specified options for a [`FileTransferProxy::start_transfer`] request.
 pub struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
     writeable: Option<bool>,
     /// Whether to stop the transfer automatically after the first
-    /// `retrieve_files` call.
+    /// [`FileTransferProxy::retrieve_files`] call.
     #[zvariant(rename = "autostop")]
     auto_stop: Option<bool>,
 }
@@ -53,7 +57,7 @@ impl TransferOptions {
     }
 
     /// Whether to stop the transfer automatically after the first
-    /// retrieve_files call.
+    /// [`FileTransferProxy::retrieve_files`] call.
     pub fn auto_stop(mut self, auto_stop: bool) -> Self {
         self.auto_stop = Some(auto_stop);
         self
@@ -76,6 +80,7 @@ impl TransferOptions {
 pub struct FileTransferProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FileTransferProxy<'a> {
+    /// Create a new instance of [`FileTransferProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FileTransferProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.FileTransfer")
@@ -125,7 +130,7 @@ impl<'a> FileTransferProxy<'a> {
         call_method(&self.0, "RetrieveFiles", &(key, options)).await
     }
     /// Starts a session for a file transfer.
-    /// The caller should call `add_files` at least once, to add files to this
+    /// The caller should call [`FileTransferProxy::add_files`] at least once, to add files to this
     /// session.
     ///
     /// # Returns
@@ -136,7 +141,7 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Ends the transfer.
-    /// Further calls to `add_files` or `retrieve_files` for this key will
+    /// Further calls to [`FileTransferProxy::add_files`] or [`FileTransferProxy::retrieve_files`] for this key will
     /// return an error.
     ///
     /// # Arguments

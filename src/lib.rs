@@ -1,5 +1,5 @@
 #![deny(broken_intra_doc_links)]
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 //! ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/zeenix/zbus) wrapper of
 //! the XDG portals DBus interfaces. The library aims to provide an easy way to
 //! interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html).
@@ -10,14 +10,19 @@
 //!
 //! Ask the compositor to pick a color
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot::{ScreenshotProxy, PickColorOptions}, WindowIdentifier};
+//! use ashpd::{
+//!     desktop::screenshot::{PickColorOptions, ScreenshotProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let color = proxy.pick_color(identifier, PickColorOptions::default()).await?;
+//!     let color = proxy
+//!         .pick_color(Default::default())
+//!         .await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -26,13 +31,18 @@
 //!
 //! Start a PipeWire stream from the user's camera
 //! ```rust,no_run
-//! use ashpd::{desktop::camera, WindowIdentifier};
+//! use std::collections::HashMap;
+//! use ashpd::desktop::camera::{CameraAccessOptions, CameraProxy};
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
-//!     let identifier = WindowIdentifier::default();
-//!     let pipewire_fd = camera::stream().await?;
-//!     // Render the stream with GStreamer for example, see the demo
+//! pub async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = CameraProxy::new(&connection).await?;
+//!     if proxy.is_camera_present().await? {
+//!         proxy.access_camera(CameraAccessOptions::default()).await?;
 //!
+//!         let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+//!         // pass the remote fd to GStreamer for example
+//!     }
 //!     Ok(())
 //! }
 //! ```
@@ -77,5 +87,6 @@ pub fn is_sandboxed() -> bool {
 
 pub use self::error::Error;
 pub use self::handle_token::HandleToken;
+pub use self::request::ResponseError;
 pub use self::session::SessionProxy;
 pub use self::window_identifier::WindowIdentifier;

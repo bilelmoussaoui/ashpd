@@ -12,7 +12,9 @@
 //!
 //!     let file = File::open("test.txt").unwrap();
 //!
-//!     let secret = proxy.retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default()).await?;
+//!     let secret = proxy
+//!         .retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())
+//!         .await?;
 //!
 //!     println!("{:#?}", secret);
 //!     Ok(())
@@ -27,14 +29,14 @@ use std::os::unix::prelude::AsRawFd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a retrieve secret request.
+/// Specified options for a [`SecretProxy::retrieve_secret`] request.
 pub struct RetrieveOptions {
     /// A string returned by a previous call to `retrieve_secret`.
     token: Option<String>,
 }
 
 impl RetrieveOptions {
-    /// Sets the token received on a previous call to `retrieve_secret`.
+    /// Sets the token received on a previous call to [`SecretProxy::retrieve_secret`].
     pub fn token(mut self, token: &str) -> Self {
         self.token = Some(token.to_string());
         self
@@ -47,6 +49,7 @@ impl RetrieveOptions {
 pub struct SecretProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> SecretProxy<'a> {
+    /// Create a new instance of [`SecretProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<SecretProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Secret")
@@ -62,9 +65,7 @@ impl<'a> SecretProxy<'a> {
     /// # Arguments
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
-    /// * `options` - A `RetrieveOptions`.
-    ///
-    /// [`RetrieveOptions`]: ./struct.RetrieveOptions.html
+    /// * `options` - A [`RetrieveOptions`].
     pub async fn retrieve_secret<F: AsRawFd + serde::Serialize + zvariant::Type>(
         &self,
         fd: F,

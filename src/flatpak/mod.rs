@@ -11,14 +11,16 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FlatpakProxy::new(&connection).await?;
 //!
-//!     proxy.spawn(
-//!         "contrast".into(),
-//!         &[],
-//!         HashMap::new(),
-//!         HashMap::new(),
-//!         SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
-//!         SpawnOptions::default(),
-//!     ).await?;
+//!     proxy
+//!         .spawn(
+//!             "contrast".into(),
+//!             &[],
+//!             HashMap::new(),
+//!             HashMap::new(),
+//!             SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
+//!             SpawnOptions::default(),
+//!         )
+//!         .await?;
 //!
 //!     Ok(())
 //! }
@@ -82,7 +84,7 @@ pub enum SupportsFlags {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a spawn request.
+/// Specified options for a [`FlatpakProxy::spawn`] request.
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
@@ -149,7 +151,7 @@ impl SpawnOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a create monitor request.
+/// Specified options for a [`FlatpakProxy::create_update_monitor`] request.
 ///
 /// Currently there are no possible options yet.
 pub struct CreateMonitorOptions {}
@@ -162,6 +164,7 @@ trait Flatpak {}
 pub struct FlatpakProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FlatpakProxy<'a> {
+    /// Create a new instance of [`FlatpakProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FlatpakProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Flatpak")
@@ -216,8 +219,6 @@ impl<'a> FlatpakProxy<'a> {
     ///   process.
     /// * `flags`
     /// * `options` - A [`SpawnOptions`].
-    ///
-    /// [`SpawnOptions`]: ./struct.SpawnOptions.html
     pub async fn spawn(
         &self,
         cwd_path: &str,

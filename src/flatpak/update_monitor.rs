@@ -4,20 +4,24 @@
 //! Only available for Flatpak applications.
 //!
 //! ```rust,no_run
-//! use ashpd::flatpak::update_monitor::{
-//!     UpdateInfo, UpdateMonitorProxy, UpdateOptions, UpdateProgress,
+//! use ashpd::flatpak::{
+//!     update_monitor::{UpdateInfo, UpdateMonitorProxy, UpdateOptions, UpdateProgress},
+//!     CreateMonitorOptions, FlatpakProxy,
 //! };
-//! use ashpd::flatpak::{CreateMonitorOptions, FlatpakProxy};
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FlatpakProxy::new(&connection).await?;
 //!
-//!     let monitor = proxy.create_update_monitor(CreateMonitorOptions::default()).await?;
+//!     let monitor = proxy
+//!         .create_update_monitor(CreateMonitorOptions::default())
+//!         .await?;
 //!     let info = monitor.receive_update_available().await?;
 //!
-//!     monitor.update(WindowIdentifier::default(), UpdateOptions::default()).await?;
+//!     monitor
+//!         .update(WindowIdentifier::default(), UpdateOptions::default())
+//!         .await?;
 //!     let progress = monitor.receive_progress().await?;
 //!     println!("{:#?}", progress);
 //!
@@ -31,7 +35,7 @@ use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on an update request.
+/// Specified options for a [`UpdateMonitorProxy::update`] request.
 ///
 /// Currently there are no possible options yet.
 pub struct UpdateOptions {}
@@ -88,6 +92,9 @@ pub struct UpdateProgress {
 pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> UpdateMonitorProxy<'a> {
+    /// Create a new instance of [`UpdateMonitorProxy`].
+    ///
+    /// **Note** A [`UpdateMonitorProxy`] is not supposed to be created manually.
     pub async fn new(
         connection: &zbus::azync::Connection,
         path: ObjectPath<'a>,

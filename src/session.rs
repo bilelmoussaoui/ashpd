@@ -35,6 +35,9 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> SessionProxy<'a> {
+    /// Create a new instance of [`SessionProxy`].
+    ///
+    /// **Note** A [`SessionProxy`] is not supposed to be created manually.
     pub async fn new(
         connection: &zbus::azync::Connection,
         path: ObjectPath<'a>,
@@ -48,6 +51,7 @@ impl<'a> SessionProxy<'a> {
         Ok(Self(proxy, connection.clone()))
     }
 
+    /// Emitted when a session is closed.
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
         let mut stream = self.0.receive_signal("Closed").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;

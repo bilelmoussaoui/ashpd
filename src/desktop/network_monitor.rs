@@ -72,6 +72,7 @@ impl fmt::Display for Connectivity {
 pub struct NetworkMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> NetworkMonitorProxy<'a> {
+    /// Create a new instance of [`NetworkMonitorProxy`].
     pub async fn new(
         connection: &zbus::azync::Connection,
     ) -> Result<NetworkMonitorProxy<'a>, Error> {

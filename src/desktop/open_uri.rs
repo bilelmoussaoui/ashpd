@@ -1,12 +1,15 @@
 //! # Examples
 //!
-//! Open a file
+//! ## Open a file
 //!
 //! ```rust,no_run
+//! use ashpd::{
+//!     desktop::open_uri::{OpenFileOptions, OpenURIProxy},
+//!     WindowIdentifier,
+//! };
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
-//! use ashpd::{desktop::open_uri::{OpenFileOptions, OpenURIProxy}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
@@ -15,25 +18,36 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
-//!     proxy.open_file(identifier, Fd::from(file.as_raw_fd()), OpenFileOptions::default().writeable(false).ask(true)).await?;
+//!     proxy
+//!         .open_file(
+//!             identifier,
+//!             Fd::from(file.as_raw_fd()),
+//!             OpenFileOptions::default().writeable(false).ask(true),
+//!         )
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
 //!
-//! Open a file from a URI
+//! ## Open a file from a URI
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::open_uri::{OpenFileOptions, OpenURIProxy}, WindowIdentifier};
+//! use ashpd::{
+//!     desktop::open_uri::{OpenFileOptions, OpenURIProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
-//!     proxy.open_uri(
-//!         WindowIdentifier::default(),
-//!         "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!         OpenFileOptions::default().writeable(false).ask(true),
-//!     ).await?;
+//!     proxy
+//!         .open_uri(
+//!             WindowIdentifier::default(),
+//!             "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
+//!             OpenFileOptions::default().writeable(false).ask(true),
+//!         )
+//!         .await?;
 //!
 //!     Ok(())
 //! }
@@ -50,7 +64,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for an open directory request.
+/// Specified options for a [`OpenURIProxy::open_directory`] request.
 pub struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -65,7 +79,7 @@ impl OpenDirOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for an open file request.
+/// Specified options for a [`OpenURIProxy::open_file`] or [`OpenURIProxy::open_uri`] request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -105,6 +119,7 @@ impl OpenFileOptions {
 pub struct OpenURIProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {
+    /// Create a new instance of [`OpenURIProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<OpenURIProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.OpenURI")
@@ -122,8 +137,6 @@ impl<'a> OpenURIProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
     /// * `options` - [`OpenDirOptions`].
-    ///
-    /// [`OpenDirOptions`]: ./struct.OpenDirOptions.html
     pub async fn open_directory<F>(
         &self,
         parent_window: WindowIdentifier,
@@ -148,8 +161,6 @@ impl<'a> OpenURIProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `file` - File descriptor for the file to open.
     /// * `options` - [`OpenFileOptions`].
-    ///
-    /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
     pub async fn open_file<F>(
         &self,
         parent_window: WindowIdentifier,
@@ -174,8 +185,6 @@ impl<'a> OpenURIProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `uri` - The uri to open.
     /// * `options` - [`OpenFileOptions`].
-    ///
-    /// [`OpenFileOptions`]: ./struct.OpenFileOptions.html
     pub async fn open_uri(
         &self,
         parent_window: WindowIdentifier,

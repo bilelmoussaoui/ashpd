@@ -10,10 +10,8 @@ use zvariant_derive::Type;
 
 use crate::helpers::call_method;
 
-/// A typical response returned by the `connect_response` signal of a
-/// `RequestProxy`.
-///
-/// [`RequestProxy`]: ./struct.RequestProxy.html
+/// A typical response returned by the [`RequestProxy::receive_response`] signal of a
+/// [`RequestProxy`].
 #[derive(Debug)]
 pub(crate) enum Response<T>
 where
