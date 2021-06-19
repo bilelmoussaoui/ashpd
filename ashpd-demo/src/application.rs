@@ -47,7 +47,7 @@ mod imp {
             app.setup_gactions();
             app.setup_accels();
 
-            app.get_main_window().present();
+            app.main_window().present();
         }
 
         fn startup(&self, app: &Self::Type) {
@@ -58,11 +58,11 @@ mod imp {
             provider.load_from_resource("/com/belmoussaoui/ashpd/demo/style.css");
             app.set_resource_base_path(Some("/com/belmoussaoui/ashpd/demo/"));
 
-            if let Some(ref display) = gtk::gdk::Display::get_default() {
-                let theme = gtk::IconTheme::get_for_display(display).unwrap();
+            if let Some(ref display) = gtk::gdk::Display::default() {
+                let theme = gtk::IconTheme::for_display(display).unwrap();
                 theme.add_resource_path("/com/belmoussaoui/ashpd/demo/icons/");
                 gtk::StyleContext::add_provider_for_display(
-                    &display,
+                    display,
                     &provider,
                     gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
                 );
@@ -87,7 +87,7 @@ impl ExampleApplication {
         .expect("Application initialization failed...")
     }
 
-    fn get_main_window(&self) -> ExampleApplicationWindow {
+    fn main_window(&self) -> ExampleApplicationWindow {
         let priv_ = imp::ExampleApplication::from_instance(self);
         priv_.window.get().unwrap().upgrade().unwrap()
     }
@@ -100,7 +100,7 @@ impl ExampleApplication {
             clone!(@weak self as app => move |_, _| {
                 // This is needed to trigger the delete event
                 // and saving the window state
-                app.get_main_window().close();
+                app.main_window().close();
                 app.quit();
             })
         );
@@ -128,7 +128,7 @@ impl ExampleApplication {
             .license_type(gtk::License::MitX11)
             .website("https://github.com/bilelmoussaoui/ashpd/")
             .version(config::VERSION)
-            .transient_for(&self.get_main_window())
+            .transient_for(&self.main_window())
             .modal(true)
             .authors(vec!["Bilal Elmoussaoui".into()])
             .artists(vec!["Bilal Elmoussaoui".into()])

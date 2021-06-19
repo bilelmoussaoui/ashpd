@@ -1,4 +1,9 @@
-use ashpd::{desktop::camera, Response};
+use std::{
+    collections::HashMap,
+    os::unix::prelude::{AsRawFd, RawFd},
+};
+
+use ashpd::{desktop::camera, zbus};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
@@ -66,15 +71,18 @@ mod imp {
             let ctx = glib::MainContext::default();
             let start_session_btn = self.start_session_btn.get();
             let camera_available = self.camera_available.get();
-            ctx.spawn_local(clone!(@weak start_session_btn, @weak camera_available => async move {
-                let is_present = camera::is_present().await.unwrap_or(false);
-                if is_present {
-                    camera_available.set_text("Yes");
-                } else {
-                    camera_available.set_text("No");
-                }
-                start_session_btn.set_sensitive(is_present);
-            }));
+
+            ctx.spawn_local(
+                clone!(@weak start_session_btn, @weak camera_available => async move {
+                    let is_present = true; // TODO: fix me
+                    if is_present {
+                        camera_available.set_text("Yes");
+                    } else {
+                        camera_available.set_text("No");
+                    }
+                    start_session_btn.set_sensitive(is_present);
+                }),
+            );
 
             self.picture.set_paintable(Some(&self.paintable));
         }
@@ -97,11 +105,16 @@ impl CameraPage {
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::CameraPage::from_instance(&page);
 
-            if let Ok(Response::Ok(stream_fd)) = camera::stream().await {
-                self_.paintable.set_pipewire_fd(stream_fd);
-                self_.start_session_btn.set_sensitive(false);
-                self_.close_session_btn.set_sensitive(true);
-                self_.revealer.set_reveal_child(true);
+            match stream().await {
+                Ok(stream_fd) => {
+                    self_.paintable.set_pipewire_fd(stream_fd);
+                    self_.start_session_btn.set_sensitive(false);
+                    self_.close_session_btn.set_sensitive(true);
+                    self_.revealer.set_reveal_child(true);
+               }
+               Err(err) => {
+                   println!("failed {:#?}", err);
+               }
             }
         }));
     }
@@ -114,4 +127,15 @@ impl CameraPage {
         self_.start_session_btn.set_sensitive(true);
         self_.revealer.set_reveal_child(false);
     }
+}
+
+async fn stream() -> Result<RawFd, ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = camera::CameraProxy::new(&connection).await?;
+    proxy
+        .access_camera(camera::CameraAccessOptions::default())
+        .await?;
+
+    let fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+    Ok(fd.as_raw_fd())
 }

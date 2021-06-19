@@ -1,18 +1,16 @@
-use std::{convert::TryFrom, sync::Arc};
-
 use adw::prelude::*;
 use ashpd::zbus;
 use ashpd::{
     desktop::location::{
-        Accuracy, AsyncLocationProxy, CreateSessionOptions, Location, SessionStartOptions,
+        Accuracy, CreateSessionOptions, Location, LocationProxy, SessionStartOptions,
     },
-    BasicResponse, HandleToken, Response, WindowIdentifier,
+    HandleToken, WindowIdentifier,
 };
-use futures::{lock::Mutex, FutureExt};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use std::convert::TryFrom;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -96,14 +94,14 @@ impl LocationPage {
     pub fn locate(&self) {
         let ctx = glib::MainContext::default();
         let self_ = imp::LocationPage::from_instance(self);
-        let distance_threshold = self_.distance_spin.get_value() as u32;
-        let time_threshold = self_.time_spin.get_value() as u32;
-        let accuracy = unsafe { std::mem::transmute(self_.accuracy_combo.get_selected()) };
-        let root = self.get_root().unwrap();
+        let distance_threshold = self_.distance_spin.value() as u32;
+        let time_threshold = self_.time_spin.value() as u32;
+        let accuracy = unsafe { std::mem::transmute(self_.accuracy_combo.selected()) };
+        let root = self.root().unwrap();
 
         ctx.spawn_local(clone!(@weak self as page => async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(location)) = locate(identifier, distance_threshold, time_threshold, accuracy).await {
+            if let Ok(location) = locate(identifier, distance_threshold, time_threshold, accuracy).await {
                 let self_ = imp::LocationPage::from_instance(&page);
 
                 self_.response_group.show();
@@ -125,9 +123,9 @@ pub async fn locate(
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,
-) -> zbus::Result<Response<Location>> {
+) -> Result<Location, ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncLocationProxy::new(&connection);
+    let proxy = LocationProxy::new(&connection).await?;
     let session = proxy
         .create_session(
             CreateSessionOptions::default()
@@ -138,50 +136,11 @@ pub async fn locate(
         )
         .await?;
 
-    let request = proxy
+    proxy
         .start(&session, window_identifier, SessionStartOptions::default())
         .await?;
+    let location = proxy.receive_location_updated().await?;
 
-    let (request_sender, request_receiver) = futures::channel::oneshot::channel();
-    let request_sender = Arc::new(Mutex::new(Some(request_sender)));
-    let request_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = request_sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    if let Response::Err(err) = request_receiver.await.unwrap() {
-        return Ok(Response::Err(err));
-    }
-
-    let (location_sender, location_receiver) = futures::channel::oneshot::channel();
-    let location_sender = Arc::new(Mutex::new(Some(location_sender)));
-    let signal_id = proxy
-        .connect_location_updated(move |location| {
-            let s = location_sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(location);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while proxy.next_signal().await?.is_some() {}
-    proxy.disconnect_signal(signal_id).await?;
-    request.disconnect_signal(request_id).await?;
     session.close().await?;
-
-    let location = location_receiver.await.unwrap();
-    Ok(Response::Ok(location))
+    Ok(location)
 }

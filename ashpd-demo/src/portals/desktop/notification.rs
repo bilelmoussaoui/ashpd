@@ -61,10 +61,10 @@ impl NotificationPage {
     pub fn send_notification(&self) -> zbus::fdo::Result<()> {
         let self_ = imp::NotificationPage::from_instance(self);
 
-        let notification_id = self_.id_entry.get_text();
-        let title = self_.title_entry.get_text();
-        let body = self_.body_entry.get_text();
-
+        let notification_id = self_.id_entry.text();
+        let title = self_.title_entry.text();
+        let body = self_.body_entry.text();
+        /*
         let connection = zbus::Connection::new_session()?;
         let proxy = NotificationProxy::new(&connection);
         proxy.add_notification(
@@ -77,6 +77,7 @@ impl NotificationPage {
                 .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
                 .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
         )?;
+         */
 
         Ok(())
     }

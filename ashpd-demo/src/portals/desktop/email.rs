@@ -1,8 +1,5 @@
-use std::sync::Arc;
-
-use ashpd::desktop::email::{AsyncEmailProxy, EmailOptions};
-use ashpd::{zbus, BasicResponse, Response, WindowIdentifier};
-use futures::{lock::Mutex, FutureExt};
+use ashpd::desktop::email::{EmailOptions, EmailProxy};
+use ashpd::{zbus, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -61,16 +58,16 @@ impl EmailPage {
 
     pub fn compose_mail(&self) {
         let self_ = imp::EmailPage::from_instance(self);
-        let subject = self_.subject.get_text();
-        let body = self_.body.get_text();
-        let addresses = self_.addresses.get_text();
-        let bcc = self_.bcc_entry.get_text();
-        let cc = self_.cc_entry.get_text();
-        let root = self.get_root().unwrap();
+        let subject = self_.subject.text();
+        let body = self_.body.text();
+        let addresses = self_.addresses.text();
+        let bcc = self_.bcc_entry.text();
+        let cc = self_.cc_entry.text();
+        let root = self.root().unwrap();
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(color)) = compose_email(
+            if let Ok(email) = compose_email(
                 identifier,
                 EmailOptions::default()
                     .subject(&subject)
@@ -87,7 +84,7 @@ impl EmailPage {
             .await
             {
                 //TODO: handle the response
-                println!("{:#?}", color);
+                println!("{:#?}", email);
             }
         });
     }
@@ -96,30 +93,10 @@ impl EmailPage {
 pub async fn compose_email(
     window_identifier: WindowIdentifier,
     email: EmailOptions,
-) -> zbus::Result<Response<BasicResponse>> {
+) -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = AsyncEmailProxy::new(&connection);
-    let request = proxy.compose_email(window_identifier, email).await?;
+    let proxy = EmailProxy::new(&connection).await?;
+    proxy.compose_email(window_identifier, email).await?;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    let signal_id = request
-        .connect_response(move |response: Response<BasicResponse>| {
-            let s = sender.clone();
-            async move {
-                if let Some(m) = s.lock().await.take() {
-                    let _ = m.send(response);
-                }
-                Ok(())
-            }
-            .boxed()
-        })
-        .await?;
-
-    while request.next_signal().await?.is_some() {}
-    request.disconnect_signal(signal_id).await?;
-
-    let response = receiver.await.unwrap();
-    Ok(response)
+    Ok(())
 }

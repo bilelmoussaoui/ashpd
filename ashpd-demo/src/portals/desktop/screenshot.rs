@@ -1,5 +1,5 @@
 use ashpd::desktop::screenshot;
-use ashpd::{Response, WindowIdentifier};
+use ashpd::{zbus, WindowIdentifier};
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -77,11 +77,11 @@ impl ScreenshotPage {
     pub fn pick_color(&self) {
         let ctx = glib::MainContext::default();
         // used for retrieving a window identifier
-        let root = self.get_root().unwrap();
+        let root = self.root().unwrap();
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenshotPage::from_instance(&page);
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(Response::Ok(color)) = screenshot::pick_color(identifier).await {
+            if let Ok(color) = pick_color(identifier).await {
                 self_.color_widget.set_rgba(color.into());
             }
         }));
@@ -92,15 +92,15 @@ impl ScreenshotPage {
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenshotPage::from_instance(&page);
             // used for retrieving a window identifier
-            let root = page.get_root().unwrap();
+            let root = page.root().unwrap();
             let identifier = WindowIdentifier::from_window(&root).await;
 
-            let interactive = self_.interactive_switch.get_active();
-            let modal = self_.modal_switch.get_active();
+            let interactive = self_.interactive_switch.is_active();
+            let modal = self_.modal_switch.is_active();
 
-            if let Ok(Response::Ok(screenshot)) = screenshot::take(identifier, interactive, modal).await
+            if let Ok(screenshot) = take_screenshot(identifier, interactive, modal).await
             {
-                let file = gio::File::new_for_uri(&screenshot.uri);
+                let file = gio::File::for_uri(&screenshot.uri);
                 self_.screenshot_photo.set_file(Some(&file));
                 self_.revealer.show(); // Revealer has a weird issue where it still
                                  // takes space even if it's child is hidden
@@ -109,4 +109,31 @@ impl ScreenshotPage {
             }
         }));
     }
+}
+
+async fn take_screenshot(
+    window: WindowIdentifier,
+    modal: bool,
+    interactive: bool,
+) -> Result<screenshot::Screenshot, ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = screenshot::ScreenshotProxy::new(&connection).await?;
+    let screenshot = proxy
+        .screenshot(
+            window,
+            screenshot::ScreenshotOptions::default()
+                .interactive(interactive)
+                .modal(modal),
+        )
+        .await?;
+    Ok(screenshot)
+}
+
+async fn pick_color(window: WindowIdentifier) -> Result<screenshot::Color, ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = screenshot::ScreenshotProxy::new(&connection).await?;
+    let color = proxy
+        .pick_color(window, screenshot::PickColorOptions::default())
+        .await?;
+    Ok(color)
 }

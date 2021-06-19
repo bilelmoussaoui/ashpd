@@ -21,7 +21,7 @@
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!     let color = proxy
-//!         .pick_color(Default::default())
+//!         .pick_color(identifier, PickColorOptions::default())
 //!         .await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!

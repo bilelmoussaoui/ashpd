@@ -1,4 +1,4 @@
-use ashpd::{desktop::account, Response, WindowIdentifier};
+use ashpd::{desktop::account, zbus, WindowIdentifier};
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -37,7 +37,7 @@ mod imp {
                 "account.information",
                 None,
                 move |page, _action, _target| {
-                    page.get_user_information();
+                    page.fetch_user_information();
                 },
             );
         }
@@ -60,23 +60,35 @@ impl AccountPage {
         glib::Object::new(&[]).expect("Failed to create a AccountPage")
     }
 
-    pub fn get_user_information(&self) {
+    pub fn fetch_user_information(&self) {
         let ctx = glib::MainContext::default();
-        let root = self.get_root().unwrap();
+        let root = self.root().unwrap();
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::AccountPage::from_instance(&page);
             let identifier = WindowIdentifier::from_window(&root).await;
-            let reason = self_.reason.get_text();
+            let reason = self_.reason.text();
 
-            if let Ok(Response::Ok(user_info)) = account::get_user_information(identifier, &reason).await
+            if let Ok(user_info) = user_information(identifier, &reason).await
             {
                 self_.id_label.set_text(&user_info.id);
                 self_.name_label.set_text(&user_info.name);
-                let file = gio::File::new_for_uri(&user_info.image);
+                let file = gio::File::for_uri(&user_info.image);
                 let icon = gio::FileIcon::new(&file);
                 self_.avatar.set_from_gicon(&icon);
                 self_.response_group.show();
             }
         }));
     }
+}
+
+async fn user_information(
+    window: WindowIdentifier,
+    reason: &str,
+) -> Result<account::UserInfo, ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = account::AccountProxy::new(&connection).await?;
+    let info = proxy
+        .user_information(window, account::UserInfoOptions::default().reason(reason))
+        .await?;
+    Ok(info)
 }

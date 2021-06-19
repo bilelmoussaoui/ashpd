@@ -233,14 +233,14 @@ mod imp {
     }
 
     impl PaintableImpl for CameraPaintable {
-        fn get_intrinsic_height(&self, _paintable: &Self::Type) -> i32 {
+        fn intrinsic_height(&self, _paintable: &Self::Type) -> i32 {
             if let Some((_, height)) = *self.size.borrow() {
                 height as i32
             } else {
                 0
             }
         }
-        fn get_intrinsic_width(&self, _paintable: &Self::Type) -> i32 {
+        fn intrinsic_width(&self, _paintable: &Self::Type) -> i32 {
             if let Some((width, _)) = *self.size.borrow() {
                 width as i32
             } else {
@@ -317,16 +317,16 @@ impl CameraPaintable {
         convert.link(&queue2).unwrap();
         queue2.link(&self_.sink).unwrap();
 
-        let bus = pipeline.get_bus().unwrap();
+        let bus = pipeline.bus().unwrap();
         bus.add_watch_local(move |_, msg| {
             use gst::MessageView;
             match msg.view() {
                 MessageView::Error(err) => {
                     println!(
                         "Error from {:?}: {} ({:?})",
-                        err.get_src().map(|s| s.get_path_string()),
-                        err.get_error(),
-                        err.get_debug()
+                        err.src().map(|s| s.path_string()),
+                        err.error(),
+                        err.debug()
                     );
                 }
                 _ => (),

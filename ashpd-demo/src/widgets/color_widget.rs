@@ -29,7 +29,7 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             use once_cell::sync::Lazy;
             static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
-                vec![ParamSpec::boxed(
+                vec![ParamSpec::new_boxed(
                     "rgba",
                     "RGBA",
                     "Color RGBA",
@@ -40,8 +40,8 @@ mod imp {
             PROPS.as_ref()
         }
 
-        fn get_property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> glib::Value {
-            match pspec.get_name() {
+        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> glib::Value {
+            match pspec.name() {
                 "rgba" => self.rgba.borrow().to_value(),
                 _ => unimplemented!(),
             }
@@ -54,11 +54,9 @@ mod imp {
             value: &glib::Value,
             pspec: &ParamSpec,
         ) {
-            match pspec.get_name() {
+            match pspec.name() {
                 "rgba" => {
-                    self.rgba
-                        .borrow_mut()
-                        .replace(value.get().unwrap().unwrap());
+                    self.rgba.borrow_mut().replace(value.get().unwrap());
                 }
                 _ => unimplemented!(),
             }
@@ -77,8 +75,8 @@ mod imp {
                 blue: 228.0 / 255.0,
                 alpha: 1.0,
             });
-            let width = widget.get_width() as f32;
-            let height = widget.get_height() as f32;
+            let width = widget.width() as f32;
+            let height = widget.height() as f32;
             snapshot.append_color(&color, &graphene::Rect::new(0.0, 0.0, width, height));
         }
     }
