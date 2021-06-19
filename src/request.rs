@@ -185,7 +185,6 @@ impl<'a> RequestProxy<'a> {
             .destination("org.freedesktop.portal.Desktop")
             .build_async()
             .await?;
-        println!("RequestProxy created successfully");
         Ok(Self(proxy, connection.clone()))
     }
 
@@ -194,13 +193,14 @@ impl<'a> RequestProxy<'a> {
         R: DeserializeOwned + zvariant::Type + Debug,
     {
         let mut stream = self.0.receive_signal("Response").await?;
-        let message = stream.next().await.ok_or(crate::Error::NoResponse)?;
-        let body = message.body::<Response<R>>()?;
-        println!("received response {:#?}", body);
-        match body {
-            Response::Err(e) => Err(e.into()),
-            Response::Ok(r) => Ok(r),
+        while let Some(message) = stream.next().await {
+            let body = message.body::<Response<R>>()?;
+            return match body {
+                Response::Err(e) => Err(e.into()),
+                Response::Ok(r) => Ok(r),
+            };
         }
+        Err(crate::Error::NoResponse)
     }
 
     /// Closes the portal request to which this object refers and ends all
