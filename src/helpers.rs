@@ -4,20 +4,22 @@ use crate::request::{BasicResponse, RequestProxy};
 use crate::Error;
 use zvariant::OwnedValue;
 
-pub(crate) async fn call_request_method<R>(
+pub(crate) async fn call_request_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
     method_name: &str,
-    body: &(impl serde::ser::Serialize + zvariant::Type + Debug),
+    body: &B,
 ) -> Result<R, Error>
 where
     R: serde::de::DeserializeOwned + zvariant::Type + Debug,
+    B: serde::ser::Serialize + zvariant::Type + Debug,
 {
     println!(
         "calling request method {} with body {:#?}",
         method_name, body
     );
-    let message = proxy.call_method(method_name, body).await?;
-    let path: zvariant::OwnedObjectPath = message.body()?;
+    let path = proxy
+        .call::<B, zvariant::OwnedObjectPath>(method_name, body)
+        .await?;
     println!("received path {:#?}", path);
     let request = RequestProxy::new(proxy.connection(), path.into_inner()).await?;
     println!("created request {:#?}", request);
@@ -26,39 +28,40 @@ where
     Ok(response)
 }
 
-pub(crate) async fn call_basic_response_method(
+pub(crate) async fn call_basic_response_method<B>(
     proxy: &zbus::azync::Proxy<'_>,
     method_name: &str,
-    body: &(impl serde::ser::Serialize + zvariant::Type + Debug),
-) -> Result<(), Error> {
+    body: &B,
+) -> Result<(), Error>
+where
+    B: serde::ser::Serialize + zvariant::Type + Debug,
+{
     println!(
         "calling casic response method {} with body {:#?}",
         method_name, body
     );
-    let message = proxy.call_method(method_name, body).await?;
-    let path: zvariant::OwnedObjectPath = message.body()?;
-    println!("received path {:#?}", path);
+    let path = proxy
+        .call::<B, zvariant::OwnedObjectPath>(method_name, body)
+        .await?;
 
     let request = RequestProxy::new(proxy.connection(), path.into_inner()).await?;
-    println!("created request {:#?}", request);
     let response = request.receive_response::<BasicResponse>().await?;
-    println!("received response {:#?}", response);
     Ok(())
 }
 
-pub(crate) async fn call_method<R>(
+pub(crate) async fn call_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
     method_name: &str,
-    body: &(impl serde::ser::Serialize + zvariant::Type + Debug),
+    body: &B,
 ) -> Result<R, Error>
 where
     R: serde::de::DeserializeOwned + zvariant::Type,
+    B: serde::ser::Serialize + zvariant::Type + Debug,
 {
     println!("calling method {} with body {:#?}", method_name, body);
     proxy
-        .call_method(method_name, body)
-        .await?
-        .body::<R>()
+        .call::<B, R>(method_name, body)
+        .await
         .map_err(From::from)
 }
 
