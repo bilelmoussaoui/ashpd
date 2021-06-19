@@ -18,7 +18,7 @@
 //!     Ok(())
 //! }
 //! ```
-use std::os::unix::io::AsRawFd;
+use std::{fmt::Debug, os::unix::io::AsRawFd};
 
 use crate::{
     helpers::{call_method, property},
@@ -85,6 +85,7 @@ pub enum UnregisterStatus {
 /// terminates without a call to the 'UnregisterGame' method, GameMode will
 /// automatically un-register the client. This might happen with a (small)
 /// delay.
+#[derive(Debug)]
 pub struct GameModeProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> GameModeProxy<'a> {
@@ -123,8 +124,8 @@ impl<'a> GameModeProxy<'a> {
         requester: R,
     ) -> Result<GameModeStatus, Error>
     where
-        F: AsRawFd + Type + Serialize,
-        R: AsRawFd + Type + Serialize,
+        F: AsRawFd + Type + Serialize + Debug,
+        R: AsRawFd + Type + Serialize + Debug,
     {
         call_method(&self.0, "QueryStatusByPIDFd", &(target, requester)).await
     }
@@ -170,8 +171,8 @@ impl<'a> GameModeProxy<'a> {
         requester: R,
     ) -> Result<RegisterStatus, Error>
     where
-        F: AsRawFd + Type + Serialize,
-        R: AsRawFd + Type + Serialize,
+        F: AsRawFd + Type + Serialize + Debug,
+        R: AsRawFd + Type + Serialize + Debug,
     {
         call_method(&self.0, "RegisterGameByPIDFd", &(target, requester)).await
     }
@@ -216,8 +217,8 @@ impl<'a> GameModeProxy<'a> {
         requester: R,
     ) -> Result<UnregisterStatus, Error>
     where
-        F: AsRawFd + Type + Serialize,
-        R: AsRawFd + Type + Serialize,
+        F: AsRawFd + Type + Serialize + Debug,
+        R: AsRawFd + Type + Serialize + Debug,
     {
         call_method(&self.0, "UnregisterGameByPIDFd", &(target, requester)).await
     }

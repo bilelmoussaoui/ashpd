@@ -161,6 +161,7 @@ trait Flatpak {}
 /// The interface exposes some interactions with Flatpak on the host to the
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
+#[derive(Debug)]
 pub struct FlatpakProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FlatpakProxy<'a> {

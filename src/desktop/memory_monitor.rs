@@ -20,6 +20,7 @@ use futures::prelude::stream::*;
 /// The interface provides information about low system memory to sandboxed
 /// applications. It is not a portal in the strict sense, since it does not
 /// involve user interaction.
+#[derive(Debug)]
 pub struct MemoryMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> MemoryMonitorProxy<'a> {

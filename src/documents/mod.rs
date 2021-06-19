@@ -121,6 +121,7 @@ trait Documents {}
 /// The permissions that the application has for a document store entry (see
 /// `GrantPermissions()`) are reflected in the POSIX mode bits in the fuse
 /// filesystem.
+#[derive(Debug)]
 pub struct DocumentsProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> DocumentsProxy<'a> {

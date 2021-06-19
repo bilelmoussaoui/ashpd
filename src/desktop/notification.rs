@@ -235,6 +235,7 @@ impl Action {
 /// interface. Other actions are activated by sending the
 ///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the
 /// application.
+#[derive(Debug)]
 pub struct NotificationProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> NotificationProxy<'a> {

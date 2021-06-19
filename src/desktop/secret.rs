@@ -46,6 +46,7 @@ impl RetrieveOptions {
 /// The interface lets sandboxed applications retrieve a per-application secret.
 /// The secret can then be used for encrypting confidential data inside the
 /// sandbox.
+#[derive(Debug)]
 pub struct SecretProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> SecretProxy<'a> {

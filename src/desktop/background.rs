@@ -99,6 +99,7 @@ pub struct Background {
 /// The interface lets sandboxed applications request that the application
 /// is allowed to run in the background or started automatically when the user
 /// logs in.
+#[derive(Debug)]
 pub struct BackgroundProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {

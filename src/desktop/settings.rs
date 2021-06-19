@@ -73,6 +73,7 @@ impl std::fmt::Debug for Setting {
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
 /// settings.
+#[derive(Debug)]
 pub struct SettingsProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> SettingsProxy<'a> {

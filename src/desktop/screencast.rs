@@ -216,6 +216,7 @@ pub struct StreamProperties {
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.
+#[derive(Debug)]
 pub struct ScreenCastProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> ScreenCastProxy<'a> {

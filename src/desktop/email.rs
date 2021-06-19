@@ -112,6 +112,7 @@ impl EmailOptions {
 }
 
 /// The interface lets sandboxed applications request sending an email.
+#[derive(Debug)]
 pub struct EmailProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> EmailProxy<'a> {

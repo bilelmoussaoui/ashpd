@@ -32,6 +32,7 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 ///
 /// A client who started a session vanishing from the D-Bus is equivalent to
 /// closing all active sessions made by said client.
+#[derive(Debug)]
 pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> SessionProxy<'a> {
@@ -53,6 +54,7 @@ impl<'a> SessionProxy<'a> {
 
     /// Emitted when a session is closed.
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
+        println!("session got closed {}", self.0.path());
         let mut stream = self.0.receive_signal("Closed").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
         message.body::<SessionDetails>().map_err(From::from)

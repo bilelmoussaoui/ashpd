@@ -77,6 +77,7 @@ impl TransferOptions {
 /// call RetrieveFiles with the key, to obtain the list of files. The portal
 /// will take care of exporting files in the document store as necessary to make
 /// them accessible to the target.
+#[derive(Debug)]
 pub struct FileTransferProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FileTransferProxy<'a> {
