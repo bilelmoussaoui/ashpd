@@ -34,7 +34,7 @@ use crate::{
     helpers::{call_method, property},
     Error,
 };
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 

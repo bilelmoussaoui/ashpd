@@ -29,8 +29,7 @@ serde_repr = "0.1"
 strum = "0.20"
 strum_macros = "0.20"
 zbus = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main"}
-zvariant = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main", features = ["enumflags2"]}
+zvariant = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main", features = ["enumflags2"], default-features = false}
 zvariant_derive = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main"}
 
 futures = "0.3"
-futures-lite = "1.12"

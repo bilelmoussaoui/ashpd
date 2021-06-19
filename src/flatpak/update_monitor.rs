@@ -29,7 +29,7 @@
 //! }
 //! ```
 use crate::{helpers::call_method, Error, WindowIdentifier};
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};

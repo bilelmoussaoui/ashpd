@@ -26,7 +26,7 @@
 
 use std::{collections::HashMap, convert::TryFrom};
 
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;

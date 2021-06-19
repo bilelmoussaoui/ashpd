@@ -15,7 +15,7 @@
 //! ```
 
 use crate::{helpers::property, Error};
-use futures_lite::StreamExt;
+use futures::prelude::stream::*;
 
 /// The interface provides information about low system memory to sandboxed
 /// applications. It is not a portal in the strict sense, since it does not
