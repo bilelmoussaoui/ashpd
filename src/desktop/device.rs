@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! Access a [`Device`]
+//! Access a [`Device`](crate::desktop::device::Device)
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::device::{AccessDeviceOptions, Device, DeviceProxy};
@@ -8,11 +8,13 @@
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = DeviceProxy::new(&connection).await?;
-//!     proxy.access_device(6879, &[Device::Speakers], AccessDeviceOptions::default()).await?;
+//!     proxy
+//!         .access_device(6879, &[Device::Speakers], AccessDeviceOptions::default())
+//!         .await?;
 //!     Ok(())
 //! }
+//!
 //! ```
-//! [`Device`]: ./enum.Device.html
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::Signature;
@@ -24,7 +26,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
-/// Specified options for a `access_device` request.
+/// Specified options for a [`DeviceProxy::access_device`] request.
 pub struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -74,6 +76,7 @@ impl Serialize for Device {
 pub struct DeviceProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> DeviceProxy<'a> {
+    /// Create a new instance of [`DeviceProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<DeviceProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Device")
@@ -92,8 +95,6 @@ impl<'a> DeviceProxy<'a> {
     ///   made.
     /// * `devices` - A list of devices to request access to.
     /// * `options` - A [`AccessDeviceOptions`].
-    ///
-    /// [`AccessDeviceOptions`]: ./struct.AccessDeviceOptions.html
     pub async fn access_device(
         &self,
         pid: u32,

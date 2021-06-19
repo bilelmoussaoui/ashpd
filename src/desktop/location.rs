@@ -14,11 +14,13 @@
 //!
 //!     let session = proxy.create_session(options).await?;
 //!
-//!     proxy.start(
-//!         &session,
-//!         WindowIdentifier::default(),
-//!         SessionStartOptions::default(),
-//!     ).await?;
+//!     proxy
+//!         .start(
+//!             &session,
+//!             WindowIdentifier::default(),
+//!             SessionStartOptions::default(),
+//!         )
+//!         .await?;
 //!
 //!     let location = proxy.receive_location_updated().await?;
 //!
@@ -59,7 +61,7 @@ pub enum Accuracy {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a location access request.
+/// Specified options for a [`LocationProxy::create_session`] request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
     session_handle_token: Option<HandleToken>,
@@ -98,7 +100,7 @@ impl CreateSessionOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a location session start request.
+/// Specified options for a [`LocationProxy::start`] request.
 pub struct SessionStartOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -189,6 +191,7 @@ struct LocationInner {
 pub struct LocationProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> LocationProxy<'a> {
+    /// Create a new instance of [`LocationProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<LocationProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Location")
@@ -211,8 +214,6 @@ impl<'a> LocationProxy<'a> {
     /// # Arguments
     ///
     /// * `options` - A [`CreateSessionOptions`]
-    ///
-    /// [`CreateSessionOptions`]: ./struct.CreateSessionOptions.html
     pub async fn create_session(
         &self,
         options: CreateSessionOptions,
@@ -229,8 +230,6 @@ impl<'a> LocationProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A `SessionStartOptions`.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,

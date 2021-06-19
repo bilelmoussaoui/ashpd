@@ -10,13 +10,15 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = BackgroundProxy::new(&connection).await?;
 //!
-//!     let response = proxy.request_background(
-//!         WindowIdentifier::default(),
-//!         BackgroundOptions::default()
-//!             .autostart(true)
-//!             .command(&["geary"])
-//!             .reason("Automatically fetch your latest mails"),
-//!     ).await?;
+//!     let response = proxy
+//!         .request_background(
+//!             WindowIdentifier::default(),
+//!             BackgroundOptions::default()
+//!                 .autostart(true)
+//!                 .command(&["geary"])
+//!                 .reason("Automatically fetch your latest mails"),
+//!         )
+//!         .await?;
 //!
 //!     println!("{}", response.autostart);
 //!     println!("{}", response.background);
@@ -32,7 +34,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
-/// Specified options for a `request_background` request.
+/// Specified options for a [`BackgroundProxy::request_background`] request.
 pub struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -86,7 +88,7 @@ impl BackgroundOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// The response of a `request_background` request.
+/// The response of a [`BackgroundProxy::request_background`] request.
 pub struct Background {
     /// If the application is allowed to run in the background.
     pub background: bool,
@@ -100,6 +102,7 @@ pub struct Background {
 pub struct BackgroundProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
+    /// Create a new instance of [`BackgroundProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<BackgroundProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Background")
@@ -116,8 +119,6 @@ impl<'a> BackgroundProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - [`BackgroundOptions`].
-    ///
-    /// [`BackgroundOptions`]: ./struct.BackgroundOptions.html
     pub async fn request_background(
         &self,
         parent_window: WindowIdentifier,

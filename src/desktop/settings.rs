@@ -7,7 +7,9 @@
 //!
 //!     println!(
 //!         "{:#?}",
-//!         proxy.read::<String>("org.gnome.desktop.interface", "clock-format").await?
+//!         proxy
+//!             .read::<String>("org.gnome.desktop.interface", "clock-format")
+//!             .await?
 //!     );
 //!
 //!     let settings = proxy.read_all(&["org.gnome.desktop.interface"]).await?;
@@ -74,6 +76,7 @@ impl std::fmt::Debug for Setting {
 pub struct SettingsProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> SettingsProxy<'a> {
+    /// Create a new instance of [`SettingsProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<SettingsProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Settings")

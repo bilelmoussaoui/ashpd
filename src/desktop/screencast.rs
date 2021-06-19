@@ -5,8 +5,8 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screencast::{
-//!     CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions,
-//!     SourceType, StartCastOptions, Streams,
+//!     CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions, SourceType,
+//!     StartCastOptions,
 //! };
 //! use ashpd::{HandleToken, SessionProxy, WindowIdentifier};
 //! use enumflags2::BitFlags;
@@ -20,21 +20,26 @@
 //!     let session_token = HandleToken::try_from("session120").unwrap();
 //!
 //!     let session = proxy
-//!         .create_session(CreateSessionOptions::default().session_handle_token(session_token)).await?;
+//!         .create_session(CreateSessionOptions::default().session_handle_token(session_token))
+//!         .await?;
 //!
-//!     proxy.select_sources(
-//!         &session,
-//!         SelectSourcesOptions::default()
-//!             .multiple(true)
-//!             .cursor_mode(BitFlags::from(CursorMode::Metadata))
-//!             .types(SourceType::Monitor | SourceType::Window),
-//!     ).await?;
+//!     proxy
+//!         .select_sources(
+//!             &session,
+//!             SelectSourcesOptions::default()
+//!                 .multiple(true)
+//!                 .cursor_mode(BitFlags::from(CursorMode::Metadata))
+//!                 .types(SourceType::Monitor | SourceType::Window),
+//!         )
+//!         .await?;
 //!
-//!     let response = proxy.start(
-//!         &session,
-//!         WindowIdentifier::default(),
-//!         StartCastOptions::default(),
-//!     ).await?;
+//!     let response = proxy
+//!         .start(
+//!             &session,
+//!             WindowIdentifier::default(),
+//!             StartCastOptions::default(),
+//!         )
+//!         .await?;
 //!
 //!     response.streams().iter().for_each(|stream| {
 //!         println!("{}", stream.pipe_wire_node_id());
@@ -81,7 +86,7 @@ pub enum CursorMode {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a create a Screen Cast session request.
+/// Specified options for a [`ScreenCastProxy::create_session`] request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -104,7 +109,7 @@ impl CreateSessionOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a select sources request.
+/// Specified options for a [`ScreenCastProxy::select_sources`] request.
 pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -143,7 +148,7 @@ impl SelectSourcesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a start Screen Cast request.
+/// Specified options for a [`ScreenCastProxy::start`] request.
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -158,7 +163,7 @@ impl StartCastOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// A response to the create session request.
+/// A response to a [`ScreenCastProxy::create_session`] request.
 struct CreateSession {
     /// A string that will be used as the last element of the session handle.
     // TODO: investigate why this doesn't return an ObjectPath
@@ -166,7 +171,7 @@ struct CreateSession {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// A response to start the Stream Cast request.
+/// A response to a [`ScreenCastProxy::start`] request.
 pub struct Streams {
     streams: Vec<Stream>,
 }
@@ -214,6 +219,7 @@ pub struct StreamProperties {
 pub struct ScreenCastProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> ScreenCastProxy<'a> {
+    /// Create a new instance of [`ScreenCastProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenCastProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.ScreenCast")
@@ -248,8 +254,6 @@ impl<'a> ScreenCastProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub async fn open_pipe_wire_remote(
         &self,
         session: &SessionProxy<'_>,
@@ -268,9 +272,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - A `SelectSourcesOptions`.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
+    /// * `options` - A [`SelectSourcesOptions`].
     pub async fn select_sources(
         &self,
         session: &SessionProxy<'_>,
@@ -291,8 +293,6 @@ impl<'a> ScreenCastProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - A `StartScreenCastOptions`.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,

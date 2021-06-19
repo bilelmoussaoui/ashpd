@@ -2,8 +2,8 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{
-//!     CreateRemoteOptions, DeviceType, KeyState, RemoteDesktopProxy,
-//!     SelectDevicesOptions, StartRemoteOptions,
+//!     CreateRemoteOptions, DeviceType, KeyState, RemoteDesktopProxy, SelectDevicesOptions,
+//!     StartRemoteOptions,
 //! };
 //! use ashpd::{HandleToken, WindowIdentifier};
 //! use std::collections::HashMap;
@@ -13,24 +13,33 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!
-//!     let session = proxy.create_session(
-//!         CreateRemoteOptions::default()
-//!             .session_handle_token(HandleToken::try_from("token").unwrap()),
-//!     ).await?;
+//!     let session = proxy
+//!         .create_session(
+//!             CreateRemoteOptions::default()
+//!                 .session_handle_token(HandleToken::try_from("token").unwrap()),
+//!         )
+//!         .await?;
 //!
-//!     proxy.select_devices(&session,
-//!         SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
-//!     ).await?;
+//!     proxy
+//!         .select_devices(
+//!             &session,
+//!             SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
+//!         )
+//!         .await?;
 //!
-//!     let devices = proxy.start(
-//!         &session,
-//!         WindowIdentifier::default(),
-//!         StartRemoteOptions::default(),
-//!     ).await?;
+//!     let devices = proxy
+//!         .start(
+//!             &session,
+//!             WindowIdentifier::default(),
+//!             StartRemoteOptions::default(),
+//!         )
+//!         .await?;
 //!     println!("{:#?}", devices);
 //!
 //!     // 13 for Enter key code
-//!     proxy.notify_keyboard_keycode(&session, HashMap::new(), 13, KeyState::Pressed).await?;
+//!     proxy
+//!         .notify_keyboard_keycode(&session, HashMap::new(), 13, KeyState::Pressed)
+//!         .await?;
 //!
 //!     Ok(())
 //! }
@@ -80,7 +89,7 @@ pub enum Axis {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a create a remote session request.
+/// Specified options for a [`RemoteDesktopProxy::create_session`] request.
 pub struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -103,14 +112,14 @@ impl CreateRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
-/// A response to a `create_session` request.
+/// A response to a [`RemoteDesktopProxy::create_session`] request.
 struct CreateSession {
     /// A string that will be used as the last element of the session handle.
     pub(crate) session_handle: OwnedObjectPath,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a select devices request.
+/// Specified options for a [`RemoteDesktopProxy::select_devices`] request.
 pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -133,7 +142,7 @@ impl SelectDevicesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options on a start remote desktop request.
+/// Specified options for a [`RemoteDesktopProxy::start`] request.
 pub struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -148,7 +157,7 @@ impl StartRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// A response to a select device request.
+/// A response to a [`RemoteDesktopProxy::select_devices`] request.
 pub struct SelectedDevices {
     /// The selected devices.
     pub devices: BitFlags<DeviceType>,
@@ -158,6 +167,7 @@ pub struct SelectedDevices {
 pub struct RemoteDesktopProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> RemoteDesktopProxy<'a> {
+    /// Create a new instance of [`RemoteDesktopProxy`].
     pub async fn new(
         connection: &zbus::azync::Connection,
     ) -> Result<RemoteDesktopProxy<'a>, Error> {
@@ -177,8 +187,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `options` - A [`CreateRemoteOptions`].
-    ///
-    /// [`CreateRemoteOptions`]: ./struct.CreateRemoteOptions.html
     pub async fn create_session(
         &self,
         options: CreateRemoteOptions,
@@ -194,9 +202,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `options` - [`SelectDevicesOptions`].
-    ///
-    /// [`SelectDevicesOptions`]: ../struct.SelectDevicesOptions.html
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub async fn select_devices(
         &self,
         session: &SessionProxy<'_>,
@@ -216,9 +221,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - The application window identifier.
     /// * `options` - [`StartRemoteOptions`].
-    ///
-    /// [`StartRemoteOptions`]: ../struct.StartRemoteOptions.html
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
@@ -238,8 +240,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `options` - ?
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_keyboard_keycode(
@@ -268,8 +268,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_keyboard_keysym(
         &self,
@@ -297,8 +295,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `options` - ?
     /// * `slot` - Touch slot where touch point appeared.
     ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_touch_up(
         &self,
@@ -324,8 +320,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
     /// * `y` - Touch down y coordinate.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_touch_down(
@@ -361,8 +355,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `x` - Touch motion x coordinate.
     /// * `y` - Touch motion y coordinate.
     ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_touch_motion(
         &self,
@@ -393,8 +385,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
     ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_motion_absolute(
         &self,
@@ -422,8 +412,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `options` - ?
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_motion(
@@ -454,8 +442,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
-    ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_button(
         &self,
@@ -481,8 +467,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `options` - ?
     /// * `axis` - The axis that was scrolled.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_axis_discrete(
@@ -514,8 +498,6 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `options` - ?
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
-    ///
-    /// [`SessionProxy`]: ../../session/struct.SessionProxy.html
     ///
     /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_axis(

@@ -13,15 +13,13 @@ use serde::{ser::Serializer, Serialize};
 /// xdg-foreign protocol.
 ///
 /// For other windowing systems, or if you don't have a suitable handle, just
-/// use the `Default` implementation.
+/// use the [`Default`] implementation.
 ///
 /// Please **note** that the `From<gtk3::Window>` implementation is x11 only for
 /// now.
 ///
 /// We would love merge requests that adds other `From<T> for WindowIdentifier`
 /// implementations for other toolkits.
-///
-/// [`WindowIdentifier`]: ./struct.WindowIdentifier.html
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
     #[cfg(feature = "feature_gtk4")]
@@ -109,7 +107,7 @@ impl From<gtk3::Window> for WindowIdentifier {
 
 impl WindowIdentifier {
     #[cfg(feature = "feature_gtk4")]
-    /// Creates a `WindowIdentifier` from a [`gtk::Root`](https://gnome.pages.gitlab.gnome.org/gtk/gtk4/iface.Root.html).
+    /// Creates a [`WindowIdentifier`] from a [`gtk::Root`](https://gnome.pages.gitlab.gnome.org/gtk/gtk4/iface.Root.html).
     /// `gtk::Root` is the interface implemented by all the widgets that can act
     /// as a top level widget.
     ///

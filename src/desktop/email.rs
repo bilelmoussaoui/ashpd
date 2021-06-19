@@ -4,7 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::email::{EmailOptions, EmailProxy};
-//! use ashpd::{WindowIdentifier};
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -13,14 +13,16 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = EmailProxy::new(&connection).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy.compose_email(
-//!         WindowIdentifier::default(),
-//!         EmailOptions::default()
-//!             .address("test@gmail.com")
-//!             .subject("email subject")
-//!             .body("the pre-filled email body")
-//!             .attach(Fd::from(file.as_raw_fd())),
-//!     ).await?;
+//!     proxy
+//!         .compose_email(
+//!             WindowIdentifier::default(),
+//!             EmailOptions::default()
+//!                 .address("test@gmail.com")
+//!                 .subject("email subject")
+//!                 .body("the pre-filled email body")
+//!                 .attach(Fd::from(file.as_raw_fd())),
+//!         )
+//!         .await?;
 //!
 //!     Ok(())
 //! }
@@ -34,7 +36,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
-/// Specified options for a compose email request.
+/// Specified options for a [`EmailProxy::compose_email`] request.
 pub struct EmailOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: Option<HandleToken>,
@@ -113,6 +115,7 @@ impl EmailOptions {
 pub struct EmailProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> EmailProxy<'a> {
+    /// Create a new instance of [`EmailProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<EmailProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Email")
@@ -132,8 +135,6 @@ impl<'a> EmailProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `options` - [`EmailOptions`].
-    ///
-    /// [`EmailOptions`]: ./struct.EmailOptions.html
     pub async fn compose_email(
         &self,
         parent_window: WindowIdentifier,

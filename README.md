@@ -9,17 +9,22 @@ It provides an alternative to the C library [https://github.com/flatpak/libporta
 
 ## Examples
 
-Ask the compositor to pick a color 
+Ask the compositor to pick a color
 
 ```rust,no_run
-use ashpd::{desktop::screenshot, Response, WindowIdentifier};
-use zbus::fdo::Result;
+use ashpd::{
+    desktop::screenshot::{PickColorOptions, ScreenshotProxy},
+    WindowIdentifier,
+};
 
-async fn run() -> Result<()> {
+async fn run() -> Result<(), ashpd::Error> {
     let identifier = WindowIdentifier::default();
-    if let Response::Ok(color) = screenshot::pick_color(identifier).await? {
-        println!("({}, {}, {})", color.red(), color.green(), color.blue());
-    }
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = ScreenshotProxy::new(&connection).await?;
+    let color = proxy
+        .pick_color(identifier, PickColorOptions::default())
+        .await?;
+    println!("({}, {}, {})", color.red(), color.green(), color.blue());
     Ok(())
 }
 ```
@@ -27,21 +32,26 @@ async fn run() -> Result<()> {
 Start a PipeWire stream from the user's camera
 
 ```rust,no_run
-use ashpd::{desktop::camera, Response};
-use zbus::fdo::Result;
-async fn run() -> Result<()> {
-    if let Response::Ok(pipewire_fd) = camera::stream().await? {
-        // Use the PipeWire file descriptor with GStreamer for example
+use std::collections::HashMap;
+use ashpd::desktop::camera::{CameraAccessOptions, CameraProxy};
+
+pub async fn run() -> Result<(), ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = CameraProxy::new(&connection).await?;
+    if proxy.is_camera_present().await? {
+        proxy.access_camera(CameraAccessOptions::default()).await?;
+        let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+        // pass the remote fd to GStreamer for example
     }
     Ok(())
 }
 ```
 
 ## Optional features
+
 | Feature | Description |
 | ---     | ----------- |
 | feature_gtk3 | Implement `From<Color>` for `gdk3::RGBA` |
 |  | Implement `From<gtk3::Window>` for `WindowIdentifier` |
 | feature_gtk4 | Implement `From<Color>` for `gdk4::RGBA` |
 |  | Provides `WindowIdentifier::from_window` |
-

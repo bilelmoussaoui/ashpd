@@ -1,11 +1,14 @@
 //! # Examples
 //!
-//! Sets a wallpaper from a file:
+//! ## Sets a wallpaper from a file:
 //!
 //! ```rust,no_run
+//! use ashpd::{
+//!     desktop::wallpaper::{SetOn, WallpaperOptions, WallpaperProxy},
+//!     WindowIdentifier,
+//! };
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
-//! use ashpd::{desktop::wallpaper::{SetOn, WallpaperProxy, WallpaperOptions}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
@@ -27,10 +30,13 @@
 //! }
 //! ```
 //!
-//! Sets a wallpaper from a URI:
+//! ## Sets a wallpaper from a URI:
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::wallpaper::{SetOn, WallpaperProxy, WallpaperOptions}, WindowIdentifier};
+//! use ashpd::{
+//!     desktop::wallpaper::{SetOn, WallpaperOptions, WallpaperProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
@@ -89,7 +95,7 @@ impl Serialize for SetOn {
 }
 
 #[derive(SerializeDict, DeserializeDict, Clone, TypeDict, Debug, Default)]
-/// Specified options for a set wallpaper request.
+/// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a [`WallpaperProxy::set_wallpaper_uri`] request.
 pub struct WallpaperOptions {
     /// Whether to show a preview of the picture
     #[zvariant(rename = "show-preview")]
@@ -120,6 +126,7 @@ impl WallpaperOptions {
 pub struct WallpaperProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> WallpaperProxy<'a> {
+    /// Create a new instance of [`WallpaperProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<WallpaperProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Wallpaper")
@@ -138,8 +145,6 @@ impl<'a> WallpaperProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `fd` - The wallpaper file description.
     /// * `options` - A [`WallpaperOptions`].
-    ///
-    /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
     pub async fn set_wallpaper_file<F>(
         &self,
         parent_window: WindowIdentifier,
@@ -164,8 +169,6 @@ impl<'a> WallpaperProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `uri` - The wallpaper URI.
     /// * `options` - A [`WallpaperOptions`].
-    ///
-    /// [`WallpaperOptions`]: ./struct.WallpaperOptions.html
     pub async fn set_wallpaper_uri(
         &self,
         parent_window: WindowIdentifier,

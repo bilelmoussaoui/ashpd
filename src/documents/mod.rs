@@ -1,4 +1,3 @@
-//!
 //! # Examples
 //!
 //! ```rust,no_run
@@ -17,12 +16,16 @@
 //!         }
 //!     }
 //!
-//!     proxy.grant_permissions(
-//!         "f2ee988d",
-//!         "org.mozilla.firefox",
-//!         &[Permission::GrantPermissions],
-//!     ).await?;
-//!     proxy.revoke_permissions("f2ee988d", "org.mozilla.firefox", &[Permission::Write]).await?;
+//!     proxy
+//!         .grant_permissions(
+//!             "f2ee988d",
+//!             "org.mozilla.firefox",
+//!             &[Permission::GrantPermissions],
+//!         )
+//!         .await?;
+//!     proxy
+//!         .revoke_permissions("f2ee988d", "org.mozilla.firefox", &[Permission::Write])
+//!         .await?;
 //!
 //!     proxy.delete("f2ee988d").await?;
 //!
@@ -58,7 +61,7 @@ pub enum Flags {
     ExportDirectory = 8,
 }
 
-/// A `HashMap` mapping application IDs to the permissions for that application
+/// A [`HashMap`] mapping application IDs to the permissions for that application
 pub type Permissions = HashMap<String, Vec<Permission>>;
 
 #[derive(Debug, Clone, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq)]
@@ -121,6 +124,7 @@ trait Documents {}
 pub struct DocumentsProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> DocumentsProxy<'a> {
+    /// Create a new instance of [`DocumentsProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<DocumentsProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Documents")
@@ -163,7 +167,7 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `o_path_fds` - Open file descriptors for the files to export.
-    /// * `flags` - A `Flags`.
+    /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
     pub async fn add_full(
@@ -219,7 +223,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// * `o_path_fd` - Open file descriptor for the parent directory.
     /// * `filename` - The basename for the file.
-    /// * `flags` - A `Flags`.
+    /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
     pub async fn add_named_full(
@@ -289,7 +293,7 @@ impl<'a> DocumentsProxy<'a> {
     /// Lists documents in the document store for an application (or for all
     /// applications).
     ///
-    /// Returns a `HashMap` mapping document IDs to their filesystem path on the
+    /// Returns a [`HashMap`] mapping document IDs to their filesystem path on the
     /// host system
     ///
     /// # Arguments

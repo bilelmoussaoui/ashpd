@@ -23,6 +23,7 @@ use futures_lite::StreamExt;
 pub struct MemoryMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> MemoryMonitorProxy<'a> {
+    /// Create a new instance of [`MemoryMonitorProxy`].
     pub async fn new(
         connection: &zbus::azync::Connection,
     ) -> Result<MemoryMonitorProxy<'a>, Error> {

@@ -10,16 +10,18 @@
 //!     let proxy = NotificationProxy::new(&connection).await?;
 //!
 //!     let notification_id = "org.gnome.design.Contrast";
-//!     proxy.add_notification(
-//!         notification_id,
-//!         Notification::new("Contrast")
-//!             .default_action("open")
-//!             .default_action_target(Value::U32(100).into())
-//!             .body("color copied to clipboard")
-//!             .priority(Priority::High)
-//!             .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-//!             .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
-//!     ).await?;
+//!     proxy
+//!         .add_notification(
+//!             notification_id,
+//!             Notification::new("Contrast")
+//!                 .default_action("open")
+//!                 .default_action_target(Value::U32(100).into())
+//!                 .body("color copied to clipboard")
+//!                 .priority(Priority::High)
+//!                 .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
+//!                 .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
+//!         )
+//!         .await?;
 //!
 //!     let action = proxy.receive_action_invoked().await?;
 //!     match action.name() {
@@ -236,6 +238,7 @@ impl Action {
 pub struct NotificationProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> NotificationProxy<'a> {
+    /// Create a new instance of [`NotificationProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<NotificationProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Notification")
