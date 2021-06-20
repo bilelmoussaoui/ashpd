@@ -14,7 +14,7 @@
 //! }
 //! ```
 
-use crate::{helpers::property, Error};
+use crate::Error;
 use futures::prelude::stream::*;
 
 use super::{DESTINATION, PATH};
@@ -53,10 +53,5 @@ impl<'a> MemoryMonitorProxy<'a> {
         let mut stream = self.0.receive_signal("LowMemoryWarning").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
         message.body::<i32>().map_err(From::from)
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

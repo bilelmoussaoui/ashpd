@@ -36,7 +36,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::{flatpak::update_monitor::UpdateMonitorProxy, helpers::property};
+use crate::flatpak::update_monitor::UpdateMonitorProxy;
 use crate::{helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -265,12 +265,10 @@ impl<'a> FlatpakProxy<'a> {
 
     /// Flags marking what optional features are available.
     pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
-        property(&self.0, "supports").await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
+        self.inner()
+            .get_property::<BitFlags<SupportsFlags>>("supports")
+            .await
+            .map_err(From::from)
     }
 }
 

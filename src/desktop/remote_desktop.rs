@@ -28,7 +28,7 @@ use zvariant::{OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method, property},
+    helpers::{call_basic_response_method, call_method, call_request_method},
     Error, WindowIdentifier,
 };
 
@@ -478,11 +478,9 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// Available source types.
     #[doc(alias = "AvailableDeviceTypes")]
     pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
-        property(&self.0, "AvailableDeviceTypes").await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
+        self.inner()
+            .get_property::<BitFlags<DeviceType>>("AvailableDeviceTypes")
+            .await
+            .map_err(From::from)
     }
 }

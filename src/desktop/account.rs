@@ -21,10 +21,7 @@
 //! }
 //! ```
 
-use crate::{
-    helpers::{call_request_method, property},
-    Error, WindowIdentifier,
-};
+use crate::{helpers::call_request_method, Error, WindowIdentifier};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -120,10 +117,5 @@ impl<'a> AccountProxy<'a> {
             &(window, &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

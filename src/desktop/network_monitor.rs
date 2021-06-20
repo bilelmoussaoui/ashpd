@@ -21,10 +21,7 @@
 //!     Ok(())
 //! }
 //! ```
-use crate::{
-    helpers::{call_method, property},
-    Error,
-};
+use crate::{helpers::call_method, Error};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -136,10 +133,5 @@ impl<'a> NetworkMonitorProxy<'a> {
     #[doc(alias = "get_status")]
     pub async fn status(&self) -> Result<NetworkStatus, Error> {
         call_method(&self.0, "GetStatus", &()).await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

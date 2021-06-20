@@ -47,7 +47,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
-    helpers::{call_basic_response_method, property},
+    helpers::call_basic_response_method,
     Error, WindowIdentifier,
 };
 
@@ -189,10 +189,5 @@ impl<'a> WallpaperProxy<'a> {
             &(parent_window, uri, &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

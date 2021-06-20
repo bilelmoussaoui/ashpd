@@ -29,7 +29,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, property},
+    helpers::{call_basic_response_method, call_method},
     Error, WindowIdentifier,
 };
 
@@ -242,10 +242,5 @@ impl<'a> LocationProxy<'a> {
             &(session, parent_window, &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

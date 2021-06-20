@@ -42,7 +42,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method, property},
+    helpers::{call_basic_response_method, call_method, call_request_method},
     Error, WindowIdentifier,
 };
 
@@ -224,10 +224,5 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "QueryEndResponse")]
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
         call_method(&self.0, "QueryEndResponse", &(session)).await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

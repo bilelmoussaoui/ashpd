@@ -19,10 +19,7 @@ use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{
-    helpers::{call_basic_response_method, property},
-    Error,
-};
+use crate::{helpers::call_basic_response_method, Error};
 
 use super::{HandleToken, DESTINATION, PATH};
 
@@ -104,10 +101,5 @@ impl<'a> DeviceProxy<'a> {
             &(pid, devices, &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

@@ -20,10 +20,7 @@
 //! ```
 use std::{fmt::Debug, os::unix::io::AsRawFd};
 
-use crate::{
-    helpers::{call_method, property},
-    Error,
-};
+use crate::{helpers::call_method, Error};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Type;
@@ -247,10 +244,5 @@ impl<'a> GameModeProxy<'a> {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
         }
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

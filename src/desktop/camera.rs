@@ -21,7 +21,7 @@ use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
-    helpers::{call_basic_response_method, call_method, property},
+    helpers::{call_basic_response_method, call_method},
     Error,
 };
 
@@ -79,11 +79,9 @@ impl<'a> CameraProxy<'a> {
     /// A boolean stating whether there is any cameras available.
     #[doc(alias = "IsCameraPresent")]
     pub async fn is_camera_present(&self) -> Result<bool, Error> {
-        property(&self.0, "IsCameraPresent").await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
+        self.0
+            .get_property::<bool>("IsCameraPresent")
+            .await
+            .map_err(From::from)
     }
 }

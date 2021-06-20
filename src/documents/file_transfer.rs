@@ -30,10 +30,7 @@
 //! ```
 use std::collections::HashMap;
 
-use crate::{
-    helpers::{call_method, property},
-    Error,
-};
+use crate::{helpers::call_method, Error};
 use futures::prelude::stream::*;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -174,10 +171,5 @@ impl<'a> FileTransferProxy<'a> {
         let mut stream = self.0.receive_signal("TransferClosed").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
         message.body::<String>().map_err(From::from)
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

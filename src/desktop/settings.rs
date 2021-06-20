@@ -31,10 +31,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-use crate::{
-    helpers::{call_method, property},
-    Error,
-};
+use crate::{helpers::call_method, Error};
 
 use super::{DESTINATION, PATH};
 
@@ -134,10 +131,5 @@ impl<'a> SettingsProxy<'a> {
         let mut stream = self.0.receive_signal("SettingChanged").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
         message.body::<Setting>().map_err(From::from)
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

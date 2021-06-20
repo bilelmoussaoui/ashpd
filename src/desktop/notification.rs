@@ -40,10 +40,7 @@
 //! }
 //! ```
 
-use crate::{
-    helpers::{call_method, property},
-    Error,
-};
+use crate::{helpers::call_method, Error};
 use futures::prelude::stream::*;
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
@@ -293,10 +290,5 @@ impl<'a> NotificationProxy<'a> {
     #[doc(alias = "RemoveNotification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
         call_method(&self.0, "RemoveNotification", &(id)).await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

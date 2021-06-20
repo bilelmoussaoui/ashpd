@@ -4,8 +4,7 @@ use crate::desktop::{
 };
 use crate::Error;
 use futures::TryFutureExt;
-use std::{convert::TryFrom, fmt::Debug};
-use zvariant::OwnedValue;
+use std::fmt::Debug;
 
 pub(crate) async fn call_request_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
@@ -53,19 +52,6 @@ where
 {
     proxy
         .call::<B, R>(method_name, body)
-        .await
-        .map_err(From::from)
-}
-
-pub(crate) async fn property<R>(
-    proxy: &zbus::azync::Proxy<'_>,
-    property_name: &str,
-) -> Result<R, Error>
-where
-    R: serde::de::DeserializeOwned + zvariant::Type + TryFrom<OwnedValue>,
-{
-    proxy
-        .get_property::<R>(property_name)
         .await
         .map_err(From::from)
 }

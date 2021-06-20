@@ -44,7 +44,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_request_method, property},
+    helpers::{call_basic_response_method, call_request_method},
     Error, WindowIdentifier,
 };
 
@@ -589,10 +589,5 @@ impl<'a> PrintProxy<'a> {
             &(parent_window, title, fd.as_raw_fd(), &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

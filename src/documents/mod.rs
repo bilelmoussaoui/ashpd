@@ -38,10 +38,7 @@ pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use crate::{
-    helpers::{call_method, property},
-    Error,
-};
+use crate::{helpers::call_method, Error};
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -354,11 +351,6 @@ impl<'a> DocumentsProxy<'a> {
         permissions: &[Permission],
     ) -> Result<(), Error> {
         call_method(&self.0, "RevokePermissions", &(doc_id, app_id, permissions)).await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }
 
