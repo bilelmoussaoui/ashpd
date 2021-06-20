@@ -93,9 +93,10 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_request_method, property},
-    Error, HandleToken, WindowIdentifier,
+    Error, WindowIdentifier,
 };
 
 #[derive(Serialize, Deserialize, Type, Clone, Debug)]
@@ -402,8 +403,8 @@ impl<'a> FileChooserProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FileChooserProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.FileChooser")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

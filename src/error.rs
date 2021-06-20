@@ -1,4 +1,4 @@
-use crate::request::ResponseError;
+use crate::desktop::request::ResponseError;
 
 #[derive(Debug)]
 /// The error type for ashpd.

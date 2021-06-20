@@ -48,8 +48,10 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method, property},
-    Error, HandleToken, SessionProxy, WindowIdentifier,
+    Error, WindowIdentifier,
 };
+
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -169,8 +171,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ) -> Result<RemoteDesktopProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.RemoteDesktop")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

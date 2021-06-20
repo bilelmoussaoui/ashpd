@@ -10,10 +10,7 @@
 //!
 //! Ask the compositor to pick a color
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::screenshot::{PickColorOptions, ScreenshotProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::{desktop::screenshot::{PickColorOptions, ScreenshotProxy}, WindowIdentifier};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let identifier = WindowIdentifier::default();
@@ -66,14 +63,12 @@ pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;
 mod error;
+mod window_identifier;
+pub use self::window_identifier::WindowIdentifier;
 /// Spawn commands outside the sandbox or monitor if the running application has
 /// received an update & install it.
 pub mod flatpak;
-mod handle_token;
 mod helpers;
-mod request;
-mod session;
-mod window_identifier;
 pub use enumflags2;
 pub use zbus;
 pub use zvariant;
@@ -86,7 +81,3 @@ pub fn is_sandboxed() -> bool {
 }
 
 pub use self::error::Error;
-pub use self::handle_token::HandleToken;
-pub use self::request::ResponseError;
-pub use self::session::SessionProxy;
-pub use self::window_identifier::WindowIdentifier;

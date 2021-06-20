@@ -1,8 +1,8 @@
-use crate::Error;
-use crate::{
+use crate::desktop::{
     request::{BasicResponse, RequestProxy},
     HandleToken,
 };
+use crate::Error;
 use futures::TryFutureExt;
 use std::{convert::TryFrom, fmt::Debug};
 use zvariant::OwnedValue;

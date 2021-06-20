@@ -50,6 +50,8 @@ use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{OwnedValue, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+use super::{DESTINATION, PATH};
+
 #[derive(
     Debug, Clone, Deserialize, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq,
 )]
@@ -243,8 +245,8 @@ impl<'a> NotificationProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<NotificationProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Notification")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

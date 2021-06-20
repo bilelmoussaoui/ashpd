@@ -13,7 +13,7 @@ use std::{
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-use crate::{helpers::call_method, HandleToken};
+use crate::{desktop::HandleToken, helpers::call_method};
 
 /// A typical response returned by the [`RequestProxy::receive_response`] signal of a
 /// [`RequestProxy`].
@@ -182,7 +182,7 @@ impl<'a> RequestProxy<'a> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Request")
             .path(path)?
-            .destination("org.freedesktop.portal.Desktop")
+            .destination(crate::desktop::DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy, connection.clone()))

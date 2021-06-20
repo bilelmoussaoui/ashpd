@@ -17,6 +17,8 @@
 use crate::{helpers::property, Error};
 use futures::prelude::stream::*;
 
+use super::{DESTINATION, PATH};
+
 /// The interface provides information about low system memory to sandboxed
 /// applications. It is not a portal in the strict sense, since it does not
 /// involve user interaction.
@@ -30,8 +32,8 @@ impl<'a> MemoryMonitorProxy<'a> {
     ) -> Result<MemoryMonitorProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.MemoryMonitor")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

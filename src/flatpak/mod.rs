@@ -25,6 +25,9 @@
 //!     Ok(())
 //! }
 //! ```
+pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
+pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
+
 use std::collections::HashMap;
 
 use enumflags2::BitFlags;
@@ -169,8 +172,8 @@ impl<'a> FlatpakProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FlatpakProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Flatpak")
-            .path("/org/freedesktop/portal/Flatpak")?
-            .destination("org.freedesktop.portal.Flatpak")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

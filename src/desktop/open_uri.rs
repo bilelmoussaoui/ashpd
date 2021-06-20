@@ -60,8 +60,10 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     helpers::{call_basic_response_method, property},
-    Error, HandleToken, WindowIdentifier,
+    Error, WindowIdentifier,
 };
+
+use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
@@ -124,8 +126,8 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<OpenURIProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.OpenURI")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

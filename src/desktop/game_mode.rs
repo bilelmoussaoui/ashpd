@@ -29,6 +29,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Type;
 use zvariant_derive::Type;
 
+use super::{DESTINATION, PATH};
+
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
 /// The status of the game mode.
@@ -93,8 +95,8 @@ impl<'a> GameModeProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<GameModeProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.GameMode")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

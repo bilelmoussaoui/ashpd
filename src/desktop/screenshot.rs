@@ -46,9 +46,10 @@
 
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
+use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_request_method, property},
-    Error, HandleToken, WindowIdentifier,
+    Error, WindowIdentifier,
 };
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
@@ -173,8 +174,8 @@ impl<'a> ScreenshotProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenshotProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Screenshot")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

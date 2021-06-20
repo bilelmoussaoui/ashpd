@@ -32,8 +32,10 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     helpers::{call_basic_response_method, property},
-    Error, HandleToken, WindowIdentifier,
+    Error, WindowIdentifier,
 };
+
+use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
@@ -120,8 +122,8 @@ impl<'a> EmailProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<EmailProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Email")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

@@ -35,9 +35,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, property},
-    Error, HandleToken, SessionProxy, WindowIdentifier,
+    Error, WindowIdentifier,
 };
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
@@ -194,8 +195,8 @@ impl<'a> LocationProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<LocationProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Location")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

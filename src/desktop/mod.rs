@@ -1,3 +1,13 @@
+pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Desktop";
+pub(crate) const PATH: &str = "/org/freedesktop/portal/desktop";
+
+mod handle_token;
+pub(crate) mod request;
+mod session;
+pub use self::handle_token::HandleToken;
+pub use self::request::ResponseError;
+pub use self::session::SessionProxy;
+
 /// Request access to the current logged user information such as the id, name
 /// or their avatar uri.
 pub mod account;
