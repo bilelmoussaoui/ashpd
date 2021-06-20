@@ -8,21 +8,10 @@ use zvariant_derive::Type;
 /// A handle token is a DBus Object Path element, specified in the
 /// `RequestProxy` or [`SessionProxy`](crate::desktop::SessionProxy) object path following this format
 /// `/org/freedesktop/portal/desktop/request/SENDER/TOKEN` where sender is the
-/// caller's unique name and token is the HandleToken.
+/// caller's unique name and token is the [`HandleToken`].
 ///
 /// A valid object path element must only contain the ASCII characters
-/// "[A-Z][a-z][0-9]_"
-///
-/// ```
-/// use ashpd::desktop::HandleToken;
-/// use std::convert::TryFrom;
-///
-/// assert_eq!(HandleToken::try_from("token").is_ok(), true);
-///
-/// assert_eq!(HandleToken::try_from("/test").is_ok(), false);
-///
-/// assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
-/// ```
+/// `[A-Z][a-z][0-9]_`
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
 pub struct HandleToken(String);
 
@@ -70,5 +59,20 @@ impl TryFrom<String> for HandleToken {
     type Error = HandleInvalidCharacter;
     fn try_from(value: String) -> Result<Self, Self::Error> {
         HandleToken::try_from(value.as_str())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::HandleToken;
+    use std::convert::TryFrom;
+
+    #[test]
+    fn handle_token() {
+        assert_eq!(HandleToken::try_from("token").is_ok(), true);
+
+        assert_eq!(HandleToken::try_from("/test").is_ok(), false);
+
+        assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
     }
 }

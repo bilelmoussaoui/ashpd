@@ -3,27 +3,19 @@
 //! ## Open a file
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::open_uri::{OpenFileOptions, OpenURIProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::open_uri::OpenURIProxy;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     let identifier = WindowIdentifier::default();
 //!
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
 //!     proxy
-//!         .open_file(
-//!             identifier,
-//!             Fd::from(file.as_raw_fd()),
-//!             OpenFileOptions::default().writeable(false).ask(true),
-//!         )
+//!         .open_file(Default::default(), Fd::from(file.as_raw_fd()), false, true)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -32,10 +24,7 @@
 //! ## Open a file from a URI
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::open_uri::{OpenFileOptions, OpenURIProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::open_uri::OpenURIProxy;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -43,9 +32,10 @@
 //!
 //!     proxy
 //!         .open_uri(
-//!             WindowIdentifier::default(),
+//!             Default::default(),
 //!             "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!             OpenFileOptions::default().writeable(false).ask(true),
+//!             false,
+//!             true,
 //!         )
 //!         .await?;
 //!
@@ -67,22 +57,14 @@ use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
-pub struct OpenDirOptions {
+struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
 }
 
-impl OpenDirOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_file`] or [`OpenURIProxy::open_uri`] request.
-pub struct OpenFileOptions {
+struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Whether to allow the chosen application to write to the file.
@@ -96,12 +78,6 @@ pub struct OpenFileOptions {
 }
 
 impl OpenFileOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Whether the file should be writeable or not.
     pub fn writeable(mut self, writeable: bool) -> Self {
         self.writeable = Some(writeable);
@@ -139,16 +115,15 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
-    /// * `options` - [`OpenDirOptions`].
     pub async fn open_directory<F>(
         &self,
         parent_window: WindowIdentifier,
         directory: F,
-        options: OpenDirOptions,
     ) -> Result<(), Error>
     where
         F: AsRawFd + Serialize + Type,
     {
+        let options = OpenDirOptions::default();
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -164,16 +139,19 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `file` - File descriptor for the file to open.
-    /// * `options` - [`OpenFileOptions`].
+    /// * `writeable` - Whether the file should be writeable or not.
+    /// * `ask` - Whether to always ask the user which application to use or not.
     pub async fn open_file<F>(
         &self,
         parent_window: WindowIdentifier,
         file: F,
-        options: OpenFileOptions,
+        writeable: bool,
+        ask: bool,
     ) -> Result<(), Error>
     where
         F: AsRawFd + Serialize + Type,
     {
+        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -189,13 +167,16 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `uri` - The uri to open.
-    /// * `options` - [`OpenFileOptions`].
+    /// * `writeable` - Whether the file should be writeable or not.
+    /// * `ask` - Whether to always ask the user which application to use or not.
     pub async fn open_uri(
         &self,
         parent_window: WindowIdentifier,
         uri: &str,
-        options: OpenFileOptions,
+        writeable: bool,
+        ask: bool,
     ) -> Result<(), Error> {
+        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             &self.0,
             &options.handle_token,

@@ -3,28 +3,18 @@
 //! ## Sets a wallpaper from a file:
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::wallpaper::{SetOn, WallpaperOptions, WallpaperProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let identifier = WindowIdentifier::default();
 //!     let wallpaper =
 //!         File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
 //!
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy
-//!         .set_wallpaper_file(
-//!             identifier,
-//!             wallpaper.as_raw_fd(),
-//!             WallpaperOptions::default()
-//!                 .show_preview(true)
-//!                 .set_on(SetOn::Both),
-//!         )
+//!         .set_wallpaper_file(Default::default(), wallpaper.as_raw_fd(), true, SetOn::Both)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -33,22 +23,17 @@
 //! ## Sets a wallpaper from a URI:
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::wallpaper::{SetOn, WallpaperOptions, WallpaperProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy
 //!         .set_wallpaper_uri(
-//!             identifier,
+//!             Default::default(),
 //!             "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!             WallpaperOptions::default()
-//!                 .show_preview(true)
-//!                 .set_on(SetOn::Both),
+//!             true,
+//!             SetOn::Both,
 //!         )
 //!         .await?;
 //!     Ok(())
@@ -97,7 +82,7 @@ impl Serialize for SetOn {
 
 #[derive(SerializeDict, DeserializeDict, Clone, TypeDict, Debug, Default)]
 /// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a [`WallpaperProxy::set_wallpaper_uri`] request.
-pub struct WallpaperOptions {
+struct WallpaperOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Whether to show a preview of the picture
@@ -109,12 +94,6 @@ pub struct WallpaperOptions {
 }
 
 impl WallpaperOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Whether to show a preview of the picture.
     /// **Note** that the portal may decide to show a preview even if this
     /// option is not set.
@@ -129,7 +108,6 @@ impl WallpaperOptions {
         self
     }
 }
-
 /// The interface lets sandboxed applications set the user's desktop background
 /// picture.
 #[derive(Debug)]
@@ -154,16 +132,21 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `fd` - The wallpaper file description.
-    /// * `options` - A [`WallpaperOptions`].
+    /// * `show_preview` - Whether to show a preview of the picture.
+    /// * `set_on` - Where to set the wallpaper on.
     pub async fn set_wallpaper_file<F>(
         &self,
         parent_window: WindowIdentifier,
         fd: F,
-        options: WallpaperOptions,
+        show_preview: bool,
+        set_on: SetOn,
     ) -> Result<(), Error>
     where
         F: AsRawFd + Type + Serialize,
     {
+        let options = WallpaperOptions::default()
+            .show_preview(show_preview)
+            .set_on(set_on);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -179,13 +162,18 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `uri` - The wallpaper URI.
-    /// * `options` - A [`WallpaperOptions`].
+    /// * `show_preview` - Whether to show a preview of the picture.
+    /// * `set_on` - Where to set the wallpaper on.
     pub async fn set_wallpaper_uri(
         &self,
         parent_window: WindowIdentifier,
         uri: &str,
-        options: WallpaperOptions,
+        show_preview: bool,
+        set_on: SetOn,
     ) -> Result<(), Error> {
+        let options = WallpaperOptions::default()
+            .show_preview(show_preview)
+            .set_on(set_on);
         call_basic_response_method(
             &self.0,
             &options.handle_token,

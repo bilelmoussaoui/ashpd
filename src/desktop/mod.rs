@@ -4,7 +4,7 @@ pub(crate) const PATH: &str = "/org/freedesktop/portal/desktop";
 mod handle_token;
 pub(crate) mod request;
 mod session;
-pub use self::handle_token::HandleToken;
+pub(crate) use self::handle_token::HandleToken;
 pub use self::request::ResponseError;
 pub use self::session::SessionProxy;
 

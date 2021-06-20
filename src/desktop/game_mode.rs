@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::game_mode::{GameModeProxy, GameModeStatus};
+//! use ashpd::desktop::game_mode::GameModeProxy;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -34,7 +34,7 @@ use super::{DESTINATION, PATH};
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
 /// The status of the game mode.
-pub enum GameModeStatus {
+pub enum Status {
     /// GameMode is inactive.
     Inactive = 0,
     /// GameMode is active.
@@ -47,19 +47,9 @@ pub enum GameModeStatus {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
-/// The status of a register game mode request.
-pub enum RegisterStatus {
-    /// If the game was successfully registered.
-    Success = 0,
-    /// If the request was rejected by GameMode.
-    Rejected = -1,
-}
-
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(i32)]
-/// The status of an un-register game mode request.
-pub enum UnregisterStatus {
-    /// If the game was successfully registered.
+/// The status of a (un-)register game mode request.
+enum RegisterStatus {
+    /// If the game was successfully (un-)registered.
     Success = 0,
     /// If the request was rejected by GameMode.
     Rejected = -1,
@@ -68,7 +58,7 @@ pub enum UnregisterStatus {
 /// The interface lets sandboxed applications access GameMode from within the
 /// sandbox.
 ///
-/// It is analogous to the com.feralinteractive.GameMode interface and will
+/// It is analogous to the `com.feralinteractive.GameMode` interface and will
 /// proxy request there, but with additional permission checking and pid
 /// mapping. The latter is necessary in the case that sandbox has pid namespace
 /// isolation enabled. See the man page for pid_namespaces(7) for more details,
@@ -83,8 +73,8 @@ pub enum UnregisterStatus {
 /// this is necessary.
 ///
 /// Note: GameMode will monitor active clients, i.e. games and other programs
-/// that have successfully called 'RegisterGame'. In the event that a client
-/// terminates without a call to the 'UnregisterGame' method, GameMode will
+/// that have successfully called [`GameModeProxy::register_game`]. In the event that a client
+/// terminates without a call to the [`GameModeProxy::unregister_game`] method, GameMode will
 /// automatically un-register the client. This might happen with a (small)
 /// delay.
 #[derive(Debug)]
@@ -109,7 +99,7 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `pid` - Process id to query the GameMode status of.
-    pub async fn query_status(&self, pid: i32) -> Result<GameModeStatus, Error> {
+    pub async fn query_status(&self, pid: i32) -> Result<Status, Error> {
         call_method(&self.0, "QueryStatus", &(pid)).await
     }
 
@@ -124,7 +114,7 @@ impl<'a> GameModeProxy<'a> {
         &self,
         target: F,
         requester: R,
-    ) -> Result<GameModeStatus, Error>
+    ) -> Result<Status, Error>
     where
         F: AsRawFd + Type + Serialize + Debug,
         R: AsRawFd + Type + Serialize + Debug,
@@ -138,11 +128,7 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `target` - Process id to query the GameMode status of.
     /// * `requester` - Process id of the process requesting the information.
-    pub async fn query_status_by_pid(
-        &self,
-        target: i32,
-        requester: i32,
-    ) -> Result<GameModeStatus, Error> {
+    pub async fn query_status_by_pid(&self, target: i32, requester: i32) -> Result<Status, Error> {
         call_method(&self.0, "QueryStatusByPid", &(target, requester)).await
     }
 
@@ -151,13 +137,17 @@ impl<'a> GameModeProxy<'a> {
     /// the pid will be translated to the respective host pid. See the general
     /// introduction for details. If the GameMode has already been requested
     /// for pid before, this call will fail, i.e. result will be
-    /// `RegisterStatus::Rejected`
+    /// [`Error::RegisterGameRejected`]
     ///
     /// # Arguments
     ///
     /// * `pid` - Process id of the game to register.
-    pub async fn register_game(&self, pid: i32) -> Result<RegisterStatus, Error> {
-        call_method(&self.0, "RegisterGame", &(pid)).await
+    pub async fn register_game(&self, pid: i32) -> Result<(), Error> {
+        let status = call_method(&self.0, "RegisterGame", &(pid)).await?;
+        match status {
+            RegisterStatus::Success => Ok(()),
+            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+        }
     }
 
     /// Register a game with GameMode.
@@ -167,16 +157,16 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Process file descriptor of the game to register.
     /// * `requester` - Process file descriptor of the process requesting the
     ///   registration.
-    pub async fn register_game_by_pidfd<F, R>(
-        &self,
-        target: F,
-        requester: R,
-    ) -> Result<RegisterStatus, Error>
+    pub async fn register_game_by_pidfd<F, R>(&self, target: F, requester: R) -> Result<(), Error>
     where
         F: AsRawFd + Type + Serialize + Debug,
         R: AsRawFd + Type + Serialize + Debug,
     {
-        call_method(&self.0, "RegisterGameByPIDFd", &(target, requester)).await
+        let status = call_method(&self.0, "RegisterGameByPIDFd", &(target, requester)).await?;
+        match status {
+            RegisterStatus::Success => Ok(()),
+            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+        }
     }
 
     /// Register a game with GameMode.
@@ -185,12 +175,12 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `target` - Process id of the game to register.
     /// * `requester` - Process id of the process requesting the registration.
-    pub async fn register_game_by_pid(
-        &self,
-        target: i32,
-        requester: i32,
-    ) -> Result<RegisterStatus, Error> {
-        call_method(&self.0, "RegisterGameByPid", &(target, requester)).await
+    pub async fn register_game_by_pid(&self, target: i32, requester: i32) -> Result<(), Error> {
+        let status = call_method(&self.0, "RegisterGameByPid", &(target, requester)).await?;
+        match status {
+            RegisterStatus::Success => Ok(()),
+            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+        }
     }
 
     /// Un-register a game from GameMode.
@@ -202,8 +192,12 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// `pid` - Process id of the game to un-register.
-    pub async fn unregister_game(&self, pid: i32) -> Result<UnregisterStatus, Error> {
-        call_method(&self.0, "UnregisterGame", &(pid)).await
+    pub async fn unregister_game(&self, pid: i32) -> Result<(), Error> {
+        let status = call_method(&self.0, "UnregisterGame", &(pid)).await?;
+        match status {
+            RegisterStatus::Success => Ok(()),
+            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+        }
     }
 
     /// Un-register a game from GameMode.
@@ -213,16 +207,16 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Pid file descriptor of the game to un-register.
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   un-registration.
-    pub async fn unregister_game_by_pidfd<F, R>(
-        &self,
-        target: F,
-        requester: R,
-    ) -> Result<UnregisterStatus, Error>
+    pub async fn unregister_game_by_pidfd<F, R>(&self, target: F, requester: R) -> Result<(), Error>
     where
         F: AsRawFd + Type + Serialize + Debug,
         R: AsRawFd + Type + Serialize + Debug,
     {
-        call_method(&self.0, "UnregisterGameByPIDFd", &(target, requester)).await
+        let status = call_method(&self.0, "UnregisterGameByPIDFd", &(target, requester)).await?;
+        match status {
+            RegisterStatus::Success => Ok(()),
+            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+        }
     }
 
     /// Un-register a game from GameMode.
@@ -232,12 +226,12 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Process id of the game to un-register.
     /// * `requester` - Process id of the process requesting the
     ///   un-registration.
-    pub async fn unregister_game_by_pid(
-        &self,
-        target: i32,
-        requester: i32,
-    ) -> Result<UnregisterStatus, Error> {
-        call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await
+    pub async fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<(), Error> {
+        let status = call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await?;
+        match status {
+            RegisterStatus::Success => Ok(()),
+            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+        }
     }
 
     /// The version of this DBus interface.

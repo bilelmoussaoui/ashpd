@@ -3,21 +3,15 @@
 //! ## Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::screenshot::{ScreenshotOptions, ScreenshotProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::screenshot::ScreenshotProxy;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let screenshot = proxy
-//!         .screenshot(identifier, ScreenshotOptions::default().interactive(true))
-//!         .await?;
-//!     println!("URI: {}", screenshot.uri);
+//!     let screenshot = proxy.screenshot(Default::default(), true, true).await?;
 //!
+//!     println!("URI: {}", screenshot.uri());
 //!     Ok(())
 //! }
 //! ```
@@ -25,19 +19,13 @@
 //! ## Picking a color
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::screenshot::{PickColorOptions, ScreenshotProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::screenshot::ScreenshotProxy;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let color = proxy
-//!         .pick_color(identifier, PickColorOptions::default())
-//!         .await?;
+//!     let color = proxy.pick_color(Default::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -54,7 +42,7 @@ use crate::{
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::screenshot`] request.
-pub struct ScreenshotOptions {
+struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Whether the dialog should be modal.
@@ -65,12 +53,6 @@ pub struct ScreenshotOptions {
 }
 
 impl ScreenshotOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
@@ -89,22 +71,21 @@ impl ScreenshotOptions {
 /// A response to a [`ScreenshotProxy::screenshot`] request.
 pub struct Screenshot {
     /// The screenshot uri.
-    pub uri: String,
+    uri: String,
+}
+
+impl Screenshot {
+    /// The screenshot uri.
+    pub fn uri(&self) -> &str {
+        &self.uri
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::pick_color`] request.
-pub struct PickColorOptions {
+struct PickColorOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-}
-
-impl PickColorOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
 }
 
 #[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, TypeDict)]
@@ -186,12 +167,8 @@ impl<'a> ScreenshotProxy<'a> {
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window.
-    /// * `options` - A [`PickColorOptions`].
-    pub async fn pick_color(
-        &self,
-        parent_window: WindowIdentifier,
-        options: PickColorOptions,
-    ) -> Result<Color, Error> {
+    pub async fn pick_color(&self, parent_window: WindowIdentifier) -> Result<Color, Error> {
+        let options = PickColorOptions::default();
         call_request_method(
             &self.0,
             &options.handle_token,
@@ -206,12 +183,17 @@ impl<'a> ScreenshotProxy<'a> {
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window.
-    /// * `options` - A [`ScreenshotOptions`].
+    /// * `interactive` - Sets whether the dialog should offer customization before a screenshot or not.
+    /// * `modal` - Sets whether the dialog should be a modal.
     pub async fn screenshot(
         &self,
         parent_window: WindowIdentifier,
-        options: ScreenshotOptions,
+        interactive: bool,
+        modal: bool,
     ) -> Result<Screenshot, Error> {
+        let options = ScreenshotOptions::default()
+            .interactive(interactive)
+            .modal(modal);
         call_request_method(
             &self.0,
             &options.handle_token,

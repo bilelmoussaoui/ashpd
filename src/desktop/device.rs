@@ -1,16 +1,15 @@
+//! **Note** this portal doesn't work for sandboxed applications.
 //! # Examples
 //!
 //! Access a [`Device`](crate::desktop::device::Device)
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::device::{AccessDeviceOptions, Device, DeviceProxy};
+//! use ashpd::desktop::device::{Device, DeviceProxy};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = DeviceProxy::new(&connection).await?;
-//!     proxy
-//!         .access_device(6879, &[Device::Speakers], AccessDeviceOptions::default())
-//!         .await?;
+//!     proxy.access_device(6879, &[Device::Speakers]).await?;
 //!     Ok(())
 //! }
 //!
@@ -29,17 +28,9 @@ use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
-pub struct AccessDeviceOptions {
+struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-}
-
-impl AccessDeviceOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
 }
 
 #[derive(
@@ -97,13 +88,8 @@ impl<'a> DeviceProxy<'a> {
     /// * `pid` - The pid of the application on whose behalf the request is
     ///   made.
     /// * `devices` - A list of devices to request access to.
-    /// * `options` - A [`AccessDeviceOptions`].
-    pub async fn access_device(
-        &self,
-        pid: u32,
-        devices: &[Device],
-        options: AccessDeviceOptions,
-    ) -> Result<(), Error> {
+    pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<(), Error> {
+        let options = AccessDeviceOptions::default();
         call_basic_response_method(
             &self.0,
             &options.handle_token,

@@ -18,7 +18,7 @@ use crate::{desktop::HandleToken, helpers::call_method};
 /// A typical response returned by the [`RequestProxy::receive_response`] signal of a
 /// [`RequestProxy`].
 #[derive(Debug)]
-pub(crate) enum Response<T>
+enum Response<T>
 where
     T: DeserializeOwned + zvariant::Type,
 {

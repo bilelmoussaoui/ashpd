@@ -10,16 +10,14 @@
 //!
 //! Ask the compositor to pick a color
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot::{PickColorOptions, ScreenshotProxy}, WindowIdentifier};
+//! use ashpd::desktop::screenshot::ScreenshotProxy;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let color = proxy
-//!         .pick_color(identifier, PickColorOptions::default())
-//!         .await?;
+//!     let color = proxy.pick_color(Default::default()).await?;
+//!
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -28,16 +26,15 @@
 //!
 //! Start a PipeWire stream from the user's camera
 //! ```rust,no_run
-//! use std::collections::HashMap;
-//! use ashpd::desktop::camera::{CameraAccessOptions, CameraProxy};
+//! use ashpd::desktop::camera::CameraProxy;
 //!
 //! pub async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = CameraProxy::new(&connection).await?;
 //!     if proxy.is_camera_present().await? {
-//!         proxy.access_camera(CameraAccessOptions::default()).await?;
+//!         proxy.access_camera().await?;
 //!
-//!         let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+//!         let remote_fd = proxy.open_pipe_wire_remote().await?;
 //!         // pass the remote fd to GStreamer for example
 //!     }
 //!     Ok(())

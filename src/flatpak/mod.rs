@@ -157,9 +157,7 @@ impl SpawnOptions {
 /// Specified options for a [`FlatpakProxy::create_update_monitor`] request.
 ///
 /// Currently there are no possible options yet.
-pub struct CreateMonitorOptions {}
-
-trait Flatpak {}
+struct CreateMonitorOptions {}
 
 /// The interface exposes some interactions with Flatpak on the host to the
 /// sandbox. For example, it allows you to restart the applications or start a
@@ -182,10 +180,8 @@ impl<'a> FlatpakProxy<'a> {
     /// Creates an update monitor object that will emit signals
     /// when an update for the caller becomes available, and can be used to
     /// install it.
-    pub async fn create_update_monitor(
-        &self,
-        options: CreateMonitorOptions,
-    ) -> Result<UpdateMonitorProxy<'a>, Error> {
+    pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
+        let options = CreateMonitorOptions::default();
         let path: zvariant::OwnedObjectPath = self
             .0
             .call_method("CreateUpdateMonitor", &(options))

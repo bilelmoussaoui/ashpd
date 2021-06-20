@@ -3,7 +3,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::background::{Background, BackgroundOptions, BackgroundProxy};
+//! use ashpd::desktop::background::{Background, BackgroundProxy};
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
@@ -13,15 +13,15 @@
 //!     let response = proxy
 //!         .request_background(
 //!             WindowIdentifier::default(),
-//!             BackgroundOptions::default()
-//!                 .autostart(true)
-//!                 .command(&["geary"])
-//!                 .reason("Automatically fetch your latest mails"),
+//!             "Automatically fetch your latest mails",
+//!             true,
+//!             Some(&["geary"]),
+//!             false
 //!         )
 //!         .await?;
 //!
-//!     println!("{}", response.autostart);
-//!     println!("{}", response.background);
+//!     println!("{}", response.auto_start());
+//!     println!("{}", response.run_in_background());
 //!
 //!     Ok(())
 //! }
@@ -37,7 +37,7 @@ use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
-pub struct BackgroundOptions {
+struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// User-visible reason for the request.
@@ -58,12 +58,6 @@ impl BackgroundOptions {
     /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
-        self
-    }
-
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
         self
     }
 
@@ -93,9 +87,21 @@ impl BackgroundOptions {
 /// The response of a [`BackgroundProxy::request_background`] request.
 pub struct Background {
     /// If the application is allowed to run in the background.
-    pub background: bool,
+    background: bool,
     /// If the application is will be auto-started.
-    pub autostart: bool,
+    autostart: bool,
+}
+
+impl Background {
+    /// If the application is allowed to run in the background.
+    pub fn run_in_background(&self) -> bool {
+        self.background
+    }
+
+    /// If the application will be auto-started.
+    pub fn auto_start(&self) -> bool {
+        self.autostart
+    }
 }
 
 /// The interface lets sandboxed applications request that the application
@@ -121,12 +127,26 @@ impl<'a> BackgroundProxy<'a> {
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window.
-    /// * `options` - [`BackgroundOptions`].
+
+    /// * `reason` - Sets a user-visible reason for the request.
+    /// * `auto_start` - Sets whether to auto start the application or not.
+    /// * `dbus_activatable` - Sets whether the application is dbus activatable.
+    /// * `command_line` - Specifies the command line to execute.
+    ///     If this is not specified, the Exec line from the desktop file will be
+    ///     used.
     pub async fn request_background(
         &self,
         parent_window: WindowIdentifier,
-        options: BackgroundOptions,
+        reason: &str,
+        auto_start: bool,
+        command_line: Option<&[&str]>,
+        dbus_activatable: bool,
     ) -> Result<Background, Error> {
+        let options = BackgroundOptions::default()
+            .reason(reason)
+            .autostart(auto_start)
+            .dbus_activatable(dbus_activatable)
+            .command(&command_line.map(|t| t.to_vec()).unwrap_or_default());
         call_request_method(
             &self.0,
             &options.handle_token,
