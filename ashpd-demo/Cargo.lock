@@ -20,14 +20,14 @@ checksum = "15af2628f6890fe2609a3b91bef4c83450512802e59489f9c1cb1fa5df064a61"
 [[package]]
 name = "ashpd"
 version = "0.1.0"
-source = "git+https://github.com/bilelmoussaoui/ashpd?branch=bilelmoussaoui/bump-to-new-zbus#5a45954a2127522596feac4b5b78f90a5f1ff381"
+source = "git+https://github.com/bilelmoussaoui/ashpd?branch=bilelmoussaoui/bump-to-new-zbus#27726e92c8b7dfb16d1c9d7910abde27b2643b0f"
 dependencies = [
  "enumflags2",
  "futures",
- "futures-lite",
  "gdk4-wayland",
  "gdk4-x11",
  "gtk4",
+ "rand",
  "serde",
  "serde_repr",
  "strum",
@@ -691,7 +691,7 @@ dependencies = [
 [[package]]
 name = "gstreamer"
 version = "0.17.0"
-source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#6a5f17ae065d55bda64f3f749e43fd9b8b5be9d6"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#a94d84e7805196364b4fc584205ce4882f3acd81"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -713,7 +713,7 @@ dependencies = [
 [[package]]
 name = "gstreamer-base"
 version = "0.17.0"
-source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#6a5f17ae065d55bda64f3f749e43fd9b8b5be9d6"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#a94d84e7805196364b4fc584205ce4882f3acd81"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -726,7 +726,7 @@ dependencies = [
 [[package]]
 name = "gstreamer-base-sys"
 version = "0.17.0"
-source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#6a5f17ae065d55bda64f3f749e43fd9b8b5be9d6"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#a94d84e7805196364b4fc584205ce4882f3acd81"
 dependencies = [
  "glib-sys",
  "gobject-sys",
@@ -738,7 +738,7 @@ dependencies = [
 [[package]]
 name = "gstreamer-sys"
 version = "0.17.0"
-source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#6a5f17ae065d55bda64f3f749e43fd9b8b5be9d6"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#a94d84e7805196364b4fc584205ce4882f3acd81"
 dependencies = [
  "glib-sys",
  "gobject-sys",
@@ -749,7 +749,7 @@ dependencies = [
 [[package]]
 name = "gstreamer-video"
 version = "0.17.0"
-source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#6a5f17ae065d55bda64f3f749e43fd9b8b5be9d6"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#a94d84e7805196364b4fc584205ce4882f3acd81"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -765,7 +765,7 @@ dependencies = [
 [[package]]
 name = "gstreamer-video-sys"
 version = "0.17.0"
-source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#6a5f17ae065d55bda64f3f749e43fd9b8b5be9d6"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gstreamer-rs#a94d84e7805196364b4fc584205ce4882f3acd81"
 dependencies = [
  "glib-sys",
  "gobject-sys",

@@ -100,7 +100,7 @@ impl ScreenshotPage {
 
             if let Ok(screenshot) = take_screenshot(identifier, interactive, modal).await
             {
-                let file = gio::File::for_uri(&screenshot.uri);
+                let file = gio::File::for_uri(&screenshot.uri());
                 self_.screenshot_photo.set_file(Some(&file));
                 self_.revealer.show(); // Revealer has a weird issue where it still
                                  // takes space even if it's child is hidden
@@ -118,22 +118,13 @@ async fn take_screenshot(
 ) -> Result<screenshot::Screenshot, ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = screenshot::ScreenshotProxy::new(&connection).await?;
-    let screenshot = proxy
-        .screenshot(
-            window,
-            screenshot::ScreenshotOptions::default()
-                .interactive(interactive)
-                .modal(modal),
-        )
-        .await?;
+    let screenshot = proxy.screenshot(window, interactive, modal).await?;
     Ok(screenshot)
 }
 
 async fn pick_color(window: WindowIdentifier) -> Result<screenshot::Color, ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = screenshot::ScreenshotProxy::new(&connection).await?;
-    let color = proxy
-        .pick_color(window, screenshot::PickColorOptions::default())
-        .await?;
+    let color = proxy.pick_color(window).await?;
     Ok(color)
 }

@@ -1,4 +1,4 @@
-use ashpd::desktop::email::{EmailOptions, EmailProxy};
+use ashpd::desktop::email::{Email, EmailProxy};
 use ashpd::{zbus, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
@@ -67,9 +67,9 @@ impl EmailPage {
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(email) = compose_email(
+            let _ = compose_email(
                 identifier,
-                EmailOptions::default()
+                Email::default()
                     .subject(&subject)
                     .addresses(
                         &addresses
@@ -81,18 +81,14 @@ impl EmailPage {
                     .cc(&cc.split(",").filter(|e| e.len() > 1).collect::<Vec<_>>())
                     .body(&body),
             )
-            .await
-            {
-                //TODO: handle the response
-                println!("{:#?}", email);
-            }
+            .await;
         });
     }
 }
 
 pub async fn compose_email(
     window_identifier: WindowIdentifier,
-    email: EmailOptions,
+    email: Email,
 ) -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = EmailProxy::new(&connection).await?;
