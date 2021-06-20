@@ -137,6 +137,7 @@ impl<'a> EmailProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `email` - An [`Email`].
+    #[doc(alias = "ComposeEmail")]
     pub async fn compose_email(
         &self,
         parent_window: WindowIdentifier,

@@ -180,6 +180,7 @@ impl<'a> FlatpakProxy<'a> {
     /// Creates an update monitor object that will emit signals
     /// when an update for the caller becomes available, and can be used to
     /// install it.
+    #[doc(alias = "CreateUpdateMonitor")]
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let path: zvariant::OwnedObjectPath = self
@@ -191,6 +192,7 @@ impl<'a> FlatpakProxy<'a> {
     }
 
     /// Emitted when a process starts by [`FlatpakProxy::spawn`].
+    #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
         let mut stream = self.0.receive_signal("SpawnStarted").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -198,6 +200,7 @@ impl<'a> FlatpakProxy<'a> {
     }
 
     /// Emitted when a process started by [`FlatpakProxy::spawn`] exits.
+    #[doc(alias = "SpawnExited")]
     pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
         let mut stream = self.0.receive_signal("SpawnExited").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -219,6 +222,7 @@ impl<'a> FlatpakProxy<'a> {
     ///   process.
     /// * `flags`
     /// * `options` - A [`SpawnOptions`].
+    #[doc(alias = "Spawn")]
     pub async fn spawn(
         &self,
         cwd_path: &str,
@@ -243,6 +247,7 @@ impl<'a> FlatpakProxy<'a> {
     /// * `pid` - The PID of the process to send the signal to.
     /// * `signal` - The signal to send.
     /// * `to_process_group` - Whether to send the signal to the process group.
+    #[doc(alias = "SpawnSignal")]
     pub async fn spawn_signal(
         &self,
         pid: u32,

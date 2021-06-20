@@ -206,6 +206,7 @@ impl<'a> RequestProxy<'a> {
         &self.0
     }
 
+    #[doc(alias = "Response")]
     pub async fn receive_response<R>(&self) -> Result<R, crate::Error>
     where
         R: DeserializeOwned + zvariant::Type + Debug,
@@ -222,6 +223,7 @@ impl<'a> RequestProxy<'a> {
     /// related user interaction (dialogs, etc). A Response signal will not
     /// be emitted in this case.
     #[allow(dead_code)]
+    #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), crate::Error> {
         call_method(&self.0, "Close", &()).await
     }

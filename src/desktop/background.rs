@@ -134,6 +134,7 @@ impl<'a> BackgroundProxy<'a> {
     /// * `command_line` - Specifies the command line to execute.
     ///     If this is not specified, the Exec line from the desktop file will be
     ///     used.
+    #[doc(alias = "RequestBackground")]
     pub async fn request_background(
         &self,
         parent_window: WindowIdentifier,

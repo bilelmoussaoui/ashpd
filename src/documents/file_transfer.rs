@@ -104,6 +104,7 @@ impl<'a> FileTransferProxy<'a> {
     /// * `fds` - A list of file descriptors of the files to register.
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
+    #[doc(alias = "AddFiles")]
     pub async fn add_files(
         &self,
         key: &str,
@@ -125,6 +126,7 @@ impl<'a> FileTransferProxy<'a> {
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
     /// * `options` - ?
     /// FIXME: figure out the options we can take here
+    #[doc(alias = "RetrieveFiles")]
     pub async fn retrieve_files(
         &self,
         key: &str,
@@ -139,6 +141,7 @@ impl<'a> FileTransferProxy<'a> {
     /// # Returns
     ///
     /// a key that can be passed to [`FileTransferProxy::retrieve_files`] to obtain the files.
+    #[doc(alias = "StartTransfer")]
     pub async fn start_transfer(&self, options: TransferOptions) -> Result<String, Error> {
         call_method(&self.0, "StartTransfer", &(options)).await
     }
@@ -150,6 +153,7 @@ impl<'a> FileTransferProxy<'a> {
     /// # Arguments
     ///
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
+    #[doc(alias = "StopTransfer")]
     pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
         call_method(&self.0, "StopTransfer", &(key)).await
     }
@@ -159,6 +163,7 @@ impl<'a> FileTransferProxy<'a> {
     /// # Returns
     ///
     /// * The key returned by [`FileTransferProxy::start_transfer`]
+    #[doc(alias = "TransferClosed")]
     pub async fn transfer_closed(&self) -> Result<String, Error> {
         let mut stream = self.0.receive_signal("TransferClosed").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;

@@ -10,13 +10,13 @@
 //!
 //!     println!("{}", proxy.can_reach("www.google.com", 80).await?);
 //!
-//!     println!("{}", proxy.get_available().await?);
+//!     println!("{}", proxy.is_available().await?);
 //!
-//!     println!("{:#?}", proxy.get_connectivity().await?);
+//!     println!("{:#?}", proxy.connectivity().await?);
 //!
-//!     println!("{}", proxy.get_metered().await?);
+//!     println!("{}", proxy.is_metered().await?);
 //!
-//!     println!("{:#?}", proxy.get_status().await?);
+//!     println!("{:#?}", proxy.status().await?);
 //!
 //!     Ok(())
 //! }
@@ -95,6 +95,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// * `hostname` - The hostname to reach.
     /// * `port` - The port to reach.
+    #[doc(alias = "CanReach")]
     pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
         call_method(&self.0, "CanReach", &(hostname, port)).await
     }
@@ -102,24 +103,32 @@ impl<'a> NetworkMonitorProxy<'a> {
     /// Returns whether the network is considered available.
     /// That is, whether the system as a default route for at least one of IPv4
     /// or IPv6.
-    pub async fn get_available(&self) -> Result<bool, Error> {
+    #[doc(alias = "GetAvailable")]
+    #[doc(alias = "get_available")]
+    pub async fn is_available(&self) -> Result<bool, Error> {
         call_method(&self.0, "GetAvailable", &()).await
     }
 
     /// Returns more detailed information about the host's network connectivity
-    pub async fn get_connectivity(&self) -> Result<Connectivity, Error> {
+    #[doc(alias = "GetConnectivity")]
+    #[doc(alias = "get_connectivity")]
+    pub async fn connectivity(&self) -> Result<Connectivity, Error> {
         call_method(&self.0, "GetConnectivity", &()).await
     }
 
     /// Returns whether the network is considered metered.
     /// That is, whether the system as traffic flowing through the default
     /// connection that is subject to limitations by service providers.
-    pub async fn get_metered(&self) -> Result<bool, Error> {
+    #[doc(alias = "GetMetered")]
+    #[doc(alias = "get_metered")]
+    pub async fn is_metered(&self) -> Result<bool, Error> {
         call_method(&self.0, "GetMetered", &()).await
     }
 
     /// Returns the three values all at once.
-    pub async fn get_status(&self) -> Result<NetworkStatus, Error> {
+    #[doc(alias = "GetStatus")]
+    #[doc(alias = "get_status")]
+    pub async fn status(&self) -> Result<NetworkStatus, Error> {
         call_method(&self.0, "GetStatus", &()).await
     }
 

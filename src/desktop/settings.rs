@@ -101,6 +101,7 @@ impl<'a> SettingsProxy<'a> {
     /// If `namespaces` is an empty array or contains an empty string it matches
     /// all. Globing is supported but only for trailing sections, e.g.
     /// "org.example.*".
+    #[doc(alias = "ReadAll")]
     pub async fn read_all(&self, namespaces: &[&str]) -> Result<HashMap<String, Namespace>, Error> {
         call_method(&self.0, "ReadAll", &(namespaces)).await
     }
@@ -113,6 +114,7 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// * `namespace` - Namespace to look up key in.
     /// * `key` - The key to get.
+    #[doc(alias = "Read")]
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
         T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type,
@@ -121,6 +123,7 @@ impl<'a> SettingsProxy<'a> {
     }
 
     /// Signal emitted when a setting changes.
+    #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<Setting, Error> {
         let mut stream = self.0.receive_signal("SettingChanged").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;

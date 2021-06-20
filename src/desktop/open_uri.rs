@@ -115,6 +115,7 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `parent_window` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
+    #[doc(alias = "OpenDirectory")]
     pub async fn open_directory<F>(
         &self,
         parent_window: WindowIdentifier,
@@ -141,6 +142,7 @@ impl<'a> OpenURIProxy<'a> {
     /// * `file` - File descriptor for the file to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
+    #[doc(alias = "OpenFile")]
     pub async fn open_file<F>(
         &self,
         parent_window: WindowIdentifier,
@@ -169,6 +171,7 @@ impl<'a> OpenURIProxy<'a> {
     /// * `uri` - The uri to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
+    #[doc(alias = "OpenURI")]
     pub async fn open_uri(
         &self,
         parent_window: WindowIdentifier,

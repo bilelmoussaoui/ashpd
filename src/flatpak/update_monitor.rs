@@ -102,6 +102,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     }
 
     /// A signal received when there's progress during the application update.
+    #[doc(alias = "Progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
         let mut stream = self.0.receive_signal("Progress").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -109,6 +110,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     }
 
     /// A signal received when there's an application update.
+    #[doc(alias = "UpdateAvailable")]
     pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
         let mut stream = self.0.receive_signal("UpdateAvailable").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -119,12 +121,14 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// **Note** that updates are only allowed if the new version
     /// has the same permissions (or less) than the currently installed version.
+    #[doc(alias = "Update")]
     pub async fn update(&self, parent_window: WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
         call_method(&self.0, "Update", &(parent_window, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.
+    #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await
     }

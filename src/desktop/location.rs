@@ -176,6 +176,7 @@ impl<'a> LocationProxy<'a> {
     }
 
     /// Signal emitted when the user location is updated.
+    #[doc(alias = "LocationUpdated")]
     pub async fn receive_location_updated(&self) -> Result<Location, Error> {
         let mut stream = self.0.receive_signal("LocationUpdated").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -189,6 +190,7 @@ impl<'a> LocationProxy<'a> {
     /// * `distance_threshold` - Sets the distance threshold in meters, default to `0`.
     /// * `time_threshold` - Sets the time threshold in seconds, default to `0`.
     /// * `accuracy` - Sets the location accuracy, default to [`Accuracy::Exact`].
+    #[doc(alias = "CreateSession")]
     pub async fn create_session(
         &self,
         distance_threshold: Option<u32>,
@@ -220,6 +222,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - Identifier for the application window.
+    #[doc(alias = "Start")]
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,

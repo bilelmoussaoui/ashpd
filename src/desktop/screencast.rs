@@ -189,6 +189,7 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Create a screen cast session.
+    #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateSessionOptions::default();
         let (proxy, session) = futures::try_join!(
@@ -214,6 +215,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
+    #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(&self, session: &SessionProxy<'_>) -> Result<Fd, Error> {
         // FIXME: figure out the options we can take here
         let options: HashMap<&str, Value<'_>> = HashMap::new();
@@ -233,6 +235,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast stream.
     /// * `types` - Sets the types of content to record.
     /// * `multiple`- Sets whether to allow selecting multiple sources.
+    #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
         session: &SessionProxy<'_>,
@@ -264,7 +267,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - Identifier for the application window.
-    /// * `options` - A `StartScreenCastOptions`.
+    #[doc(alias = "Start")]
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
@@ -282,11 +285,13 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Available cursor mode.
+    #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
         property(&self.0, "AvailableCursorModes").await
     }
 
     /// Available source types.
+    #[doc(alias = "AvailableSourceTypes")]
     pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
         property(&self.0, "AvailableSourceTypes").await
     }
