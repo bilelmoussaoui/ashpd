@@ -3,21 +3,14 @@
 //! How to inhibit logout/user switch
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::inhibit::{
-//!     InhibitFlags, InhibitOptions, InhibitProxy, SessionState,
-//! };
-//! use ashpd::WindowIdentifier;
+//! use ashpd::desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState};
 //! use std::{thread, time};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = InhibitProxy::new(&connection).await?;
-//!     let session = proxy
-//!         .create_monitor(
-//!             WindowIdentifier::default(),
-//!             Default::default(),
-//!         )
-//!         .await?;
+//!
+//!     let session = proxy.create_monitor(Default::default()).await?;
 //!
 //!     let state = proxy.receive_state_changed().await?;
 //!     match state.session_state() {
@@ -25,9 +18,9 @@
 //!         SessionState::QueryEnd => {
 //!             proxy
 //!                 .inhibit(
-//!                     WindowIdentifier::default(),
+//!                     Default::default(),
 //!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
-//!                     InhibitOptions::default().reason("please save the opened project first"),
+//!                     "please save the opened project first",
 //!                 )
 //!                 .await?;
 //!             thread::sleep(time::Duration::from_secs(1));
@@ -44,7 +37,7 @@ use enumflags2::BitFlags;
 use futures::prelude::stream::*;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::{ObjectPath, OwnedObjectPath};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
@@ -55,30 +48,16 @@ use crate::{
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
-pub struct CreateMonitorOptions {
+struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
 }
 
-impl CreateMonitorOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
-    /// Sets the session handle token.
-    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = session_handle_token;
-        self
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`InhibitProxy::inhibit`] request.
-pub struct InhibitOptions {
+struct InhibitOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// User-visible reason for the inhibition.
@@ -86,12 +65,6 @@ pub struct InhibitOptions {
 }
 
 impl InhibitOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets a user visible reason for the inhibit request.
     pub fn reason(mut self, reason: &str) -> Self {
         self.reason = Some(reason.to_string());
@@ -116,7 +89,7 @@ pub enum InhibitFlags {
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
 /// A response to a [`InhibitProxy::create_monitor`] request.
 struct CreateMonitor {
-    pub(crate) session_handle: OwnedObjectPath,
+    session_handle: OwnedObjectPath,
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
@@ -133,11 +106,6 @@ struct State {
 pub struct InhibitState(OwnedObjectPath, State);
 
 impl InhibitState {
-    /// The session handle.
-    pub fn session_handle(&self) -> &ObjectPath<'_> {
-        &self.0
-    }
-
     /// Whether screensaver is active or not.
     pub fn screensaver_active(&self) -> bool {
         self.1.screensaver_active
@@ -185,12 +153,11 @@ impl<'a> InhibitProxy<'a> {
     /// # Arguments
     ///
     /// * `window` - The application window identifier.
-    /// * `options` - [`CreateMonitorOptions`].
     pub async fn create_monitor(
         &self,
         window: WindowIdentifier,
-        options: CreateMonitorOptions,
     ) -> Result<SessionProxy<'a>, Error> {
+        let options = CreateMonitorOptions::default();
         let monitor: CreateMonitor = call_request_method(
             &self.0,
             &options.handle_token,
@@ -214,13 +181,14 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// * `window` - The application window identifier.
     /// * `flags` - The flags determine what changes are inhibited.
-    /// * `options` - A [`InhibitOptions`].
+    /// * `reason` - User-visible reason for the inhibition..
     pub async fn inhibit(
         &self,
         window: WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
-        options: InhibitOptions,
+        reason: &str,
     ) -> Result<(), Error> {
+        let options = InhibitOptions::default().reason(reason);
         call_basic_response_method(
             &self.0,
             &options.handle_token,

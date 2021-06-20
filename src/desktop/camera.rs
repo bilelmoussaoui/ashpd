@@ -1,16 +1,15 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use std::collections::HashMap;
-//! use ashpd::desktop::camera::{CameraAccessOptions, CameraProxy};
+//! use ashpd::desktop::camera::CameraProxy;
 //!
 //! pub async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = CameraProxy::new(&connection).await?;
 //!     if proxy.is_camera_present().await? {
-//!         proxy.access_camera(CameraAccessOptions::default()).await?;
+//!         proxy.access_camera().await?;
 //!
-//!         let remote_fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+//!         let remote_fd = proxy.open_pipe_wire_remote().await?;
 //!         // pass the remote fd to GStreamer for example
 //!     }
 //!     Ok(())
@@ -30,17 +29,9 @@ use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`CameraProxy::access_camera`] request.
-pub struct CameraAccessOptions {
+struct CameraAccessOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-}
-
-impl CameraAccessOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
 }
 
 /// The interface lets sandboxed applications access camera devices, such as web
@@ -61,11 +52,8 @@ impl<'a> CameraProxy<'a> {
     }
 
     /// Requests an access to the camera.
-    ///
-    /// # Arguments
-    ///
-    /// * `options` - A [`CameraAccessOptions`].
-    pub async fn access_camera(&self, options: CameraAccessOptions) -> Result<(), Error> {
+    pub async fn access_camera(&self) -> Result<(), Error> {
+        let options = CameraAccessOptions::default();
         call_basic_response_method(&self.0, &options.handle_token, "AccessCamera", &(&options))
             .await
     }
@@ -74,15 +62,9 @@ impl<'a> CameraProxy<'a> {
     /// available.
     ///
     /// Returns a File descriptor of an open PipeWire remote.
-    ///
-    /// # Arguments
-    ///
-    /// * `options` - ?
-    /// FIXME: figure out what are the possible options
-    pub async fn open_pipe_wire_remote(
-        &self,
-        options: HashMap<&str, Value<'_>>,
-    ) -> Result<Fd, Error> {
+    pub async fn open_pipe_wire_remote(&self) -> Result<Fd, Error> {
+        // FIXME: figure out what are the possible options
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(&self.0, "OpenPipeWireRemote", &(options)).await
     }
 

@@ -4,43 +4,35 @@
 //! The portal is currently useless without PipeWire & Rust support.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screencast::{
-//!     CursorMode, ScreenCastProxy, SelectSourcesOptions, SourceType,
-//! };
-//! use ashpd::WindowIdentifier;
+//! use ashpd::desktop::screencast::{CursorMode, ScreenCastProxy, SourceType};
 //! use enumflags2::BitFlags;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ScreenCastProxy::new(&connection).await?;
 //!
-//!     let session = proxy.create_session(Default::default()).await?;
+//!     let session = proxy.create_session().await?;
 //!
 //!     proxy
 //!         .select_sources(
 //!             &session,
-//!             SelectSourcesOptions::default()
-//!                 .multiple(true)
-//!                 .cursor_mode(BitFlags::from(CursorMode::Metadata))
-//!                 .types(SourceType::Monitor | SourceType::Window),
+//!             BitFlags::from(CursorMode::Metadata),
+//!             SourceType::Monitor | SourceType::Window,
+//!             true,
 //!         )
 //!         .await?;
 //!
-//!     let response = proxy
-//!         .start(
-//!             &session,
-//!             WindowIdentifier::default(),
-//!             Default::default(),
-//!         )
-//!         .await?;
+//!     let streams = proxy.start(&session, Default::default()).await?;
 //!
-//!     response.streams().iter().for_each(|stream| {
-//!         println!("{}", stream.pipe_wire_node_id());
-//!         println!("{:#?}", stream.properties());
+//!     streams.iter().for_each(|stream| {
+//!         println!("node id: {}", stream.pipe_wire_node_id());
+//!         println!("size: {:?}", stream.size());
+//!         println!("position: {:?}", stream.position());
 //!     });
 //!     Ok(())
 //! }
 //! ```
+
 use enumflags2::BitFlags;
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
@@ -80,30 +72,16 @@ pub enum CursorMode {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::create_session`] request.
-pub struct CreateSessionOptions {
+struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
 }
 
-impl CreateSessionOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
-    /// Sets the session handle token.
-    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = session_handle_token;
-        self
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::select_sources`] request.
-pub struct SelectSourcesOptions {
+struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// What types of content to record.
@@ -115,12 +93,6 @@ pub struct SelectSourcesOptions {
 }
 
 impl SelectSourcesOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets whether to allow selecting multiple sources.
     pub fn multiple(mut self, multiple: bool) -> Self {
         self.multiple = Some(multiple);
@@ -142,17 +114,9 @@ impl SelectSourcesOptions {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::start`] request.
-pub struct StartCastOptions {
+struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-}
-
-impl StartCastOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
@@ -160,20 +124,13 @@ impl StartCastOptions {
 struct CreateSession {
     /// A string that will be used as the last element of the session handle.
     // TODO: investigate why this doesn't return an ObjectPath
-    pub(crate) session_handle: String,
+    session_handle: String,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to a [`ScreenCastProxy::start`] request.
-pub struct Streams {
-    streams: Vec<Stream>,
-}
-
-impl Streams {
-    /// The available streams.
-    pub fn streams(&self) -> &[Stream] {
-        &self.streams
-    }
+struct Streams {
+    pub streams: Vec<Stream>,
 }
 
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
@@ -186,26 +143,33 @@ impl Stream {
         self.0
     }
 
-    /// The stream properties.
-    pub fn properties(&self) -> &StreamProperties {
-        &self.1
+    /// A tuple consisting of the position (x, y) in the compositor coordinate
+    /// space.
+    ///
+    ///  **Note** that the position may not be equivalent to a
+    /// position in a pixel coordinate space. Only available for monitor
+    /// streams.
+    pub fn position(&self) -> Option<(i32, i32)> {
+        self.1.position
+    }
+
+    /// A tuple consisting of (width, height).
+    /// The size represents the size of the stream as it is displayed in the
+    /// compositor coordinate space.
+    ///
+    /// **Note** that this size may not be
+    /// equivalent to a size in a pixel coordinate space. The size may
+    /// differ from the size of the stream.
+    pub fn size(&self) -> (i32, i32) {
+        self.1.size
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone)]
 /// The stream properties.
-pub struct StreamProperties {
-    /// A tuple consisting of the position (x, y) in the compositor coordinate
-    /// space. **Note** that the position may not be equivalent to a
-    /// position in a pixel coordinate space. Only available for monitor
-    /// streams.
-    pub position: Option<(i32, i32)>,
-    /// A tuple consisting of (width, height).
-    /// The size represents the size of the stream as it is displayed in the
-    /// compositor coordinate space. **Note** that this size may not be
-    /// equivalent to a size in a pixel coordinate space. The size may
-    /// differ from the size of the stream.
-    pub size: (i32, i32),
+struct StreamProperties {
+    position: Option<(i32, i32)>,
+    size: (i32, i32),
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.
@@ -225,10 +189,8 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Create a screen cast session.
-    pub async fn create_session(
-        &self,
-        options: CreateSessionOptions,
-    ) -> Result<SessionProxy<'a>, Error> {
+    pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
+        let options = CreateSessionOptions::default();
         let (proxy, session) = futures::try_join!(
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future(),
@@ -252,13 +214,9 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
-    /// FIXME: figure out the options we can take here
-    pub async fn open_pipe_wire_remote(
-        &self,
-        session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
-    ) -> Result<Fd, Error> {
+    pub async fn open_pipe_wire_remote(&self, session: &SessionProxy<'_>) -> Result<Fd, Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(&self.0, "OpenPipeWireRemote", &(session, options)).await
     }
 
@@ -272,12 +230,20 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - A [`SelectSourcesOptions`].
+    /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast stream.
+    /// * `types` - Sets the types of content to record.
+    /// * `multiple`- Sets whether to allow selecting multiple sources.
     pub async fn select_sources(
         &self,
         session: &SessionProxy<'_>,
-        options: SelectSourcesOptions,
+        cursor_mode: BitFlags<CursorMode>,
+        types: BitFlags<SourceType>,
+        multiple: bool,
     ) -> Result<(), Error> {
+        let options = SelectSourcesOptions::default()
+            .cursor_mode(cursor_mode)
+            .multiple(multiple)
+            .types(types);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -303,15 +269,16 @@ impl<'a> ScreenCastProxy<'a> {
         &self,
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
-        options: StartCastOptions,
-    ) -> Result<Streams, Error> {
-        call_request_method(
+    ) -> Result<Vec<Stream>, Error> {
+        let options = StartCastOptions::default();
+        let streams: Streams = call_request_method(
             &self.0,
             &options.handle_token,
             "Start",
             &(session, parent_window, &options),
         )
-        .await
+        .await?;
+        Ok(streams.streams.to_vec())
     }
 
     /// Available cursor mode.

@@ -1,40 +1,21 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::remote_desktop::{
-//!     DeviceType, KeyState, RemoteDesktopProxy, SelectDevicesOptions,
-//! };
-//! use ashpd::WindowIdentifier;
-//! use std::collections::HashMap;
+//! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!
-//!     let session = proxy
-//!         .create_session(Default::default())
-//!         .await?;
+//!     let session = proxy.create_session().await?;
 //!
-//!     proxy
-//!         .select_devices(
-//!             &session,
-//!             SelectDevicesOptions::default().types(DeviceType::Keyboard | DeviceType::Pointer),
-//!         )
-//!         .await?;
+//!     proxy.select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer).await?;
 //!
-//!     let devices = proxy
-//!         .start(
-//!             &session,
-//!             WindowIdentifier::default(),
-//!             Default::default(),
-//!         )
-//!         .await?;
+//!     let devices = proxy.start(&session, Default::default()).await?;
 //!     println!("{:#?}", devices);
 //!
 //!     // 13 for Enter key code
-//!     proxy
-//!         .notify_keyboard_keycode(&session, HashMap::new(), 13, KeyState::Pressed)
-//!         .await?;
+//!     proxy.notify_keyboard_keycode(&session, 13, KeyState::Pressed).await?;
 //!
 //!     Ok(())
 //! }
@@ -87,37 +68,23 @@ pub enum Axis {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::create_session`] request.
-pub struct CreateRemoteOptions {
+struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
 }
 
-impl CreateRemoteOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
-    /// Sets the session handle token.
-    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = session_handle_token;
-        self
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to a [`RemoteDesktopProxy::create_session`] request.
 struct CreateSession {
     /// A string that will be used as the last element of the session handle.
-    pub(crate) session_handle: OwnedObjectPath,
+    session_handle: OwnedObjectPath,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::select_devices`] request.
-pub struct SelectDevicesOptions {
+struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// The device types to request remote controlling of. Default is all.
@@ -125,12 +92,6 @@ pub struct SelectDevicesOptions {
 }
 
 impl SelectDevicesOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets the device types to request remote controlling of.
     pub fn types(mut self, types: BitFlags<DeviceType>) -> Self {
         self.types = Some(types);
@@ -140,22 +101,14 @@ impl SelectDevicesOptions {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::start`] request.
-pub struct StartRemoteOptions {
+struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
 }
 
-impl StartRemoteOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// A response to a [`RemoteDesktopProxy::select_devices`] request.
-pub struct SelectedDevices {
+struct SelectedDevices {
     /// The selected devices.
     pub devices: BitFlags<DeviceType>,
 }
@@ -181,14 +134,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// Create a remote desktop session.
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.
-    ///
-    /// # Arguments
-    ///
-    /// * `options` - A [`CreateRemoteOptions`].
-    pub async fn create_session(
-        &self,
-        options: CreateRemoteOptions,
-    ) -> Result<SessionProxy<'a>, Error> {
+    pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
+        let options = CreateRemoteOptions::default();
         let (proxy, session) = futures::try_join!(
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future(),
@@ -212,12 +159,13 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - [`SelectDevicesOptions`].
+    /// * `types` - The device types to request remote controlling of.
     pub async fn select_devices(
         &self,
         session: &SessionProxy<'_>,
-        options: SelectDevicesOptions,
+        types: BitFlags<DeviceType>,
     ) -> Result<(), Error> {
+        let options = SelectDevicesOptions::default().types(types);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -237,20 +185,20 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - The application window identifier.
-    /// * `options` - [`StartRemoteOptions`].
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
-        options: StartRemoteOptions,
     ) -> Result<BitFlags<DeviceType>, Error> {
-        call_request_method(
+        let options = StartRemoteOptions::default();
+        let response: SelectedDevices = call_request_method(
             &self.0,
             &options.handle_token,
             "Start",
             &(session, parent_window, &options),
         )
-        .await
+        .await?;
+        Ok(response.devices)
     }
 
     /// Notify keyboard code.
@@ -260,18 +208,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_keyboard_keycode(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         keycode: i32,
         state: KeyState,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyKeyboardKeycode",
@@ -287,18 +233,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_keyboard_keysym(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         keysym: i32,
         state: KeyState,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyKeyboardKeysym",
@@ -315,16 +259,14 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `slot` - Touch slot where touch point appeared.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_touch_up(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         slot: u32,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(&self.0, "NotifyTouchUp", &(session, options, slot)).await
     }
 
@@ -338,22 +280,20 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
     /// * `y` - Touch down y coordinate.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_touch_down(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         stream: u32,
         slot: u32,
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyTouchDown",
@@ -372,22 +312,20 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch motion x coordinate.
     /// * `y` - Touch motion y coordinate.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_touch_motion(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         stream: u32,
         slot: u32,
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyTouchMotion",
@@ -403,20 +341,18 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_motion_absolute(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         stream: u32,
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyPointerMotionAbsolute",
@@ -432,18 +368,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_motion(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         dx: f64,
         dy: f64,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyPointerMotionAbsolute",
@@ -461,18 +395,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_button(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         button: i32,
         state: KeyState,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyPointerButton",
@@ -488,17 +420,15 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `axis` - The axis that was scrolled.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_axis_discrete(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         axis: Axis,
         steps: i32,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
             "NotifyPointerAxisDiscrete",
@@ -518,18 +448,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `options` - ?
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
-    ///
-    /// FIXME: figure out the options we can take here
     pub async fn notify_pointer_axis(
         &self,
         session: &SessionProxy<'_>,
-        options: HashMap<&str, Value<'_>>,
         dx: f64,
         dy: f64,
     ) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(&self.0, "NotifyPointerAxis", &(session, options, dx, dy)).await
     }
 

@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::secret::{RetrieveOptions, SecretProxy};
+//! use ashpd::desktop::secret::SecretProxy;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -13,7 +13,7 @@
 //!     let file = File::open("test.txt").unwrap();
 //!
 //!     let secret = proxy
-//!         .retrieve_secret(Fd::from(file.as_raw_fd()), RetrieveOptions::default())
+//!         .retrieve_secret(Fd::from(file.as_raw_fd()), None)
 //!         .await?;
 //!
 //!     println!("{:#?}", secret);
@@ -32,7 +32,7 @@ use super::{DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
-pub struct RetrieveOptions {
+struct RetrieveOptions {
     /// A string returned by a previous call to `retrieve_secret`.
     token: Option<String>,
 }
@@ -68,12 +68,17 @@ impl<'a> SecretProxy<'a> {
     /// # Arguments
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
-    /// * `options` - A [`RetrieveOptions`].
+    /// * `token` -  A string returned by a previous call to [`SecretProxy::retrieve_secret`].
     pub async fn retrieve_secret<F: AsRawFd + serde::Serialize + zvariant::Type>(
         &self,
         fd: F,
-        options: RetrieveOptions,
-    ) -> Result<(), Error> {
+        token: Option<&str>,
+    ) -> Result<String, Error> {
+        let options = if let Some(token) = token {
+            RetrieveOptions::default().token(token)
+        } else {
+            RetrieveOptions::default()
+        };
         call_method(&self.0, "RetrieveSecret", &(fd.as_raw_fd(), options)).await
     }
 

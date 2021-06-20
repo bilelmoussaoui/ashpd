@@ -1,22 +1,14 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::location::LocationProxy;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::desktop::location::{Accuracy, LocationProxy};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = LocationProxy::new(&connection).await?;
 //!
-//!     let session = proxy.create_session(Default::default()).await?;
-//!
-//!     proxy
-//!         .start(
-//!             &session,
-//!             WindowIdentifier::default(),
-//!             Default::default(),
-//!         )
-//!         .await?;
+//!     let session = proxy.create_session(None, None, Some(Accuracy::Street)).await?;
+//!     proxy.start(&session, Default::default()).await?;
 //!
 //!     let location = proxy.receive_location_updated().await?;
 //!
@@ -32,7 +24,7 @@ use futures::prelude::stream::*;
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::{ObjectPath, OwnedObjectPath};
+use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
@@ -61,7 +53,7 @@ pub enum Accuracy {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`LocationProxy::create_session`] request.
-pub struct CreateSessionOptions {
+struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
     /// Distance threshold in meters. Default is 0.
@@ -73,12 +65,6 @@ pub struct CreateSessionOptions {
 }
 
 impl CreateSessionOptions {
-    /// Sets the session handle token.
-    pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = session_handle_token;
-        self
-    }
-
     /// Sets the distance threshold in meters.
     pub fn distance_threshold(mut self, distance_threshold: u32) -> Self {
         self.distance_threshold = Some(distance_threshold);
@@ -100,17 +86,9 @@ impl CreateSessionOptions {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`LocationProxy::start`] request.
-pub struct SessionStartOptions {
+struct SessionStartOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-}
-
-impl SessionStartOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
@@ -118,11 +96,6 @@ impl SessionStartOptions {
 pub struct Location(OwnedObjectPath, LocationInner);
 
 impl Location {
-    /// A `SessionProxy` object path.
-    pub fn session_handle(&self) -> &ObjectPath<'_> {
-        &self.0
-    }
-
     /// The accuracy, in meters.
     pub fn accuracy(&self) -> f64 {
         self.1.accuracy
@@ -213,11 +186,19 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `options` - A [`CreateSessionOptions`]
+    /// * `distance_threshold` - Sets the distance threshold in meters, default to `0`.
+    /// * `time_threshold` - Sets the time threshold in seconds, default to `0`.
+    /// * `accuracy` - Sets the location accuracy, default to [`Accuracy::Exact`].
     pub async fn create_session(
         &self,
-        options: CreateSessionOptions,
+        distance_threshold: Option<u32>,
+        time_threshold: Option<u32>,
+        accuracy: Option<Accuracy>,
     ) -> Result<SessionProxy<'a>, Error> {
+        let options = CreateSessionOptions::default()
+            .distance_threshold(distance_threshold.unwrap_or(0))
+            .time_threshold(time_threshold.unwrap_or(0))
+            .accuracy(accuracy.unwrap_or(Accuracy::Exact));
         let (proxy, path) = futures::try_join!(
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future(),
@@ -239,13 +220,12 @@ impl<'a> LocationProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - Identifier for the application window.
-    /// * `options` - A `SessionStartOptions`.
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
         parent_window: WindowIdentifier,
-        options: SessionStartOptions,
     ) -> Result<(), Error> {
+        let options = SessionStartOptions::default();
         call_basic_response_method(
             &self.0,
             &options.handle_token,

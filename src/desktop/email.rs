@@ -3,7 +3,7 @@
 //! Compose an email
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::email::{EmailOptions, EmailProxy};
+//! use ashpd::desktop::email::{Email, EmailProxy};
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
@@ -16,7 +16,7 @@
 //!     proxy
 //!         .compose_email(
 //!             WindowIdentifier::default(),
-//!             EmailOptions::default()
+//!             Email::new()
 //!                 .address("test@gmail.com")
 //!                 .subject("email subject")
 //!                 .body("the pre-filled email body")
@@ -39,7 +39,7 @@ use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
-pub struct EmailOptions {
+pub struct Email {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// The email address to send to.
@@ -58,11 +58,10 @@ pub struct EmailOptions {
     attachment_fds: Option<Vec<Fd>>,
 }
 
-impl EmailOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
+impl Email {
+    /// Create a new instance of [`Email`].
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Sets the email address to send the email to.
@@ -132,22 +131,22 @@ impl<'a> EmailProxy<'a> {
     /// Presents a window that lets the user compose an email.
     ///
     /// **Note** that the default email client for the host will need to support
-    /// mailto: URIs following RFC 2368.
+    /// `mailto:` URIs following RFC 2368.
     ///
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window.
-    /// * `options` - [`EmailOptions`].
+    /// * `email` - An [`Email`].
     pub async fn compose_email(
         &self,
         parent_window: WindowIdentifier,
-        options: EmailOptions,
+        email: Email,
     ) -> Result<(), Error> {
         call_basic_response_method(
             &self.0,
-            &options.handle_token,
+            &email.handle_token,
             "ComposeEmail",
-            &(parent_window, &options),
+            &(parent_window, &email),
         )
         .await
     }

@@ -4,7 +4,6 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions};
-//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -12,20 +11,20 @@
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .open_file(
-//!             WindowIdentifier::default(),
+//!             Default::default(),
 //!             "open a file to read",
 //!             OpenFileOptions::default()
 //!                 .accept_label("read")
 //!                 .modal(true)
 //!                 .multiple(true)
-//!                 .choice(
+//!                 .add_choice(
 //!                     Choice::new("encoding", "Encoding", "latin15")
 //!                         .insert("utf8", "Unicode (UTF-8)")
 //!                         .insert("latin15", "Western"),
 //!                 )
 //!                 // A trick to have a checkbox
-//!                 .choice(Choice::new("re-encode", "Re-encode", "false"))
-//!                 .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
+//!                 .add_choice(Choice::boolean("re-encode", "Re-encode", false))
+//!                 .add_filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
 //!         )
 //!         .await?;
 //!
@@ -39,20 +38,19 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions};
-//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .save_file(
-//!             WindowIdentifier::default(),
+//!             Default::default(),
 //!             "open a file to write",
 //!             SaveFileOptions::default()
 //!                 .accept_label("write")
 //!                 .current_name("image.jpg")
 //!                 .modal(true)
-//!                 .filter(FileFilter::new("JPEG Image").glob("*.jpg")),
+//!                 .add_filter(FileFilter::new("JPEG Image").glob("*.jpg")),
 //!         )
 //!         .await?;
 //!
@@ -66,7 +64,6 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions};
-//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -74,7 +71,7 @@
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .save_files(
-//!             WindowIdentifier::default(),
+//!             Default::default(),
 //!             "open files to write",
 //!             SaveFilesOptions::default()
 //!                 .accept_label("write files")
@@ -140,6 +137,17 @@ impl FileFilter {
 pub struct Choice(String, String, Vec<(String, String)>, String);
 
 impl Choice {
+    /// Creates a checkbox choice.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - A unique identifier of the choice.
+    /// * `label` - user-visible name of the choice.
+    /// * `state` - the initial state value.
+    pub fn boolean(id: &str, label: &str, state: bool) -> Self {
+        Self::new(id, label, &state.to_string())
+    }
+
     /// Creates a new choice.
     ///
     /// # Arguments
@@ -200,12 +208,6 @@ pub struct OpenFileOptions {
 }
 
 impl OpenFileOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets a user-visible string to the "accept" button.
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
@@ -231,7 +233,7 @@ impl OpenFileOptions {
     }
 
     /// Adds a files filter.
-    pub fn filter(mut self, filter: FileFilter) -> Self {
+    pub fn add_filter(mut self, filter: FileFilter) -> Self {
         self.filters.push(filter);
         self
     }
@@ -243,7 +245,7 @@ impl OpenFileOptions {
     }
 
     /// Adds a choice.
-    pub fn choice(mut self, choice: Choice) -> Self {
+    pub fn add_choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
     }
@@ -273,12 +275,6 @@ pub struct SaveFileOptions {
 }
 
 impl SaveFileOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets a user-visible string to the "accept" button.
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
@@ -310,7 +306,7 @@ impl SaveFileOptions {
     }
 
     /// Adds a files filter.
-    pub fn filter(mut self, filter: FileFilter) -> Self {
+    pub fn add_filter(mut self, filter: FileFilter) -> Self {
         self.filters.push(filter);
         self
     }
@@ -322,7 +318,7 @@ impl SaveFileOptions {
     }
 
     /// Adds a choice.
-    pub fn choice(mut self, choice: Choice) -> Self {
+    pub fn add_choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
     }
@@ -346,12 +342,6 @@ pub struct SaveFilesOptions {
 }
 
 impl SaveFilesOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets a user-visible string to the "accept" button.
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
@@ -365,7 +355,7 @@ impl SaveFilesOptions {
     }
 
     /// Adds a choice.
-    pub fn choice(mut self, choice: Choice) -> Self {
+    pub fn add_choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
     }
@@ -386,10 +376,20 @@ impl SaveFilesOptions {
 #[derive(Debug, TypeDict, SerializeDict, Clone, DeserializeDict)]
 /// A response to a [`FileChooserProxy::open_file`]/[`FileChooserProxy::save_file`]/[`FileChooserProxy::save_files`] request.
 pub struct SelectedFiles {
+    uris: Vec<String>,
+    choices: Option<Vec<(String, String)>>,
+}
+
+impl SelectedFiles {
     /// The selected files uris.
-    pub uris: Vec<String>,
+    pub fn uris(&self) -> &[String] {
+        self.uris.as_slice()
+    }
+
     /// The selected value of each choice as a tuple of (key, value)
-    pub choices: Option<Vec<(String, String)>>,
+    pub fn choices(&self) -> &[(String, String)] {
+        self.choices.as_deref().unwrap_or_default()
+    }
 }
 
 /// The interface lets sandboxed applications ask the user for access to files

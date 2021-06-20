@@ -3,8 +3,7 @@
 //! Print a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::print::{PrintOptions, PrintProxy};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::desktop::print::PrintProxy;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -14,20 +13,28 @@
 //!     let proxy = PrintProxy::new(&connection).await?;
 //!
 //!     let file = File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
-//!
+//!     let pre_print = proxy
+//!         .prepare_print(
+//!             Default::default(),
+//!             "prepare print ",
+//!             Default::default(),
+//!             Default::default(),
+//!             true,
+//!         )
+//!         .await?;
 //!     proxy
 //!         .print(
-//!             WindowIdentifier::default(),
+//!             Default::default(),
 //!             "test",
 //!             Fd::from(file.as_raw_fd()),
-//!             PrintOptions::default(),
+//!             &pre_print.token,
+//!             true,
 //!         )
 //!         .await?;
 //!
 //!     Ok(())
 //! }
 //! ```
-
 use std::os::unix::prelude::AsRawFd;
 
 use serde::{Deserialize, Serialize, Serializer};
@@ -447,7 +454,7 @@ impl PageSetup {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`PrintProxy::prepare_print`] request.
-pub struct PreparePrintOptions {
+struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
@@ -455,12 +462,6 @@ pub struct PreparePrintOptions {
 }
 
 impl PreparePrintOptions {
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
-
     /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
@@ -470,7 +471,7 @@ impl PreparePrintOptions {
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`PrintProxy::print`] request.
-pub struct PrintOptions {
+struct PrintOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
@@ -491,12 +492,6 @@ impl PrintOptions {
         self.modal = Some(modal);
         self
     }
-
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
 }
 
 #[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
@@ -508,7 +503,7 @@ pub struct PreparePrint {
     /// The printed pages setup.
     pub page_setup: PageSetup,
     /// A token to pass to the print request.
-    pub token: u32,
+    pub token: String,
 }
 
 /// The interface lets sandboxed applications print.
@@ -536,15 +531,16 @@ impl<'a> PrintProxy<'a> {
     /// * `title` - Title for the print dialog.
     /// * `settings` - [`Settings`].
     /// * `page_setup` - [`PageSetup`].
-    /// * `options` - [`PreparePrintOptions`].
+    /// * `modal` - Whether the dialog should be a modal.
     pub async fn prepare_print(
         &self,
         parent_window: WindowIdentifier,
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
-        options: PreparePrintOptions,
+        modal: bool,
     ) -> Result<PreparePrint, Error> {
+        let options = PreparePrintOptions::default().modal(modal);
         call_request_method(
             &self.0,
             &options.handle_token,
@@ -564,17 +560,20 @@ impl<'a> PrintProxy<'a> {
     /// * `parent_window` - The application window identifier.
     /// * `title` - The title for the print dialog.
     /// * `fd` - File descriptor for reading the content to print.
-    /// * `options` - [`PrintOptions`].
+    /// * `token` - A token returned by a call to [`PrintProxy::prepare_print`].
+    /// * `modal` - Whether the dialog should be a modal.
     pub async fn print<F>(
         &self,
         parent_window: WindowIdentifier,
         title: &str,
         fd: F,
-        options: PrintOptions,
+        token: &str,
+        modal: bool,
     ) -> Result<(), Error>
     where
         F: AsRawFd + zvariant::Type + Serialize,
     {
+        let options = PrintOptions::default().token(token).modal(modal);
         call_basic_response_method(
             &self.0,
             &options.handle_token,

@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::trash::{TrashProxy, TrashStatus};
+//! use ashpd::desktop::trash::TrashProxy;
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -11,11 +11,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = TrashProxy::new(&connection).await?;
 //!
-//!     match proxy.trash_file(Fd::from(file.as_raw_fd())).await? {
-//!         TrashStatus::Succeeded => println!("the file was removed!"),
-//!         TrashStatus::Failed => println!("oof, couldn't remove the file"),
-//!     };
-//!
+//!     proxy.trash_file(Fd::from(file.as_raw_fd())).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -35,7 +31,7 @@ use super::{DESTINATION, PATH};
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 #[repr(u32)]
 /// The status of moving a file to the trash.
-pub enum TrashStatus {
+enum TrashStatus {
     /// Moving the file to the trash failed.
     Failed = 0,
     /// Moving the file to the trash succeeded
@@ -65,11 +61,15 @@ impl<'a> TrashProxy<'a> {
     /// # Arguments
     ///
     /// * `fd` - The file descriptor.
-    pub async fn trash_file<T>(&self, fd: T) -> Result<TrashStatus, Error>
+    pub async fn trash_file<T>(&self, fd: T) -> Result<(), Error>
     where
         T: AsRawFd + Type + Serialize,
     {
-        call_method(&self.0, "TrashFile", &(fd.as_raw_fd())).await
+        let status = call_method(&self.0, "TrashFile", &(fd.as_raw_fd())).await?;
+        match status {
+            TrashStatus::Failed => Err(Error::TrashFailed),
+            TrashStatus::Succeeded => Ok(()),
+        }
     }
 
     /// The version of this DBus interface.

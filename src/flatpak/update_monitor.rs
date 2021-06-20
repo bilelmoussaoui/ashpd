@@ -4,24 +4,16 @@
 //! Only available for Flatpak applications.
 //!
 //! ```rust,no_run
-//! use ashpd::flatpak::{
-//!     update_monitor::{UpdateInfo, UpdateMonitorProxy, UpdateOptions, UpdateProgress},
-//!     CreateMonitorOptions, FlatpakProxy,
-//! };
-//! use ashpd::WindowIdentifier;
+//! use ashpd::flatpak::FlatpakProxy;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FlatpakProxy::new(&connection).await?;
 //!
-//!     let monitor = proxy
-//!         .create_update_monitor(CreateMonitorOptions::default())
-//!         .await?;
+//!     let monitor = proxy.create_update_monitor().await?;
 //!     let info = monitor.receive_update_available().await?;
 //!
-//!     monitor
-//!         .update(WindowIdentifier::default(), UpdateOptions::default())
-//!         .await?;
+//!     monitor.update(Default::default()).await?;
 //!     let progress = monitor.receive_progress().await?;
 //!     println!("{:#?}", progress);
 //!
@@ -38,7 +30,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 /// Specified options for a [`UpdateMonitorProxy::update`] request.
 ///
 /// Currently there are no possible options yet.
-pub struct UpdateOptions {}
+struct UpdateOptions {}
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response containing the update information when an update is available.
@@ -127,11 +119,8 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// **Note** that updates are only allowed if the new version
     /// has the same permissions (or less) than the currently installed version.
-    pub async fn update(
-        &self,
-        parent_window: WindowIdentifier,
-        options: UpdateOptions,
-    ) -> Result<(), Error> {
+    pub async fn update(&self, parent_window: WindowIdentifier) -> Result<(), Error> {
+        let options = UpdateOptions::default();
         call_method(&self.0, "Update", &(parent_window, options)).await
     }
 

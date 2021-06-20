@@ -1,25 +1,21 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::account::{AccountProxy, UserInfoOptions},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::account::AccountProxy;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let identifier = WindowIdentifier::default();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = AccountProxy::new(&connection).await?;
 //!     let user_info = proxy
 //!         .user_information(
-//!             identifier,
-//!             UserInfoOptions::default().reason("App would like to access user information"),
+//!             Default::default(),
+//!             "App would like to access user information",
 //!         )
 //!         .await?;
 //!
-//!     println!("Name: {}", user_info.name);
-//!     println!("ID: {}", user_info.id);
+//!     println!("Name: {}", user_info.name());
+//!     println!("ID: {}", user_info.id());
 //!
 //!     Ok(())
 //! }
@@ -35,7 +31,7 @@ use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`AccountProxy::user_information`] request.
-pub struct UserInfoOptions {
+struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Shown in the dialog to explain why the information is needed.
@@ -48,23 +44,34 @@ impl UserInfoOptions {
         self.reason = Some(reason.to_string());
         self
     }
-
-    /// Sets the handle token.
-    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = handle_token;
-        self
-    }
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, Clone, TypeDict)]
 /// The response of a [`AccountProxy::user_information`] request.
 pub struct UserInfo {
     /// User identifier.
-    pub id: String,
+    id: String,
     /// User name.
-    pub name: String,
+    name: String,
     /// User image uri.
-    pub image: String,
+    image: String,
+}
+
+impl UserInfo {
+    /// User identifier.
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    /// User name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// User image uri.
+    pub fn image(&self) -> &str {
+        &self.image
+    }
 }
 
 /// The interface lets sandboxed applications query basic information about the
@@ -92,12 +99,13 @@ impl<'a> AccountProxy<'a> {
     /// # Arguments
     ///
     /// * `window` - Identifier for the window.
-    /// * `options` - A [`UserInfoOptions`].
+    /// * `reason` - A user-visible reason for the request.
     pub async fn user_information(
         &self,
         window: WindowIdentifier,
-        options: UserInfoOptions,
+        reason: &str,
     ) -> Result<UserInfo, Error> {
+        let options = UserInfoOptions::default().reason(reason);
         call_request_method(
             &self.0,
             &options.handle_token,

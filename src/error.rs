@@ -15,6 +15,10 @@ pub enum Error {
     DBusMalformedMessage(zbus::MessageError),
     /// A signal returned no response.
     NoResponse,
+    /// Failed to register a game with [`GameModeProxy::register_game`](`crate::desktop::game_mode::GameModeProxy::register_game`).
+    RegisterGameRejected,
+    /// Failed to trash a file, caused by [`TrashProxy::trash_file`](`crate::desktop::trash::TrashProxy::trash_file`).
+    TrashFailed,
 }
 
 impl std::error::Error for Error {}
@@ -30,6 +34,8 @@ impl std::fmt::Display for Error {
             Self::Zbus(e) => f.write_str(&format!("zbus error: {}", e)),
             Self::Zvariant(e) => f.write_str(&format!("zvariant error: {}", e)),
             Self::NoResponse => f.write_str("portal error: no response"),
+            Self::RegisterGameRejected => f.write_str("Failed to register/un-register game mode"),
+            Self::TrashFailed => f.write_str("Failed to trash a file"),
         }
     }
 }
