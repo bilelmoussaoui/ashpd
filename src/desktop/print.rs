@@ -448,7 +448,7 @@ impl PageSetup {
 /// Specified options for a [`PrintProxy::prepare_print`] request.
 pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Whether to make the dialog modal.
     modal: Option<bool>,
 }
@@ -456,7 +456,7 @@ pub struct PreparePrintOptions {
 impl PreparePrintOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -471,7 +471,7 @@ impl PreparePrintOptions {
 /// Specified options for a [`PrintProxy::print`] request.
 pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Whether to make the dialog modal.
     modal: Option<bool>,
     /// Token that was returned by a previous [`PrintProxy::prepare_print`] call.
@@ -493,7 +493,7 @@ impl PrintOptions {
 
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -546,8 +546,9 @@ impl<'a> PrintProxy<'a> {
     ) -> Result<PreparePrint, Error> {
         call_request_method(
             &self.0,
+            &options.handle_token,
             "PreparePint",
-            &(parent_window, title, settings, page_setup, options),
+            &(parent_window, title, settings, page_setup, &options),
         )
         .await
     }
@@ -575,8 +576,9 @@ impl<'a> PrintProxy<'a> {
     {
         call_basic_response_method(
             &self.0,
+            &options.handle_token,
             "Print",
-            &(parent_window, title, fd.as_raw_fd(), options),
+            &(parent_window, title, fd.as_raw_fd(), &options),
         )
         .await
     }

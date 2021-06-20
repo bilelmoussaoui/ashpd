@@ -55,7 +55,7 @@ use crate::{
 /// Specified options for a [`ScreenshotProxy::screenshot`] request.
 pub struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Whether the dialog should be modal.
     modal: Option<bool>,
     /// Hint whether the dialog should offer customization before taking a
@@ -66,7 +66,7 @@ pub struct ScreenshotOptions {
 impl ScreenshotOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -95,13 +95,13 @@ pub struct Screenshot {
 /// Specified options for a [`ScreenshotProxy::pick_color`] request.
 pub struct PickColorOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
 }
 
 impl PickColorOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -191,7 +191,13 @@ impl<'a> ScreenshotProxy<'a> {
         parent_window: WindowIdentifier,
         options: PickColorOptions,
     ) -> Result<Color, Error> {
-        call_request_method(&self.0, "PickColor", &(parent_window, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "PickColor",
+            &(parent_window, &options),
+        )
+        .await
     }
 
     /// Takes a screenshot.
@@ -205,7 +211,13 @@ impl<'a> ScreenshotProxy<'a> {
         parent_window: WindowIdentifier,
         options: ScreenshotOptions,
     ) -> Result<Screenshot, Error> {
-        call_request_method(&self.0, "Screenshot", &(parent_window, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "Screenshot",
+            &(parent_window, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

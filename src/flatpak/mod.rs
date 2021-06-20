@@ -185,7 +185,7 @@ impl<'a> FlatpakProxy<'a> {
     ) -> Result<UpdateMonitorProxy<'a>, Error> {
         let path: zvariant::OwnedObjectPath = self
             .0
-            .call_method("CreateUpdateMonitors", &(options))
+            .call_method("CreateUpdateMonitor", &(options))
             .await?
             .body()?;
         UpdateMonitorProxy::new(self.0.connection(), path.into_inner()).await

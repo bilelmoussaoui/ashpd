@@ -39,7 +39,7 @@ use crate::{
 /// Specified options for a [`EmailProxy::compose_email`] request.
 pub struct EmailOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// The email address to send to.
     address: Option<String>,
     /// The email addresses to send to.
@@ -59,7 +59,7 @@ pub struct EmailOptions {
 impl EmailOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -141,7 +141,13 @@ impl<'a> EmailProxy<'a> {
         parent_window: WindowIdentifier,
         options: EmailOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "ComposeEmail", &(parent_window, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "ComposeEmail",
+            &(parent_window, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

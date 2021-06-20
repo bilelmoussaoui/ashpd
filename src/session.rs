@@ -1,10 +1,10 @@
 use crate::{
     helpers::{call_method, property},
-    Error,
+    Error, HandleToken,
 };
 use futures::prelude::stream::*;
 use serde::{Serialize, Serializer};
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryFrom};
 use zvariant::{ObjectPath, OwnedValue, Signature};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
@@ -52,9 +52,26 @@ impl<'a> SessionProxy<'a> {
         Ok(Self(proxy, connection.clone()))
     }
 
+    pub(crate) async fn from_unique_name(
+        connection: &zbus::azync::Connection,
+        handle_token: &HandleToken,
+    ) -> Result<SessionProxy<'a>, crate::Error> {
+        let unique_name = connection.unique_name().unwrap();
+        let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
+        let path = zvariant::ObjectPath::try_from(format!(
+            "/org/freedesktop/portal/desktop/session/{}/{}",
+            unique_identifier, handle_token
+        ))?;
+        SessionProxy::new(connection, path).await
+    }
+
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Emitted when a session is closed.
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
-        println!("session got closed {}", self.0.path());
         let mut stream = self.0.receive_signal("Closed").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
         message.body::<SessionDetails>().map_err(From::from)

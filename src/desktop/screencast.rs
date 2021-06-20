@@ -5,23 +5,16 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screencast::{
-//!     CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions, SourceType,
-//!     StartCastOptions,
+//!     CursorMode, ScreenCastProxy, SelectSourcesOptions, SourceType,
 //! };
-//! use ashpd::{HandleToken, SessionProxy, WindowIdentifier};
+//! use ashpd::WindowIdentifier;
 //! use enumflags2::BitFlags;
-//! use std::convert::TryFrom;
-//! use zvariant::ObjectPath;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ScreenCastProxy::new(&connection).await?;
 //!
-//!     let session_token = HandleToken::try_from("session120").unwrap();
-//!
-//!     let session = proxy
-//!         .create_session(CreateSessionOptions::default().session_handle_token(session_token))
-//!         .await?;
+//!     let session = proxy.create_session(Default::default()).await?;
 //!
 //!     proxy
 //!         .select_sources(
@@ -37,7 +30,7 @@
 //!         .start(
 //!             &session,
 //!             WindowIdentifier::default(),
-//!             StartCastOptions::default(),
+//!             Default::default(),
 //!         )
 //!         .await?;
 //!
@@ -48,12 +41,11 @@
 //!     Ok(())
 //! }
 //! ```
-use std::collections::HashMap;
-use std::convert::TryFrom;
-
 use enumflags2::BitFlags;
+use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::collections::HashMap;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -89,21 +81,21 @@ pub enum CursorMode {
 /// Specified options for a [`ScreenCastProxy::create_session`] request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
-    session_handle_token: Option<HandleToken>,
+    session_handle_token: HandleToken,
 }
 
 impl CreateSessionOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
     /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = Some(session_handle_token);
+        self.session_handle_token = session_handle_token;
         self
     }
 }
@@ -112,7 +104,7 @@ impl CreateSessionOptions {
 /// Specified options for a [`ScreenCastProxy::select_sources`] request.
 pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// What types of content to record.
     types: Option<BitFlags<SourceType>>,
     /// Whether to allow selecting multiple sources.
@@ -124,7 +116,7 @@ pub struct SelectSourcesOptions {
 impl SelectSourcesOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -151,13 +143,13 @@ impl SelectSourcesOptions {
 /// Specified options for a [`ScreenCastProxy::start`] request.
 pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
 }
 
 impl StartCastOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -236,13 +228,19 @@ impl<'a> ScreenCastProxy<'a> {
         &self,
         options: CreateSessionOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let session: CreateSession =
-            call_request_method(&self.0, "CreateSession", &(options)).await?;
-        SessionProxy::new(
-            self.0.connection(),
-            zvariant::OwnedObjectPath::try_from(session.session_handle)?.into_inner(),
-        )
-        .await
+        let (proxy, session) = futures::try_join!(
+            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
+                .into_future(),
+            call_request_method::<CreateSession, CreateSessionOptions>(
+                &self.0,
+                &options.handle_token,
+                "CreateSession",
+                &(&options)
+            )
+            .into_future()
+        )?;
+        assert_eq!(proxy.inner().path().to_string(), session.session_handle);
+        Ok(proxy)
     }
 
     /// Open a file descriptor to the PipeWire remote where the screen cast
@@ -279,7 +277,13 @@ impl<'a> ScreenCastProxy<'a> {
         session: &SessionProxy<'_>,
         options: SelectSourcesOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "SelectSources", &(session, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "SelectSources",
+            &(session, &options),
+        )
+        .await
     }
 
     /// Start the screen cast session.
@@ -300,7 +304,13 @@ impl<'a> ScreenCastProxy<'a> {
         parent_window: WindowIdentifier,
         options: StartCastOptions,
     ) -> Result<Streams, Error> {
-        call_request_method(&self.0, "Start", &(session, parent_window, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "Start",
+            &(session, parent_window, &options),
+        )
+        .await
     }
 
     /// Available cursor mode.

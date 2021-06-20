@@ -2,22 +2,17 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{
-//!     CreateRemoteOptions, DeviceType, KeyState, RemoteDesktopProxy, SelectDevicesOptions,
-//!     StartRemoteOptions,
+//!     DeviceType, KeyState, RemoteDesktopProxy, SelectDevicesOptions,
 //! };
-//! use ashpd::{HandleToken, WindowIdentifier};
+//! use ashpd::WindowIdentifier;
 //! use std::collections::HashMap;
-//! use std::convert::TryFrom;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!
 //!     let session = proxy
-//!         .create_session(
-//!             CreateRemoteOptions::default()
-//!                 .session_handle_token(HandleToken::try_from("token").unwrap()),
-//!         )
+//!         .create_session(Default::default())
 //!         .await?;
 //!
 //!     proxy
@@ -31,7 +26,7 @@
 //!         .start(
 //!             &session,
 //!             WindowIdentifier::default(),
-//!             StartRemoteOptions::default(),
+//!             Default::default(),
 //!         )
 //!         .await?;
 //!     println!("{:#?}", devices);
@@ -44,10 +39,10 @@
 //!     Ok(())
 //! }
 //! ```
-use std::collections::HashMap;
-
 use enumflags2::BitFlags;
+use futures::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::collections::HashMap;
 use zvariant::{OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -92,21 +87,21 @@ pub enum Axis {
 /// Specified options for a [`RemoteDesktopProxy::create_session`] request.
 pub struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
-    session_handle_token: Option<HandleToken>,
+    session_handle_token: HandleToken,
 }
 
 impl CreateRemoteOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
     /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = Some(session_handle_token);
+        self.session_handle_token = session_handle_token;
         self
     }
 }
@@ -122,7 +117,7 @@ struct CreateSession {
 /// Specified options for a [`RemoteDesktopProxy::select_devices`] request.
 pub struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// The device types to request remote controlling of. Default is all.
     types: Option<BitFlags<DeviceType>>,
 }
@@ -130,7 +125,7 @@ pub struct SelectDevicesOptions {
 impl SelectDevicesOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -145,13 +140,13 @@ impl SelectDevicesOptions {
 /// Specified options for a [`RemoteDesktopProxy::start`] request.
 pub struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
 }
 
 impl StartRemoteOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -192,9 +187,22 @@ impl<'a> RemoteDesktopProxy<'a> {
         &self,
         options: CreateRemoteOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let session: CreateSession =
-            call_request_method(&self.0, "CreateSession", &(options)).await?;
-        SessionProxy::new(self.0.connection(), session.session_handle.into_inner()).await
+        let (proxy, session) = futures::try_join!(
+            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
+                .into_future(),
+            call_request_method::<CreateSession, CreateRemoteOptions>(
+                &self.0,
+                &options.handle_token,
+                "CreateSession",
+                &(&options)
+            )
+            .into_future()
+        )?;
+        assert_eq!(
+            proxy.inner().path().clone(),
+            session.session_handle.into_inner()
+        );
+        Ok(proxy)
     }
 
     /// Select input devices to remote control.
@@ -208,7 +216,13 @@ impl<'a> RemoteDesktopProxy<'a> {
         session: &SessionProxy<'_>,
         options: SelectDevicesOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "SelectDevices", &(session, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "SelectDevices",
+            &(session, &options),
+        )
+        .await
     }
 
     ///  Start the remote desktop session.
@@ -228,7 +242,13 @@ impl<'a> RemoteDesktopProxy<'a> {
         parent_window: WindowIdentifier,
         options: StartRemoteOptions,
     ) -> Result<BitFlags<DeviceType>, Error> {
-        call_request_method(&self.0, "Start", &(session, parent_window, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "Start",
+            &(session, parent_window, &options),
+        )
+        .await
     }
 
     /// Notify keyboard code.

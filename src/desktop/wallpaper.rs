@@ -62,7 +62,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     helpers::{call_basic_response_method, property},
-    Error, WindowIdentifier,
+    Error, HandleToken, WindowIdentifier,
 };
 
 #[derive(
@@ -97,6 +97,8 @@ impl Serialize for SetOn {
 #[derive(SerializeDict, DeserializeDict, Clone, TypeDict, Debug, Default)]
 /// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a [`WallpaperProxy::set_wallpaper_uri`] request.
 pub struct WallpaperOptions {
+    /// A string that will be used as the last element of the handle.
+    handle_token: HandleToken,
     /// Whether to show a preview of the picture
     #[zvariant(rename = "show-preview")]
     show_preview: Option<bool>,
@@ -106,6 +108,12 @@ pub struct WallpaperOptions {
 }
 
 impl WallpaperOptions {
+    /// Sets the handle token.
+    pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
+        self.handle_token = handle_token;
+        self
+    }
+
     /// Whether to show a preview of the picture.
     /// **Note** that the portal may decide to show a preview even if this
     /// option is not set.
@@ -157,8 +165,9 @@ impl<'a> WallpaperProxy<'a> {
     {
         call_basic_response_method(
             &self.0,
+            &options.handle_token,
             "SetWallpaperFile",
-            &(parent_window, fd.as_raw_fd(), options),
+            &(parent_window, fd.as_raw_fd(), &options),
         )
         .await
     }
@@ -176,7 +185,13 @@ impl<'a> WallpaperProxy<'a> {
         uri: &str,
         options: WallpaperOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "SetWallpaperURI", &(parent_window, uri, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "SetWallpaperURI",
+            &(parent_window, uri, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.
