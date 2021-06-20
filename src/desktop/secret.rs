@@ -69,6 +69,7 @@ impl<'a> SecretProxy<'a> {
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
     /// * `token` -  A string returned by a previous call to [`SecretProxy::retrieve_secret`].
+    #[doc(alias = "RetrieveSecret")]
     pub async fn retrieve_secret<F: AsRawFd + serde::Serialize + zvariant::Type>(
         &self,
         fd: F,

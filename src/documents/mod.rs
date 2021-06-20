@@ -151,6 +151,7 @@ impl<'a> DocumentsProxy<'a> {
     ///   for the file.
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
+    #[doc(alias = "Add")]
     pub async fn add(
         &self,
         o_path_fd: Fd,
@@ -173,6 +174,7 @@ impl<'a> DocumentsProxy<'a> {
     /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
+    #[doc(alias = "AddFull")]
     pub async fn add_full(
         &self,
         o_path_fds: &[Fd],
@@ -200,6 +202,7 @@ impl<'a> DocumentsProxy<'a> {
     ///   for the file.
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
+    #[doc(alias = "AddNamed")]
     pub async fn add_named(
         &self,
         o_path_parent_fd: Fd,
@@ -229,6 +232,7 @@ impl<'a> DocumentsProxy<'a> {
     /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
+    #[doc(alias = "AddNamedFull")]
     pub async fn add_named_full(
         &self,
         o_path_fd: Fd,
@@ -252,12 +256,15 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
+    #[doc(alias = "Delete")]
     pub async fn delete(&self, doc_id: &str) -> Result<(), Error> {
         call_method(&self.0, "Delete", &(doc_id)).await
     }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
     /// This will typically be /run/user/$UID/doc/.
+    #[doc(alias = "GetMountPoint")]
+    #[doc(alias = "get_mount_point")]
     pub async fn mount_point(&self) -> Result<String, Error> {
         call_method(&self.0, "GetMountPoint", &()).await
     }
@@ -271,6 +278,7 @@ impl<'a> DocumentsProxy<'a> {
     /// * `doc_id` - The ID of the file in the document store.
     /// * `app_id` - The ID of the application to which permissions are granted.
     /// * `permissions` - The permissions to grant.
+    #[doc(alias = "GrantPermissions")]
     pub async fn grant_permissions(
         &self,
         doc_id: &str,
@@ -289,6 +297,7 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
+    #[doc(alias = "Info")]
     pub async fn info(&self, doc_id: &str) -> Result<(String, Permissions), Error> {
         call_method(&self.0, "Info", &(doc_id)).await
     }
@@ -302,6 +311,7 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `app-id` - The application ID, or '' to list all documents.
+    #[doc(alias = "List")]
     pub async fn list(&self, app_id: &str) -> Result<HashMap<String, String>, Error> {
         call_method(&self.0, "List", &(app_id)).await
     }
@@ -315,6 +325,7 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// - `filename` - A path in the host filesystem.
+    #[doc(alias = "Lookup")]
     pub async fn lookup(&self, filename: &str) -> Result<String, Error> {
         call_method(&self.0, "Lookup", &(filename)).await
     }
@@ -329,6 +340,7 @@ impl<'a> DocumentsProxy<'a> {
     /// * `app_id` - The ID of the application from which permissions are
     ///   revoked.
     /// * `permissions` - The permissions to revoke.
+    #[doc(alias = "RevokePermissions")]
     pub async fn revoke_permissions(
         &self,
         doc_id: &str,

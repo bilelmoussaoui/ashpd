@@ -253,6 +253,7 @@ impl<'a> NotificationProxy<'a> {
     }
 
     /// Signal emitted when a particular action is invoked.
+    #[doc(alias = "ActionInvoked")]
     pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
         let mut stream = self.0.receive_signal("ActionInvoked").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -269,6 +270,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// * `id` - Application-provided ID for this notification.
     /// * `notification` - The notification.
+    #[doc(alias = "AddNotification")]
     pub async fn add_notification(
         &self,
         id: &str,
@@ -282,6 +284,7 @@ impl<'a> NotificationProxy<'a> {
     /// # Arguments
     ///
     /// * `id` - Application-provided ID for this notification.
+    #[doc(alias = "RemoveNotification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
         call_method(&self.0, "RemoveNotification", &(id)).await
     }

@@ -58,6 +58,7 @@ impl<'a> SessionProxy<'a> {
     }
 
     /// Emitted when a session is closed.
+    #[doc(alias = "Closed")]
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
         let mut stream = self.0.receive_signal("Closed").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -66,6 +67,7 @@ impl<'a> SessionProxy<'a> {
 
     /// Closes the portal session to which this object refers and ends all
     /// related user interaction (dialogs, etc).
+    #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await
     }

@@ -134,6 +134,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// Create a remote desktop session.
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.
+    #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateRemoteOptions::default();
         let (proxy, session) = futures::try_join!(
@@ -160,6 +161,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `types` - The device types to request remote controlling of.
+    #[doc(alias = "SelectDevices")]
     pub async fn select_devices(
         &self,
         session: &SessionProxy<'_>,
@@ -185,6 +187,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `parent_window` - The application window identifier.
+    #[doc(alias = "Start")]
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
@@ -210,6 +213,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    #[doc(alias = "NotifyKeyboardKeycode")]
     pub async fn notify_keyboard_keycode(
         &self,
         session: &SessionProxy<'_>,
@@ -235,6 +239,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    #[doc(alias = "NotifyKeyboardKeysym")]
     pub async fn notify_keyboard_keysym(
         &self,
         session: &SessionProxy<'_>,
@@ -260,6 +265,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `slot` - Touch slot where touch point appeared.
+    #[doc(alias = "NotifyTouchUp")]
     pub async fn notify_touch_up(
         &self,
         session: &SessionProxy<'_>,
@@ -284,6 +290,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
     /// * `y` - Touch down y coordinate.
+    #[doc(alias = "NotifyTouchDown")]
     pub async fn notify_touch_down(
         &self,
         session: &SessionProxy<'_>,
@@ -316,6 +323,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch motion x coordinate.
     /// * `y` - Touch motion y coordinate.
+    #[doc(alias = "NotifyTouchMotion")]
     pub async fn notify_touch_motion(
         &self,
         session: &SessionProxy<'_>,
@@ -344,6 +352,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
+    #[doc(alias = "NotifyPointerMotionAbsolute")]
     pub async fn notify_pointer_motion_absolute(
         &self,
         session: &SessionProxy<'_>,
@@ -370,6 +379,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
+    #[doc(alias = "NotifyPointerMotion")]
     pub async fn notify_pointer_motion(
         &self,
         session: &SessionProxy<'_>,
@@ -378,12 +388,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ) -> Result<(), Error> {
         // FIXME: figure out the options we can take here
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            &self.0,
-            "NotifyPointerMotionAbsolute",
-            &(session, options, dx, dy),
-        )
-        .await
+        call_method(&self.0, "NotifyPointerMotion", &(session, options, dx, dy)).await
     }
 
     /// Notify pointer button.
@@ -397,6 +402,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    #[doc(alias = "NotifyPointerButton")]
     pub async fn notify_pointer_button(
         &self,
         session: &SessionProxy<'_>,
@@ -421,6 +427,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `axis` - The axis that was scrolled.
+    #[doc(alias = "NotifyPointerAxisDiscrete")]
     pub async fn notify_pointer_axis_discrete(
         &self,
         session: &SessionProxy<'_>,
@@ -450,6 +457,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
+    #[doc(alias = "NotifyPointerAxis")]
     pub async fn notify_pointer_axis(
         &self,
         session: &SessionProxy<'_>,
@@ -462,6 +470,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     }
 
     /// Available source types.
+    #[doc(alias = "AvailableDeviceTypes")]
     pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
         property(&self.0, "AvailableDeviceTypes").await
     }

@@ -532,6 +532,7 @@ impl<'a> PrintProxy<'a> {
     /// * `settings` - [`Settings`].
     /// * `page_setup` - [`PageSetup`].
     /// * `modal` - Whether the dialog should be a modal.
+    #[doc(alias = "PreparePint")]
     pub async fn prepare_print(
         &self,
         parent_window: WindowIdentifier,
@@ -562,6 +563,7 @@ impl<'a> PrintProxy<'a> {
     /// * `fd` - File descriptor for reading the content to print.
     /// * `token` - A token returned by a call to [`PrintProxy::prepare_print`].
     /// * `modal` - Whether the dialog should be a modal.
+    #[doc(alias = "Print")]
     pub async fn print<F>(
         &self,
         parent_window: WindowIdentifier,

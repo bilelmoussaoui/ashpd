@@ -88,6 +88,7 @@ impl<'a> DeviceProxy<'a> {
     /// * `pid` - The pid of the application on whose behalf the request is
     ///   made.
     /// * `devices` - A list of devices to request access to.
+    #[doc(alias = "AccessDevice")]
     pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<(), Error> {
         let options = AccessDeviceOptions::default();
         call_basic_response_method(

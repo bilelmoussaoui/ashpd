@@ -153,6 +153,7 @@ impl<'a> InhibitProxy<'a> {
     /// # Arguments
     ///
     /// * `window` - The application window identifier.
+    #[doc(alias = "CreateMonitor")]
     pub async fn create_monitor(
         &self,
         window: WindowIdentifier,
@@ -181,7 +182,8 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// * `window` - The application window identifier.
     /// * `flags` - The flags determine what changes are inhibited.
-    /// * `reason` - User-visible reason for the inhibition..
+    /// * `reason` - User-visible reason for the inhibition.
+    #[doc(alias = "Inhibit")]
     pub async fn inhibit(
         &self,
         window: WindowIdentifier,
@@ -199,6 +201,7 @@ impl<'a> InhibitProxy<'a> {
     }
 
     /// Signal emitted when the session state changes.
+    #[doc(alias = "StateChanged")]
     pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
         let mut stream = self.0.receive_signal("StateChanged").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;
@@ -212,6 +215,7 @@ impl<'a> InhibitProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
+    #[doc(alias = "QueryEndResponse")]
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
         call_method(&self.0, "QueryEndResponse", &(session)).await
     }

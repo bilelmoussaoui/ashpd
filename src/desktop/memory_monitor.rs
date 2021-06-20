@@ -42,6 +42,7 @@ impl<'a> MemoryMonitorProxy<'a> {
     /// Signal emitted when a particular low memory situation happens
     /// with 0 being the lowest level of memory availability warning, and 255
     /// being the highest.
+    #[doc(alias = "LowMemoryWarning")]
     pub async fn receive_low_memory_warning(&self) -> Result<i32, Error> {
         let mut stream = self.0.receive_signal("LowMemoryWarning").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;

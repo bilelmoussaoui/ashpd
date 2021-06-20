@@ -52,6 +52,7 @@ impl<'a> CameraProxy<'a> {
     }
 
     /// Requests an access to the camera.
+    #[doc(alias = "AccessCamera")]
     pub async fn access_camera(&self) -> Result<(), Error> {
         let options = CameraAccessOptions::default();
         call_basic_response_method(&self.0, &options.handle_token, "AccessCamera", &(&options))
@@ -62,6 +63,7 @@ impl<'a> CameraProxy<'a> {
     /// available.
     ///
     /// Returns a File descriptor of an open PipeWire remote.
+    #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(&self) -> Result<Fd, Error> {
         // FIXME: figure out what are the possible options
         let options: HashMap<&str, Value<'_>> = HashMap::new();
@@ -69,6 +71,7 @@ impl<'a> CameraProxy<'a> {
     }
 
     /// A boolean stating whether there is any cameras available.
+    #[doc(alias = "IsCameraPresent")]
     pub async fn is_camera_present(&self) -> Result<bool, Error> {
         property(&self.0, "IsCameraPresent").await
     }

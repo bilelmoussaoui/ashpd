@@ -61,6 +61,7 @@ impl<'a> TrashProxy<'a> {
     /// # Arguments
     ///
     /// * `fd` - The file descriptor.
+    #[doc(alias = "TrashFile")]
     pub async fn trash_file<T>(&self, fd: T) -> Result<(), Error>
     where
         T: AsRawFd + Type + Serialize,

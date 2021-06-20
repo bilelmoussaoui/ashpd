@@ -100,6 +100,7 @@ impl<'a> AccountProxy<'a> {
     ///
     /// * `window` - Identifier for the window.
     /// * `reason` - A user-visible reason for the request.
+    #[doc(alias = "GetUserInformation")]
     pub async fn user_information(
         &self,
         window: WindowIdentifier,

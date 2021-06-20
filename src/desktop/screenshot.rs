@@ -167,6 +167,7 @@ impl<'a> ScreenshotProxy<'a> {
     /// # Arguments
     ///
     /// * `parent_window` - Identifier for the application window.
+    #[doc(alias = "PickColor")]
     pub async fn pick_color(&self, parent_window: WindowIdentifier) -> Result<Color, Error> {
         let options = PickColorOptions::default();
         call_request_method(
@@ -185,6 +186,7 @@ impl<'a> ScreenshotProxy<'a> {
     /// * `parent_window` - Identifier for the application window.
     /// * `interactive` - Sets whether the dialog should offer customization before a screenshot or not.
     /// * `modal` - Sets whether the dialog should be a modal.
+    #[doc(alias = "Screenshot")]
     pub async fn screenshot(
         &self,
         parent_window: WindowIdentifier,

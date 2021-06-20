@@ -99,6 +99,7 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `pid` - Process id to query the GameMode status of.
+    #[doc(alias = "QueryStatus")]
     pub async fn query_status(&self, pid: i32) -> Result<Status, Error> {
         call_method(&self.0, "QueryStatus", &(pid)).await
     }
@@ -110,6 +111,7 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Pid file descriptor to query the GameMode status of.
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   information.
+    #[doc(alias = "QueryStatusByPIDFd")]
     pub async fn query_status_by_pidfd<F, R>(
         &self,
         target: F,
@@ -128,6 +130,7 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `target` - Process id to query the GameMode status of.
     /// * `requester` - Process id of the process requesting the information.
+    #[doc(alias = "QueryStatusByPid")]
     pub async fn query_status_by_pid(&self, target: i32, requester: i32) -> Result<Status, Error> {
         call_method(&self.0, "QueryStatusByPid", &(target, requester)).await
     }
@@ -142,6 +145,7 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `pid` - Process id of the game to register.
+    #[doc(alias = "RegisterGame")]
     pub async fn register_game(&self, pid: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "RegisterGame", &(pid)).await?;
         match status {
@@ -157,6 +161,7 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Process file descriptor of the game to register.
     /// * `requester` - Process file descriptor of the process requesting the
     ///   registration.
+    #[doc(alias = "RegisterGameByPIDFd")]
     pub async fn register_game_by_pidfd<F, R>(&self, target: F, requester: R) -> Result<(), Error>
     where
         F: AsRawFd + Type + Serialize + Debug,
@@ -175,6 +180,7 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `target` - Process id of the game to register.
     /// * `requester` - Process id of the process requesting the registration.
+    #[doc(alias = "RegisterGameRejected")]
     pub async fn register_game_by_pid(&self, target: i32, requester: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "RegisterGameByPid", &(target, requester)).await?;
         match status {
@@ -192,6 +198,7 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// `pid` - Process id of the game to un-register.
+    #[doc(alias = "UnregisterGame")]
     pub async fn unregister_game(&self, pid: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "UnregisterGame", &(pid)).await?;
         match status {
@@ -207,6 +214,7 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Pid file descriptor of the game to un-register.
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   un-registration.
+    #[doc(alias = "UnregisterGameByPIDFd")]
     pub async fn unregister_game_by_pidfd<F, R>(&self, target: F, requester: R) -> Result<(), Error>
     where
         F: AsRawFd + Type + Serialize + Debug,
@@ -226,6 +234,7 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Process id of the game to un-register.
     /// * `requester` - Process id of the process requesting the
     ///   un-registration.
+    #[doc(alias = "UnregisterGameByPid")]
     pub async fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await?;
         match status {
