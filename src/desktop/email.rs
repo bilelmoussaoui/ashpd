@@ -114,6 +114,7 @@ impl Email {
 
 /// The interface lets sandboxed applications request sending an email.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Email")]
 pub struct EmailProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> EmailProxy<'a> {

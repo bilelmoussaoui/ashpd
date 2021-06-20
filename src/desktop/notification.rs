@@ -238,6 +238,7 @@ impl Action {
 ///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the
 /// application.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Notification")]
 pub struct NotificationProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> NotificationProxy<'a> {

@@ -172,6 +172,7 @@ impl From<ResponseError> for ResponseType {
 /// This ensures that applications will work with both old and new versions of
 /// xdg-desktop-portal.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Request")]
 pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> RequestProxy<'a> {

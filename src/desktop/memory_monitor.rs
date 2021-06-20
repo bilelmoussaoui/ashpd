@@ -23,6 +23,7 @@ use super::{DESTINATION, PATH};
 /// applications. It is not a portal in the strict sense, since it does not
 /// involve user interaction.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.MemoryMonitor")]
 pub struct MemoryMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> MemoryMonitorProxy<'a> {

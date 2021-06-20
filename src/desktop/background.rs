@@ -108,6 +108,7 @@ impl Background {
 /// is allowed to run in the background or started automatically when the user
 /// logs in.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Background")]
 pub struct BackgroundProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {

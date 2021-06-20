@@ -80,6 +80,7 @@ impl UserInfo {
 /// The portal backend will present the user with a dialog to confirm which (if
 /// any) information to share.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Account")]
 pub struct AccountProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> AccountProxy<'a> {

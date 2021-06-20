@@ -73,6 +73,7 @@ impl fmt::Display for Connectivity {
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib `GNetworkMonitor` interface.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.NetworkMonitor")]
 pub struct NetworkMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> NetworkMonitorProxy<'a> {

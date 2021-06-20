@@ -26,6 +26,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+use super::DESTINATION;
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`UpdateMonitorProxy::update`] request.
 ///
@@ -82,6 +84,7 @@ pub struct UpdateProgress {
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Flatpak.UpdateMonitor")]
 pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> UpdateMonitorProxy<'a> {
@@ -93,9 +96,9 @@ impl<'a> UpdateMonitorProxy<'a> {
         path: ObjectPath<'a>,
     ) -> Result<UpdateMonitorProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.UpdateMonitor")
+            .interface("org.freedesktop.portal.Flatpak.UpdateMonitor")
             .path(path)?
-            .destination("org.freedesktop.portal.Flatpak.UpdateMonitor")
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

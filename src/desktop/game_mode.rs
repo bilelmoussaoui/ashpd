@@ -78,6 +78,7 @@ enum RegisterStatus {
 /// automatically un-register the client. This might happen with a (small)
 /// delay.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.GameMode")]
 pub struct GameModeProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> GameModeProxy<'a> {

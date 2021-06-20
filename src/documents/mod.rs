@@ -124,6 +124,7 @@ trait Documents {}
 /// `GrantPermissions()`) are reflected in the POSIX mode bits in the fuse
 /// filesystem.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Documents")]
 pub struct DocumentsProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> DocumentsProxy<'a> {

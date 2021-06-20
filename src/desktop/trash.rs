@@ -40,6 +40,7 @@ enum TrashStatus {
 
 /// The interface lets sandboxed applications send files to the trashcan.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Trash")]
 pub struct TrashProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> TrashProxy<'a> {

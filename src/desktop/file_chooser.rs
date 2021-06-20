@@ -396,6 +396,7 @@ impl SelectedFiles {
 /// outside the sandbox. The portal backend will present the user with a file
 /// chooser dialog.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.FileChooser")]
 pub struct FileChooserProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FileChooserProxy<'a> {
