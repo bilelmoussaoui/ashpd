@@ -91,10 +91,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_request_method, property},
-    Error, WindowIdentifier,
-};
+use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
 #[derive(Serialize, Deserialize, Type, Clone, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -488,10 +485,5 @@ impl<'a> FileChooserProxy<'a> {
             &(parent_window, title, &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

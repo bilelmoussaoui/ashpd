@@ -1,6 +1,6 @@
 use crate::{
     desktop::{HandleToken, DESTINATION},
-    helpers::{call_method, property},
+    helpers::call_method,
     Error,
 };
 use futures::prelude::stream::*;
@@ -71,11 +71,6 @@ impl<'a> SessionProxy<'a> {
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }
 

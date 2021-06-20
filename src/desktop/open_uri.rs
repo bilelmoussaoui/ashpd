@@ -48,10 +48,7 @@ use serde::Serialize;
 use zvariant::Type;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
-use crate::{
-    helpers::{call_basic_response_method, property},
-    Error, WindowIdentifier,
-};
+use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
 use super::{HandleToken, DESTINATION, PATH};
 
@@ -193,10 +190,5 @@ impl<'a> OpenURIProxy<'a> {
             &(parent_window, uri, &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

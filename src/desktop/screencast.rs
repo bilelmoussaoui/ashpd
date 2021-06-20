@@ -43,7 +43,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method, property},
+    helpers::{call_basic_response_method, call_method, call_request_method},
     Error, WindowIdentifier,
 };
 
@@ -293,17 +293,18 @@ impl<'a> ScreenCastProxy<'a> {
     /// Available cursor mode.
     #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
-        property(&self.0, "AvailableCursorModes").await
+        self.inner()
+            .get_property::<BitFlags<CursorMode>>("AvailableCursorModes")
+            .await
+            .map_err(From::from)
     }
 
     /// Available source types.
     #[doc(alias = "AvailableSourceTypes")]
     pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
-        property(&self.0, "AvailableSourceTypes").await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
+        self.inner()
+            .get_property::<BitFlags<SourceType>>("AvailableSourceTypes")
+            .await
+            .map_err(From::from)
     }
 }

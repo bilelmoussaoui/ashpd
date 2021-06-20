@@ -35,10 +35,7 @@
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_request_method, property},
-    Error, WindowIdentifier,
-};
+use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::screenshot`] request.
@@ -209,10 +206,5 @@ impl<'a> ScreenshotProxy<'a> {
             &(parent_window, &options),
         )
         .await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }

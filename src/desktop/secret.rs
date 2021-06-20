@@ -21,10 +21,7 @@
 //! }
 //! ```
 
-use crate::{
-    helpers::{call_method, property},
-    Error,
-};
+use crate::{helpers::call_method, Error};
 use std::os::unix::prelude::AsRawFd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -87,10 +84,5 @@ impl<'a> SecretProxy<'a> {
             RetrieveOptions::default()
         };
         call_method(&self.0, "RetrieveSecret", &(fd.as_raw_fd(), options)).await
-    }
-
-    /// The version of this DBus interface.
-    pub async fn version(&self) -> Result<u32, Error> {
-        property(&self.0, "version").await
     }
 }
