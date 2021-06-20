@@ -104,6 +104,11 @@ impl<'a> UpdateMonitorProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// A signal received when there's progress during the application update.
     #[doc(alias = "Progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {

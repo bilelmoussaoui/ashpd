@@ -129,6 +129,11 @@ impl<'a> EmailProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Presents a window that lets the user compose an email.
     ///
     /// **Note** that the default email client for the host will need to support

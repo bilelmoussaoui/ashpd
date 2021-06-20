@@ -253,6 +253,11 @@ impl<'a> NotificationProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Signal emitted when a particular action is invoked.
     #[doc(alias = "ActionInvoked")]
     pub async fn receive_action_invoked(&self) -> Result<Action, Error> {

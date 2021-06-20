@@ -90,6 +90,11 @@ impl<'a> NetworkMonitorProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Returns whether the given hostname is believed to be reachable.
     ///
     /// # Arguments

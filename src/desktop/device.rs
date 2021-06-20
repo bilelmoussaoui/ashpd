@@ -82,6 +82,11 @@ impl<'a> DeviceProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Asks for access to a device.
     ///
     /// # Arguments

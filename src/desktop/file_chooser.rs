@@ -411,6 +411,11 @@ impl<'a> FileChooserProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Asks to open one or more files.
     ///
     /// # Arguments

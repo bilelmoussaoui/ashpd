@@ -176,6 +176,11 @@ impl<'a> LocationProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Signal emitted when the user location is updated.
     #[doc(alias = "LocationUpdated")]
     pub async fn receive_location_updated(&self) -> Result<Location, Error> {

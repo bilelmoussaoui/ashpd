@@ -132,6 +132,11 @@ impl<'a> RemoteDesktopProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Create a remote desktop session.
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.

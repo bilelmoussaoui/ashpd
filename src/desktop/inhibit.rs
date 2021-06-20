@@ -147,6 +147,11 @@ impl<'a> InhibitProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Creates a monitoring session.
     /// While this session is active, the caller will receive `state_changed`
     /// signals with updates on the session state.

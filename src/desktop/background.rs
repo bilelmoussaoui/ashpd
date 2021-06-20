@@ -123,6 +123,11 @@ impl<'a> BackgroundProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Requests that the application is allowed to run in the background.
     ///
     /// # Arguments

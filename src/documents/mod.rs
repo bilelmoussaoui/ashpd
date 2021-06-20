@@ -139,6 +139,11 @@ impl<'a> DocumentsProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Adds a file to the document store.
     /// The file is passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.

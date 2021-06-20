@@ -93,6 +93,11 @@ impl<'a> GameModeProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Query the GameMode status for a process.
     /// If the caller is running inside a sandbox with pid namespace isolation,
     /// the pid will be translated to the respective host pid.
