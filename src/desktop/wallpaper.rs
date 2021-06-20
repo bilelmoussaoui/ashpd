@@ -126,6 +126,11 @@ impl<'a> WallpaperProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Sets the lock-screen, background or both wallpaper's from a file
     /// descriptor.
     ///

@@ -40,6 +40,11 @@ impl<'a> MemoryMonitorProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Signal emitted when a particular low memory situation happens
     /// with 0 being the lowest level of memory availability warning, and 255
     /// being the highest.

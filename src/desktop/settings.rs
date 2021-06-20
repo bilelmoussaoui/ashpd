@@ -91,6 +91,11 @@ impl<'a> SettingsProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
     /// Returns a `HashMap` of namespaces to its keys and values.

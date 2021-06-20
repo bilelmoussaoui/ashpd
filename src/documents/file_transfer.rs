@@ -95,6 +95,11 @@ impl<'a> FileTransferProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Adds files to a session.
     /// This method can be called multiple times on a given session.
     /// **Note** that only regular files (not directories) can be added.

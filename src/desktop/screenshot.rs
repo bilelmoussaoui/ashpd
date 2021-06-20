@@ -163,6 +163,11 @@ impl<'a> ScreenshotProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Obtains the color of a single pixel.
     ///
     /// # Arguments

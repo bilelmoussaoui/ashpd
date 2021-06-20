@@ -55,6 +55,11 @@ impl<'a> TrashProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     /// Sends a file to the trashcan.
     /// Applications are allowed to trash a file if they can open it in
     /// read/write mode.
