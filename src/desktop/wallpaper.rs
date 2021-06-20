@@ -61,8 +61,9 @@ use zvariant::{Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
+    desktop::{HandleToken, DESTINATION, PATH},
     helpers::{call_basic_response_method, property},
-    Error, HandleToken, WindowIdentifier,
+    Error, WindowIdentifier,
 };
 
 #[derive(
@@ -139,8 +140,8 @@ impl<'a> WallpaperProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<WallpaperProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Wallpaper")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

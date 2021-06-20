@@ -32,6 +32,8 @@
 //!     Ok(())
 //! }
 //! ```
+pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
+pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -129,8 +131,8 @@ impl<'a> DocumentsProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<DocumentsProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Documents")
-            .path("/org/freedesktop/portal/documents")?
-            .destination("org.freedesktop.portal.Documents")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

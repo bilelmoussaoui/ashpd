@@ -36,6 +36,8 @@ use crate::{
     Error,
 };
 
+use super::{DESTINATION, PATH};
+
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
 
@@ -81,8 +83,8 @@ impl<'a> SettingsProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<SettingsProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Settings")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

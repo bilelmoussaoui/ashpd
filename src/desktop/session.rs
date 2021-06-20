@@ -1,6 +1,7 @@
 use crate::{
+    desktop::{HandleToken, DESTINATION},
     helpers::{call_method, property},
-    Error, HandleToken,
+    Error,
 };
 use futures::prelude::stream::*;
 use serde::{Serialize, Serializer};
@@ -15,23 +16,9 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// Session object, which will stay alive for the duration of the session.
 ///
 /// The duration of the session is defined by the interface that creates it.
-/// For convenience, the interface contains a method Close(), and a signal
-/// `org.freedesktop.portal.Session::Closed`. Whether it is allowed to directly
-/// call Close() depends on the interface.
-///
-/// The handle of a session will be of the form
-/// `/org/freedesktop/portal/desktop/session/SENDER/TOKEN`, where SENDER is the
-/// callers unique name, with the initial ':' removed and all '.' replaced by
-/// '_', and TOKEN is a unique token that the caller provided with the
-/// session_handle_token key in the options vardict of the method creating the
-/// session.
-///
-/// The token that the caller provides should be unique and not guessable.
-/// To avoid clashes with calls made from unrelated libraries, it is a good idea
-/// to use a per-library prefix combined with a random number.
-///
-/// A client who started a session vanishing from the D-Bus is equivalent to
-/// closing all active sessions made by said client.
+/// For convenience, the interface contains a method [`SessionProxy::close`], and a signal
+/// [`SessionProxy::receive_closed`]. Whether it is allowed to directly
+/// call [`SessionProxy::close`] depends on the interface.
 #[derive(Debug)]
 pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
@@ -39,14 +26,14 @@ impl<'a> SessionProxy<'a> {
     /// Create a new instance of [`SessionProxy`].
     ///
     /// **Note** A [`SessionProxy`] is not supposed to be created manually.
-    pub async fn new(
+    pub(crate) async fn new(
         connection: &zbus::azync::Connection,
         path: ObjectPath<'a>,
     ) -> Result<SessionProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Session")
             .path(path)?
-            .destination("org.freedesktop.portal.Desktop")
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy, connection.clone()))

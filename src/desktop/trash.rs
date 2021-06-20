@@ -30,6 +30,8 @@ use std::os::unix::io::AsRawFd;
 use zvariant::Type;
 use zvariant_derive::Type;
 
+use super::{DESTINATION, PATH};
+
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 #[repr(u32)]
 /// The status of moving a file to the trash.
@@ -49,8 +51,8 @@ impl<'a> TrashProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<TrashProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Trash")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

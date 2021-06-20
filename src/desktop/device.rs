@@ -22,8 +22,10 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     helpers::{call_basic_response_method, property},
-    Error, HandleToken,
+    Error,
 };
+
+use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -81,8 +83,8 @@ impl<'a> DeviceProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<DeviceProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Device")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

@@ -28,6 +28,8 @@ use crate::{
 use std::os::unix::prelude::AsRawFd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
+use super::{DESTINATION, PATH};
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
 pub struct RetrieveOptions {
@@ -54,8 +56,8 @@ impl<'a> SecretProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<SecretProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Secret")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

@@ -38,6 +38,8 @@ use futures::prelude::stream::*;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
+use super::{DESTINATION, PATH};
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`FileTransferProxy::start_transfer`] request.
 pub struct TransferOptions {
@@ -85,8 +87,8 @@ impl<'a> FileTransferProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FileTransferProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.FileTransfer")
-            .path("/org/freedesktop/portal/documents")?
-            .destination("org.freedesktop.portal.Documents")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

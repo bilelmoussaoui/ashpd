@@ -23,8 +23,10 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     helpers::{call_basic_response_method, call_method, property},
-    Error, HandleToken,
+    Error,
 };
+
+use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`CameraProxy::access_camera`] request.
@@ -51,8 +53,8 @@ impl<'a> CameraProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<CameraProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Camera")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

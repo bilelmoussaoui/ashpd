@@ -28,6 +28,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+use super::{DESTINATION, PATH};
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// The network status, composed of the availability, metered & connectivity
 pub struct NetworkStatus {
@@ -79,8 +81,8 @@ impl<'a> NetworkMonitorProxy<'a> {
     ) -> Result<NetworkMonitorProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.NetworkMonitor")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))

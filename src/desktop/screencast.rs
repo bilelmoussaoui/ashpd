@@ -49,9 +49,10 @@ use std::collections::HashMap;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method, property},
-    Error, HandleToken, SessionProxy, WindowIdentifier,
+    Error, WindowIdentifier,
 };
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
@@ -216,8 +217,8 @@ impl<'a> ScreenCastProxy<'a> {
     pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenCastProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.ScreenCast")
-            .path("/org/freedesktop/portal/desktop")?
-            .destination("org.freedesktop.portal.Desktop")
+            .path(PATH)?
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))
