@@ -115,6 +115,7 @@ struct SelectedDevices {
 
 /// The interface lets sandboxed applications create remote desktop sessions.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.RemoteDesktop")]
 pub struct RemoteDesktopProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> RemoteDesktopProxy<'a> {

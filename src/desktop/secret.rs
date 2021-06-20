@@ -49,6 +49,7 @@ impl RetrieveOptions {
 /// The secret can then be used for encrypting confidential data inside the
 /// sandbox.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Secret")]
 pub struct SecretProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> SecretProxy<'a> {

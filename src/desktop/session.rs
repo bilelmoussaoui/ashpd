@@ -20,6 +20,7 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// [`SessionProxy::receive_closed`]. Whether it is allowed to directly
 /// call [`SessionProxy::close`] depends on the interface.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Session")]
 pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
 
 impl<'a> SessionProxy<'a> {

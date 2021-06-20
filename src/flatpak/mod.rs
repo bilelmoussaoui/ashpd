@@ -163,6 +163,7 @@ struct CreateMonitorOptions {}
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Flatpak")]
 pub struct FlatpakProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> FlatpakProxy<'a> {

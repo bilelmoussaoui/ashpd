@@ -76,6 +76,7 @@ impl std::fmt::Debug for Setting {
 /// required for toolkits similar to XSettings. It is not for general purpose
 /// settings.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Settings")]
 pub struct SettingsProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> SettingsProxy<'a> {

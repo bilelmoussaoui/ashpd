@@ -95,6 +95,7 @@ impl OpenFileOptions {
 /// (e.g. a http: link to the applications homepage) under the control of the
 /// user.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.OpenURI")]
 pub struct OpenURIProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {

@@ -67,6 +67,7 @@ impl Serialize for Device {
 /// sense, since the API is not directly accessible to applications inside the
 /// sandbox.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Device")]
 pub struct DeviceProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> DeviceProxy<'a> {

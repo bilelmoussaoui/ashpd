@@ -111,6 +111,7 @@ impl WallpaperOptions {
 /// The interface lets sandboxed applications set the user's desktop background
 /// picture.
 #[derive(Debug)]
+#[doc(alias = "org.freedesktop.portal.Wallpaper")]
 pub struct WallpaperProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> WallpaperProxy<'a> {
