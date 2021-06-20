@@ -30,13 +30,13 @@ use crate::{
 /// Specified options for a [`CameraProxy::access_camera`] request.
 pub struct CameraAccessOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
 }
 
 impl CameraAccessOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -64,7 +64,8 @@ impl<'a> CameraProxy<'a> {
     ///
     /// * `options` - A [`CameraAccessOptions`].
     pub async fn access_camera(&self, options: CameraAccessOptions) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "AccessCamera", &(options)).await
+        call_basic_response_method(&self.0, &options.handle_token, "AccessCamera", &(&options))
+            .await
     }
 
     /// Open a file descriptor to the PipeWire remote where the camera nodes are

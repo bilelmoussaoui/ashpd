@@ -1,11 +1,15 @@
-use std::{convert::TryFrom, fmt::Debug};
-
-use crate::request::{BasicResponse, RequestProxy};
 use crate::Error;
+use crate::{
+    request::{BasicResponse, RequestProxy},
+    HandleToken,
+};
+use futures::TryFutureExt;
+use std::{convert::TryFrom, fmt::Debug};
 use zvariant::OwnedValue;
 
 pub(crate) async fn call_request_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
+    handle_token: &HandleToken,
     method_name: &str,
     body: &B,
 ) -> Result<R, Error>
@@ -13,39 +17,28 @@ where
     R: serde::de::DeserializeOwned + zvariant::Type + Debug,
     B: serde::ser::Serialize + zvariant::Type + Debug,
 {
-    println!(
-        "calling request method {} with body {:#?}",
-        method_name, body
-    );
-    let path = proxy
-        .call::<B, zvariant::OwnedObjectPath>(method_name, body)
-        .await?;
-    println!("received path {:#?}", path);
-    let request = RequestProxy::new(proxy.connection(), path.into_inner()).await?;
-    println!("created request {:#?}", request);
-    let response = request.receive_response::<R>().await?;
-    println!("received response {:#?}", response);
+    let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
+    let (response, path) = futures::try_join!(
+        request.receive_response::<R>().into_future(),
+        proxy
+            .call::<B, zvariant::OwnedObjectPath>(method_name, body)
+            .into_future()
+            .map_err(From::from),
+    )?;
+    assert_eq!(path.into_inner(), request.inner().path().clone());
     Ok(response)
 }
 
 pub(crate) async fn call_basic_response_method<B>(
     proxy: &zbus::azync::Proxy<'_>,
+    handle_token: &HandleToken,
     method_name: &str,
     body: &B,
 ) -> Result<(), Error>
 where
     B: serde::ser::Serialize + zvariant::Type + Debug,
 {
-    println!(
-        "calling casic response method {} with body {:#?}",
-        method_name, body
-    );
-    let path = proxy
-        .call::<B, zvariant::OwnedObjectPath>(method_name, body)
-        .await?;
-
-    let request = RequestProxy::new(proxy.connection(), path.into_inner()).await?;
-    let response = request.receive_response::<BasicResponse>().await?;
+    call_request_method::<BasicResponse, B>(proxy, handle_token, method_name, body).await?;
     Ok(())
 }
 
@@ -58,7 +51,6 @@ where
     R: serde::de::DeserializeOwned + zvariant::Type,
     B: serde::ser::Serialize + zvariant::Type + Debug,
 {
-    println!("calling method {} with body {:#?}", method_name, body);
     proxy
         .call::<B, R>(method_name, body)
         .await

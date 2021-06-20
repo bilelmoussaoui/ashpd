@@ -181,7 +181,7 @@ impl Choice {
 /// Specified options for a [`FileChooserProxy::open_file`] request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Label for the accept button. Mnemonic underlines are allowed.
     accept_label: Option<String>,
     /// Whether the dialog should be modal.
@@ -201,7 +201,7 @@ pub struct OpenFileOptions {
 impl OpenFileOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -252,7 +252,7 @@ impl OpenFileOptions {
 /// Specified options for a [`FileChooserProxy::save_file`] request.
 pub struct SaveFileOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Label for the accept button. Mnemonic underlines are allowed.
     accept_label: Option<String>,
     /// Whether the dialog should be modal.
@@ -274,7 +274,7 @@ pub struct SaveFileOptions {
 impl SaveFileOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -331,7 +331,7 @@ impl SaveFileOptions {
 /// Specified options for a [`FileChooserProxy::save_files`] request.
 pub struct SaveFilesOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Label for the accept button. Mnemonic underlines are allowed.
     accept_label: Option<String>,
     /// Whether the dialog should be modal.
@@ -347,7 +347,7 @@ pub struct SaveFilesOptions {
 impl SaveFilesOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -422,7 +422,13 @@ impl<'a> FileChooserProxy<'a> {
         title: &str,
         options: OpenFileOptions,
     ) -> Result<SelectedFiles, Error> {
-        call_request_method(&self.0, "OpenFile", &(parent_window, title, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "OpenFile",
+            &(parent_window, title, &options),
+        )
+        .await
     }
 
     /// Asks for a location to save a file.
@@ -438,7 +444,13 @@ impl<'a> FileChooserProxy<'a> {
         title: &str,
         options: SaveFileOptions,
     ) -> Result<SelectedFiles, Error> {
-        call_request_method(&self.0, "SaveFile", &(parent_window, title, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "SaveFile",
+            &(parent_window, title, &options),
+        )
+        .await
     }
 
     /// Asks for a folder as a location to save one or more files.
@@ -459,7 +471,13 @@ impl<'a> FileChooserProxy<'a> {
         title: &str,
         options: SaveFilesOptions,
     ) -> Result<SelectedFiles, Error> {
-        call_request_method(&self.0, "SaveFiles", &(parent_window, title, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "SaveFiles",
+            &(parent_window, title, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

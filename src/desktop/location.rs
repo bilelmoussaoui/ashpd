@@ -1,24 +1,20 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::location::{CreateSessionOptions, LocationProxy, SessionStartOptions};
-//! use ashpd::{HandleToken, WindowIdentifier};
-//! use std::convert::TryFrom;
+//! use ashpd::desktop::location::LocationProxy;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = LocationProxy::new(&connection).await?;
 //!
-//!     let options = CreateSessionOptions::default()
-//!         .session_handle_token(HandleToken::try_from("token").unwrap());
-//!
-//!     let session = proxy.create_session(options).await?;
+//!     let session = proxy.create_session(Default::default()).await?;
 //!
 //!     proxy
 //!         .start(
 //!             &session,
 //!             WindowIdentifier::default(),
-//!             SessionStartOptions::default(),
+//!             Default::default(),
 //!         )
 //!         .await?;
 //!
@@ -27,11 +23,13 @@
 //!     println!("{}", location.accuracy());
 //!     println!("{}", location.longitude());
 //!     println!("{}", location.latitude());
+//!     session.close().await?;
 //!
 //!     Ok(())
 //! }
 //! ```
 use futures::prelude::stream::*;
+use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{ObjectPath, OwnedObjectPath};
@@ -64,7 +62,7 @@ pub enum Accuracy {
 /// Specified options for a [`LocationProxy::create_session`] request.
 pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
-    session_handle_token: Option<HandleToken>,
+    session_handle_token: HandleToken,
     /// Distance threshold in meters. Default is 0.
     distance_threshold: Option<u32>,
     /// Time threshold in seconds. Default is 0.
@@ -76,7 +74,7 @@ pub struct CreateSessionOptions {
 impl CreateSessionOptions {
     /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = Some(session_handle_token);
+        self.session_handle_token = session_handle_token;
         self
     }
 
@@ -103,13 +101,13 @@ impl CreateSessionOptions {
 /// Specified options for a [`LocationProxy::start`] request.
 pub struct SessionStartOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
 }
 
 impl SessionStartOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -219,8 +217,18 @@ impl<'a> LocationProxy<'a> {
         &self,
         options: CreateSessionOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let path: OwnedObjectPath = call_method(&self.0, "CreateSession", &(options)).await?;
-        SessionProxy::new(self.0.connection(), path.into_inner()).await
+        let (proxy, path) = futures::try_join!(
+            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
+                .into_future(),
+            call_method::<zvariant::OwnedObjectPath, CreateSessionOptions>(
+                &self.0,
+                "CreateSession",
+                &(options)
+            )
+            .into_future()
+        )?;
+        assert_eq!(proxy.inner().path().clone(), path.into_inner());
+        Ok(proxy)
     }
 
     /// Start the location session.
@@ -237,7 +245,13 @@ impl<'a> LocationProxy<'a> {
         parent_window: WindowIdentifier,
         options: SessionStartOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "Start", &(session, parent_window, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "Start",
+            &(session, parent_window, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

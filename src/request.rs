@@ -6,13 +6,14 @@ use serde::{
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{
     collections::HashMap,
+    convert::TryFrom,
     fmt::{self, Debug},
     marker::PhantomData,
 };
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-use crate::helpers::call_method;
+use crate::{helpers::call_method, HandleToken};
 
 /// A typical response returned by the [`RequestProxy::receive_response`] signal of a
 /// [`RequestProxy`].
@@ -178,7 +179,6 @@ impl<'a> RequestProxy<'a> {
         connection: &zbus::azync::Connection,
         path: zvariant::ObjectPath<'a>,
     ) -> Result<RequestProxy<'a>, crate::Error> {
-        println!("creating a RequestProxy with path: {:#?}", path);
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Request")
             .path(path)?
@@ -188,19 +188,34 @@ impl<'a> RequestProxy<'a> {
         Ok(Self(proxy, connection.clone()))
     }
 
+    pub async fn from_unique_name(
+        connection: &zbus::azync::Connection,
+        handle_token: &HandleToken,
+    ) -> Result<RequestProxy<'a>, crate::Error> {
+        let unique_name = connection.unique_name().unwrap();
+        let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
+        let path = zvariant::ObjectPath::try_from(format!(
+            "/org/freedesktop/portal/desktop/request/{}/{}",
+            unique_identifier, handle_token
+        ))?;
+        RequestProxy::new(connection, path).await
+    }
+
+    /// Get a reference to the underlying Proxy.
+    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+        &self.0
+    }
+
     pub async fn receive_response<R>(&self) -> Result<R, crate::Error>
     where
         R: DeserializeOwned + zvariant::Type + Debug,
     {
         let mut stream = self.0.receive_signal("Response").await?;
-        while let Some(message) = stream.next().await {
-            let body = message.body::<Response<R>>()?;
-            return match body {
-                Response::Err(e) => Err(e.into()),
-                Response::Ok(r) => Ok(r),
-            };
+        let message = stream.next().await.ok_or(crate::Error::NoResponse)?;
+        match message.body::<Response<R>>()? {
+            Response::Err(e) => Err(e.into()),
+            Response::Ok(r) => Ok(r),
         }
-        Err(crate::Error::NoResponse)
     }
 
     /// Closes the portal request to which this object refers and ends all

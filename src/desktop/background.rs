@@ -37,7 +37,7 @@ use crate::{
 /// Specified options for a [`BackgroundProxy::request_background`] request.
 pub struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// User-visible reason for the request.
     reason: Option<String>,
     /// `true` if the app also wants to be started automatically at login.
@@ -61,7 +61,7 @@ impl BackgroundOptions {
 
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -125,7 +125,13 @@ impl<'a> BackgroundProxy<'a> {
         parent_window: WindowIdentifier,
         options: BackgroundOptions,
     ) -> Result<Background, Error> {
-        call_request_method(&self.0, "RequestBackground", &(parent_window, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "RequestBackground",
+            &(parent_window, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

@@ -35,7 +35,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 /// Specified options for a [`AccountProxy::user_information`] request.
 pub struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Shown in the dialog to explain why the information is needed.
     reason: Option<String>,
 }
@@ -49,7 +49,7 @@ impl UserInfoOptions {
 
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -96,7 +96,13 @@ impl<'a> AccountProxy<'a> {
         window: WindowIdentifier,
         options: UserInfoOptions,
     ) -> Result<UserInfo, Error> {
-        call_request_method(&self.0, "GetUserInformation", &(window, options)).await
+        call_request_method(
+            &self.0,
+            &options.handle_token,
+            "GetUserInformation",
+            &(window, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

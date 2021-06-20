@@ -1,6 +1,8 @@
-use std::convert::TryFrom;
-
+use core::fmt;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
+use std::{convert::TryFrom, fmt::Display};
 use zvariant_derive::Type;
 
 /// A handle token is a DBus Object Path element, specified in the
@@ -23,6 +25,24 @@ use zvariant_derive::Type;
 /// ```
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
 pub struct HandleToken(String);
+
+impl Display for HandleToken {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl Default for HandleToken {
+    fn default() -> Self {
+        let mut rng = thread_rng();
+        let token: String = (&mut rng)
+            .sample_iter(Alphanumeric)
+            .take(10)
+            .map(char::from)
+            .collect();
+        HandleToken::try_from(token).unwrap()
+    }
+}
 
 #[derive(Debug)]
 pub struct HandleInvalidCharacter(char);

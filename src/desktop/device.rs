@@ -29,13 +29,13 @@ use crate::{
 /// Specified options for a [`DeviceProxy::access_device`] request.
 pub struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
 }
 
 impl AccessDeviceOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -102,7 +102,13 @@ impl<'a> DeviceProxy<'a> {
         devices: &[Device],
         options: AccessDeviceOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "AccessDevice", &(pid, devices, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "AccessDevice",
+            &(pid, devices, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

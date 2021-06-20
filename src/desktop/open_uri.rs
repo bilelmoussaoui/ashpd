@@ -67,13 +67,13 @@ use crate::{
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
 pub struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
 }
 
 impl OpenDirOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 }
@@ -82,7 +82,7 @@ impl OpenDirOptions {
 /// Specified options for a [`OpenURIProxy::open_file`] or [`OpenURIProxy::open_uri`] request.
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// Whether to allow the chosen application to write to the file.
     /// This key only takes effect the uri points to a local file that is
     /// exported in the document portal, and the chosen application is sandboxed
@@ -96,7 +96,7 @@ pub struct OpenFileOptions {
 impl OpenFileOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -149,8 +149,9 @@ impl<'a> OpenURIProxy<'a> {
     {
         call_basic_response_method(
             &self.0,
+            &options.handle_token,
             "OpenDirectory",
-            &(parent_window, directory.as_raw_fd(), options),
+            &(parent_window, directory.as_raw_fd(), &options),
         )
         .await
     }
@@ -173,8 +174,9 @@ impl<'a> OpenURIProxy<'a> {
     {
         call_basic_response_method(
             &self.0,
+            &options.handle_token,
             "OpenFile",
-            &(parent_window, file.as_raw_fd(), options),
+            &(parent_window, file.as_raw_fd(), &options),
         )
         .await
     }
@@ -192,7 +194,13 @@ impl<'a> OpenURIProxy<'a> {
         uri: &str,
         options: OpenFileOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "OpenURI", &(parent_window, uri, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "OpenURI",
+            &(parent_window, uri, &options),
+        )
+        .await
     }
 
     /// The version of this DBus interface.

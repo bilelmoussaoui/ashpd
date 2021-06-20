@@ -4,20 +4,18 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::inhibit::{
-//!     CreateMonitorOptions, InhibitFlags, InhibitOptions, InhibitProxy, SessionState,
+//!     InhibitFlags, InhibitOptions, InhibitProxy, SessionState,
 //! };
-//! use ashpd::{HandleToken, WindowIdentifier};
-//! use std::convert::TryFrom;
+//! use ashpd::WindowIdentifier;
 //! use std::{thread, time};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = InhibitProxy::new(&connection).await?;
-//!     let session_token = HandleToken::try_from("sessiontoken").unwrap();
 //!     let session = proxy
 //!         .create_monitor(
 //!             WindowIdentifier::default(),
-//!             CreateMonitorOptions::default().session_handle_token(session_token),
+//!             Default::default(),
 //!         )
 //!         .await?;
 //!
@@ -50,7 +48,7 @@ use zvariant::{ObjectPath, OwnedObjectPath};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use crate::{
-    helpers::{call_basic_response_method, call_request_method, property},
+    helpers::{call_basic_response_method, call_method, call_request_method, property},
     Error, HandleToken, SessionProxy, WindowIdentifier,
 };
 
@@ -58,21 +56,21 @@ use crate::{
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
 pub struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
-    session_handle_token: Option<HandleToken>,
+    session_handle_token: HandleToken,
 }
 
 impl CreateMonitorOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
     /// Sets the session handle token.
     pub fn session_handle_token(mut self, session_handle_token: HandleToken) -> Self {
-        self.session_handle_token = Some(session_handle_token);
+        self.session_handle_token = session_handle_token;
         self
     }
 }
@@ -81,7 +79,7 @@ impl CreateMonitorOptions {
 /// Specified options for a [`InhibitProxy::inhibit`] request.
 pub struct InhibitOptions {
     /// A string that will be used as the last element of the handle.
-    handle_token: Option<HandleToken>,
+    handle_token: HandleToken,
     /// User-visible reason for the inhibition.
     reason: Option<String>,
 }
@@ -89,7 +87,7 @@ pub struct InhibitOptions {
 impl InhibitOptions {
     /// Sets the handle token.
     pub fn handle_token(mut self, handle_token: HandleToken) -> Self {
-        self.handle_token = Some(handle_token);
+        self.handle_token = handle_token;
         self
     }
 
@@ -192,9 +190,21 @@ impl<'a> InhibitProxy<'a> {
         window: WindowIdentifier,
         options: CreateMonitorOptions,
     ) -> Result<SessionProxy<'a>, Error> {
-        let monitor: CreateMonitor =
-            call_request_method(&self.0, "CreateMonitor", &(window, options)).await?;
-        SessionProxy::new(self.0.connection(), monitor.session_handle.into_inner()).await
+        let monitor: CreateMonitor = call_request_method(
+            &self.0,
+            &options.handle_token,
+            "CreateMonitor",
+            &(window, &options),
+        )
+        .await?;
+        let proxy =
+            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
+                .await?;
+        assert_eq!(
+            proxy.inner().path().clone(),
+            monitor.session_handle.into_inner()
+        );
+        Ok(proxy)
     }
 
     /// Inhibits a session status changes.
@@ -210,7 +220,13 @@ impl<'a> InhibitProxy<'a> {
         flags: BitFlags<InhibitFlags>,
         options: InhibitOptions,
     ) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "Inhibit", &(window, flags, options)).await
+        call_basic_response_method(
+            &self.0,
+            &options.handle_token,
+            "Inhibit",
+            &(window, flags, &options),
+        )
+        .await
     }
 
     /// Signal emitted when the session state changes.
@@ -228,7 +244,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
-        call_basic_response_method(&self.0, "QueryEndResponse", &(session)).await
+        call_method(&self.0, "QueryEndResponse", &(session)).await
     }
 
     /// The version of this DBus interface.
