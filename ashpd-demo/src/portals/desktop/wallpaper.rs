@@ -113,13 +113,7 @@ async fn set_from_uri(
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = wallpaper::WallpaperProxy::new(&connection).await?;
     proxy
-        .set_wallpaper_uri(
-            window,
-            uri,
-            wallpaper::WallpaperOptions::default()
-                .show_preview(show_preview)
-                .set_on(set_on),
-        )
+        .set_wallpaper_uri(window, uri, show_preview, set_on)
         .await?;
     Ok(())
 }

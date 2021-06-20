@@ -64,20 +64,23 @@ impl NotificationPage {
         let notification_id = self_.id_entry.text();
         let title = self_.title_entry.text();
         let body = self_.body_entry.text();
-        /*
-        let connection = zbus::Connection::new_session()?;
-        let proxy = NotificationProxy::new(&connection);
-        proxy.add_notification(
-            &notification_id,
-            Notification::new("Contrast")
-                .default_action("open")
-                .default_action_target(Value::U32(100).into())
-                .body("color copied to clipboard")
-                .priority(Priority::High)
-                .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-                .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
-        )?;
-         */
+        gtk_macros::spawn!(async move {
+            let cnx = zbus::azync::Connection::new_session().await.unwrap();
+            let proxy = NotificationProxy::new(&cnx).await.unwrap();
+            proxy
+                .add_notification(
+                    &notification_id,
+                    Notification::new(&title)
+                        .default_action("open")
+                        .default_action_target(Value::U32(100).into())
+                        .body(&body)
+                        .priority(Priority::High)
+                        .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
+                        .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
+                )
+                .await
+                .unwrap();
+        });
 
         Ok(())
     }

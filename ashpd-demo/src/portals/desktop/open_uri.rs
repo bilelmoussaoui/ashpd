@@ -70,14 +70,6 @@ async fn open_uri(
 ) -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = open_uri::OpenURIProxy::new(&connection).await?;
-    proxy
-        .open_uri(
-            window,
-            uri,
-            open_uri::OpenFileOptions::default()
-                .ask(ask)
-                .writeable(writeable),
-        )
-        .await?;
+    proxy.open_uri(window, uri, writeable, ask).await?;
     Ok(())
 }

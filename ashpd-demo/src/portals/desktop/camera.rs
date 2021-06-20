@@ -1,13 +1,9 @@
-use std::{
-    collections::HashMap,
-    os::unix::prelude::{AsRawFd, RawFd},
-};
-
 use ashpd::{desktop::camera, zbus};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use std::os::unix::prelude::{AsRawFd, RawFd};
 
 use crate::widgets::CameraPaintable;
 
@@ -132,10 +128,8 @@ impl CameraPage {
 async fn stream() -> Result<RawFd, ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = camera::CameraProxy::new(&connection).await?;
-    proxy
-        .access_camera(camera::CameraAccessOptions::default())
-        .await?;
+    proxy.access_camera().await?;
 
-    let fd = proxy.open_pipe_wire_remote(HashMap::new()).await?;
+    let fd = proxy.open_pipe_wire_remote().await?;
     Ok(fd.as_raw_fd())
 }

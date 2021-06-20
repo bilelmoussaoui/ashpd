@@ -1,16 +1,12 @@
 use adw::prelude::*;
-use ashpd::zbus;
 use ashpd::{
-    desktop::location::{
-        Accuracy, CreateSessionOptions, Location, LocationProxy, SessionStartOptions,
-    },
-    HandleToken, WindowIdentifier,
+    desktop::location::{Accuracy, Location, LocationProxy},
+    zbus, WindowIdentifier,
 };
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use std::convert::TryFrom;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -128,17 +124,13 @@ pub async fn locate(
     let proxy = LocationProxy::new(&connection).await?;
     let session = proxy
         .create_session(
-            CreateSessionOptions::default()
-                .session_handle_token(HandleToken::try_from("sometokenstuff").unwrap())
-                .distance_threshold(distance_threshold)
-                .time_threshold(time_threshold)
-                .accuracy(accuracy),
+            Some(distance_threshold),
+            Some(time_threshold),
+            Some(accuracy),
         )
         .await?;
 
-    proxy
-        .start(&session, window_identifier, SessionStartOptions::default())
-        .await?;
+    proxy.start(&session, window_identifier).await?;
     let location = proxy.receive_location_updated().await?;
 
     session.close().await?;

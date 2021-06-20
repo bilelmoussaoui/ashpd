@@ -70,9 +70,9 @@ impl AccountPage {
 
             if let Ok(user_info) = user_information(identifier, &reason).await
             {
-                self_.id_label.set_text(&user_info.id);
-                self_.name_label.set_text(&user_info.name);
-                let file = gio::File::for_uri(&user_info.image);
+                self_.id_label.set_text(user_info.id());
+                self_.name_label.set_text(user_info.name());
+                let file = gio::File::for_uri(user_info.image());
                 let icon = gio::FileIcon::new(&file);
                 self_.avatar.set_from_gicon(&icon);
                 self_.response_group.show();
@@ -87,8 +87,6 @@ async fn user_information(
 ) -> Result<account::UserInfo, ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = account::AccountProxy::new(&connection).await?;
-    let info = proxy
-        .user_information(window, account::UserInfoOptions::default().reason(reason))
-        .await?;
+    let info = proxy.user_information(window, reason).await?;
     Ok(info)
 }

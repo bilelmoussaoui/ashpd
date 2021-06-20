@@ -1,25 +1,21 @@
-use std::os::unix::io::AsRawFd;
-use std::os::unix::io::RawFd;
-use std::{collections::HashMap, convert::TryFrom, sync::Arc};
-
+use crate::widgets::CameraPaintable;
 use adw::prelude::*;
-use ashpd::zbus;
 use ashpd::{
-    desktop::screencast::{
-        CreateSessionOptions, CursorMode, ScreenCastProxy, SelectSourcesOptions, SourceType,
-        StartCastOptions, Stream,
+    desktop::{
+        screencast::{CursorMode, ScreenCastProxy, SourceType, Stream},
+        SessionProxy,
     },
     enumflags2::BitFlags,
-    HandleToken,
+    zbus, WindowIdentifier,
 };
-use ashpd::{SessionProxy, WindowIdentifier};
 use futures::lock::Mutex;
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-
-use crate::widgets::CameraPaintable;
+use std::os::unix::io::AsRawFd;
+use std::os::unix::io::RawFd;
+use std::sync::Arc;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -150,7 +146,6 @@ impl ScreenCastPage {
     }
 
     pub fn stop_session(&self) {
-        let self_ = imp::ScreenCastPage::from_instance(self);
         let ctx = glib::MainContext::default();
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenCastPage::from_instance(&page);
@@ -175,34 +170,13 @@ pub async fn screencast(
 ) -> Result<(Vec<Stream>, RawFd, SessionProxy<'static>), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = ScreenCastProxy::new(&connection).await?;
-    println!("screen casting");
-    let session = proxy
-        .create_session(
-            CreateSessionOptions::default()
-                .session_handle_token(HandleToken::try_from("handletoken").unwrap()),
-        )
-        .await
-        .unwrap();
-    println!("{:#?}", session.version().await?);
-    println!("session created");
+    let session = proxy.create_session().await?;
 
     proxy
-        .select_sources(
-            &session,
-            SelectSourcesOptions::default()
-                .multiple(multiple)
-                .types(types)
-                .cursor_mode(cursor_mode),
-        )
+        .select_sources(&session, cursor_mode, types, multiple)
         .await?;
-    let streams = proxy
-        .start(&session, window_identifier, StartCastOptions::default())
-        .await?
-        .streams()
-        .to_vec();
+    let streams = proxy.start(&session, window_identifier).await?.to_vec();
 
-    let node_id = proxy
-        .open_pipe_wire_remote(&session, HashMap::new())
-        .await?;
+    let node_id = proxy.open_pipe_wire_remote(&session).await?;
     Ok((streams, node_id.as_raw_fd(), session))
 }
