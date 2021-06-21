@@ -27,10 +27,9 @@ gtk4 = {git = "https://github.com/gtk-rs/gtk4-rs", optional = true}
 serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 rand = "0.8"
-strum = "0.20"
-strum_macros = "0.20"
+strum = "0.21"
+strum_macros = "0.21"
 zbus = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main"}
 zvariant = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main", features = ["enumflags2"], default-features = false}
 zvariant_derive = {git = "https://gitlab.freedesktop.org/dbus/zbus", branch = "main"}
-
 futures = "0.3"
