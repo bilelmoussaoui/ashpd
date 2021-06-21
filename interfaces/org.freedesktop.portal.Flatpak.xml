@@ -1,6 +1,5 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
                       "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<!-- GDBus 2.64.4 -->
 <node>
   <interface name="org.freedesktop.DBus.Properties">
     <method name="Get">
@@ -53,6 +52,10 @@
       <arg type="a{sv}" name="options" direction="in"/>
       <arg type="o" name="handle" direction="out"/>
     </method>
+    <signal name="SpawnStarted">
+      <arg type="u" name="pid"/>
+      <arg type="u" name="relpid"/>
+    </signal>
     <signal name="SpawnExited">
       <arg type="u" name="pid"/>
       <arg type="u" name="exit_status"/>
@@ -61,4 +64,3 @@
     <property type="u" name="supports" access="read"/>
   </interface>
 </node>
-
