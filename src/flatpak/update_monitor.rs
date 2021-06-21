@@ -130,9 +130,9 @@ impl<'a> UpdateMonitorProxy<'a> {
     /// **Note** that updates are only allowed if the new version
     /// has the same permissions (or less) than the currently installed version.
     #[doc(alias = "Update")]
-    pub async fn update(&self, parent_window: WindowIdentifier) -> Result<(), Error> {
+    pub async fn update(&self, identifier: WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
-        call_method(&self.0, "Update", &(parent_window, options)).await
+        call_method(&self.0, "Update", &(identifier, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.

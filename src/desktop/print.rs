@@ -533,7 +533,7 @@ impl<'a> PrintProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `title` - Title for the print dialog.
     /// * `settings` - [`Settings`].
     /// * `page_setup` - [`PageSetup`].
@@ -541,7 +541,7 @@ impl<'a> PrintProxy<'a> {
     #[doc(alias = "PreparePint")]
     pub async fn prepare_print(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
@@ -552,7 +552,7 @@ impl<'a> PrintProxy<'a> {
             &self.0,
             &options.handle_token,
             "PreparePint",
-            &(parent_window, title, settings, page_setup, &options),
+            &(identifier, title, settings, page_setup, &options),
         )
         .await
     }
@@ -564,7 +564,7 @@ impl<'a> PrintProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - The application window identifier.
+    /// * `identifier` - The application window identifier.
     /// * `title` - The title for the print dialog.
     /// * `fd` - File descriptor for reading the content to print.
     /// * `token` - A token returned by a call to [`PrintProxy::prepare_print`].
@@ -572,7 +572,7 @@ impl<'a> PrintProxy<'a> {
     #[doc(alias = "Print")]
     pub async fn print<F>(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         title: &str,
         fd: F,
         token: &str,
@@ -586,7 +586,7 @@ impl<'a> PrintProxy<'a> {
             &self.0,
             &options.handle_token,
             "Print",
-            &(parent_window, title, fd.as_raw_fd(), &options),
+            &(identifier, title, fd.as_raw_fd(), &options),
         )
         .await
     }

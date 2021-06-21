@@ -1,8 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::documents::file_transfer::{FileTransferProxy, TransferOptions};
-//! use std::collections::HashMap;
+//! use ashpd::documents::{FileTransferProxy};
 //! use std::fs::File;
 //! use std::os::unix::io::AsRawFd;
 //! use zvariant::Fd;
@@ -11,16 +10,14 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FileTransferProxy::new(&connection).await?;
 //!
-//!     let key = proxy
-//!         .start_transfer(TransferOptions::default().writeable(true).auto_stop(true))
-//!         .await?;
+//!     let key = proxy.start_transfer(true, true).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
-//!         .add_files(&key, &[Fd::from(file.as_raw_fd())], HashMap::new())
+//!         .add_files(&key, &[Fd::from(file.as_raw_fd())])
 //!         .await?;
 //!
 //!     // The files would be retrieved by another process
-//!     let files = proxy.retrieve_files(&key, HashMap::new()).await?;
+//!     let files = proxy.retrieve_files(&key).await?;
 //!     println!("{:#?}", files);
 //!
 //!     proxy.stop_transfer(&key).await?;
@@ -39,7 +36,7 @@ use super::{DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`FileTransferProxy::start_transfer`] request.
-pub struct TransferOptions {
+struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
     writeable: Option<bool>,
     /// Whether to stop the transfer automatically after the first
@@ -105,15 +102,11 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
     /// * `fds` - A list of file descriptors of the files to register.
-    /// * `options` - ?
-    /// FIXME: figure out the options we can take here
     #[doc(alias = "AddFiles")]
-    pub async fn add_files(
-        &self,
-        key: &str,
-        fds: &[Fd],
-        options: HashMap<&str, Value<'_>>,
-    ) -> Result<(), Error> {
+    pub async fn add_files(&self, key: &str, fds: &[Fd]) -> Result<(), Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
+
         call_method(&self.0, "AddFiles", &(key, fds, options)).await
     }
 
@@ -127,25 +120,30 @@ impl<'a> FileTransferProxy<'a> {
     /// # Arguments
     ///
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
-    /// * `options` - ?
-    /// FIXME: figure out the options we can take here
     #[doc(alias = "RetrieveFiles")]
-    pub async fn retrieve_files(
-        &self,
-        key: &str,
-        options: HashMap<&str, Value<'_>>,
-    ) -> Result<Vec<String>, Error> {
+    pub async fn retrieve_files(&self, key: &str) -> Result<Vec<String>, Error> {
+        // FIXME: figure out the options we can take here
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
+
         call_method(&self.0, "RetrieveFiles", &(key, options)).await
     }
     /// Starts a session for a file transfer.
     /// The caller should call [`FileTransferProxy::add_files`] at least once, to add files to this
     /// session.
     ///
+    /// # Arguments
+    ///
+    /// * `writeable` - Sets whether the chosen application can write to the files or not.
+    /// * `auto_stop` - Whether to stop the transfer automatically after the first
+    ///             [`FileTransferProxy::retrieve_files`] call.
+    ///
     /// # Returns
     ///
     /// a key that can be passed to [`FileTransferProxy::retrieve_files`] to obtain the files.
-    #[doc(alias = "StartTransfer")]
-    pub async fn start_transfer(&self, options: TransferOptions) -> Result<String, Error> {
+    pub async fn start_transfer(&self, writeable: bool, auto_stop: bool) -> Result<String, Error> {
+        let options = TransferOptions::default()
+            .writeable(writeable)
+            .auto_stop(auto_stop);
         call_method(&self.0, "StartTransfer", &(options)).await
     }
 

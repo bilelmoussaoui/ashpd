@@ -192,19 +192,19 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `parent_window` - The application window identifier.
+    /// * `identifier` - The application window identifier.
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
     ) -> Result<BitFlags<DeviceType>, Error> {
         let options = StartRemoteOptions::default();
         let response: SelectedDevices = call_request_method(
             &self.0,
             &options.handle_token,
             "Start",
-            &(session, parent_window, &options),
+            &(session, identifier, &options),
         )
         .await?;
         Ok(response.devices)

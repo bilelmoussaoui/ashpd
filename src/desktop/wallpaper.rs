@@ -136,14 +136,14 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `fd` - The wallpaper file description.
     /// * `show_preview` - Whether to show a preview of the picture.
     /// * `set_on` - Where to set the wallpaper on.
     #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file<F>(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         fd: F,
         show_preview: bool,
         set_on: SetOn,
@@ -158,7 +158,7 @@ impl<'a> WallpaperProxy<'a> {
             &self.0,
             &options.handle_token,
             "SetWallpaperFile",
-            &(parent_window, fd.as_raw_fd(), &options),
+            &(identifier, fd.as_raw_fd(), &options),
         )
         .await
     }
@@ -167,14 +167,14 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `uri` - The wallpaper URI.
     /// * `show_preview` - Whether to show a preview of the picture.
     /// * `set_on` - Where to set the wallpaper on.
     #[doc(alias = "SetWallpaperURI")]
     pub async fn set_wallpaper_uri(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         uri: &str,
         show_preview: bool,
         set_on: SetOn,
@@ -186,7 +186,7 @@ impl<'a> WallpaperProxy<'a> {
             &self.0,
             &options.handle_token,
             "SetWallpaperURI",
-            &(parent_window, uri, &options),
+            &(identifier, uri, &options),
         )
         .await
     }

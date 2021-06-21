@@ -116,12 +116,12 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
     #[doc(alias = "OpenDirectory")]
     pub async fn open_directory<F>(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         directory: F,
     ) -> Result<(), Error>
     where
@@ -132,7 +132,7 @@ impl<'a> OpenURIProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenDirectory",
-            &(parent_window, directory.as_raw_fd(), &options),
+            &(identifier, directory.as_raw_fd(), &options),
         )
         .await
     }
@@ -141,14 +141,14 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `file` - File descriptor for the file to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
     #[doc(alias = "OpenFile")]
     pub async fn open_file<F>(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         file: F,
         writeable: bool,
         ask: bool,
@@ -161,7 +161,7 @@ impl<'a> OpenURIProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenFile",
-            &(parent_window, file.as_raw_fd(), &options),
+            &(identifier, file.as_raw_fd(), &options),
         )
         .await
     }
@@ -170,14 +170,14 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `uri` - The uri to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
     #[doc(alias = "OpenURI")]
     pub async fn open_uri(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         uri: &str,
         writeable: bool,
         ask: bool,
@@ -187,7 +187,7 @@ impl<'a> OpenURIProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenURI",
-            &(parent_window, uri, &options),
+            &(identifier, uri, &options),
         )
         .await
     }
