@@ -52,6 +52,9 @@ pub mod open_uri;
 /// Print a document.
 pub mod print;
 
+/// Proxy information.
+pub mod proxy_resolver;
+
 /// Start a remote desktop session and interact with it.
 pub mod remote_desktop;
 
