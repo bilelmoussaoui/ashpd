@@ -260,9 +260,9 @@ pub struct SaveFileOptions {
     /// Suggested filename.
     current_name: Option<String>,
     /// Suggested folder to save the file in.
-    current_folder: Option<String>,
+    current_folder: Option<Vec<u8>>,
     /// The current file (when saving an existing file).
-    current_file: Option<String>,
+    current_file: Option<Vec<u8>>,
     /// List of serialized file filters.
     filters: Vec<FileFilter>,
     /// Request that this filter be set by default at dialog creation.
@@ -286,13 +286,19 @@ impl SaveFileOptions {
 
     /// Sets the current folder.
     pub fn current_folder(mut self, current_folder: &str) -> Self {
-        self.current_folder = Some(current_folder.into());
+        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        let mut bytes: Vec<u8> = current_folder.into();
+        bytes.push(0);
+        self.current_folder = Some(bytes);
         self
     }
 
     /// Sets the absolute path of the file.
     pub fn current_file(mut self, current_file: &str) -> Self {
-        self.current_file = Some(current_file.into());
+        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        let mut bytes: Vec<u8> = current_file.into();
+        bytes.push(0);
+        self.current_file = Some(bytes);
         self
     }
 
@@ -333,9 +339,9 @@ pub struct SaveFilesOptions {
     /// List of serialized combo boxes to add to the file chooser
     choices: Vec<Choice>,
     /// Suggested folder to save the file in.
-    current_folder: Option<String>,
+    current_folder: Option<Vec<u8>>,
     /// An array of file names to be saved.
-    files: Option<Vec<String>>,
+    files: Option<Vec<Vec<u8>>>,
 }
 
 impl SaveFilesOptions {
@@ -359,13 +365,21 @@ impl SaveFilesOptions {
 
     /// Specifies the current folder path.
     pub fn current_folder(mut self, current_folder: &str) -> Self {
-        self.current_folder = Some(current_folder.into());
+        let mut bytes: Vec<u8> = current_folder.into();
+        bytes.push(0);
+        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        self.current_folder = Some(bytes);
         self
     }
 
     /// Sets a list of files to save.
     pub fn files(mut self, files: &[&str]) -> Self {
-        self.files = Some(files.to_vec().iter().map(|s| s.to_string()).collect());
+        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        self.files = Some(files.to_vec().into_iter().map(|s| {
+            let mut bytes: Vec<u8> = s.into();
+            bytes.push(0);
+            bytes
+        }).collect());
         self
     }
 }
