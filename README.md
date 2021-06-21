@@ -18,7 +18,7 @@ async fn run() -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
 
-    let color = proxy.pick_color(Default::default).await?;
+    let color = proxy.pick_color(Default::default()).await?;
     println!("({}, {}, {})", color.red(), color.green(), color.blue());
     Ok(())
 }
