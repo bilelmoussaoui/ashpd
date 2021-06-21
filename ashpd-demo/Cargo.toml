@@ -22,7 +22,6 @@ git = "https://github.com/gtk-rs/gtk4-rs"
 
 [dependencies.ashpd]
 git = "https://github.com/bilelmoussaoui/ashpd"
-branch = "bilelmoussaoui/bump-to-new-zbus"
 features = ["feature_gtk4"]
 
 [dependencies.adw]
