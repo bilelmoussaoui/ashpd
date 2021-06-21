@@ -20,6 +20,12 @@ jobs:
           toolchain: stable
           override: true
       - uses: actions-rs/cargo@v1
+        env:
+          RUSTDOCFLAGS: |
+            -Z unstable-options
+            --extern-html-root-url=zbus=https://docs.rs/zbus/
+            --extern-html-root-url=zvariant=https://docs.rs/zvariant/
+            --extern-html-root-url=enumflags2=https://docs.rs/enumflags2/0.6/
         with:
           command: doc
           args: --package ashpd --all-features --no-deps
