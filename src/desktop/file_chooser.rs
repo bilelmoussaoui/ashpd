@@ -417,13 +417,13 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`OpenFileOptions`].
     #[doc(alias = "OpenFile")]
     pub async fn open_file(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
     ) -> Result<SelectedFiles, Error> {
@@ -431,7 +431,7 @@ impl<'a> FileChooserProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenFile",
-            &(parent_window, title, &options),
+            &(identifier, title, &options),
         )
         .await
     }
@@ -440,13 +440,13 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`SaveFileOptions`].
     #[doc(alias = "SaveFile")]
     pub async fn save_file(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
     ) -> Result<SelectedFiles, Error> {
@@ -454,7 +454,7 @@ impl<'a> FileChooserProxy<'a> {
             &self.0,
             &options.handle_token,
             "SaveFile",
-            &(parent_window, title, &options),
+            &(identifier, title, &options),
         )
         .await
     }
@@ -468,13 +468,13 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`SaveFilesOptions`].
     #[doc(alias = "SaveFiles")]
     pub async fn save_files(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
     ) -> Result<SelectedFiles, Error> {
@@ -482,7 +482,7 @@ impl<'a> FileChooserProxy<'a> {
             &self.0,
             &options.handle_token,
             "SaveFiles",
-            &(parent_window, title, &options),
+            &(identifier, title, &options),
         )
         .await
     }

@@ -35,15 +35,15 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 
-use std::collections::HashMap;
-use std::str::FromStr;
+use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+use std::{fmt::Debug, str::FromStr};
 
 use crate::{helpers::call_method, Error};
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::{Fd, Signature};
+use zvariant::{Fd, Signature, Type};
 use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -103,8 +103,6 @@ impl<'de> Deserialize<'de> for Permission {
     }
 }
 
-trait Documents {}
-
 /// The interface lets sandboxed applications make files from the outside world
 /// available to sandboxed applications in a controlled way.
 ///
@@ -115,10 +113,10 @@ trait Documents {}
 ///
 /// Individual files will appear at `/run/user/$UID/doc/$DOC_ID/filename`,
 /// where `$DOC_ID` is the ID of the file in the document store.
-/// It is returned by the `Add()` and `AddNamed()` calls.
+/// It is returned by the [`DocumentsProxy::add`] and [`DocumentsProxy::add_named`] calls.
 ///
 /// The permissions that the application has for a document store entry (see
-/// `GrantPermissions()`) are reflected in the POSIX mode bits in the fuse
+/// [`DocumentsProxy::grant_permissions`]) are reflected in the POSIX mode bits in the fuse
 /// filesystem.
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
@@ -155,12 +153,15 @@ impl<'a> DocumentsProxy<'a> {
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
     #[doc(alias = "Add")]
-    pub async fn add(
+    pub async fn add<F>(
         &self,
-        o_path_fd: Fd,
+        o_path_fd: F,
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<String, Error> {
+    ) -> Result<String, Error>
+    where
+        F: AsRawFd + Serialize + Type + Debug,
+    {
         call_method(&self.0, "Add", &(o_path_fd, reuse_existing, persistent)).await
     }
 
@@ -206,13 +207,16 @@ impl<'a> DocumentsProxy<'a> {
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
     #[doc(alias = "AddNamed")]
-    pub async fn add_named(
+    pub async fn add_named<F>(
         &self,
-        o_path_parent_fd: Fd,
+        o_path_parent_fd: F,
         filename: &str,
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<String, Error> {
+    ) -> Result<String, Error>
+    where
+        F: AsRawFd + Serialize + Type + Debug,
+    {
         call_method(
             &self.0,
             "AddNamed",
@@ -236,14 +240,17 @@ impl<'a> DocumentsProxy<'a> {
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
     #[doc(alias = "AddNamedFull")]
-    pub async fn add_named_full(
+    pub async fn add_named_full<F>(
         &self,
-        o_path_fd: Fd,
+        o_path_fd: F,
         filename: &str,
         flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[Permission],
-    ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error> {
+    ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error>
+    where
+        F: AsRawFd + Serialize + Type + Debug,
+    {
         call_method(
             &self.0,
             "AddNamedFull",
@@ -355,4 +362,6 @@ impl<'a> DocumentsProxy<'a> {
 }
 
 /// Interact with `org.freedesktop.portal.FileTransfer` interface.
-pub mod file_transfer;
+mod file_transfer;
+
+pub use file_transfer::FileTransferProxy;

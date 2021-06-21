@@ -129,7 +129,7 @@ impl<'a> BackgroundProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
 
     /// * `reason` - Sets a user-visible reason for the request.
     /// * `auto_start` - Sets whether to auto start the application or not.
@@ -140,7 +140,7 @@ impl<'a> BackgroundProxy<'a> {
     #[doc(alias = "RequestBackground")]
     pub async fn request_background(
         &self,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
         reason: &str,
         auto_start: bool,
         command_line: Option<&[&str]>,
@@ -155,7 +155,7 @@ impl<'a> BackgroundProxy<'a> {
             &self.0,
             &options.handle_token,
             "RequestBackground",
-            &(parent_window, &options),
+            &(identifier, &options),
         )
         .await
     }

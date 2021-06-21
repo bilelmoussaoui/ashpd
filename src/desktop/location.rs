@@ -227,19 +227,19 @@ impl<'a> LocationProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
     ) -> Result<(), Error> {
         let options = SessionStartOptions::default();
         call_basic_response_method(
             &self.0,
             &options.handle_token,
             "Start",
-            &(session, parent_window, &options),
+            &(session, identifier, &options),
         )
         .await
     }

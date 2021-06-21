@@ -28,15 +28,13 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
-use std::collections::HashMap;
-
 use enumflags2::BitFlags;
 use futures::prelude::stream::*;
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::collections::HashMap;
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use crate::flatpak::update_monitor::UpdateMonitorProxy;
 use crate::{helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -273,4 +271,5 @@ impl<'a> FlatpakProxy<'a> {
 }
 
 /// Monitor if there's an update it and install it.
-pub mod update_monitor;
+mod update_monitor;
+pub use update_monitor::{UpdateInfo, UpdateMonitorProxy, UpdateProgress, UpdateStatus};

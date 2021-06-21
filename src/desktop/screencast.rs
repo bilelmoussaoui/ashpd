@@ -272,19 +272,19 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
-    /// * `parent_window` - Identifier for the application window.
+    /// * `identifier` - Identifier for the application window.
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
-        parent_window: WindowIdentifier,
+        identifier: WindowIdentifier,
     ) -> Result<Vec<Stream>, Error> {
         let options = StartCastOptions::default();
         let streams: Streams = call_request_method(
             &self.0,
             &options.handle_token,
             "Start",
-            &(session, parent_window, &options),
+            &(session, identifier, &options),
         )
         .await?;
         Ok(streams.streams.to_vec())

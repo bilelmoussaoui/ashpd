@@ -96,9 +96,9 @@ struct CreateMonitor {
 #[doc(hidden)]
 struct State {
     #[zvariant(rename = "screensaver-active")]
-    pub screensaver_active: bool,
+    screensaver_active: bool,
     #[zvariant(rename = "session-state")]
-    pub session_state: SessionState,
+    session_state: SessionState,
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
@@ -158,18 +158,18 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `window` - The application window identifier.
+    /// * `identifier` - The application window identifier.
     #[doc(alias = "CreateMonitor")]
     pub async fn create_monitor(
         &self,
-        window: WindowIdentifier,
+        identifier: WindowIdentifier,
     ) -> Result<SessionProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let monitor: CreateMonitor = call_request_method(
             &self.0,
             &options.handle_token,
             "CreateMonitor",
-            &(window, &options),
+            &(identifier, &options),
         )
         .await?;
         let proxy =
@@ -186,13 +186,13 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `window` - The application window identifier.
+    /// * `identifier` - The application window identifier.
     /// * `flags` - The flags determine what changes are inhibited.
     /// * `reason` - User-visible reason for the inhibition.
     #[doc(alias = "Inhibit")]
     pub async fn inhibit(
         &self,
-        window: WindowIdentifier,
+        identifier: WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         reason: &str,
     ) -> Result<(), Error> {
@@ -201,7 +201,7 @@ impl<'a> InhibitProxy<'a> {
             &self.0,
             &options.handle_token,
             "Inhibit",
-            &(window, flags, &options),
+            &(identifier, flags, &options),
         )
         .await
     }

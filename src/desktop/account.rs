@@ -101,12 +101,12 @@ impl<'a> AccountProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `window` - Identifier for the window.
+    /// * `identifier` - Identifier for the window.
     /// * `reason` - A user-visible reason for the request.
     #[doc(alias = "GetUserInformation")]
     pub async fn user_information(
         &self,
-        window: WindowIdentifier,
+        identifier: WindowIdentifier,
         reason: &str,
     ) -> Result<UserInfo, Error> {
         let options = UserInfoOptions::default().reason(reason);
@@ -114,7 +114,7 @@ impl<'a> AccountProxy<'a> {
             &self.0,
             &options.handle_token,
             "GetUserInformation",
-            &(window, &options),
+            &(identifier, &options),
         )
         .await
     }
