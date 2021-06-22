@@ -35,6 +35,7 @@
 //! ```
 use enumflags2::BitFlags;
 use futures::prelude::stream::*;
+use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::OwnedObjectPath;
@@ -165,16 +166,13 @@ impl<'a> InhibitProxy<'a> {
         identifier: WindowIdentifier,
     ) -> Result<SessionProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
-        let monitor: CreateMonitor = call_request_method(
-            &self.0,
-            &options.handle_token,
-            "CreateMonitor",
-            &(identifier, &options),
-        )
-        .await?;
-        let proxy =
+        let body = &(identifier, &options);
+        let (monitor, proxy): (CreateMonitor, SessionProxy) = futures::try_join!(
+            call_request_method(&self.0, &options.handle_token, "CreateMonitor", body)
+                .into_future(),
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
-                .await?;
+                .into_future(),
+        )?;
         assert_eq!(
             proxy.inner().path().clone(),
             monitor.session_handle.into_inner()

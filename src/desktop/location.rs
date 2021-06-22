@@ -2,15 +2,18 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::location::{Accuracy, LocationProxy};
+//! use futures::TryFutureExt;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = LocationProxy::new(&connection).await?;
 //!
 //!     let session = proxy.create_session(None, None, Some(Accuracy::Street)).await?;
-//!     proxy.start(&session, Default::default()).await?;
 //!
-//!     let location = proxy.receive_location_updated().await?;
+//!     let (_, location) = futures::try_join!(
+//!         proxy.start(&session, Default::default()).into_future(),
+//!         proxy.receive_location_updated().into_future()
+//!     )?;
 //!
 //!     println!("{}", location.accuracy());
 //!     println!("{}", location.longitude());
@@ -207,15 +210,15 @@ impl<'a> LocationProxy<'a> {
             .distance_threshold(distance_threshold.unwrap_or(0))
             .time_threshold(time_threshold.unwrap_or(0))
             .accuracy(accuracy.unwrap_or(Accuracy::Exact));
-        let (proxy, path) = futures::try_join!(
-            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
-                .into_future(),
+        let (path, proxy) = futures::try_join!(
             call_method::<zvariant::OwnedObjectPath, CreateSessionOptions>(
                 &self.0,
                 "CreateSession",
                 &(options)
             )
-            .into_future()
+            .into_future(),
+            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
+                .into_future(),
         )?;
         assert_eq!(proxy.inner().path().clone(), path.into_inner());
         Ok(proxy)

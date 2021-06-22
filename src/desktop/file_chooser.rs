@@ -375,11 +375,17 @@ impl SaveFilesOptions {
     /// Sets a list of files to save.
     pub fn files(mut self, files: &[&str]) -> Self {
         // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
-        self.files = Some(files.to_vec().into_iter().map(|s| {
-            let mut bytes: Vec<u8> = s.into();
-            bytes.push(0);
-            bytes
-        }).collect());
+        self.files = Some(
+            files
+                .to_vec()
+                .into_iter()
+                .map(|s| {
+                    let mut bytes: Vec<u8> = s.into();
+                    bytes.push(0);
+                    bytes
+                })
+                .collect(),
+        );
         self
     }
 }
