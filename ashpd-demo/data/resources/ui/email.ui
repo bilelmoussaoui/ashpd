@@ -9,6 +9,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title">Compose an e-mail</property>
+            <property name="description">Calls ComposeEmail on org.freedesktop.portal.Email</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>

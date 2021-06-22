@@ -24,6 +24,8 @@ sources = files(
   'portals/desktop/camera.rs',
   'portals/desktop/device.rs',
   'portals/desktop/email.rs',
+  'portals/desktop/file_chooser.rs',
+  'portals/desktop/inhibit.rs',
   'portals/desktop/location.rs',
   'portals/desktop/mod.rs',
   'portals/desktop/network_monitor.rs',

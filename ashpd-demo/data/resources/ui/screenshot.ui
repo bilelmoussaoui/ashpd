@@ -9,6 +9,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title">Take a screenshot</property>
+            <property name="description">Calls Screenshot on org.freedesktop.portal.Screenshot</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>
@@ -67,6 +68,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title">Ask the compositor to pick a color</property>
+            <property name="description">Calls PickColor on org.freedesktop.portal.Screenshot</property>
             <property name="margin-top">18</property>
             <child>
               <object class="GtkBox">

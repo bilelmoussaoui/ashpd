@@ -9,6 +9,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title">Set a file as a wallpaper</property>
+            <property name="description">Calls SetWallpaperURI on org.freedesktop.portal.Wallpaper</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>

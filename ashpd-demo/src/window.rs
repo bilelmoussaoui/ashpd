@@ -7,9 +7,9 @@ use log::warn;
 use crate::application::ExampleApplication;
 use crate::config::{APP_ID, PROFILE};
 use crate::portals::desktop::{
-    AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, LocationPage,
+    AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, LocationPage,
     NetworkMonitorPage, NotificationPage, OpenUriPage, ScreenCastPage, ScreenshotPage,
-    WallpaperPage,
+    WallpaperPage, InhibitPage,
 };
 use crate::portals::DocumentsPage;
 use crate::sidebar_row::SidebarRow;
@@ -66,7 +66,9 @@ mod imp {
             NetworkMonitorPage::static_type();
             EmailPage::static_type();
             DocumentsPage::static_type();
+            FileChooserPage::static_type();
             OpenUriPage::static_type();
+            InhibitPage::static_type();
             Self::bind_template(klass);
 
             klass.install_action("win.back", None, |win, _, _| {
@@ -89,10 +91,6 @@ mod imp {
             let shortcuts = builder.object("shortcuts").unwrap();
             obj.set_help_overlay(Some(&shortcuts));
 
-            // Devel Profile
-            if PROFILE == "Devel" {
-                obj.add_css_class("devel");
-            }
             let row = self.sidebar.row_at_index(0).unwrap();
             self.sidebar.unselect_row(&row);
             self.sidebar

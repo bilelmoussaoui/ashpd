@@ -9,6 +9,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title">Open a URI</property>
+            <property name="description">Calls OpenURI on org.freedesktop.portal.OpenURI</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>

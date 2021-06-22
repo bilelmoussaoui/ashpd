@@ -1,21 +1,32 @@
+use ashpd::zbus;
+use ashpd::{desktop::background, WindowIdentifier};
+use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-
 mod imp {
     use adw::subclass::prelude::*;
     use gtk::CompositeTemplate;
 
     use super::*;
 
-    #[derive(Debug, CompositeTemplate)]
+    #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/background.ui")]
-    pub struct BackgroundPage {}
-
-    impl Default for BackgroundPage {
-        fn default() -> Self {
-            Self {}
-        }
+    pub struct BackgroundPage {
+        #[template_child]
+        pub reason_entry: TemplateChild<gtk::Entry>,
+        #[template_child]
+        pub auto_start_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub dbus_activatable_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub command_entry: TemplateChild<gtk::Entry>,
+        #[template_child]
+        pub response_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub run_bg_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub auto_start_label: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -26,13 +37,9 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.install_action(
-                "background.request",
-                None,
-                move |_page, _action, _target| {
-                    //page.pick_color().unwrap();
-                },
-            );
+            klass.install_action("background.request", None, move |page, _action, _target| {
+                page.request_background();
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -52,4 +59,48 @@ impl BackgroundPage {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a BackgroundPage")
     }
+
+    fn request_background(&self) {
+        let ctx = glib::MainContext::default();
+        let self_ = imp::BackgroundPage::from_instance(self);
+        let reason = self_.reason_entry.text();
+        let auto_start = self_.auto_start_switch.is_active();
+        let dbus_activatable = self_.dbus_activatable_switch.is_active();
+        let root = self.root().unwrap();
+
+        ctx.spawn_local(clone!(@weak self as page => async move {
+            let self_ = imp::BackgroundPage::from_instance(&page);
+            let identifier = WindowIdentifier::from_window(&root).await;
+            if let Ok(response) = request_background(identifier,
+                &reason,
+                auto_start,
+                self_.command_entry.text().split_whitespace().collect::<Vec<&str>>().as_slice(),
+                dbus_activatable).await {
+
+                self_.response_group.show();
+                self_.auto_start_label.set_label(&response.run_in_background().to_string());
+                self_.run_bg_label.set_label(&response.auto_start().to_string());
+            }
+        }));
+    }
+}
+
+async fn request_background(
+    identifier: WindowIdentifier,
+    reason: &str,
+    auto_start: bool,
+    command: &[&str],
+    dbus_activatable: bool,
+) -> Result<background::Background, ashpd::Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = background::BackgroundProxy::new(&connection).await?;
+    proxy
+        .request_background(
+            identifier,
+            reason,
+            auto_start,
+            Some(command),
+            dbus_activatable,
+        )
+        .await
 }

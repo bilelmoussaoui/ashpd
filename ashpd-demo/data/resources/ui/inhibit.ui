@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="NotificationPage" parent="AdwBin">
+  <template class="InhibitPage" parent="AdwBin">
     <child>
       <object class="GtkBox">
         <property name="hexpand">True</property>
@@ -8,16 +8,16 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Notification</property>
+            <property name="title">Inhibit session status changes</property>
+            <property name="description">Calls Inhibit on org.freedesktop.portal.Inhibit</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">ID</property>
-                    <property name="activatable-widget">id_entry</property>
+                    <property name="title">Reason</property>
                     <child>
-                      <object class="GtkEntry" id="id_entry">
+                      <object class="GtkEntry" id="reason">
                         <property name="valign">center</property>
                       </object>
                     </child>
@@ -25,29 +25,36 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Title</property>
-                    <property name="activatable-widget">title_entry</property>
+                    <property name="title">Status</property>
                     <child>
-                      <object class="GtkEntry" id="title_entry">
-                        <property name="valign">center</property>
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <child>
+                          <object class="GtkCheckButton" id="logout">
+                            <property name="label">Logout</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="user_switch">
+                            <property name="label">User Switch</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="suspend">
+                            <property name="label">Suspens</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="idle">
+                            <property name="label">Idle</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Body</property>
-                    <property name="activatable-widget">body_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="body_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwComboRow" id="priority_combo">
-                    <property name="title">Priority</property>
                   </object>
                 </child>
                 <style>
@@ -59,9 +66,9 @@
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Send</property>
+            <property name="label">Request</property>
             <property name="halign">start</property>
-            <property name="action-name">notification.send</property>
+            <property name="action-name">inhibit.request</property>
           </object>
         </child>
         <child>
@@ -75,9 +82,9 @@
                 <property name="hexpand">True</property>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Notification ID</property>
+                    <property name="title">Screensaver Status</property>
                     <child>
-                      <object class="GtkLabel" id="id_label">
+                      <object class="GtkLabel" id="screensaver_status_label">
                         <property name="valign">center</property>
                       </object>
                     </child>
@@ -85,22 +92,10 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Action Name</property>
+                    <property name="title">Session State</property>
                     <child>
-                      <object class="GtkLabel" id="action_name_label">
+                      <object class="GtkLabel" id="session_state_label">
                         <property name="valign">center</property>
-                        <property name="ellipsize">end</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Parameters</property>
-                    <child>
-                      <object class="GtkLabel" id="parameters_label">
-                        <property name="valign">center</property>
-                        <property name="ellipsize">end</property>
                       </object>
                     </child>
                   </object>

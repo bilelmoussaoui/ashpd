@@ -9,6 +9,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title">Request user information</property>
+            <property name="description">Calls GetUserInformation on org.freedesktop.portal.Account</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>

@@ -1,14 +1,16 @@
+use std::str::FromStr;
+
+use adw::prelude::*;
 use ashpd::{
-    desktop::notification::{Button, Priority},
+    desktop::notification::{Action, Button, Notification, NotificationProxy, Priority},
     zbus,
-};
-use ashpd::{
-    desktop::notification::{Notification, NotificationProxy},
     zvariant::Value,
 };
+use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use gtk_macros::spawn;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -25,6 +27,16 @@ mod imp {
         pub title_entry: TemplateChild<gtk::Entry>,
         #[template_child]
         pub body_entry: TemplateChild<gtk::Entry>,
+        #[template_child]
+        pub priority_combo: TemplateChild<adw::ComboRow>,
+        #[template_child]
+        pub id_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub action_name_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub parameters_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub response_group: TemplateChild<adw::PreferencesGroup>,
     }
 
     #[glib::object_subclass]
@@ -44,7 +56,18 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for NotificationPage {}
+    impl ObjectImpl for NotificationPage {
+        fn constructed(&self, _obj: &Self::Type) {
+            let model = gtk::StringList::new(&[
+                &Priority::Low.to_string(),
+                &Priority::Normal.to_string(),
+                &Priority::High.to_string(),
+                &Priority::Urgent.to_string(),
+            ]);
+            self.priority_combo.set_model(Some(&model));
+            self.priority_combo.set_selected(Priority::Normal as u32);
+        }
+    }
     impl WidgetImpl for NotificationPage {}
     impl BinImpl for NotificationPage {}
 }
@@ -64,24 +87,43 @@ impl NotificationPage {
         let notification_id = self_.id_entry.text();
         let title = self_.title_entry.text();
         let body = self_.body_entry.text();
-        gtk_macros::spawn!(async move {
-            let cnx = zbus::azync::Connection::new_session().await.unwrap();
-            let proxy = NotificationProxy::new(&cnx).await.unwrap();
-            proxy
-                .add_notification(
-                    &notification_id,
-                    Notification::new(&title)
-                        .default_action("open")
-                        .default_action_target(Value::U32(100).into())
-                        .body(&body)
-                        .priority(Priority::High)
-                        .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-                        .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
-                )
-                .await
-                .unwrap();
-        });
+        let selected_item = self_
+            .priority_combo
+            .selected_item()
+            .unwrap()
+            .downcast::<gtk::StringObject>()
+            .unwrap()
+            .string();
+        let priority = Priority::from_str(&selected_item).unwrap();
+
+        spawn!(clone!(@weak self as page => async move {
+            let self_ = imp::NotificationPage::from_instance(&page);
+            let action = notify(
+                &notification_id,
+                Notification::new(&title)
+                    .default_action("open")
+                    .default_action_target(Value::U32(100).into())
+                    .body(&body)
+                    .priority(priority)
+                    .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
+                    .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
+            )
+            .await
+            .unwrap();
+            self_.response_group.show();
+            self_.id_label.set_text(action.id());
+            self_.action_name_label.set_text(action.name());
+            self_.parameters_label.set_text(&format!("{:#?}", action.parameter()));
+        }));
 
         Ok(())
     }
+}
+
+async fn notify(id: &str, notification: Notification) -> Result<Action, ashpd::Error> {
+    let cnx = zbus::azync::Connection::new_session().await?;
+    let proxy = NotificationProxy::new(&cnx).await?;
+    proxy.add_notification(&id, notification).await?;
+    let action = proxy.receive_action_invoked().await?;
+    Ok(action)
 }

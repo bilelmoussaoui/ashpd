@@ -4,6 +4,7 @@ use ashpd::{
     zbus, WindowIdentifier,
 };
 use glib::clone;
+use futures::TryFutureExt;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -115,7 +116,7 @@ impl LocationPage {
 }
 
 pub async fn locate(
-    window_identifier: WindowIdentifier,
+    identifier: WindowIdentifier,
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,
@@ -130,8 +131,10 @@ pub async fn locate(
         )
         .await?;
 
-    proxy.start(&session, window_identifier).await?;
-    let location = proxy.receive_location_updated().await?;
+    let (_, location) = futures::try_join!(
+        proxy.start(&session, identifier).into_future(),
+        proxy.receive_location_updated().into_future()
+    )?;
 
     session.close().await?;
     Ok(location)
