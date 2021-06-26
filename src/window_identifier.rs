@@ -86,7 +86,7 @@ impl WindowIdentifier {
     ///
     /// **Note** The function has to be async as the Wayland handle retrieval
     /// API is async as well.
-    pub async fn from_window<W: gtk4::glib::IsA<gtk4::Root>>(win: &W) -> Self {
+    pub async fn from_root<W: gtk4::glib::IsA<gtk4::Root>>(win: &W) -> Self {
         use futures::lock::Mutex;
         use gtk4::glib;
         use gtk4::prelude::{Cast, NativeExt, ObjectExt, SurfaceExt};
