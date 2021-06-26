@@ -95,7 +95,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     /// Create a new instance of [`UpdateMonitorProxy`].
     ///
     /// **Note** A [`UpdateMonitorProxy`] is not supposed to be created manually.
-    pub async fn new(
+    pub(crate) async fn new(
         connection: &zbus::azync::Connection,
         path: ObjectPath<'a>,
     ) -> Result<UpdateMonitorProxy<'a>, Error> {
