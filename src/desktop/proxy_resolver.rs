@@ -1,3 +1,4 @@
+//! **Note** this portal doesn't work for sandboxed applications.
 //! # Examples
 //!
 //! ```rust,no_run
@@ -19,7 +20,7 @@ use crate::{helpers::call_method, Error};
 /// The interface provides network proxy information to sandboxed applications.
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
-/// via a library API such as the GLib `GProxyResolver` interface.
+/// via a library API such as the GLib [`gio::ProxyResolver`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.ProxyResolver.html) interface.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ProxyResolver`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.ProxyResolver).
 #[derive(Debug)]
