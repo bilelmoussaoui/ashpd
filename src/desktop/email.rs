@@ -2,6 +2,28 @@
 //!
 //! Compose an email
 //!
+//!```rust,no_run
+//! use ashpd::desktop::email::{self, Email};
+//! use ashpd::WindowIdentifier;
+//! use std::fs::File;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     email::compose(
+//!         WindowIdentifier::default(),
+//!         Email::new()
+//!             .address("test@gmail.com")
+//!             .subject("email subject")
+//!             .body("the pre-filled email body")
+//!             .attach(&file),
+//!     )
+//!     .await;
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Or by using the Proxy directly
+//!
 //! ```rust,no_run
 //! use ashpd::desktop::email::{Email, EmailProxy};
 //! use ashpd::WindowIdentifier;
@@ -28,6 +50,7 @@
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
+use serde::Serialize;
 use std::os::unix::prelude::AsRawFd;
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -66,20 +89,23 @@ impl Email {
     }
 
     /// Sets a list of email addresses to send the email to.
-    pub fn addresses(mut self, addresses: &[&str]) -> Self {
-        self.addresses = Some(addresses.to_vec().iter().map(|s| s.to_string()).collect());
+    pub fn addresses<S: AsRef<str> + zvariant::Type + Serialize>(
+        mut self,
+        addresses: &[S],
+    ) -> Self {
+        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to BCC.
-    pub fn bcc(mut self, bcc: &[&str]) -> Self {
-        self.bcc = Some(bcc.to_vec().iter().map(|s| s.to_string()).collect());
+    pub fn bcc<S: AsRef<str> + zvariant::Type + Serialize>(mut self, bcc: &[S]) -> Self {
+        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to CC.
-    pub fn cc(mut self, cc: &[&str]) -> Self {
-        self.cc = Some(cc.to_vec().iter().map(|s| s.to_string()).collect());
+    pub fn cc<S: AsRef<str> + zvariant::Type + Serialize>(mut self, cc: &[S]) -> Self {
+        self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
@@ -155,4 +181,14 @@ impl<'a> EmailProxy<'a> {
         )
         .await
     }
+}
+
+/// A handy wrapper around [`EmailProxy::compose_email`]
+#[doc(alias = "xdp_portal_compose_email")]
+pub async fn compose(window_identifier: WindowIdentifier, email: Email) -> Result<(), Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = EmailProxy::new(&connection).await?;
+    proxy.compose_email(window_identifier, email).await?;
+
+    Ok(())
 }

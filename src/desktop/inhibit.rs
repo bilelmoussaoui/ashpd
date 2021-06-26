@@ -175,10 +175,7 @@ impl<'a> InhibitProxy<'a> {
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future(),
         )?;
-        assert_eq!(
-            proxy.inner().path().clone(),
-            monitor.session_handle.into_inner()
-        );
+        assert_eq!(proxy.inner().path(), &monitor.session_handle.into_inner());
         Ok(proxy)
     }
 

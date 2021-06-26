@@ -13,8 +13,8 @@
 //!
 //!     proxy
 //!         .spawn(
-//!             "contrast".into(),
-//!             &[],
+//!             "/home/bilelmoussaoui".into(),
+//!             &["contrast"],
 //!             HashMap::new(),
 //!             HashMap::new(),
 //!             SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
@@ -25,12 +25,14 @@
 //!     Ok(())
 //! }
 //! ```
+
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
 use crate::{helpers::call_method, Error};
 use enumflags2::BitFlags;
 use futures::prelude::stream::*;
+use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zvariant::Fd;
@@ -105,12 +107,14 @@ pub struct SpawnOptions {
 impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox.
     /// **Note** that absolute paths or subdirectories are not allowed.
-    pub fn sandbox_expose(mut self, sandbox_expose: &[&str]) -> Self {
+    pub fn sandbox_expose<S: AsRef<str> + zvariant::Type + Serialize>(
+        mut self,
+        sandbox_expose: &[S],
+    ) -> Self {
         self.sandbox_expose = Some(
             sandbox_expose
-                .to_vec()
                 .iter()
-                .map(|s| s.to_string())
+                .map(|s| s.as_ref().to_string())
                 .collect(),
         );
         self
@@ -119,12 +123,14 @@ impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox,
     /// read-only. **Note** that absolute paths or subdirectories are not
     /// allowed.
-    pub fn sandbox_expose_ro(mut self, sandbox_expose_ro: &[&str]) -> Self {
+    pub fn sandbox_expose_ro<S: AsRef<str> + zvariant::Type + Serialize>(
+        mut self,
+        sandbox_expose_ro: &[S],
+    ) -> Self {
         self.sandbox_expose_ro = Some(
             sandbox_expose_ro
-                .to_vec()
                 .iter()
-                .map(|s| s.to_string())
+                .map(|s| s.as_ref().to_string())
                 .collect(),
         );
         self
@@ -228,10 +234,10 @@ impl<'a> FlatpakProxy<'a> {
     /// * `flags`
     /// * `options` - A [`SpawnOptions`].
     #[doc(alias = "Spawn")]
-    pub async fn spawn(
+    pub async fn spawn<S: AsRef<str> + zvariant::Type + Serialize>(
         &self,
         cwd_path: &str,
-        argv: &[&str],
+        argv: &[S],
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
@@ -245,7 +251,7 @@ impl<'a> FlatpakProxy<'a> {
         .await
     }
     /// This methods let you send a Unix signal to a process that was started
-    /// `spawn`.
+    /// [`FlatpakProxy::spawn`].
     ///
     /// # Arguments
     ///

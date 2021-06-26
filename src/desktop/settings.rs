@@ -104,7 +104,10 @@ impl<'a> SettingsProxy<'a> {
     /// all. Globing is supported but only for trailing sections, e.g.
     /// "org.example.*".
     #[doc(alias = "ReadAll")]
-    pub async fn read_all(&self, namespaces: &[&str]) -> Result<HashMap<String, Namespace>, Error> {
+    pub async fn read_all<S: AsRef<str> + zvariant::Type + Serialize>(
+        &self,
+        namespaces: &[S],
+    ) -> Result<HashMap<String, Namespace>, Error> {
         call_method(&self.0, "ReadAll", &(namespaces)).await
     }
 

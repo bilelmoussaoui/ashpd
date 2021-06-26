@@ -24,6 +24,7 @@
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
+use serde::Serialize;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
@@ -67,8 +68,11 @@ impl BackgroundOptions {
     /// Specifies the command line to execute.
     /// If this is not specified, the Exec line from the desktop file will be
     /// used.
-    pub fn command(mut self, command: Option<&[&str]>) -> Self {
-        self.command = command.map(|s| s.to_owned().into_iter().map(|s| s.to_string()).collect());
+    pub fn command<S: AsRef<str> + zvariant::Type + Serialize>(
+        mut self,
+        command: Option<&[S]>,
+    ) -> Self {
+        self.command = command.map(|s| s.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 }
@@ -132,12 +136,12 @@ impl<'a> BackgroundProxy<'a> {
     ///     used.
     /// * `dbus_activatable` - Sets whether the application is dbus activatable.
     #[doc(alias = "RequestBackground")]
-    pub async fn request_background(
+    pub async fn request_background<S: AsRef<str> + zvariant::Type + Serialize>(
         &self,
         identifier: WindowIdentifier,
         reason: &str,
         auto_start: bool,
-        command_line: Option<&[&str]>,
+        command_line: Option<&[S]>,
         dbus_activatable: bool,
     ) -> Result<Background, Error> {
         let options = BackgroundOptions::default()
@@ -157,11 +161,11 @@ impl<'a> BackgroundProxy<'a> {
 
 #[doc(alias = "xdp_portal_request_background")]
 /// A handy wrapper around [`BackgroundProxy::request_background`].
-pub async fn request(
+pub async fn request<S: AsRef<str> + zvariant::Type + Serialize>(
     identifier: WindowIdentifier,
     reason: &str,
     auto_start: bool,
-    command_line: Option<&[&str]>,
+    command_line: Option<&[S]>,
     dbus_activatable: bool,
 ) -> Result<Background, Error> {
     let connection = zbus::azync::Connection::new_session().await?;

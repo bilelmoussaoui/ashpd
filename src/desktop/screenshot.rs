@@ -12,6 +12,21 @@
 //! }
 //! ```
 //!
+//! Or by using the Proxy directly
+//!
+//! ```rust,no_run
+//! use ashpd::desktop::screenshot::ScreenshotProxy;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = ScreenshotProxy::new(&connection).await?;
+//!
+//!     let uri = proxy.screenshot(Default::default(), true, true).await?;
+//!     println!("URI: {}", uri);
+//!     Ok(())
+//! }
+//! ```
+//!
 //! ## Picking a color
 //!
 //! ```rust,no_run
@@ -24,6 +39,23 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! Or by using the Proxy directly
+//!
+//! ```rust,no_run
+//! use ashpd::desktop::screenshot::ScreenshotProxy;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = ScreenshotProxy::new(&connection).await?;
+//!
+//!     let color = proxy.pick_color(Default::default()).await?;
+//!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};

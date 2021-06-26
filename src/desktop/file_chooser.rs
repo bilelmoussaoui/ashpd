@@ -373,14 +373,13 @@ impl SaveFilesOptions {
     }
 
     /// Sets a list of files to save.
-    pub fn files(mut self, files: &[&str]) -> Self {
+    pub fn files<S: AsRef<str> + zvariant::Type + Serialize>(mut self, files: &[S]) -> Self {
         // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
         self.files = Some(
             files
-                .to_vec()
-                .into_iter()
+                .iter()
                 .map(|s| {
-                    let mut bytes: Vec<u8> = s.into();
+                    let mut bytes: Vec<u8> = s.as_ref().into();
                     bytes.push(0);
                     bytes
                 })

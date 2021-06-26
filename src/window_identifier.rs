@@ -169,7 +169,7 @@ impl WindowIdentifier {
 
         match handle {
             Some(h) => WindowIdentifier::Gtk4 {
-                root: win.as_ref().clone(),
+                root: win.clone().upcast(),
                 handle: h,
             },
             None => WindowIdentifier::default(),

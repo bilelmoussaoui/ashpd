@@ -2,13 +2,25 @@
 //!
 //! ## Sets a wallpaper from a file:
 //!
+//!```rust,no_run
+//! use ashpd::desktop::wallpaper::{self, SetOn};
+//! use std::fs::File;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
+//!     wallpaper::set_from_file(Default::default(), &file, true, SetOn::Both).await?;
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Or by using the Proxy directly
+//!
 //! ```rust,no_run
 //! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let wallpaper =
-//!         File::open("/home/bilelmoussaoui/adwaita-day.jpg").expect("wallpaper not found");
+//!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
@@ -20,6 +32,18 @@
 //! ```
 //!
 //! ## Sets a wallpaper from a URI:
+//!
+//!```rust,no_run
+//! use ashpd::desktop::wallpaper::{self, SetOn};
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
+//!     wallpaper::set_from_uri(Default::default(), &uri, true, SetOn::Both).await?;
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Or by using the Proxy directly
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
@@ -191,4 +215,36 @@ impl<'a> WallpaperProxy<'a> {
         )
         .await
     }
+}
+
+#[doc(alias = "xdp_portal_set_wallpaper")]
+/// A handy wrapper around [`WallpaperProxy::set_wallpaper_uri`].
+pub async fn set_from_uri(
+    window: WindowIdentifier,
+    uri: &str,
+    show_preview: bool,
+    set_on: SetOn,
+) -> Result<(), Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = WallpaperProxy::new(&connection).await?;
+    proxy
+        .set_wallpaper_uri(window, uri, show_preview, set_on)
+        .await?;
+    Ok(())
+}
+
+#[doc(alias = "xdp_portal_set_wallpaper")]
+/// A handy wrapper around [`WallpaperProxy::set_wallpaper_file`].
+pub async fn set_from_file<F: AsRawFd>(
+    window: WindowIdentifier,
+    file: &F,
+    show_preview: bool,
+    set_on: SetOn,
+) -> Result<(), Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = WallpaperProxy::new(&connection).await?;
+    proxy
+        .set_wallpaper_file(window, file, show_preview, set_on)
+        .await?;
+    Ok(())
 }

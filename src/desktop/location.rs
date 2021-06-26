@@ -222,7 +222,7 @@ impl<'a> LocationProxy<'a> {
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future(),
         )?;
-        assert_eq!(proxy.inner().path().clone(), path.into_inner());
+        assert_eq!(proxy.inner().path(), &path.into_inner());
         Ok(proxy)
     }
 

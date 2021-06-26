@@ -213,7 +213,7 @@ impl<'a> RequestProxy<'a> {
     #[doc(alias = "Response")]
     pub async fn receive_response<R>(&self) -> Result<R, Error>
     where
-        R: DeserializeOwned + zvariant::Type + Debug,
+        R: DeserializeOwned + zvariant::Type,
     {
         let mut stream = self.0.receive_signal("Response").await?;
         let message = stream.next().await.ok_or(Error::NoResponse)?;

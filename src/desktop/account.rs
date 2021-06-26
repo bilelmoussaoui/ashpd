@@ -1,5 +1,23 @@
 //! # Examples
 //!
+//! ```rust, no_run
+//! use ashpd::desktop::account;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let user_info = account::user_information(
+//!         Default::default(),
+//!         "App would like to access user information",
+//!     ).await?;
+//!
+//!     println!("Name: {}", user_info.name());
+//!     println!("ID: {}", user_info.id());
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Or by using the Proxy directly
+//!
 //! ```rust,no_run
 //! use ashpd::desktop::account::AccountProxy;
 //!
@@ -13,24 +31,6 @@
 //!             "App would like to access user information",
 //!         )
 //!         .await?;
-//!
-//!     println!("Name: {}", user_info.name());
-//!     println!("ID: {}", user_info.id());
-//!
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or simply
-//!
-//! ```rust, no_run
-//! use ashpd::desktop::account::user_information;
-//!
-//! async fn run() -> Result<(), ashpd::Error> {
-//!     let user_info = user_information(
-//!         Default::default(),
-//!         "App would like to access user information",
-//!     ).await?;
 //!
 //!     println!("Name: {}", user_info.name());
 //!     println!("ID: {}", user_info.id());

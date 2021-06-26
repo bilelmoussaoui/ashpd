@@ -25,7 +25,7 @@
 //!             Default::default(),
 //!             "test",
 //!             &file,
-//!             &pre_print.token,
+//!             Some(pre_print.token),
 //!             true,
 //!         )
 //!         .await?;

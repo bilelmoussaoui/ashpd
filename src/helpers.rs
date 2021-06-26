@@ -4,7 +4,6 @@ use crate::desktop::{
 };
 use crate::Error;
 use futures::TryFutureExt;
-use std::fmt::Debug;
 
 pub(crate) async fn call_request_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
@@ -13,8 +12,8 @@ pub(crate) async fn call_request_method<R, B>(
     body: &B,
 ) -> Result<R, Error>
 where
-    R: serde::de::DeserializeOwned + zvariant::Type + Debug,
-    B: serde::ser::Serialize + zvariant::Type + Debug,
+    R: serde::de::DeserializeOwned + zvariant::Type,
+    B: serde::ser::Serialize + zvariant::Type,
 {
     let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
     let (response, path) = futures::try_join!(
@@ -24,7 +23,7 @@ where
             .into_future()
             .map_err(From::from),
     )?;
-    assert_eq!(path.into_inner(), request.inner().path().clone());
+    assert_eq!(&path.into_inner(), request.inner().path());
     Ok(response)
 }
 
@@ -35,7 +34,7 @@ pub(crate) async fn call_basic_response_method<B>(
     body: &B,
 ) -> Result<(), Error>
 where
-    B: serde::ser::Serialize + zvariant::Type + Debug,
+    B: serde::ser::Serialize + zvariant::Type,
 {
     call_request_method::<BasicResponse, B>(proxy, handle_token, method_name, body).await?;
     Ok(())
@@ -48,7 +47,7 @@ pub(crate) async fn call_method<R, B>(
 ) -> Result<R, Error>
 where
     R: serde::de::DeserializeOwned + zvariant::Type,
-    B: serde::ser::Serialize + zvariant::Type + Debug,
+    B: serde::ser::Serialize + zvariant::Type,
 {
     proxy
         .call::<B, R>(method_name, body)

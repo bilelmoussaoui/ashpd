@@ -32,6 +32,7 @@
 //!     Ok(())
 //! }
 //! ```
+
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 

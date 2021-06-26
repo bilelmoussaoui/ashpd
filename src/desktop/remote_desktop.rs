@@ -155,10 +155,7 @@ impl<'a> RemoteDesktopProxy<'a> {
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future()
         )?;
-        assert_eq!(
-            proxy.inner().path().clone(),
-            session.session_handle.into_inner()
-        );
+        assert_eq!(proxy.inner().path(), &session.session_handle.into_inner());
         Ok(proxy)
     }
 

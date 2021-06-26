@@ -1,5 +1,19 @@
 //! # Examples
 //!
+//!
+//!```rust,no_run
+//! use ashpd::desktop::trash;
+//! use std::fs::File;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let file = File::open("/home/bilelmoussaoui/adwaita-night.jpg").unwrap();
+//!     trash::trash_file(&file).await?;
+//!     Ok(())
+//! }
+//! ```
+//!
+//! Or by using the Proxy directly
+//!
 //! ```rust,no_run
 //! use ashpd::desktop::trash::TrashProxy;
 //! use std::fs::File;
@@ -73,4 +87,12 @@ impl<'a> TrashProxy<'a> {
             TrashStatus::Succeeded => Ok(()),
         }
     }
+}
+
+#[doc(alias = "xdp_portal_trash_file")]
+/// A handy wrapper around [`TrashProxy::trash_file`].
+pub async fn trash_file<F: AsRawFd>(fd: &F) -> Result<(), Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = TrashProxy::new(&connection).await?;
+    proxy.trash_file(fd).await
 }
