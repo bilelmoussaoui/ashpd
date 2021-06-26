@@ -46,7 +46,7 @@ pub async fn run() -> Result<(), ashpd::Error> {
 
 | Feature | Description |
 | ---     | ----------- |
-| feature_gtk3 | Implement `From<Color>` for `gdk3::RGBA` |
-|  | Provides `WindowIdentifier::from_window` that takes a `IsA<gdk3::Window>` |
-| feature_gtk4 | Implement `From<Color>` for `gdk4::RGBA` |
-|  | Provides `WindowIdentifier::from_root` that takes a `IsA<gtk4::Root>` |
+| feature_gtk3 | Implement `From<Color>` for [`gdk3::RGBA`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.RGBA.html) |
+|  | Provides `WindowIdentifier::from_window` that takes a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) |
+| feature_gtk4 | Implement `From<Color>` for [`gdk4::RGBA`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gdk4/struct.RGBA.html) |
+|  | Provides `WindowIdentifier::from_root` that takes a [`IsA<gtk4::Root>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Root.html) |

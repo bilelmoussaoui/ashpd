@@ -10,11 +10,50 @@ use serde::{ser::Serializer, Serialize};
 /// Under X11, the [`WindowIdentifier`] should have the form `x11:XID`, where
 /// XID is the XID of the application window. Under Wayland, it should have the
 /// form `wayland:HANDLE`, where HANDLE is a surface handle obtained with the
-/// xdg-foreign protocol.
+/// [xdg-foreign](https://github.com/wayland-project/wayland-protocols/blob/master/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
 ///
-/// For other windowing systems, or if you don't have a suitable handle, just
-/// use the [`Default`] implementation.
+/// # Usage
 ///
+/// ## With GTK 4
+///
+/// The feature `feature_gtk4` must be enabled. You can get a [`WindowIdentifier`] from a `gtk4::Root` using `WindowIdentifier::from_root`
+///
+/// ```rust, ignore
+/// let widget = gtk::Button::new();
+///
+/// let ctx = glib::MainContext::default();
+/// ctx.spawn_async(async move {
+///     let identifier = WindowIdentifier::from_root(widget.root().unwrap()).await;
+///
+///     /// Open some portals
+/// });
+/// ```
+/// The constructor should return a valid identifier under both X11 and Wayland and fallback to the [`Default`] implementation otherwise.
+///
+/// ## With GTK 3
+///
+/// The feature `feature_gtk3` must be enabled. You can get a [`WindowIdentifier`] from a `gdk3::Window` using `WindowIdentifier::from_window`
+///
+/// ```rust, ignore
+/// let widget = gtk::Button::new();
+/// let ctx = glib::MainContext::default();
+/// ctx.spawn_async(async move {
+///     let identifier = WindowIdentifier::from_window(widget.window().unwrap()).await;
+///
+///     /// Open some portals
+/// });
+/// ```
+/// The constructor should return a valid identifier under both X11 and Wayland and fallback to the [`Default`] implementation otherwise.
+///
+/// ## Other Toolkits
+///
+/// In case you don't have access to a WindowIdentifier:
+///
+/// ```rust
+/// use ashpd::WindowIdentifier;
+///
+/// let identifier = WindowIdentifier::default();
+/// ```
 /// We would love merge requests that adds other `From<T> for WindowIdentifier`
 /// implementations for other toolkits.
 pub enum WindowIdentifier {

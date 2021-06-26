@@ -10,9 +10,7 @@
 //!
 //!     let file = File::open("test.txt").unwrap();
 //!
-//!     let secret = proxy
-//!         .retrieve_secret(file, None)
-//!         .await?;
+//!     let secret = proxy.retrieve_secret(&file, None).await?;
 //!
 //!     println!("{:#?}", secret);
 //!     Ok(())
