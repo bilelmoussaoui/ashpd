@@ -186,19 +186,15 @@ impl<'a> DocumentsProxy<'a> {
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
     #[doc(alias = "AddFull")]
-    pub async fn add_full(
+    pub async fn add_full<F: AsRawFd>(
         &self,
-        o_path_fds: &[Fd],
+        o_path_fds: &[&F],
         flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[Permission],
     ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>), Error> {
-        call_method(
-            &self.0,
-            "AddFull",
-            &(o_path_fds, flags, app_id, permissions),
-        )
-        .await
+        let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        call_method(&self.0, "AddFull", &(o_path, flags, app_id, permissions)).await
     }
 
     /// Creates an entry in the document store for writing a new file.

@@ -36,7 +36,7 @@ use crate::{
 use enumflags2::BitFlags;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
+use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -139,15 +139,25 @@ impl SpawnOptions {
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox.
-    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: &[Fd]) -> Self {
-        self.sandbox_expose_fd = Some(sandbox_expose_fd.to_vec());
+    pub fn sandbox_expose_fd<F: AsRawFd>(mut self, sandbox_expose_fd: &[&F]) -> Self {
+        self.sandbox_expose_fd = Some(
+            sandbox_expose_fd
+                .iter()
+                .map(|f| Fd::from(f.as_raw_fd()))
+                .collect(),
+        );
         self
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox,
     /// read-only.
-    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: &[Fd]) -> Self {
-        self.sandbox_expose_fd_ro = Some(sandbox_expose_fd_ro.to_vec());
+    pub fn sandbox_expose_fd_ro<F: AsRawFd>(mut self, sandbox_expose_fd_ro: &[&F]) -> Self {
+        self.sandbox_expose_fd_ro = Some(
+            sandbox_expose_fd_ro
+                .iter()
+                .map(|f| Fd::from(f.as_raw_fd()))
+                .collect(),
+        );
         self
     }
 
