@@ -3,7 +3,9 @@ use crate::desktop::{
     HandleToken,
 };
 use crate::Error;
+use futures::StreamExt;
 use futures::TryFutureExt;
+use serde::de::DeserializeOwned;
 
 pub(crate) async fn call_request_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
@@ -38,6 +40,15 @@ where
 {
     call_request_method::<BasicResponse, B>(proxy, handle_token, method_name, body).await?;
     Ok(())
+}
+
+pub(crate) async fn receive_signal<T: DeserializeOwned + zvariant::Type>(
+    proxy: &zbus::azync::Proxy<'_>,
+    signal_name: &'static str,
+) -> Result<T, Error> {
+    let mut stream = proxy.receive_signal(signal_name).await?;
+    let message = stream.next().await.ok_or(Error::NoResponse)?;
+    message.body::<T>().map_err(From::from)
 }
 
 pub(crate) async fn call_method<R, B>(

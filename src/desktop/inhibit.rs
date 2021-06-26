@@ -36,11 +36,10 @@
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method},
+    helpers::{call_basic_response_method, call_method, call_request_method, receive_signal},
     Error, WindowIdentifier,
 };
 use enumflags2::BitFlags;
-use futures::prelude::stream::*;
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -206,9 +205,7 @@ impl<'a> InhibitProxy<'a> {
     /// Signal emitted when the session state changes.
     #[doc(alias = "StateChanged")]
     pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
-        let mut stream = self.0.receive_signal("StateChanged").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<InhibitState>().map_err(From::from)
+        receive_signal(&self.0, "StateChanged").await
     }
 
     /// Acknowledges that the caller received the "state_changed" signal.

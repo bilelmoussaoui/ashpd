@@ -1,6 +1,9 @@
 use super::DESTINATION;
-use crate::{desktop::HandleToken, helpers::call_method, Error};
-use futures::prelude::stream::*;
+use crate::{
+    desktop::HandleToken,
+    helpers::{call_method, receive_signal},
+    Error,
+};
 use serde::{
     de::{self, DeserializeOwned, Error as SeError, Visitor},
     Deserialize, Deserializer, Serialize,
@@ -215,9 +218,7 @@ impl<'a> RequestProxy<'a> {
     where
         R: DeserializeOwned + zvariant::Type,
     {
-        let mut stream = self.0.receive_signal("Response").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        match message.body::<Response<R>>()? {
+        match receive_signal::<Response<R>>(&self.0, "Response").await? {
             Response::Err(e) => Err(e.into()),
             Response::Ok(r) => Ok(r),
         }

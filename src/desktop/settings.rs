@@ -25,8 +25,10 @@
 //! ```
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
-use futures::prelude::stream::*;
+use crate::{
+    helpers::{call_method, receive_signal},
+    Error,
+};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};
 use zvariant::OwnedValue;
@@ -130,8 +132,6 @@ impl<'a> SettingsProxy<'a> {
     /// Signal emitted when a setting changes.
     #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<Setting, Error> {
-        let mut stream = self.0.receive_signal("SettingChanged").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<Setting>().map_err(From::from)
+        receive_signal(&self.0, "SettingChanged").await
     }
 }

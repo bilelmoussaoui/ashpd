@@ -22,8 +22,10 @@
 //! ```
 
 use super::DESTINATION;
-use crate::{helpers::call_method, Error, WindowIdentifier};
-use futures::prelude::stream::*;
+use crate::{
+    helpers::{call_method, receive_signal},
+    Error, WindowIdentifier,
+};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -114,17 +116,13 @@ impl<'a> UpdateMonitorProxy<'a> {
     /// A signal received when there's progress during the application update.
     #[doc(alias = "Progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
-        let mut stream = self.0.receive_signal("Progress").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<UpdateProgress>().map_err(From::from)
+        receive_signal(&self.0, "Progress").await
     }
 
     /// A signal received when there's an application update.
     #[doc(alias = "UpdateAvailable")]
     pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
-        let mut stream = self.0.receive_signal("UpdateAvailable").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<UpdateInfo>().map_err(From::from)
+        receive_signal(&self.0, "UpdateAvailable").await
     }
 
     /// Asks to install an update of the calling app.

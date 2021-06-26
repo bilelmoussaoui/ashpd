@@ -41,8 +41,10 @@
 //! ```
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
-use futures::prelude::stream::*;
+use crate::{
+    helpers::{call_method, receive_signal},
+    Error,
+};
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{OwnedValue, Signature};
@@ -259,9 +261,7 @@ impl<'a> NotificationProxy<'a> {
     /// Signal emitted when a particular action is invoked.
     #[doc(alias = "ActionInvoked")]
     pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
-        let mut stream = self.0.receive_signal("ActionInvoked").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<Action>().map_err(From::from)
+        receive_signal(&self.0, "ActionInvoked").await
     }
 
     /// Sends a notification.

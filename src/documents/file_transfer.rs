@@ -25,8 +25,10 @@
 //! ```
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
-use futures::prelude::stream::*;
+use crate::{
+    helpers::{call_method, receive_signal},
+    Error,
+};
 use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -166,8 +168,6 @@ impl<'a> FileTransferProxy<'a> {
     /// * The key returned by [`FileTransferProxy::start_transfer`]
     #[doc(alias = "TransferClosed")]
     pub async fn transfer_closed(&self) -> Result<String, Error> {
-        let mut stream = self.0.receive_signal("TransferClosed").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<String>().map_err(From::from)
+        receive_signal(&self.0, "TransferClosed").await
     }
 }

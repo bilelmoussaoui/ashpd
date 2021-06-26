@@ -23,8 +23,10 @@
 //! ```
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
-use futures::StreamExt;
+use crate::{
+    helpers::{call_method, receive_signal},
+    Error,
+};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -140,8 +142,6 @@ impl<'a> NetworkMonitorProxy<'a> {
 
     /// Emitted when the network configuration changes.
     pub async fn receive_changed(&self) -> Result<(), Error> {
-        let mut stream = self.0.receive_signal("changed").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<()>().map_err(From::from)
+        receive_signal(&self.0, "changed").await
     }
 }

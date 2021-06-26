@@ -1,9 +1,8 @@
 use crate::{
     desktop::{HandleToken, DESTINATION},
-    helpers::call_method,
+    helpers::{call_method, receive_signal},
     Error,
 };
-use futures::prelude::stream::*;
 use serde::{Serialize, Serializer};
 use std::{collections::HashMap, convert::TryFrom};
 use zvariant::{ObjectPath, OwnedValue, Signature};
@@ -64,9 +63,7 @@ impl<'a> SessionProxy<'a> {
     /// Emitted when a session is closed.
     #[doc(alias = "Closed")]
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
-        let mut stream = self.0.receive_signal("Closed").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<SessionDetails>().map_err(From::from)
+        receive_signal(&self.0, "Closed").await
     }
 
     /// Closes the portal session to which this object refers and ends all

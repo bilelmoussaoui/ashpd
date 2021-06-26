@@ -15,8 +15,7 @@
 //! ```
 
 use super::{DESTINATION, PATH};
-use crate::Error;
-use futures::prelude::stream::*;
+use crate::{helpers::receive_signal, Error};
 
 /// The interface provides information about low system memory to sandboxed
 /// applications. It is not a portal in the strict sense, since it does not
@@ -51,8 +50,6 @@ impl<'a> MemoryMonitorProxy<'a> {
     /// being the highest.
     #[doc(alias = "LowMemoryWarning")]
     pub async fn receive_low_memory_warning(&self) -> Result<i32, Error> {
-        let mut stream = self.0.receive_signal("LowMemoryWarning").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<i32>().map_err(From::from)
+        receive_signal(&self.0, "LowMemoryWarning").await
     }
 }

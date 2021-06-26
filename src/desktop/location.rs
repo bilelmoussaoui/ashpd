@@ -26,10 +26,9 @@
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method},
+    helpers::{call_basic_response_method, call_method, receive_signal},
     Error, WindowIdentifier,
 };
-use futures::prelude::stream::*;
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -189,9 +188,7 @@ impl<'a> LocationProxy<'a> {
     /// Signal emitted when the user location is updated.
     #[doc(alias = "LocationUpdated")]
     pub async fn receive_location_updated(&self) -> Result<Location, Error> {
-        let mut stream = self.0.receive_signal("LocationUpdated").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<Location>().map_err(From::from)
+        receive_signal(&self.0, "LocationUpdated").await
     }
 
     /// Create a location session.

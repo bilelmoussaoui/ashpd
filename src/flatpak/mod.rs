@@ -29,9 +29,11 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
-use crate::{helpers::call_method, Error};
+use crate::{
+    helpers::{call_method, receive_signal},
+    Error,
+};
 use enumflags2::BitFlags;
-use futures::prelude::stream::*;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
@@ -205,17 +207,13 @@ impl<'a> FlatpakProxy<'a> {
     /// Emitted when a process starts by [`FlatpakProxy::spawn`].
     #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
-        let mut stream = self.0.receive_signal("SpawnStarted").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<(u32, u32)>().map_err(From::from)
+        receive_signal(&self.0, "SpawnStarted").await
     }
 
     /// Emitted when a process started by [`FlatpakProxy::spawn`] exits.
     #[doc(alias = "SpawnExited")]
     pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
-        let mut stream = self.0.receive_signal("SpawnExited").await?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        message.body::<(u32, u32)>().map_err(From::from)
+        receive_signal(&self.0, "SpawnExited").await
     }
 
     /// This methods let you start a new instance of your application,
