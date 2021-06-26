@@ -21,6 +21,29 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! If the [`None`] is provided as an argument for `command_line`, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+//! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
+//!
+//! ```rust,no_run
+//! use ashpd::desktop::background;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let response = background::request(
+//!         Default::default(),
+//!         "Automatically fetch your latest mails",
+//!         true,
+//!         None::<&[&str]>,
+//!         false,
+//!     )
+//!     .await?;
+//!
+//!     println!("{}", response.auto_start());
+//!     println!("{}", response.run_in_background());
+//!
+//!     Ok(())
+//! }
+//! ```
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
@@ -66,8 +89,8 @@ impl BackgroundOptions {
     }
 
     /// Specifies the command line to execute.
-    /// If this is not specified, the Exec line from the desktop file will be
-    /// used.
+    /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+    /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
     pub fn command<S: AsRef<str> + zvariant::Type + Serialize>(
         mut self,
         command: Option<&[S]>,
@@ -132,8 +155,8 @@ impl<'a> BackgroundProxy<'a> {
     /// * `reason` - Sets a user-visible reason for the request.
     /// * `auto_start` - Sets whether to auto start the application or not.
     /// * `command_line` - Specifies the command line to execute.
-    ///     If this is not specified, the Exec line from the desktop file will be
-    ///     used.
+    ///     If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+    /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
     /// * `dbus_activatable` - Sets whether the application is dbus activatable.
     ///
     /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
