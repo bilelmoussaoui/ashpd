@@ -73,9 +73,8 @@ impl BackgroundOptions {
     /// Specifies the command line to execute.
     /// If this is not specified, the Exec line from the desktop file will be
     /// used.
-    pub fn command(mut self, command: &[&str]) -> Self {
-        let command = command.to_vec().iter().map(|s| s.to_string()).collect();
-        self.command = Some(command);
+    pub fn command(mut self, command: Option<&[&str]>) -> Self {
+        self.command = command.map(|s| s.to_owned().into_iter().map(|s|s.to_string()).collect());
         self
     }
 }
@@ -150,7 +149,7 @@ impl<'a> BackgroundProxy<'a> {
             .reason(reason)
             .autostart(auto_start)
             .dbus_activatable(dbus_activatable)
-            .command(&command_line.map(|t| t.to_vec()).unwrap_or_default());
+            .command(command_line);
         call_request_method(
             &self.0,
             &options.handle_token,
