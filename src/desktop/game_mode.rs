@@ -8,11 +8,8 @@
 //!     let proxy = GameModeProxy::new(&connection).await?;
 //!
 //!     println!("{:#?}", proxy.register_game(246612).await?);
-//!
 //!     println!("{:#?}", proxy.query_status(246612).await?);
-//!
 //!     println!("{:#?}", proxy.unregister_game(246612).await?);
-//!
 //!     println!("{:#?}", proxy.query_status(246612).await?);
 //!
 //!     Ok(())

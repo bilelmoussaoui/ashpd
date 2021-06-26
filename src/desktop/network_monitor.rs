@@ -9,13 +9,9 @@
 //!     let proxy = NetworkMonitorProxy::new(&connection).await?;
 //!
 //!     println!("{}", proxy.can_reach("www.google.com", 80).await?);
-//!
 //!     println!("{}", proxy.is_available().await?);
-//!
 //!     println!("{:#?}", proxy.connectivity().await?);
-//!
 //!     println!("{}", proxy.is_metered().await?);
-//!
 //!     println!("{:#?}", proxy.status().await?);
 //!
 //!     Ok(())
@@ -71,7 +67,7 @@ impl fmt::Display for Connectivity {
 /// The interface provides network status information to sandboxed applications.
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
-/// via a library API such as the GLib `GNetworkMonitor` interface.
+/// via a library API such as the GLib [`gio::NetworkMonitor`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.NetworkMonitor.html) interface.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.NetworkMonitor).
 #[derive(Debug)]
