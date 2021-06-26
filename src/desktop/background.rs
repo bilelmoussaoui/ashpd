@@ -6,7 +6,7 @@
 //! use ashpd::desktop::background;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let response = background::request_background(
+//!     let response = background::request(
 //!         Default::default(),
 //!         "Automatically fetch your latest mails",
 //!         true,
@@ -156,7 +156,7 @@ impl<'a> BackgroundProxy<'a> {
 
 #[doc(alias = "xdp_portal_request_background")]
 /// A handy wrapper around [`BackgroundProxy::request_background`].
-pub async fn request_background(
+pub async fn request(
     identifier: WindowIdentifier,
     reason: &str,
     auto_start: bool,
