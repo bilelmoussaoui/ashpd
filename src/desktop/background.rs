@@ -135,6 +135,8 @@ impl<'a> BackgroundProxy<'a> {
     ///     If this is not specified, the Exec line from the desktop file will be
     ///     used.
     /// * `dbus_activatable` - Sets whether the application is dbus activatable.
+    ///
+    /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
     #[doc(alias = "RequestBackground")]
     pub async fn request_background<S: AsRef<str> + zvariant::Type + Serialize>(
         &self,

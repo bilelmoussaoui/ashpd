@@ -203,6 +203,8 @@ impl<'a> FlatpakProxy<'a> {
     /// Creates an update monitor object that will emit signals
     /// when an update for the caller becomes available, and can be used to
     /// install it.
+    ///
+    /// See also [`CreateUpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).
     #[doc(alias = "CreateUpdateMonitor")]
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
@@ -215,12 +217,13 @@ impl<'a> FlatpakProxy<'a> {
     }
 
     /// Emitted when a process starts by [`FlatpakProxy::spawn`].
-    #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
         receive_signal(&self.0, "SpawnStarted").await
     }
 
     /// Emitted when a process started by [`FlatpakProxy::spawn`] exits.
+    ///
+    /// See also [`SpawnExited`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Flatpak.SpawnExited).
     #[doc(alias = "SpawnExited")]
     pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
         receive_signal(&self.0, "SpawnExited").await
@@ -241,6 +244,8 @@ impl<'a> FlatpakProxy<'a> {
     ///   process.
     /// * `flags`
     /// * `options` - A [`SpawnOptions`].
+    ///
+    /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
     pub async fn spawn<S: AsRef<str> + zvariant::Type + Serialize>(
         &self,
@@ -258,6 +263,7 @@ impl<'a> FlatpakProxy<'a> {
         )
         .await
     }
+
     /// This methods let you send a Unix signal to a process that was started
     /// [`FlatpakProxy::spawn`].
     ///
@@ -266,6 +272,8 @@ impl<'a> FlatpakProxy<'a> {
     /// * `pid` - The PID of the process to send the signal to.
     /// * `signal` - The signal to send.
     /// * `to_process_group` - Whether to send the signal to the process group.
+    ///
+    /// See also [`SpawnSignal`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak.SpawnSignal).
     #[doc(alias = "SpawnSignal")]
     pub async fn spawn_signal(
         &self,
@@ -277,6 +285,8 @@ impl<'a> FlatpakProxy<'a> {
     }
 
     /// Flags marking what optional features are available.
+    ///
+    /// See also [`supports`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-Flatpak.supports).
     pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
         self.inner()
             .get_property::<BitFlags<SupportsFlags>>("supports")

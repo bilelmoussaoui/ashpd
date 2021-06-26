@@ -76,6 +76,8 @@ impl<'a> TrashProxy<'a> {
     /// # Arguments
     ///
     /// * `fd` - The file descriptor.
+    ///
+    /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Trash.TrashFile).
     #[doc(alias = "TrashFile")]
     pub async fn trash_file<T>(&self, fd: &T) -> Result<(), Error>
     where

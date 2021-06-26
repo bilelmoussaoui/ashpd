@@ -141,6 +141,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// Create a remote desktop session.
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.
+    ///
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.CreateSession).
     #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateRemoteOptions::default();
@@ -165,6 +167,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `types` - The device types to request remote controlling of.
+    ///
+    /// See also [`SelectDevices`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.SelectDevices).
     #[doc(alias = "SelectDevices")]
     pub async fn select_devices(
         &self,
@@ -191,6 +195,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `identifier` - The application window identifier.
+    ///
+    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.Start).
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
@@ -217,6 +223,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    ///
+    /// See also [`NotifyKeyboardKeycode`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeycode).
     #[doc(alias = "NotifyKeyboardKeycode")]
     pub async fn notify_keyboard_keycode(
         &self,
@@ -243,6 +251,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    ///
+    /// See also [`NotifyKeyboardKeysym`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeysym).
     #[doc(alias = "NotifyKeyboardKeysym")]
     pub async fn notify_keyboard_keysym(
         &self,
@@ -269,6 +279,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `slot` - Touch slot where touch point appeared.
+    ///
+    /// See also [`NotifyTouchUp`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchUp).
     #[doc(alias = "NotifyTouchUp")]
     pub async fn notify_touch_up(
         &self,
@@ -294,6 +306,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
     /// * `y` - Touch down y coordinate.
+    ///
+    /// See also [`NotifyTouchDown`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchDown).
     #[doc(alias = "NotifyTouchDown")]
     pub async fn notify_touch_down(
         &self,
@@ -327,6 +341,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch motion x coordinate.
     /// * `y` - Touch motion y coordinate.
+    ///
+    /// See also [`NotifyTouchMotion`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchMotion).
     #[doc(alias = "NotifyTouchMotion")]
     pub async fn notify_touch_motion(
         &self,
@@ -356,6 +372,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
+    ///
+    /// See also [`NotifyPointerMotionAbsolute`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotionAbsolute).
     #[doc(alias = "NotifyPointerMotionAbsolute")]
     pub async fn notify_pointer_motion_absolute(
         &self,
@@ -383,6 +401,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
+    ///
+    /// See also [`NotifyPointerMotion`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotion).
     #[doc(alias = "NotifyPointerMotion")]
     pub async fn notify_pointer_motion(
         &self,
@@ -406,6 +426,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    ///
+    /// See also [`NotifyPointerButton`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerButton).
     #[doc(alias = "NotifyPointerButton")]
     pub async fn notify_pointer_button(
         &self,
@@ -431,6 +453,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `axis` - The axis that was scrolled.
+    ///
+    /// See also [`NotifyPointerAxisDiscrete`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxisDiscrete).
     #[doc(alias = "NotifyPointerAxisDiscrete")]
     pub async fn notify_pointer_axis_discrete(
         &self,
@@ -461,6 +485,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// * `session` - A [`SessionProxy`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
+    ///
+    /// See also [`NotifyPointerAxis`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxis).
     #[doc(alias = "NotifyPointerAxis")]
     pub async fn notify_pointer_axis(
         &self,
@@ -474,6 +500,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     }
 
     /// Available source types.
+    ///
+    /// See also [`AvailableDeviceTypes`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-RemoteDesktop.AvailableDeviceTypes).
     #[doc(alias = "AvailableDeviceTypes")]
     pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
         self.inner()

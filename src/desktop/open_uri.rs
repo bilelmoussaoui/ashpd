@@ -169,6 +169,8 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `identifier` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
+    ///
+    /// See also [`OpenDirectory`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenDirectory).
     #[doc(alias = "OpenDirectory")]
     pub async fn open_directory<F>(
         &self,
@@ -196,6 +198,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `file` - File descriptor for the file to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
+    ///
+    /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenFile).
     #[doc(alias = "OpenFile")]
     pub async fn open_file<F>(
         &self,
@@ -225,6 +229,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `uri` - The uri to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
+    ///
+    /// See also [`OpenURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenURI).
     #[doc(alias = "OpenURI")]
     pub async fn open_uri(
         &self,

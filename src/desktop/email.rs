@@ -167,6 +167,8 @@ impl<'a> EmailProxy<'a> {
     ///
     /// * `identifier` - Identifier for the application window.
     /// * `email` - An [`Email`].
+    ///
+    /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
     #[doc(alias = "ComposeEmail")]
     pub async fn compose_email(
         &self,

@@ -154,6 +154,8 @@ impl<'a> DocumentsProxy<'a> {
     ///   for the file.
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
+    ///
+    /// See also [`Add`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Add).
     #[doc(alias = "Add")]
     pub async fn add<F>(
         &self,
@@ -185,6 +187,8 @@ impl<'a> DocumentsProxy<'a> {
     /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
+    ///
+    /// See also [`AddFull`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddFull).
     #[doc(alias = "AddFull")]
     pub async fn add_full<F: AsRawFd>(
         &self,
@@ -209,6 +213,8 @@ impl<'a> DocumentsProxy<'a> {
     ///   for the file.
     /// * `persistent` - Whether to add the file only for this session or
     ///   permanently.
+    ///
+    /// See also [`AddNamed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddNamed).
     #[doc(alias = "AddNamed")]
     pub async fn add_named<F>(
         &self,
@@ -247,6 +253,8 @@ impl<'a> DocumentsProxy<'a> {
     /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
+    ///
+    /// See also [`AddNamedFull`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddNamedFull).
     #[doc(alias = "AddNamedFull")]
     pub async fn add_named_full<F>(
         &self,
@@ -280,6 +288,8 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
+    ///
+    /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
     #[doc(alias = "Delete")]
     pub async fn delete(&self, doc_id: &str) -> Result<(), Error> {
         call_method(&self.0, "Delete", &(doc_id)).await
@@ -287,6 +297,8 @@ impl<'a> DocumentsProxy<'a> {
 
     /// Returns the path at which the document store fuse filesystem is mounted.
     /// This will typically be /run/user/$UID/doc/.
+    ///
+    /// See also [`GetMountPoint`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.GetMountPoint).
     #[doc(alias = "GetMountPoint")]
     #[doc(alias = "get_mount_point")]
     pub async fn mount_point(&self) -> Result<String, Error> {
@@ -302,6 +314,8 @@ impl<'a> DocumentsProxy<'a> {
     /// * `doc_id` - The ID of the file in the document store.
     /// * `app_id` - The ID of the application to which permissions are granted.
     /// * `permissions` - The permissions to grant.
+    ///
+    /// See also [`GrantPermissions`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.GrantPermissions).
     #[doc(alias = "GrantPermissions")]
     pub async fn grant_permissions(
         &self,
@@ -321,6 +335,8 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
+    ///
+    /// See also [`Info`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Info).
     #[doc(alias = "Info")]
     pub async fn info(&self, doc_id: &str) -> Result<(String, Permissions), Error> {
         call_method(&self.0, "Info", &(doc_id)).await
@@ -335,6 +351,8 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `app-id` - The application ID, or '' to list all documents.
+    ///
+    /// See also [`List`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.List).
     #[doc(alias = "List")]
     pub async fn list(&self, app_id: &str) -> Result<HashMap<String, String>, Error> {
         call_method(&self.0, "List", &(app_id)).await
@@ -349,6 +367,8 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// - `filename` - A path in the host filesystem.
+    ///
+    /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
     pub async fn lookup(&self, filename: &str) -> Result<String, Error> {
         call_method(&self.0, "Lookup", &(filename)).await
@@ -364,6 +384,8 @@ impl<'a> DocumentsProxy<'a> {
     /// * `app_id` - The ID of the application from which permissions are
     ///   revoked.
     /// * `permissions` - The permissions to revoke.
+    ///
+    /// See also [`RevokePermissions`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.RevokePermissions).
     #[doc(alias = "RevokePermissions")]
     pub async fn revoke_permissions(
         &self,

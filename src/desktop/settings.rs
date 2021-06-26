@@ -104,7 +104,9 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// If `namespaces` is an empty array or contains an empty string it matches
     /// all. Globing is supported but only for trailing sections, e.g.
-    /// "org.example.*".
+    /// `org.example.*`.
+    ///
+    /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Settings.ReadAll).
     #[doc(alias = "ReadAll")]
     pub async fn read_all<S: AsRef<str> + zvariant::Type + Serialize>(
         &self,
@@ -121,6 +123,8 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// * `namespace` - Namespace to look up key in.
     /// * `key` - The key to get.
+    ///
+    /// See also [`Read`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Settings.Read).
     #[doc(alias = "Read")]
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
@@ -130,6 +134,8 @@ impl<'a> SettingsProxy<'a> {
     }
 
     /// Signal emitted when a setting changes.
+    ///
+    /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
     #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<Setting, Error> {
         receive_signal(&self.0, "SettingChanged").await

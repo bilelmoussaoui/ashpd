@@ -213,6 +213,7 @@ impl<'a> RequestProxy<'a> {
         &self.0
     }
 
+    /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Request.Response).
     #[doc(alias = "Response")]
     pub async fn receive_response<R>(&self) -> Result<R, Error>
     where
@@ -227,6 +228,8 @@ impl<'a> RequestProxy<'a> {
     /// Closes the portal request to which this object refers and ends all
     /// related user interaction (dialogs, etc). A Response signal will not
     /// be emitted in this case.
+    ///
+    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Request.Close).
     #[allow(dead_code)]
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {

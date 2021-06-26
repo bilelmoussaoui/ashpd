@@ -102,6 +102,8 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `pid` - Process id to query the GameMode status of.
+    ///
+    /// See also [`QueryStatus`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.QueryStatus).
     #[doc(alias = "QueryStatus")]
     pub async fn query_status(&self, pid: i32) -> Result<Status, Error> {
         call_method(&self.0, "QueryStatus", &(pid)).await
@@ -114,6 +116,8 @@ impl<'a> GameModeProxy<'a> {
     /// * `target` - Pid file descriptor to query the GameMode status of.
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   information.
+    ///
+    /// See also [`QueryStatusByPIDFd`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.QueryStatusByPIDFd).
     #[doc(alias = "QueryStatusByPIDFd")]
     pub async fn query_status_by_pidfd<F, R>(
         &self,
@@ -141,6 +145,8 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `target` - Process id to query the GameMode status of.
     /// * `requester` - Process id of the process requesting the information.
+    ///
+    /// See also [`QueryStatusByPid`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.QueryStatusByPid).
     #[doc(alias = "QueryStatusByPid")]
     pub async fn query_status_by_pid(&self, target: i32, requester: i32) -> Result<Status, Error> {
         call_method(&self.0, "QueryStatusByPid", &(target, requester)).await
@@ -156,6 +162,8 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `pid` - Process id of the game to register.
+    ///
+    /// See also [`RegisterGame`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.RegisterGame).
     #[doc(alias = "RegisterGame")]
     pub async fn register_game(&self, pid: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "RegisterGame", &(pid)).await?;
@@ -170,8 +178,9 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `target` - Process file descriptor of the game to register.
-    /// * `requester` - Process file descriptor of the process requesting the
-    ///   registration.
+    /// * `requester` - Process file descriptor of the process requesting the registration.
+    ///
+    /// See also [`RegisterGameByPIDFd`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.RegisterGameByPIDFd).
     #[doc(alias = "RegisterGameByPIDFd")]
     pub async fn register_game_by_pidfd<F, R>(&self, target: &F, requester: &R) -> Result<(), Error>
     where
@@ -199,7 +208,9 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// * `target` - Process id of the game to register.
     /// * `requester` - Process id of the process requesting the registration.
-    #[doc(alias = "RegisterGameRejected")]
+    ///
+    /// See also [`RegisterGameByPid`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.RegisterGameByPid).
+    #[doc(alias = "RegisterGameByPid")]
     pub async fn register_game_by_pid(&self, target: i32, requester: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "RegisterGameByPid", &(target, requester)).await?;
         match status {
@@ -217,6 +228,8 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// `pid` - Process id of the game to un-register.
+    ///
+    /// See also [`UnregisterGame`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.UnregisterGame).
     #[doc(alias = "UnregisterGame")]
     pub async fn unregister_game(&self, pid: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "UnregisterGame", &(pid)).await?;
@@ -231,8 +244,9 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `target` - Pid file descriptor of the game to un-register.
-    /// * `requester` - Pid file descriptor of the process requesting the
-    ///   un-registration.
+    /// * `requester` - Pid file descriptor of the process requesting the un-registration.
+    ///
+    /// See also [`UnregisterGameByPIDFd`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.UnregisterGameByPIDFd).
     #[doc(alias = "UnregisterGameByPIDFd")]
     pub async fn unregister_game_by_pidfd<F, R>(
         &self,
@@ -263,8 +277,9 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `target` - Process id of the game to un-register.
-    /// * `requester` - Process id of the process requesting the
-    ///   un-registration.
+    /// * `requester` - Process id of the process requesting the un-registration.
+    ///
+    /// See also [`UnregisterGameByPid`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-GameMode.UnregisterGameByPid).
     #[doc(alias = "UnregisterGameByPid")]
     pub async fn unregister_game_by_pid(&self, target: i32, requester: i32) -> Result<(), Error> {
         let status = call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await?;

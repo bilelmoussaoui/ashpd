@@ -103,6 +103,8 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
     /// * `fds` - A list of file descriptors of the files to register.
+    ///
+    /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.AddFiles).
     #[doc(alias = "AddFiles")]
     pub async fn add_files<F: AsRawFd>(&self, key: &str, fds: &[&F]) -> Result<(), Error> {
         // FIXME: figure out the options we can take here
@@ -122,6 +124,8 @@ impl<'a> FileTransferProxy<'a> {
     /// # Arguments
     ///
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
+    ///
+    /// See also [`RetrieveFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.RetrieveFiles).
     #[doc(alias = "RetrieveFiles")]
     pub async fn retrieve_files(&self, key: &str) -> Result<Vec<String>, Error> {
         // FIXME: figure out the options we can take here
@@ -129,6 +133,7 @@ impl<'a> FileTransferProxy<'a> {
 
         call_method(&self.0, "RetrieveFiles", &(key, options)).await
     }
+
     /// Starts a session for a file transfer.
     /// The caller should call [`FileTransferProxy::add_files`] at least once, to add files to this
     /// session.
@@ -142,6 +147,8 @@ impl<'a> FileTransferProxy<'a> {
     /// # Returns
     ///
     /// a key that can be passed to [`FileTransferProxy::retrieve_files`] to obtain the files.
+    ///
+    /// See also [`StartTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.StartTransfer).
     pub async fn start_transfer(&self, writeable: bool, auto_stop: bool) -> Result<String, Error> {
         let options = TransferOptions::default()
             .writeable(writeable)
@@ -156,6 +163,8 @@ impl<'a> FileTransferProxy<'a> {
     /// # Arguments
     ///
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
+    ///
+    /// See also [`StopTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.StopTransfer).
     #[doc(alias = "StopTransfer")]
     pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
         call_method(&self.0, "StopTransfer", &(key)).await
@@ -166,6 +175,8 @@ impl<'a> FileTransferProxy<'a> {
     /// # Returns
     ///
     /// * The key returned by [`FileTransferProxy::start_transfer`]
+    ///
+    /// See also [`TransferClosed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-FileTransfer.TransferClosed).
     #[doc(alias = "TransferClosed")]
     pub async fn transfer_closed(&self) -> Result<String, Error> {
         receive_signal(&self.0, "TransferClosed").await

@@ -165,6 +165,8 @@ impl<'a> WallpaperProxy<'a> {
     /// * `file` - The wallpaper file descriptor.
     /// * `show_preview` - Whether to show a preview of the picture.
     /// * `set_on` - Where to set the wallpaper on.
+    ///
+    /// See also [`SetWallpaperFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperFile).
     #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file<F>(
         &self,
@@ -196,6 +198,8 @@ impl<'a> WallpaperProxy<'a> {
     /// * `uri` - The wallpaper URI.
     /// * `show_preview` - Whether to show a preview of the picture.
     /// * `set_on` - Where to set the wallpaper on.
+    ///
+    /// See also [`SetWallpaperURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperURI).
     #[doc(alias = "SetWallpaperURI")]
     pub async fn set_wallpaper_uri(
         &self,

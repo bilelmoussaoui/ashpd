@@ -196,6 +196,8 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Create a screen cast session.
+    ///
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.CreateSession).
     #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateSessionOptions::default();
@@ -222,6 +224,8 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`SessionProxy`].
+    ///
+    /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(&self, session: &SessionProxy<'_>) -> Result<Fd, Error> {
         // FIXME: figure out the options we can take here
@@ -242,6 +246,8 @@ impl<'a> ScreenCastProxy<'a> {
     /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast stream.
     /// * `types` - Sets the types of content to record.
     /// * `multiple`- Sets whether to allow selecting multiple sources.
+    ///
+    /// See also [`SelectSources`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.SelectSources).
     #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
@@ -274,6 +280,8 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `identifier` - Identifier for the application window.
+    ///
+    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.Start).
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
@@ -292,6 +300,8 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Available cursor mode.
+    ///
+    /// See also [`AvailableCursorModes`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableCursorModes).
     #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
         self.inner()
@@ -301,6 +311,8 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Available source types.
+    ///
+    /// See also [`AvailableSourceTypes`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableSourceTypes).
     #[doc(alias = "AvailableSourceTypes")]
     pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
         self.inner()

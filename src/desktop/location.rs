@@ -186,6 +186,8 @@ impl<'a> LocationProxy<'a> {
     }
 
     /// Signal emitted when the user location is updated.
+    ///
+    /// See also [`LocationUpdated`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Location.LocationUpdated).
     #[doc(alias = "LocationUpdated")]
     pub async fn receive_location_updated(&self) -> Result<Location, Error> {
         receive_signal(&self.0, "LocationUpdated").await
@@ -198,6 +200,8 @@ impl<'a> LocationProxy<'a> {
     /// * `distance_threshold` - Sets the distance threshold in meters, default to `0`.
     /// * `time_threshold` - Sets the time threshold in seconds, default to `0`.
     /// * `accuracy` - Sets the location accuracy, default to [`Accuracy::Exact`].
+    ///
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Location.CreateSession).
     #[doc(alias = "CreateSession")]
     pub async fn create_session(
         &self,
@@ -230,6 +234,8 @@ impl<'a> LocationProxy<'a> {
     ///
     /// * `session` - A [`SessionProxy`].
     /// * `identifier` - Identifier for the application window.
+    ///
+    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Location.Start).
     #[doc(alias = "Start")]
     pub async fn start(
         &self,

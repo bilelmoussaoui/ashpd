@@ -50,7 +50,9 @@ impl<'a> ProxyResolverProxy<'a> {
     /// # Returns
     ///
     /// A list of proxy uris of the form `protocol://[user[:password]host:port`
-    /// The protocol can be `http`, `rtsp`, `socks` or another proxying protocol. 'direct://' is used when no proxy is needed.
+    /// The protocol can be `http`, `rtsp`, `socks` or another proxying protocol. `direct://` is used when no proxy is needed.
+    ///
+    /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ProxyResolver.Lookup).
     #[doc(alias = "Lookup")]
     pub async fn lookup(&self, uri: &str) -> Result<Vec<String>, Error> {
         call_method(&self.0, "Lookup", &(uri)).await

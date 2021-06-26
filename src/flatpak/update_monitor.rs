@@ -114,12 +114,16 @@ impl<'a> UpdateMonitorProxy<'a> {
     }
 
     /// A signal received when there's progress during the application update.
+    ///
+    /// See also [`Progress`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.Progress).
     #[doc(alias = "Progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
         receive_signal(&self.0, "Progress").await
     }
 
     /// A signal received when there's an application update.
+    ///
+    /// See also [`UpdateAvailable`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.UpdateAvailable).
     #[doc(alias = "UpdateAvailable")]
     pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
         receive_signal(&self.0, "UpdateAvailable").await
@@ -129,6 +133,8 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// **Note** that updates are only allowed if the new version
     /// has the same permissions (or less) than the currently installed version.
+    ///
+    /// See also [`Update`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Update).
     #[doc(alias = "Update")]
     pub async fn update(&self, identifier: WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
@@ -136,6 +142,8 @@ impl<'a> UpdateMonitorProxy<'a> {
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.
+    ///
+    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await

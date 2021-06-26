@@ -12,6 +12,8 @@ use serde::{ser::Serializer, Serialize};
 /// form `wayland:HANDLE`, where HANDLE is a surface handle obtained with the
 /// [xdg-foreign](https://github.com/wayland-project/wayland-protocols/blob/master/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
 ///
+/// See also [Parent window identifiers](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#parent_window).
+///
 /// # Usage
 ///
 /// ## With GTK 4
