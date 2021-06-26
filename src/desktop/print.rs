@@ -474,13 +474,13 @@ struct PrintOptions {
     /// Whether to make the dialog modal.
     modal: Option<bool>,
     /// Token that was returned by a previous [`PrintProxy::prepare_print`] call.
-    token: Option<String>,
+    token: Option<u32>,
 }
 
 impl PrintOptions {
     /// A token retrieved from [`PrintProxy::prepare_print`].
-    pub fn token(mut self, token: &str) -> Self {
-        self.token = Some(token.to_string());
+    pub fn token(mut self, token: u32) -> Self {
+        self.token = Some(token);
         self
     }
 
@@ -500,7 +500,7 @@ pub struct PreparePrint {
     /// The printed pages setup.
     pub page_setup: PageSetup,
     /// A token to pass to the print request.
-    pub token: String,
+    pub token: u32,
 }
 
 /// The interface lets sandboxed applications print.
@@ -574,13 +574,15 @@ impl<'a> PrintProxy<'a> {
         identifier: WindowIdentifier,
         title: &str,
         fd: &F,
-        token: &str,
+        token: Option<u32>,
         modal: bool,
     ) -> Result<(), Error>
     where
         F: AsRawFd,
     {
-        let options = PrintOptions::default().token(token).modal(modal);
+        let options = PrintOptions::default()
+            .token(token.unwrap_or(0))
+            .modal(modal);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
