@@ -75,7 +75,7 @@ impl<'a> SecretProxy<'a> {
     #[doc(alias = "RetrieveSecret")]
     pub async fn retrieve_secret<F: AsRawFd>(
         &self,
-        fd: F,
+        fd: &F,
         token: Option<&str>,
     ) -> Result<String, Error> {
         let options = if let Some(token) = token {

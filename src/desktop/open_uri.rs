@@ -117,7 +117,7 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_directory<F>(
         &self,
         identifier: WindowIdentifier,
-        directory: F,
+        directory: &F,
     ) -> Result<(), Error>
     where
         F: AsRawFd,

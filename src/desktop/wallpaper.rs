@@ -138,14 +138,14 @@ impl<'a> WallpaperProxy<'a> {
     /// # Arguments
     ///
     /// * `identifier` - Identifier for the application window.
-    /// * `fd` - The wallpaper file description.
+    /// * `file` - The wallpaper file descriptor.
     /// * `show_preview` - Whether to show a preview of the picture.
     /// * `set_on` - Where to set the wallpaper on.
     #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file<F>(
         &self,
         identifier: WindowIdentifier,
-        fd: &F,
+        file: &F,
         show_preview: bool,
         set_on: SetOn,
     ) -> Result<(), Error>
@@ -159,7 +159,7 @@ impl<'a> WallpaperProxy<'a> {
             &self.0,
             &options.handle_token,
             "SetWallpaperFile",
-            &(identifier, Fd::from(fd.as_raw_fd()), &options),
+            &(identifier, Fd::from(file.as_raw_fd()), &options),
         )
         .await
     }

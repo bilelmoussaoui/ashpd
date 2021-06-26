@@ -11,7 +11,7 @@
 //!     let key = proxy.start_transfer(true, true).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
-//!         .add_files(&key, &[file])
+//!         .add_files(&key, &[&file])
 //!         .await?;
 //!
 //!     // The files would be retrieved by another process
@@ -102,7 +102,7 @@ impl<'a> FileTransferProxy<'a> {
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
     /// * `fds` - A list of file descriptors of the files to register.
     #[doc(alias = "AddFiles")]
-    pub async fn add_files<F: AsRawFd>(&self, key: &str, fds: &[F]) -> Result<(), Error> {
+    pub async fn add_files<F: AsRawFd>(&self, key: &str, fds: &[&F]) -> Result<(), Error> {
         // FIXME: figure out the options we can take here
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();

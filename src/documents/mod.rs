@@ -156,7 +156,7 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "Add")]
     pub async fn add<F>(
         &self,
-        o_path_fd: F,
+        o_path_fd: &F,
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<String, Error>
@@ -215,7 +215,7 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "AddNamed")]
     pub async fn add_named<F>(
         &self,
-        o_path_parent_fd: F,
+        o_path_parent_fd: &F,
         filename: &str,
         reuse_existing: bool,
         persistent: bool,
@@ -253,7 +253,7 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "AddNamedFull")]
     pub async fn add_named_full<F>(
         &self,
-        o_path_fd: F,
+        o_path_fd: &F,
         filename: &str,
         flags: BitFlags<Flags>,
         app_id: &str,
