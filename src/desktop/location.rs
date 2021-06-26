@@ -232,7 +232,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`LocationProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
     /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Location.Start).

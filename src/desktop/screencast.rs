@@ -226,7 +226,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`ScreenCastProxy::create_session`].
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
@@ -246,7 +246,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`ScreenCastProxy::create_session`].
     /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast stream.
     /// * `types` - Sets the types of content to record.
     /// * `multiple`- Sets whether to allow selecting multiple sources.
@@ -282,7 +282,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`ScreenCastProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
     /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.Start).

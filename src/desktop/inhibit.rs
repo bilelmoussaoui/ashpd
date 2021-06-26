@@ -220,7 +220,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`InhibitProxy::create_monitor`].
     ///
     /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Inhibit.QueryEndResponse).
     #[doc(alias = "QueryEndResponse")]

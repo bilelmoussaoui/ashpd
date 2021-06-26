@@ -165,7 +165,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `types` - The device types to request remote controlling of.
     ///
     /// See also [`SelectDevices`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.SelectDevices).
@@ -193,7 +193,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `identifier` - The application window identifier.
     ///
     /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.Start).
@@ -220,7 +220,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -248,7 +248,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -277,7 +277,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `slot` - Touch slot where touch point appeared.
     ///
     /// See also [`NotifyTouchUp`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchUp).
@@ -301,7 +301,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
@@ -336,7 +336,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch motion x coordinate.
@@ -368,7 +368,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
@@ -398,7 +398,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
     ///
@@ -423,7 +423,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -451,7 +451,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `axis` - The axis that was scrolled.
     ///
     /// See also [`NotifyPointerAxisDiscrete`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxisDiscrete).
@@ -482,7 +482,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`].
+    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
     ///
