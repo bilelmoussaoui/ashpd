@@ -173,7 +173,7 @@ impl From<ResponseError> for ResponseType {
 /// xdg-desktop-portal.
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Request")]
-pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
+pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> RequestProxy<'a> {
     pub async fn new(
@@ -186,7 +186,7 @@ impl<'a> RequestProxy<'a> {
             .destination(crate::desktop::DESTINATION)
             .build_async()
             .await?;
-        Ok(Self(proxy, connection.clone()))
+        Ok(Self(proxy))
     }
 
     pub async fn from_unique_name(

@@ -21,7 +21,7 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// call [`SessionProxy::close`] depends on the interface.
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Session")]
-pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>, zbus::azync::Connection);
+pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>);
 
 impl<'a> SessionProxy<'a> {
     /// Create a new instance of [`SessionProxy`].
@@ -37,7 +37,7 @@ impl<'a> SessionProxy<'a> {
             .destination(DESTINATION)
             .build_async()
             .await?;
-        Ok(Self(proxy, connection.clone()))
+        Ok(Self(proxy))
     }
 
     pub(crate) async fn from_unique_name(
