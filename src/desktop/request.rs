@@ -198,7 +198,8 @@ impl<'a> RequestProxy<'a> {
         let path = zvariant::ObjectPath::try_from(format!(
             "/org/freedesktop/portal/desktop/request/{}/{}",
             unique_identifier, handle_token
-        ))?;
+        ))
+        .unwrap();
         RequestProxy::new(connection, path).await
     }
 

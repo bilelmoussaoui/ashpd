@@ -9,8 +9,6 @@ pub enum Error {
     ZbusFdo(zbus::fdo::Error),
     /// A zbus specific error.
     Zbus(zbus::Error),
-    /// A conversion error.
-    Zvariant(zvariant::Error),
     /// Failure to parse a response's body.
     DBusMalformedMessage(zbus::MessageError),
     /// A signal returned no response.
@@ -32,7 +30,6 @@ impl std::fmt::Display for Error {
                 f.write_str(&format!("zbus malformed message error: {}", e))
             }
             Self::Zbus(e) => f.write_str(&format!("zbus error: {}", e)),
-            Self::Zvariant(e) => f.write_str(&format!("zvariant error: {}", e)),
             Self::NoResponse => f.write_str("portal error: no response"),
             Self::RegisterGameRejected => f.write_str("Failed to register/un-register game mode"),
             Self::TrashFailed => f.write_str("Failed to trash a file"),
@@ -60,11 +57,5 @@ impl From<zbus::Error> for Error {
 impl From<zbus::fdo::Error> for Error {
     fn from(e: zbus::fdo::Error) -> Self {
         Self::ZbusFdo(e)
-    }
-}
-
-impl From<zvariant::Error> for Error {
-    fn from(e: zvariant::Error) -> Self {
-        Self::Zvariant(e)
     }
 }

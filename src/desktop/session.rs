@@ -49,7 +49,8 @@ impl<'a> SessionProxy<'a> {
         let path = zvariant::ObjectPath::try_from(format!(
             "/org/freedesktop/portal/desktop/session/{}/{}",
             unique_identifier, handle_token
-        ))?;
+        ))
+        .unwrap();
         SessionProxy::new(connection, path).await
     }
 
