@@ -20,7 +20,24 @@
 //!     Ok(())
 //! }
 //! ```
-
+//!
+//! Or simply
+//!
+//! ```rust, no_run
+//! use ashpd::desktop::account::user_information;
+//!
+//! async fn run() -> Result<(), ashpd::Error> {
+//!     let user_info = user_information(
+//!         Default::default(),
+//!         "App would like to access user information",
+//!     ).await?;
+//!
+//!     println!("Name: {}", user_info.name());
+//!     println!("ID: {}", user_info.id());
+//!
+//!     Ok(())
+//! }
+//! ```
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -118,4 +135,16 @@ impl<'a> AccountProxy<'a> {
         )
         .await
     }
+}
+
+#[doc(alias = "xdp_portal_get_user_information")]
+#[doc(alias = "get_user_information")]
+/// A handy wrapper around [`AccountProxy::user_information`].
+pub async fn user_information(
+    identifier: WindowIdentifier,
+    reason: &str,
+) -> Result<UserInfo, Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = AccountProxy::new(&connection).await?;
+    proxy.user_information(identifier, reason).await
 }

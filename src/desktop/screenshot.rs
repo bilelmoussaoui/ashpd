@@ -3,15 +3,11 @@
 //! ## Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screenshot::ScreenshotProxy;
+//! use ashpd::desktop::screenshot;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
-//!
-//!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let screenshot = proxy.screenshot(Default::default(), true, true).await?;
-//!
-//!     println!("URI: {}", screenshot.uri());
+//!     let uri = screenshot::take(Default::default(), true, true).await?;
+//!     println!("URI: {}", uri);
 //!     Ok(())
 //! }
 //! ```
@@ -19,13 +15,10 @@
 //! ## Picking a color
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screenshot::ScreenshotProxy;
+//! use ashpd::desktop::screenshot;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
-//!
-//!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let color = proxy.pick_color(Default::default()).await?;
+//!     let color = screenshot::pick_color(Default::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -66,16 +59,9 @@ impl ScreenshotOptions {
 
 #[derive(DeserializeDict, SerializeDict, Clone, TypeDict, Debug)]
 /// A response to a [`ScreenshotProxy::screenshot`] request.
-pub struct Screenshot {
+struct Screenshot {
     /// The screenshot uri.
     uri: String,
-}
-
-impl Screenshot {
-    /// The screenshot uri.
-    pub fn uri(&self) -> &str {
-        &self.uri
-    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
@@ -189,22 +175,47 @@ impl<'a> ScreenshotProxy<'a> {
     /// * `identifier` - Identifier for the application window.
     /// * `interactive` - Sets whether the dialog should offer customization before a screenshot or not.
     /// * `modal` - Sets whether the dialog should be a modal.
+    ///
+    /// # Returns
+    ///
+    /// The screenshot URI.
     #[doc(alias = "Screenshot")]
     pub async fn screenshot(
         &self,
         identifier: WindowIdentifier,
         interactive: bool,
         modal: bool,
-    ) -> Result<Screenshot, Error> {
+    ) -> Result<String, Error> {
         let options = ScreenshotOptions::default()
             .interactive(interactive)
             .modal(modal);
-        call_request_method(
+        let response: Screenshot = call_request_method(
             &self.0,
             &options.handle_token,
             "Screenshot",
             &(identifier, &options),
         )
-        .await
+        .await?;
+        Ok(response.uri)
     }
+}
+
+#[doc(alias = "xdp_portal_pick_color")]
+/// A handy wrapper around [`ScreenshotProxy::pick_color`].
+pub async fn pick_color(identifier: WindowIdentifier) -> Result<Color, Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = ScreenshotProxy::new(&connection).await?;
+    proxy.pick_color(identifier).await
+}
+
+#[doc(alias = "xdp_portal_take_screenshot")]
+/// A handy wrapper around [`ScreenshotProxy::screenshot`].
+pub async fn take(
+    identifier: WindowIdentifier,
+    interactive: bool,
+    modal: bool,
+) -> Result<String, Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = ScreenshotProxy::new(&connection).await?;
+    proxy.screenshot(identifier, interactive, modal).await
 }

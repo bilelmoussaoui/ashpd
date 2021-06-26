@@ -3,22 +3,17 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::background::{Background, BackgroundProxy};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::desktop::background;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
-//!     let proxy = BackgroundProxy::new(&connection).await?;
-//!
-//!     let response = proxy
-//!         .request_background(
-//!             WindowIdentifier::default(),
-//!             "Automatically fetch your latest mails",
-//!             true,
-//!             Some(&["geary"]),
-//!             false
-//!         )
-//!         .await?;
+//!     let response = background::request_background(
+//!         Default::default(),
+//!         "Automatically fetch your latest mails",
+//!         true,
+//!         Some(&["geary"]),
+//!         false,
+//!     )
+//!     .await?;
 //!
 //!     println!("{}", response.auto_start());
 //!     println!("{}", response.run_in_background());
@@ -74,7 +69,7 @@ impl BackgroundOptions {
     /// If this is not specified, the Exec line from the desktop file will be
     /// used.
     pub fn command(mut self, command: Option<&[&str]>) -> Self {
-        self.command = command.map(|s| s.to_owned().into_iter().map(|s|s.to_string()).collect());
+        self.command = command.map(|s| s.to_owned().into_iter().map(|s| s.to_string()).collect());
         self
     }
 }
@@ -129,13 +124,12 @@ impl<'a> BackgroundProxy<'a> {
     /// # Arguments
     ///
     /// * `identifier` - Identifier for the application window.
-
     /// * `reason` - Sets a user-visible reason for the request.
     /// * `auto_start` - Sets whether to auto start the application or not.
-    /// * `dbus_activatable` - Sets whether the application is dbus activatable.
     /// * `command_line` - Specifies the command line to execute.
     ///     If this is not specified, the Exec line from the desktop file will be
     ///     used.
+    /// * `dbus_activatable` - Sets whether the application is dbus activatable.
     #[doc(alias = "RequestBackground")]
     pub async fn request_background(
         &self,
@@ -158,4 +152,26 @@ impl<'a> BackgroundProxy<'a> {
         )
         .await
     }
+}
+
+#[doc(alias = "xdp_portal_request_background")]
+/// A handy wrapper around [`BackgroundProxy::request_background`].
+pub async fn request_background(
+    identifier: WindowIdentifier,
+    reason: &str,
+    auto_start: bool,
+    command_line: Option<&[&str]>,
+    dbus_activatable: bool,
+) -> Result<Background, Error> {
+    let connection = zbus::azync::Connection::new_session().await?;
+    let proxy = BackgroundProxy::new(&connection).await?;
+    proxy
+        .request_background(
+            identifier,
+            reason,
+            auto_start,
+            command_line,
+            dbus_activatable,
+        )
+        .await
 }
