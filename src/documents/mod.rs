@@ -42,7 +42,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 use std::{fmt::Debug, str::FromStr};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::{Fd, Signature, Type};
+use zvariant::{Fd, Signature};
 use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -161,9 +161,14 @@ impl<'a> DocumentsProxy<'a> {
         persistent: bool,
     ) -> Result<String, Error>
     where
-        F: AsRawFd + Serialize + Type + Debug,
+        F: AsRawFd + Debug,
     {
-        call_method(&self.0, "Add", &(o_path_fd, reuse_existing, persistent)).await
+        call_method(
+            &self.0,
+            "Add",
+            &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
+        )
+        .await
     }
 
     /// Adds multiple files to the document store.
@@ -216,12 +221,17 @@ impl<'a> DocumentsProxy<'a> {
         persistent: bool,
     ) -> Result<String, Error>
     where
-        F: AsRawFd + Serialize + Type + Debug,
+        F: AsRawFd + Debug,
     {
         call_method(
             &self.0,
             "AddNamed",
-            &(o_path_parent_fd, filename, reuse_existing, persistent),
+            &(
+                Fd::from(o_path_parent_fd.as_raw_fd()),
+                filename,
+                reuse_existing,
+                persistent,
+            ),
         )
         .await
     }
@@ -250,12 +260,18 @@ impl<'a> DocumentsProxy<'a> {
         permissions: &[Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error>
     where
-        F: AsRawFd + Serialize + Type + Debug,
+        F: AsRawFd + Debug,
     {
         call_method(
             &self.0,
             "AddNamedFull",
-            &(o_path_fd, filename, flags, app_id, permissions),
+            &(
+                Fd::from(o_path_fd.as_raw_fd()),
+                filename,
+                flags,
+                app_id,
+                permissions,
+            ),
         )
         .await
     }

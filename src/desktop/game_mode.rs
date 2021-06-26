@@ -19,14 +19,12 @@
 //! }
 //! ```
 
+use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
-use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{fmt::Debug, os::unix::io::AsRawFd};
-use zvariant::Type;
+use zvariant::Fd;
 use zvariant_derive::Type;
-
-use super::{DESTINATION, PATH};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
@@ -119,14 +117,22 @@ impl<'a> GameModeProxy<'a> {
     #[doc(alias = "QueryStatusByPIDFd")]
     pub async fn query_status_by_pidfd<F, R>(
         &self,
-        target: F,
-        requester: R,
+        target: &F,
+        requester: &R,
     ) -> Result<Status, Error>
     where
-        F: AsRawFd + Type + Serialize + Debug,
-        R: AsRawFd + Type + Serialize + Debug,
+        F: AsRawFd,
+        R: AsRawFd,
     {
-        call_method(&self.0, "QueryStatusByPIDFd", &(target, requester)).await
+        call_method(
+            &self.0,
+            "QueryStatusByPIDFd",
+            &(
+                Fd::from(target.as_raw_fd()),
+                Fd::from(requester.as_raw_fd()),
+            ),
+        )
+        .await
     }
 
     /// Query the GameMode status for a process.
@@ -167,12 +173,20 @@ impl<'a> GameModeProxy<'a> {
     /// * `requester` - Process file descriptor of the process requesting the
     ///   registration.
     #[doc(alias = "RegisterGameByPIDFd")]
-    pub async fn register_game_by_pidfd<F, R>(&self, target: F, requester: R) -> Result<(), Error>
+    pub async fn register_game_by_pidfd<F, R>(&self, target: &F, requester: &R) -> Result<(), Error>
     where
-        F: AsRawFd + Type + Serialize + Debug,
-        R: AsRawFd + Type + Serialize + Debug,
+        F: AsRawFd,
+        R: AsRawFd,
     {
-        let status = call_method(&self.0, "RegisterGameByPIDFd", &(target, requester)).await?;
+        let status = call_method(
+            &self.0,
+            "RegisterGameByPIDFd",
+            &(
+                Fd::from(target.as_raw_fd()),
+                Fd::from(requester.as_raw_fd()),
+            ),
+        )
+        .await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
@@ -220,12 +234,24 @@ impl<'a> GameModeProxy<'a> {
     /// * `requester` - Pid file descriptor of the process requesting the
     ///   un-registration.
     #[doc(alias = "UnregisterGameByPIDFd")]
-    pub async fn unregister_game_by_pidfd<F, R>(&self, target: F, requester: R) -> Result<(), Error>
+    pub async fn unregister_game_by_pidfd<F, R>(
+        &self,
+        target: &F,
+        requester: &R,
+    ) -> Result<(), Error>
     where
-        F: AsRawFd + Type + Serialize + Debug,
-        R: AsRawFd + Type + Serialize + Debug,
+        F: AsRawFd,
+        R: AsRawFd,
     {
-        let status = call_method(&self.0, "UnregisterGameByPIDFd", &(target, requester)).await?;
+        let status = call_method(
+            &self.0,
+            "UnregisterGameByPIDFd",
+            &(
+                Fd::from(target.as_raw_fd()),
+                Fd::from(requester.as_raw_fd()),
+            ),
+        )
+        .await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::RegisterGameRejected),

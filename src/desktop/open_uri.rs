@@ -5,8 +5,6 @@
 //! ```rust,no_run
 //! use ashpd::desktop::open_uri::OpenURIProxy;
 //! use std::fs::File;
-//! use std::os::unix::io::AsRawFd;
-//! use zvariant::Fd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
@@ -14,9 +12,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
-//!     proxy
-//!         .open_file(Default::default(), Fd::from(file.as_raw_fd()), false, true)
-//!         .await?;
+//!     proxy.open_file(Default::default(), &file, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -45,9 +41,8 @@
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
-use serde::Serialize;
 use std::os::unix::prelude::AsRawFd;
-use zvariant::Type;
+use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -125,14 +120,14 @@ impl<'a> OpenURIProxy<'a> {
         directory: F,
     ) -> Result<(), Error>
     where
-        F: AsRawFd + Serialize + Type,
+        F: AsRawFd,
     {
         let options = OpenDirOptions::default();
         call_basic_response_method(
             &self.0,
             &options.handle_token,
             "OpenDirectory",
-            &(identifier, directory.as_raw_fd(), &options),
+            &(identifier, Fd::from(directory.as_raw_fd()), &options),
         )
         .await
     }
@@ -149,19 +144,19 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_file<F>(
         &self,
         identifier: WindowIdentifier,
-        file: F,
+        file: &F,
         writeable: bool,
         ask: bool,
     ) -> Result<(), Error>
     where
-        F: AsRawFd + Serialize + Type,
+        F: AsRawFd,
     {
         let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
             "OpenFile",
-            &(identifier, file.as_raw_fd(), &options),
+            &(identifier, Fd::from(file.as_raw_fd()), &options),
         )
         .await
     }

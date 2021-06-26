@@ -3,8 +3,6 @@
 //! ```rust,no_run
 //! use ashpd::desktop::secret::SecretProxy;
 //! use std::fs::File;
-//! use std::os::unix::io::AsRawFd;
-//! use zvariant::Fd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -13,7 +11,7 @@
 //!     let file = File::open("test.txt").unwrap();
 //!
 //!     let secret = proxy
-//!         .retrieve_secret(Fd::from(file.as_raw_fd()), None)
+//!         .retrieve_secret(file, None)
 //!         .await?;
 //!
 //!     println!("{:#?}", secret);
@@ -24,6 +22,7 @@
 use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 use std::os::unix::prelude::AsRawFd;
+use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -74,7 +73,7 @@ impl<'a> SecretProxy<'a> {
     /// * `fd` - Writable file descriptor for transporting the secret.
     /// * `token` -  A string returned by a previous call to [`SecretProxy::retrieve_secret`].
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve_secret<F: AsRawFd + serde::Serialize + zvariant::Type>(
+    pub async fn retrieve_secret<F: AsRawFd>(
         &self,
         fd: F,
         token: Option<&str>,
@@ -84,6 +83,11 @@ impl<'a> SecretProxy<'a> {
         } else {
             RetrieveOptions::default()
         };
-        call_method(&self.0, "RetrieveSecret", &(fd.as_raw_fd(), options)).await
+        call_method(
+            &self.0,
+            "RetrieveSecret",
+            &(Fd::from(fd.as_raw_fd()), options),
+        )
+        .await
     }
 }

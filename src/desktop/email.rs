@@ -6,8 +6,6 @@
 //! use ashpd::desktop::email::{Email, EmailProxy};
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
-//! use std::os::unix::io::AsRawFd;
-//! use zvariant::Fd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -20,7 +18,7 @@
 //!                 .address("test@gmail.com")
 //!                 .subject("email subject")
 //!                 .body("the pre-filled email body")
-//!                 .attach(Fd::from(file.as_raw_fd())),
+//!                 .attach(&file),
 //!         )
 //!         .await?;
 //!
@@ -30,6 +28,7 @@
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
+use std::os::unix::prelude::AsRawFd;
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -97,7 +96,8 @@ impl Email {
     }
 
     /// Attaches a file to the email.
-    pub fn attach(mut self, attachment: Fd) -> Self {
+    pub fn attach<F: AsRawFd>(mut self, attachment: &F) -> Self {
+        let attachment = Fd::from(attachment.as_raw_fd());
         match self.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),
             None => {

@@ -3,8 +3,6 @@
 //! ```rust,no_run
 //! use ashpd::documents::{FileTransferProxy};
 //! use std::fs::File;
-//! use std::os::unix::io::AsRawFd;
-//! use zvariant::Fd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -13,7 +11,7 @@
 //!     let key = proxy.start_transfer(true, true).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
-//!         .add_files(&key, &[Fd::from(file.as_raw_fd())])
+//!         .add_files(&key, &[file])
 //!         .await?;
 //!
 //!     // The files would be retrieved by another process
@@ -29,7 +27,7 @@
 use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 use futures::prelude::stream::*;
-use std::collections::HashMap;
+use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
@@ -104,15 +102,16 @@ impl<'a> FileTransferProxy<'a> {
     /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
     /// * `fds` - A list of file descriptors of the files to register.
     #[doc(alias = "AddFiles")]
-    pub async fn add_files(&self, key: &str, fds: &[Fd]) -> Result<(), Error> {
+    pub async fn add_files<F: AsRawFd>(&self, key: &str, fds: &[F]) -> Result<(), Error> {
         // FIXME: figure out the options we can take here
         let options: HashMap<&str, Value<'_>> = HashMap::new();
+        let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
 
-        call_method(&self.0, "AddFiles", &(key, fds, options)).await
+        call_method(&self.0, "AddFiles", &(key, files, options)).await
     }
 
     /// Retrieves files that were previously added to the session with
-    /// `add_files`. The files will be exported in the document portal
+    /// [`FileTransferProxy::add_files`]. The files will be exported in the document portal
     /// as-needed for the caller, and they will be writable if the owner of
     /// the session allowed it.
     ///

@@ -5,7 +5,6 @@
 //! ```rust,no_run
 //! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
 //! use std::fs::File;
-//! use std::os::unix::io::AsRawFd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let wallpaper =
@@ -14,7 +13,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy
-//!         .set_wallpaper_file(Default::default(), wallpaper.as_raw_fd(), true, SetOn::Both)
+//!         .set_wallpaper_file(Default::default(), &wallpaper, true, SetOn::Both)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -48,7 +47,7 @@ use crate::{
 use serde::{self, Deserialize, Serialize, Serializer};
 use std::os::unix::prelude::AsRawFd;
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::{Signature, Type};
+use zvariant::{Fd, Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(
@@ -146,12 +145,12 @@ impl<'a> WallpaperProxy<'a> {
     pub async fn set_wallpaper_file<F>(
         &self,
         identifier: WindowIdentifier,
-        fd: F,
+        fd: &F,
         show_preview: bool,
         set_on: SetOn,
     ) -> Result<(), Error>
     where
-        F: AsRawFd + Type + Serialize,
+        F: AsRawFd,
     {
         let options = WallpaperOptions::default()
             .show_preview(show_preview)
@@ -160,7 +159,7 @@ impl<'a> WallpaperProxy<'a> {
             &self.0,
             &options.handle_token,
             "SetWallpaperFile",
-            &(identifier, fd.as_raw_fd(), &options),
+            &(identifier, Fd::from(fd.as_raw_fd()), &options),
         )
         .await
     }

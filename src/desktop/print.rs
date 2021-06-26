@@ -5,8 +5,6 @@
 //! ```rust,no_run
 //! use ashpd::desktop::print::PrintProxy;
 //! use std::fs::File;
-//! use std::os::unix::io::AsRawFd;
-//! use zvariant::Fd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -26,7 +24,7 @@
 //!         .print(
 //!             Default::default(),
 //!             "test",
-//!             Fd::from(file.as_raw_fd()),
+//!             &file,
 //!             &pre_print.token,
 //!             true,
 //!         )
@@ -44,7 +42,7 @@ use crate::{
 use serde::{Deserialize, Serialize, Serializer};
 use std::os::unix::prelude::AsRawFd;
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::Signature;
+use zvariant::{Fd, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(
@@ -575,19 +573,19 @@ impl<'a> PrintProxy<'a> {
         &self,
         identifier: WindowIdentifier,
         title: &str,
-        fd: F,
+        fd: &F,
         token: &str,
         modal: bool,
     ) -> Result<(), Error>
     where
-        F: AsRawFd + zvariant::Type + Serialize,
+        F: AsRawFd,
     {
         let options = PrintOptions::default().token(token).modal(modal);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
             "Print",
-            &(identifier, title, fd.as_raw_fd(), &options),
+            &(identifier, title, Fd::from(fd.as_raw_fd()), &options),
         )
         .await
     }

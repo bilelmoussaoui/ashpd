@@ -3,25 +3,22 @@
 //! ```rust,no_run
 //! use ashpd::desktop::trash::TrashProxy;
 //! use std::fs::File;
-//! use std::os::unix::io::AsRawFd;
-//! use zvariant::Fd;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = TrashProxy::new(&connection).await?;
 //!
-//!     proxy.trash_file(Fd::from(file.as_raw_fd())).await?;
+//!     proxy.trash_file(&file).await?;
 //!     Ok(())
 //! }
 //! ```
 
 use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
-use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::io::AsRawFd;
-use zvariant::Type;
+use zvariant::Fd;
 use zvariant_derive::Type;
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
@@ -66,11 +63,11 @@ impl<'a> TrashProxy<'a> {
     ///
     /// * `fd` - The file descriptor.
     #[doc(alias = "TrashFile")]
-    pub async fn trash_file<T>(&self, fd: T) -> Result<(), Error>
+    pub async fn trash_file<T>(&self, fd: &T) -> Result<(), Error>
     where
-        T: AsRawFd + Type + Serialize,
+        T: AsRawFd,
     {
-        let status = call_method(&self.0, "TrashFile", &(fd.as_raw_fd())).await?;
+        let status = call_method(&self.0, "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
         match status {
             TrashStatus::Failed => Err(Error::TrashFailed),
             TrashStatus::Succeeded => Ok(()),
