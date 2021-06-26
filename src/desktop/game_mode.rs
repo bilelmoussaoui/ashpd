@@ -18,11 +18,11 @@
 //!     Ok(())
 //! }
 //! ```
-use std::{fmt::Debug, os::unix::io::AsRawFd};
 
 use crate::{helpers::call_method, Error};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::{fmt::Debug, os::unix::io::AsRawFd};
 use zvariant::Type;
 use zvariant_derive::Type;
 
@@ -74,6 +74,8 @@ enum RegisterStatus {
 /// terminates without a call to the [`GameModeProxy::unregister_game`] method, GameMode will
 /// automatically un-register the client. This might happen with a (small)
 /// delay.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.GameMode`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.GameMode).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.GameMode")]
 pub struct GameModeProxy<'a>(zbus::azync::Proxy<'a>);

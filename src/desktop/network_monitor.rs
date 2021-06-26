@@ -21,13 +21,13 @@
 //!     Ok(())
 //! }
 //! ```
+
+use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 use futures::StreamExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
-
-use super::{DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// The network status, composed of the availability, metered & connectivity
@@ -70,6 +70,8 @@ impl fmt::Display for Connectivity {
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib `GNetworkMonitor` interface.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.NetworkMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.NetworkMonitor")]
 pub struct NetworkMonitorProxy<'a>(zbus::azync::Proxy<'a>);

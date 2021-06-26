@@ -25,14 +25,13 @@
 //!     Ok(())
 //! }
 //! ```
-use std::collections::HashMap;
-
-use crate::{helpers::call_method, Error};
-use futures::prelude::stream::*;
-use zvariant::{Fd, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{DESTINATION, PATH};
+use crate::{helpers::call_method, Error};
+use futures::prelude::stream::*;
+use std::collections::HashMap;
+use zvariant::{Fd, Value};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`FileTransferProxy::start_transfer`] request.
@@ -73,6 +72,8 @@ impl TransferOptions {
 /// call RetrieveFiles with the key, to obtain the list of files. The portal
 /// will take care of exporting files in the document store as necessary to make
 /// them accessible to the target.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileTransfer).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileTransfer")]
 pub struct FileTransferProxy<'a>(zbus::azync::Proxy<'a>);

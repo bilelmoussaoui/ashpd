@@ -20,13 +20,13 @@
 //!     Ok(())
 //! }
 //! ```
+
+use super::DESTINATION;
 use crate::{helpers::call_method, Error, WindowIdentifier};
 use futures::prelude::stream::*;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
-
-use super::DESTINATION;
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`UpdateMonitorProxy::update`] request.
@@ -83,6 +83,8 @@ pub struct UpdateProgress {
 /// The interface exposes some interactions with Flatpak on the host to the
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak.UpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Flatpak.UpdateMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak.UpdateMonitor")]
 pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);

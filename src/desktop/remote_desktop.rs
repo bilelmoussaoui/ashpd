@@ -20,19 +20,18 @@
 //!     Ok(())
 //! }
 //! ```
+
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use crate::{
+    helpers::{call_basic_response_method, call_method, call_request_method},
+    Error, WindowIdentifier,
+};
 use enumflags2::BitFlags;
 use futures::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zvariant::{OwnedObjectPath, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
-
-use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method},
-    Error, WindowIdentifier,
-};
-
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -114,6 +113,8 @@ struct SelectedDevices {
 }
 
 /// The interface lets sandboxed applications create remote desktop sessions.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.RemoteDesktop).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.RemoteDesktop")]
 pub struct RemoteDesktopProxy<'a>(zbus::azync::Proxy<'a>);

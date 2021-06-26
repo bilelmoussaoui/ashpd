@@ -33,6 +33,12 @@
 //!     Ok(())
 //! }
 //! ```
+
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use crate::{
+    helpers::{call_basic_response_method, call_method, call_request_method},
+    Error, WindowIdentifier,
+};
 use enumflags2::BitFlags;
 use futures::prelude::stream::*;
 use futures::TryFutureExt;
@@ -40,12 +46,6 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
-
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method},
-    Error, WindowIdentifier,
-};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
@@ -132,6 +132,8 @@ pub enum SessionState {
 
 /// The interface lets sandboxed applications inhibit the user session from
 /// ending, suspending, idling or getting switched away.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Inhibit`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Inhibit).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Inhibit")]
 pub struct InhibitProxy<'a>(zbus::azync::Proxy<'a>);

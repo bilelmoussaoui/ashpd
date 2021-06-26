@@ -39,17 +39,17 @@
 //!     Ok(())
 //! }
 //! ```
-use serde::{self, Deserialize, Serialize, Serializer};
-use std::os::unix::prelude::AsRawFd;
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::{Signature, Type};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
     helpers::call_basic_response_method,
     Error, WindowIdentifier,
 };
+use serde::{self, Deserialize, Serialize, Serializer};
+use std::os::unix::prelude::AsRawFd;
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
+use zvariant::{Signature, Type};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(
     Deserialize, Debug, Clone, Copy, PartialEq, Hash, AsRefStr, EnumString, IntoStaticStr, ToString,
@@ -110,6 +110,8 @@ impl WallpaperOptions {
 }
 /// The interface lets sandboxed applications set the user's desktop background
 /// picture.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Wallpaper).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Wallpaper")]
 pub struct WallpaperProxy<'a>(zbus::azync::Proxy<'a>);

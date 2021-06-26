@@ -40,14 +40,13 @@
 //! }
 //! ```
 
+use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 use futures::prelude::stream::*;
 use serde::{self, Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{OwnedValue, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
-
-use super::{DESTINATION, PATH};
 
 #[derive(
     Debug, Clone, Deserialize, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq,
@@ -234,6 +233,8 @@ impl Action {
 /// interface. Other actions are activated by sending the
 ///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the
 /// application.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Notification).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Notification")]
 pub struct NotificationProxy<'a>(zbus::azync::Proxy<'a>);

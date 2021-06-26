@@ -27,12 +27,11 @@
 //!     Ok(())
 //! }
 //! ```
-use zvariant::Fd;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
-use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
 use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
+use zvariant::Fd;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
@@ -110,6 +109,8 @@ impl Email {
 }
 
 /// The interface lets sandboxed applications request sending an email.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Email).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Email")]
 pub struct EmailProxy<'a>(zbus::azync::Proxy<'a>);

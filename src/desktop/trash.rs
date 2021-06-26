@@ -16,14 +16,13 @@
 //! }
 //! ```
 
+use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::io::AsRawFd;
 use zvariant::Type;
 use zvariant_derive::Type;
-
-use super::{DESTINATION, PATH};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 #[repr(u32)]
@@ -36,6 +35,8 @@ enum TrashStatus {
 }
 
 /// The interface lets sandboxed applications send files to the trashcan.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Trash`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Trash).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Trash")]
 pub struct TrashProxy<'a>(zbus::azync::Proxy<'a>);

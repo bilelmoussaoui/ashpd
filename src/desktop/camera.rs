@@ -15,17 +15,15 @@
 //!     Ok(())
 //! }
 //! ```
-use std::collections::HashMap;
 
-use zvariant::{Fd, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
+use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method},
     Error,
 };
-
-use super::{HandleToken, DESTINATION, PATH};
+use std::collections::HashMap;
+use zvariant::{Fd, Value};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`CameraProxy::access_camera`] request.
@@ -36,6 +34,8 @@ struct CameraAccessOptions {
 
 /// The interface lets sandboxed applications access camera devices, such as web
 /// cams.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Camera`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Camera).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Camera")]
 pub struct CameraProxy<'a>(zbus::azync::Proxy<'a>);

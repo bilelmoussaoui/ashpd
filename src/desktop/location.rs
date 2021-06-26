@@ -23,18 +23,18 @@
 //!     Ok(())
 //! }
 //! ```
-use futures::prelude::stream::*;
-use futures::TryFutureExt;
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method},
     Error, WindowIdentifier,
 };
+use futures::prelude::stream::*;
+use futures::TryFutureExt;
+use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use zvariant::OwnedObjectPath;
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -163,6 +163,8 @@ struct LocationInner {
 
 /// The interface lets sandboxed applications query basic information about the
 /// location.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Location`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Location).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Location")]
 pub struct LocationProxy<'a>(zbus::azync::Proxy<'a>);

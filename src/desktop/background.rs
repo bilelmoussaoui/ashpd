@@ -21,11 +21,10 @@
 //!     Ok(())
 //! }
 //! ```
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
-use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
 use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_request_method, Error, WindowIdentifier};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
@@ -98,6 +97,8 @@ impl Background {
 /// The interface lets sandboxed applications request that the application
 /// is allowed to run in the background or started automatically when the user
 /// logs in.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Background).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Background")]
 pub struct BackgroundProxy<'a>(zbus::azync::Proxy<'a>);

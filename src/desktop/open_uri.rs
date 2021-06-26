@@ -42,15 +42,13 @@
 //!     Ok(())
 //! }
 //! ```
-use std::os::unix::prelude::AsRawFd;
-
-use serde::Serialize;
-use zvariant::Type;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
-use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
 use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
+use serde::Serialize;
+use std::os::unix::prelude::AsRawFd;
+use zvariant::Type;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
@@ -91,6 +89,8 @@ impl OpenFileOptions {
 /// The interface lets sandboxed applications open URIs
 /// (e.g. a http: link to the applications homepage) under the control of the
 /// user.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.OpenURI).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
 pub struct OpenURIProxy<'a>(zbus::azync::Proxy<'a>);

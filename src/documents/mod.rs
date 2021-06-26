@@ -35,13 +35,12 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
-use std::{fmt::Debug, str::FromStr};
-
 use crate::{helpers::call_method, Error};
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+use std::{fmt::Debug, str::FromStr};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{Fd, Signature, Type};
 use zvariant_derive::Type;
@@ -118,6 +117,8 @@ impl<'de> Deserialize<'de> for Permission {
 /// The permissions that the application has for a document store entry (see
 /// [`DocumentsProxy::grant_permissions`]) are reflected in the POSIX mode bits in the fuse
 /// filesystem.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Documents).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
 pub struct DocumentsProxy<'a>(zbus::azync::Proxy<'a>);

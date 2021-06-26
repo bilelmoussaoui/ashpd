@@ -19,6 +19,8 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// For convenience, the interface contains a method [`SessionProxy::close`], and a signal
 /// [`SessionProxy::receive_closed`]. Whether it is allowed to directly
 /// call [`SessionProxy::close`] depends on the interface.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Session).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Session")]
 pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>);

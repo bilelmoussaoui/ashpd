@@ -25,10 +25,9 @@
 //! }
 //! ```
 
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::screenshot`] request.
@@ -130,6 +129,8 @@ impl std::fmt::Debug for Color {
 }
 
 /// The interface lets sandboxed applications request a screenshot.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Screenshot).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
 pub struct ScreenshotProxy<'a>(zbus::azync::Proxy<'a>);

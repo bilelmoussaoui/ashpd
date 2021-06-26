@@ -35,18 +35,17 @@
 //!     Ok(())
 //! }
 //! ```
-use std::os::unix::prelude::AsRawFd;
-
-use serde::{Deserialize, Serialize, Serializer};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::Signature;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_request_method},
     Error, WindowIdentifier,
 };
+use serde::{Deserialize, Serialize, Serializer};
+use std::os::unix::prelude::AsRawFd;
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
+use zvariant::Signature;
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(
     Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
@@ -507,6 +506,8 @@ pub struct PreparePrint {
 }
 
 /// The interface lets sandboxed applications print.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Print`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Print).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Print")]
 pub struct PrintProxy<'a>(zbus::azync::Proxy<'a>);

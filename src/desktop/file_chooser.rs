@@ -86,12 +86,12 @@
 //!     Ok(())
 //! }
 //! ```
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
+use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize, Deserialize, Type, Clone, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -412,6 +412,8 @@ impl SelectedFiles {
 /// The interface lets sandboxed applications ask the user for access to files
 /// outside the sandbox. The portal backend will present the user with a file
 /// chooser dialog.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileChooser).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
 pub struct FileChooserProxy<'a>(zbus::azync::Proxy<'a>);

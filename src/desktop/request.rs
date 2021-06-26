@@ -1,6 +1,8 @@
+use super::DESTINATION;
+use crate::{desktop::HandleToken, helpers::call_method, Error};
 use futures::prelude::stream::*;
 use serde::{
-    de::{self, DeserializeOwned, Error, Visitor},
+    de::{self, DeserializeOwned, Error as SeError, Visitor},
     Deserialize, Deserializer, Serialize,
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -12,8 +14,6 @@ use std::{
 };
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
-
-use crate::{desktop::HandleToken, helpers::call_method};
 
 /// A typical response returned by the [`RequestProxy::receive_response`] signal of a
 /// [`RequestProxy`].
@@ -171,6 +171,8 @@ impl From<ResponseError> for ResponseType {
 /// what it expected, and update its signal subscription if it isn't.
 /// This ensures that applications will work with both old and new versions of
 /// xdg-desktop-portal.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Request).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Request")]
 pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>);
@@ -179,11 +181,11 @@ impl<'a> RequestProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
         path: zvariant::ObjectPath<'a>,
-    ) -> Result<RequestProxy<'a>, crate::Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Request")
             .path(path)?
-            .destination(crate::desktop::DESTINATION)
+            .destination(DESTINATION)
             .build_async()
             .await?;
         Ok(Self(proxy))
@@ -192,7 +194,7 @@ impl<'a> RequestProxy<'a> {
     pub async fn from_unique_name(
         connection: &zbus::azync::Connection,
         handle_token: &HandleToken,
-    ) -> Result<RequestProxy<'a>, crate::Error> {
+    ) -> Result<RequestProxy<'a>, Error> {
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
         let path = zvariant::ObjectPath::try_from(format!(
@@ -209,12 +211,12 @@ impl<'a> RequestProxy<'a> {
     }
 
     #[doc(alias = "Response")]
-    pub async fn receive_response<R>(&self) -> Result<R, crate::Error>
+    pub async fn receive_response<R>(&self) -> Result<R, Error>
     where
         R: DeserializeOwned + zvariant::Type + Debug,
     {
         let mut stream = self.0.receive_signal("Response").await?;
-        let message = stream.next().await.ok_or(crate::Error::NoResponse)?;
+        let message = stream.next().await.ok_or(Error::NoResponse)?;
         match message.body::<Response<R>>()? {
             Response::Err(e) => Err(e.into()),
             Response::Ok(r) => Ok(r),
@@ -226,7 +228,7 @@ impl<'a> RequestProxy<'a> {
     /// be emitted in this case.
     #[allow(dead_code)]
     #[doc(alias = "Close")]
-    pub async fn close(&self) -> Result<(), crate::Error> {
+    pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await
     }
 }

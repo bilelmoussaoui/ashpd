@@ -33,6 +33,11 @@
 //! }
 //! ```
 
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use crate::{
+    helpers::{call_basic_response_method, call_method, call_request_method},
+    Error, WindowIdentifier,
+};
 use enumflags2::BitFlags;
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
@@ -40,12 +45,6 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
-
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method},
-    Error, WindowIdentifier,
-};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
@@ -173,6 +172,8 @@ struct StreamProperties {
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.ScreenCast).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ScreenCast")]
 pub struct ScreenCastProxy<'a>(zbus::azync::Proxy<'a>);

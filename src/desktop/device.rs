@@ -14,14 +14,13 @@
 //! }
 //!
 //! ```
+
+use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_basic_response_method, Error};
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
-use crate::{helpers::call_basic_response_method, Error};
-
-use super::{HandleToken, DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -63,6 +62,8 @@ impl Serialize for Device {
 /// devices such as microphones, speakers or cameras. Not a portal in the strict
 /// sense, since the API is not directly accessible to applications inside the
 /// sandbox.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Device).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Device")]
 pub struct DeviceProxy<'a>(zbus::azync::Proxy<'a>);

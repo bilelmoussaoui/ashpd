@@ -12,6 +12,7 @@
 //!     Ok(())
 //! }
 //! ```
+
 use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 
@@ -19,6 +20,8 @@ use crate::{helpers::call_method, Error};
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib `GProxyResolver` interface.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.ProxyResolver`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.ProxyResolver).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ProxyResolver")]
 pub struct ProxyResolverProxy<'a>(zbus::azync::Proxy<'a>);

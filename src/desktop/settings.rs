@@ -24,16 +24,13 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, convert::TryFrom};
-
+use super::{DESTINATION, PATH};
+use crate::{helpers::call_method, Error};
 use futures::prelude::stream::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::{collections::HashMap, convert::TryFrom};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
-
-use crate::{helpers::call_method, Error};
-
-use super::{DESTINATION, PATH};
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -72,6 +69,8 @@ impl std::fmt::Debug for Setting {
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
 /// settings.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Settings).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Settings")]
 pub struct SettingsProxy<'a>(zbus::azync::Proxy<'a>);

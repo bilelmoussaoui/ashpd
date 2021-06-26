@@ -14,14 +14,15 @@
 //! }
 //! ```
 
+use super::{DESTINATION, PATH};
 use crate::Error;
 use futures::prelude::stream::*;
-
-use super::{DESTINATION, PATH};
 
 /// The interface provides information about low system memory to sandboxed
 /// applications. It is not a portal in the strict sense, since it does not
 /// involve user interaction.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.MemoryMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.MemoryMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.MemoryMonitor")]
 pub struct MemoryMonitorProxy<'a>(zbus::azync::Proxy<'a>);

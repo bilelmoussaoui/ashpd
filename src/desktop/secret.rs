@@ -21,11 +21,10 @@
 //! }
 //! ```
 
+use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 use std::os::unix::prelude::AsRawFd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
-
-use super::{DESTINATION, PATH};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
@@ -45,6 +44,8 @@ impl RetrieveOptions {
 /// The interface lets sandboxed applications retrieve a per-application secret.
 /// The secret can then be used for encrypting confidential data inside the
 /// sandbox.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Secret).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Secret")]
 pub struct SecretProxy<'a>(zbus::azync::Proxy<'a>);
