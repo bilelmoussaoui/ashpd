@@ -1,4 +1,4 @@
-//! **Note** this portal only works for sandboxed applications.
+//! **Note** This portal only works for sandboxed applications.
 //!
 //! # Examples
 //!
@@ -57,9 +57,9 @@ struct BackgroundOptions {
     handle_token: HandleToken,
     /// User-visible reason for the request.
     reason: Option<String>,
-    /// `true` if the app also wants to be started automatically at login.
+    /// [`true`] if the app also wants to be started automatically at login.
     autostart: Option<bool>,
-    /// if `true`, use D-Bus activation for autostart.
+    /// if [`true`], use D-Bus activation for autostart.
     #[zvariant(rename = "dbus-activatable")]
     dbus_activatable: Option<bool>,
     /// Command to use when auto-starting at login.
@@ -158,6 +158,8 @@ impl<'a> BackgroundProxy<'a> {
     ///     If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
     /// * `dbus_activatable` - Sets whether the application is dbus activatable.
+    ///
+    /// # Specifications
     ///
     /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
     #[doc(alias = "RequestBackground")]

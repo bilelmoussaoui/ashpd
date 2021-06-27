@@ -1,4 +1,4 @@
-//! **Note** this portal doesn't work for sandboxed applications.
+//! **Note** This portal doesn't work for sandboxed applications.
 //! # Examples
 //!
 //! Access a [`Device`](crate::desktop::device::Device)
@@ -89,9 +89,10 @@ impl<'a> DeviceProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `pid` - The pid of the application on whose behalf the request is
-    ///   made.
+    /// * `pid` - The pid of the application on whose behalf the request is made.
     /// * `devices` - A list of devices to request access to.
+    ///
+    /// # Specifications
     ///
     /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Device.AccessDevice).
     #[doc(alias = "AccessDevice")]

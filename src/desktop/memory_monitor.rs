@@ -49,6 +49,8 @@ impl<'a> MemoryMonitorProxy<'a> {
     /// with 0 being the lowest level of memory availability warning, and 255
     /// being the highest.
     ///
+    /// # Specifications
+    ///
     /// See also [`LowMemoryWarning`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-MemoryMonitor.LowMemoryWarning).
     #[doc(alias = "LowMemoryWarning")]
     pub async fn receive_low_memory_warning(&self) -> Result<i32, Error> {

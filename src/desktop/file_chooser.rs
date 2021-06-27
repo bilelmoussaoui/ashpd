@@ -442,6 +442,8 @@ impl<'a> FileChooserProxy<'a> {
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`OpenFileOptions`].
     ///
+    /// # Specifications
+    ///
     /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileChooser.OpenFile).
     #[doc(alias = "OpenFile")]
     pub async fn open_file(
@@ -466,6 +468,8 @@ impl<'a> FileChooserProxy<'a> {
     /// * `identifier` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`SaveFileOptions`].
+    ///
+    /// # Specifications
     ///
     /// See also [`SaveFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFile).
     #[doc(alias = "SaveFile")]
@@ -496,6 +500,8 @@ impl<'a> FileChooserProxy<'a> {
     /// * `identifier` - Identifier for the application window.
     /// * `title` - Title for the file chooser dialog.
     /// * `options` - [`SaveFilesOptions`].
+    ///
+    /// # Specifications
     ///
     /// See also [`SaveFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFiles).
     #[doc(alias = "SaveFiles")]

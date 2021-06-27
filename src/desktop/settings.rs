@@ -96,15 +96,18 @@ impl<'a> SettingsProxy<'a> {
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
-    /// Returns a `HashMap` of namespaces to its keys and values.
-    ///
     /// # Arguments
     ///
     /// * `namespaces` - List of namespaces to filter results by.
     ///
-    /// If `namespaces` is an empty array or contains an empty string it matches
-    /// all. Globing is supported but only for trailing sections, e.g.
-    /// `org.example.*`.
+    /// If `namespaces` is an empty array or contains an empty string it matches all.
+    /// Globing is supported but only for trailing sections, e.g. `org.example.*`.
+    ///
+    /// # Returns
+    ///
+    /// A `HashMap` of namespaces to its keys and values.
+    ///
+    /// # Specifications
     ///
     /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Settings.ReadAll).
     #[doc(alias = "ReadAll")]
@@ -117,12 +120,16 @@ impl<'a> SettingsProxy<'a> {
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
-    /// Returns the value `key` is to to as a `zvariant::OwnedValue`.
-    ///
     /// # Arguments
     ///
     /// * `namespace` - Namespace to look up key in.
     /// * `key` - The key to get.
+    ///
+    /// # Returns
+    ///
+    /// The value `key` is to to as a `zvariant::OwnedValue`.
+    ///
+    /// # Specifications
     ///
     /// See also [`Read`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Settings.Read).
     #[doc(alias = "Read")]
@@ -134,6 +141,8 @@ impl<'a> SettingsProxy<'a> {
     }
 
     /// Signal emitted when a setting changes.
+    ///
+    /// # Specifications
     ///
     /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
     #[doc(alias = "SettingChanged")]

@@ -148,9 +148,8 @@ impl Stream {
     /// A tuple consisting of the position (x, y) in the compositor coordinate
     /// space.
     ///
-    ///  **Note** that the position may not be equivalent to a
-    /// position in a pixel coordinate space. Only available for monitor
-    /// streams.
+    /// **Note** the position may not be equivalent to a position in a pixel coordinate space.
+    /// Only available for monitor streams.
     pub fn position(&self) -> Option<(i32, i32)> {
         self.1.position
     }
@@ -159,9 +158,8 @@ impl Stream {
     /// The size represents the size of the stream as it is displayed in the
     /// compositor coordinate space.
     ///
-    /// **Note** that this size may not be
-    /// equivalent to a size in a pixel coordinate space. The size may
-    /// differ from the size of the stream.
+    /// **Note** the size may not be equivalent to a size in a pixel coordinate space.
+    /// The size may differ from the size of the stream.
     pub fn size(&self) -> (i32, i32) {
         self.1.size
     }
@@ -200,6 +198,8 @@ impl<'a> ScreenCastProxy<'a> {
 
     /// Create a screen cast session.
     ///
+    /// # Specifications
+    ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.CreateSession).
     #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
@@ -222,11 +222,15 @@ impl<'a> ScreenCastProxy<'a> {
     /// Open a file descriptor to the PipeWire remote where the screen cast
     /// streams are available.
     ///
-    /// Returns a file descriptor of an open PipeWire remote.
-    ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`ScreenCastProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`ScreenCastProxy::create_session`].
+    ///
+    /// # Returns
+    ///
+    /// File descriptor of an open PipeWire remote.
+    ///
+    /// # Specifications
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
@@ -246,10 +250,12 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`ScreenCastProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`ScreenCastProxy::create_session`].
     /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast stream.
     /// * `types` - Sets the types of content to record.
     /// * `multiple`- Sets whether to allow selecting multiple sources.
+    ///
+    /// # Specifications
     ///
     /// See also [`SelectSources`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.SelectSources).
     #[doc(alias = "SelectSources")]
@@ -282,8 +288,10 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`ScreenCastProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`ScreenCastProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
+    ///
+    /// # Specifications
     ///
     /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ScreenCast.Start).
     #[doc(alias = "Start")]
@@ -305,6 +313,8 @@ impl<'a> ScreenCastProxy<'a> {
 
     /// Available cursor mode.
     ///
+    /// # Specifications
+    ///
     /// See also [`AvailableCursorModes`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableCursorModes).
     #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
@@ -315,6 +325,8 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Available source types.
+    ///
+    /// # Specifications
     ///
     /// See also [`AvailableSourceTypes`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableSourceTypes).
     #[doc(alias = "AvailableSourceTypes")]

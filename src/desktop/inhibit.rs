@@ -162,6 +162,8 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// * `identifier` - The application window identifier.
     ///
+    /// # Specifications
+    ///
     /// See also [`CreateMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Inhibit.CreateMonitor).
     #[doc(alias = "CreateMonitor")]
     pub async fn create_monitor(
@@ -188,6 +190,8 @@ impl<'a> InhibitProxy<'a> {
     /// * `flags` - The flags determine what changes are inhibited.
     /// * `reason` - User-visible reason for the inhibition.
     ///
+    /// # Specifications
+    ///
     /// See also [`Inhibit`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Inhibit.Inhibit).
     #[doc(alias = "Inhibit")]
     pub async fn inhibit(
@@ -208,6 +212,8 @@ impl<'a> InhibitProxy<'a> {
 
     /// Signal emitted when the session state changes.
     ///
+    /// # Specifications
+    ///
     /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Inhibit.StateChanged).
     #[doc(alias = "StateChanged")]
     pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
@@ -216,11 +222,13 @@ impl<'a> InhibitProxy<'a> {
 
     /// Acknowledges that the caller received the "state_changed" signal.
     /// This method should be called within one second after receiving a
-    /// `state_changed` signal with the `SessionState::QueryEnd` state.
+    /// [`receive_state_changed()`][`InhibitProxy::receive_state_changed`] signal with the [`SessionState::QueryEnd`] state.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`InhibitProxy::create_monitor`].
+    /// * `session` - A [`SessionProxy`], created with [`create_monitor()`][`InhibitProxy::create_monitor`].
+    ///
+    /// # Specifications
     ///
     /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Inhibit.QueryEndResponse).
     #[doc(alias = "QueryEndResponse")]

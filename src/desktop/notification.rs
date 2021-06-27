@@ -225,7 +225,7 @@ impl Action {
 /// actually presented to the user. Not a portal in the strict sense, since
 /// there is no user interaction.
 ///
-/// **Note** that in contrast to most other portal requests, notifications are
+/// **Note** in contrast to most other portal requests, notifications are
 /// expected to outlast the running application. If a user clicks on a
 /// notification after the application has exited, it will get activated again.
 ///
@@ -260,6 +260,8 @@ impl<'a> NotificationProxy<'a> {
 
     /// Signal emitted when a particular action is invoked.
     ///
+    /// # Specifications
+    ///
     /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Notification.ActionInvoked).
     #[doc(alias = "ActionInvoked")]
     pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
@@ -277,6 +279,8 @@ impl<'a> NotificationProxy<'a> {
     /// * `id` - Application-provided ID for this notification.
     /// * `notification` - The notification.
     ///
+    /// # Specifications
+    ///
     /// See also [`AddNotification`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Notification.AddNotification).
     #[doc(alias = "AddNotification")]
     pub async fn add_notification(
@@ -292,6 +296,8 @@ impl<'a> NotificationProxy<'a> {
     /// # Arguments
     ///
     /// * `id` - Application-provided ID for this notification.
+    ///
+    /// # Specifications
     ///
     /// See also [`RemoveNotification`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Notification.RemoveNotification).
     #[doc(alias = "RemoveNotification")]

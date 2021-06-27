@@ -1,4 +1,4 @@
-//! **Note** this portal doesn't work for sandboxed applications.
+//! **Note** This portal doesn't work for sandboxed applications.
 //! # Examples
 //!
 //! ```rust,no_run
@@ -52,6 +52,8 @@ impl<'a> ProxyResolverProxy<'a> {
     ///
     /// A list of proxy uris of the form `protocol://[user[:password]host:port`
     /// The protocol can be `http`, `rtsp`, `socks` or another proxying protocol. `direct://` is used when no proxy is needed.
+    ///
+    /// # Specifications
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ProxyResolver.Lookup).
     #[doc(alias = "Lookup")]

@@ -62,6 +62,8 @@ impl<'a> CameraProxy<'a> {
 
     /// Requests an access to the camera.
     ///
+    /// # Specifications
+    ///
     /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Camera.AccessCamera).
     #[doc(alias = "AccessCamera")]
     pub async fn access_camera(&self) -> Result<(), Error> {
@@ -73,7 +75,11 @@ impl<'a> CameraProxy<'a> {
     /// Open a file descriptor to the PipeWire remote where the camera nodes are
     /// available.
     ///
-    /// Returns a File descriptor of an open PipeWire remote.
+    /// # Returns
+    ///
+    /// File descriptor of an open PipeWire remote.
+    ///
+    /// # Specifications
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Camera.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
@@ -85,6 +91,8 @@ impl<'a> CameraProxy<'a> {
     }
 
     /// A boolean stating whether there is any cameras available.
+    ///
+    /// # Specifications
     ///
     /// See also [`IsCameraPresent`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-Camera.IsCameraPresent).
     #[doc(alias = "IsCameraPresent")]

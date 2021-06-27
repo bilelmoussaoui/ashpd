@@ -145,15 +145,17 @@ impl<'a> DocumentsProxy<'a> {
     /// The file is passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.
     ///
-    /// Returns the ID of the file in the document store.
-    ///
     /// # Arguments
     ///
     /// * `o_path_fd` - Open file descriptor for the file to add.
-    /// * `reuse_existing` - Whether to reuse an existing document store entry
-    ///   for the file.
-    /// * `persistent` - Whether to add the file only for this session or
-    ///   permanently.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
+    /// * `persistent` - Whether to add the file only for this session or permanently.
+    ///
+    /// # Returns
+    ///
+    /// The ID of the file in the document store.
+    ///
+    /// # Specifications
     ///
     /// See also [`Add`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Add).
     #[doc(alias = "Add")]
@@ -178,15 +180,18 @@ impl<'a> DocumentsProxy<'a> {
     /// The files are passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.
     ///
-    /// Returns the IDs of the files in the document store along with other
-    /// extra info.
-    ///
     /// # Arguments
     ///
     /// * `o_path_fds` - Open file descriptors for the files to export.
     /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
+    ///
+    /// # Returns
+    ///
+    /// The IDs of the files in the document store along with other extra info.
+    ///
+    /// # Specifications
     ///
     /// See also [`AddFull`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddFull).
     #[doc(alias = "AddFull")]
@@ -203,16 +208,18 @@ impl<'a> DocumentsProxy<'a> {
 
     /// Creates an entry in the document store for writing a new file.
     ///
-    /// Returns the ID of the file in the document store.
-    ///
     /// # Arguments
     ///
     /// * `o_path_parent_fd` - Open file descriptor for the parent directory.
     /// * `filename` - The basename for the file.
-    /// * `reuse_existing` - Whether to reuse an existing document store entry
-    ///   for the file.
-    /// * `persistent` - Whether to add the file only for this session or
-    ///   permanently.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
+    /// * `persistent` - Whether to add the file only for this session or permanently.
+    ///
+    /// # Returns
+    ///
+    /// The ID of the file in the document store.
+    ///
+    /// # Specifications
     ///
     /// See also [`AddNamed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddNamed).
     #[doc(alias = "AddNamed")]
@@ -243,9 +250,6 @@ impl<'a> DocumentsProxy<'a> {
     /// The files are passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.
     ///
-    /// Returns the ID of the file in the document store along with other extra
-    /// info.
-    ///
     /// # Arguments
     ///
     /// * `o_path_fd` - Open file descriptor for the parent directory.
@@ -253,6 +257,12 @@ impl<'a> DocumentsProxy<'a> {
     /// * `flags` - A [`Flags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
+    ///
+    /// # Returns
+    ///
+    /// The ID of the file in the document store along with other extra info.
+    ///
+    /// # Specifications
     ///
     /// See also [`AddNamedFull`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddNamedFull).
     #[doc(alias = "AddNamedFull")]
@@ -282,12 +292,16 @@ impl<'a> DocumentsProxy<'a> {
     }
 
     /// Removes an entry from the document store. The file itself is not
-    /// deleted. This call is available inside the sandbox if the
-    /// application has the 'delete' permission for the document.
+    /// deleted.
+    ///
+    /// **Note** This call is available inside the sandbox if the
+    /// application has the [`Permission::Delete`] for the document.
     ///
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
+    ///
+    /// # Specifications
     ///
     /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
     #[doc(alias = "Delete")]
@@ -296,7 +310,9 @@ impl<'a> DocumentsProxy<'a> {
     }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
-    /// This will typically be /run/user/$UID/doc/.
+    /// This will typically be `/run/user/$UID/doc/`.
+    ///
+    /// # Specifications
     ///
     /// See also [`GetMountPoint`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.GetMountPoint).
     #[doc(alias = "GetMountPoint")]
@@ -306,14 +322,18 @@ impl<'a> DocumentsProxy<'a> {
     }
 
     /// Grants access permissions for a file in the document store to an
-    /// application. This call is available inside the sandbox if the
-    /// application has the 'grant-permissions' permission for the document.
+    /// application.
+    ///
+    /// **Note** This call is available inside the sandbox if the
+    /// application has the [`Permission::GrantPermissions`] for the document.
     ///
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
     /// * `app_id` - The ID of the application to which permissions are granted.
     /// * `permissions` - The permissions to grant.
+    ///
+    /// # Specifications
     ///
     /// See also [`GrantPermissions`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.GrantPermissions).
     #[doc(alias = "GrantPermissions")]
@@ -329,12 +349,15 @@ impl<'a> DocumentsProxy<'a> {
     /// Gets the filesystem path and application permissions for a document
     /// store entry.
     ///
-    /// Returns the path of the file in the host filesystem along with the
-    /// [`Permissions`]
-    ///
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
+    ///
+    /// # Returns
+    ///
+    /// The path of the file in the host filesystem along with the [`Permissions`].
+    ///
+    /// # Specifications
     ///
     /// See also [`Info`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Info).
     #[doc(alias = "Info")]
@@ -345,12 +368,15 @@ impl<'a> DocumentsProxy<'a> {
     /// Lists documents in the document store for an application (or for all
     /// applications).
     ///
-    /// Returns a [`HashMap`] mapping document IDs to their filesystem path on the
-    /// host system
-    ///
     /// # Arguments
     ///
     /// * `app-id` - The application ID, or '' to list all documents.
+    ///
+    /// # Returns
+    ///
+    /// [`HashMap`] mapping document IDs to their filesystem path on the host system.
+    ///
+    /// # Specifications
     ///
     /// See also [`List`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.List).
     #[doc(alias = "List")]
@@ -359,31 +385,43 @@ impl<'a> DocumentsProxy<'a> {
     }
 
     /// Looks up the document ID for a file.
-    /// This call is not available inside the sandbox.
     ///
-    /// Returns the ID of the file in the document store,
-    /// or '' if the file is not in the document store
+    /// **Note** This call is not available inside the sandbox.
     ///
     /// # Arguments
     ///
-    /// - `filename` - A path in the host filesystem.
+    /// * `filename` - A path in the host filesystem.
+    ///
+    /// # Returns
+    ///
+    /// The ID of the file in the document store, or [`None`] if the file is not in the document store.
+    ///
+    /// # Specifications
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup(&self, filename: &str) -> Result<String, Error> {
-        call_method(&self.0, "Lookup", &(filename)).await
+    pub async fn lookup(&self, filename: &str) -> Result<Option<String>, Error> {
+        let doc_id: String = call_method(&self.0, "Lookup", &(filename)).await?;
+        if doc_id.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(doc_id))
+        }
     }
 
     /// Revokes access permissions for a file in the document store from an
-    /// application. This call is available inside the sandbox if the
-    /// application has the 'grant-permissions' permission for the document.
+    /// application.
+    ///
+    /// **Note** This call is available inside the sandbox if the
+    /// application has the [`Permission::GrantPermissions`] for the document.
     ///
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
-    /// * `app_id` - The ID of the application from which permissions are
-    ///   revoked.
+    /// * `app_id` - The ID of the application from which the permissions are revoked.
     /// * `permissions` - The permissions to revoke.
+    ///
+    /// # Specifications
     ///
     /// See also [`RevokePermissions`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.RevokePermissions).
     #[doc(alias = "RevokePermissions")]

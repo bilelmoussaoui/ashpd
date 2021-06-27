@@ -1,4 +1,4 @@
-//! **Note** this portal doesn't work for sandboxed applications.
+//! **Note** This portal doesn't work for sandboxed applications.
 //! # Examples
 //!
 //! ```rust,no_run
@@ -100,6 +100,8 @@ impl<'a> NetworkMonitorProxy<'a> {
     /// * `hostname` - The hostname to reach.
     /// * `port` - The port to reach.
     ///
+    /// # Specifications
+    ///
     /// See also [`CanReach`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.CanReach).
     #[doc(alias = "CanReach")]
     pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
@@ -110,6 +112,8 @@ impl<'a> NetworkMonitorProxy<'a> {
     /// That is, whether the system as a default route for at least one of IPv4
     /// or IPv6.
     ///
+    /// # Specifications
+    ///
     /// See also [`GetAvailable`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetAvailable).
     #[doc(alias = "GetAvailable")]
     #[doc(alias = "get_available")]
@@ -118,6 +122,8 @@ impl<'a> NetworkMonitorProxy<'a> {
     }
 
     /// Returns more detailed information about the host's network connectivity
+    ///
+    /// # Specifications
     ///
     /// See also [`GetConnectivity`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetConnectivity).
     #[doc(alias = "GetConnectivity")]
@@ -130,6 +136,8 @@ impl<'a> NetworkMonitorProxy<'a> {
     /// That is, whether the system as traffic flowing through the default
     /// connection that is subject to limitations by service providers.
     ///
+    /// # Specifications
+    ///
     /// See also [`GetMetered`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetMetered).
     #[doc(alias = "GetMetered")]
     #[doc(alias = "get_metered")]
@@ -139,6 +147,8 @@ impl<'a> NetworkMonitorProxy<'a> {
 
     /// Returns the three values all at once.
     ///
+    /// # Specifications
+    ///
     /// See also [`GetStatus`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetStatus).
     #[doc(alias = "GetStatus")]
     #[doc(alias = "get_status")]
@@ -147,6 +157,8 @@ impl<'a> NetworkMonitorProxy<'a> {
     }
 
     /// Emitted when the network configuration changes.
+    ///
+    /// # Specifications
     ///
     /// See also [`changed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-NetworkMonitor.changed).
     pub async fn receive_changed(&self) -> Result<(), Error> {

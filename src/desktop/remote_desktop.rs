@@ -142,6 +142,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.
     ///
+    /// # Specifications
+    ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.CreateSession).
     #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
@@ -165,8 +167,10 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `types` - The device types to request remote controlling of.
+    ///
+    /// # Specifications
     ///
     /// See also [`SelectDevices`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.SelectDevices).
     #[doc(alias = "SelectDevices")]
@@ -193,8 +197,10 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `identifier` - The application window identifier.
+    ///
+    /// # Specifications
     ///
     /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.Start).
     #[doc(alias = "Start")]
@@ -215,14 +221,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     }
 
     /// Notify keyboard code.
-    /// May only be called if KEYBOARD access was provided after starting the
-    /// session.
+    ///
+    /// **Note** only works if [`DeviceType::Keyboard`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyKeyboardKeycode`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeycode).
     #[doc(alias = "NotifyKeyboardKeycode")]
@@ -243,14 +251,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     }
 
     /// Notify keyboard symbol.
-    /// May only be called if KEYBOARD access was provided after starting the
-    /// session.
+    ///
+    /// **Note** only works if [`DeviceType::Keyboard`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyKeyboardKeysym`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeysym).
     #[doc(alias = "NotifyKeyboardKeysym")]
@@ -272,13 +282,14 @@ impl<'a> RemoteDesktopProxy<'a> {
 
     /// Notify about a new touch up event.
     ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the
-    /// session.
+    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `slot` - Touch slot where touch point appeared.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyTouchUp`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchUp).
     #[doc(alias = "NotifyTouchUp")]
@@ -296,16 +307,17 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// The (x, y) position represents the new touch point position in the
     /// streams logical coordinate space.
     ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the
-    /// session.
+    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
     /// * `y` - Touch down y coordinate.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyTouchDown`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchDown).
     #[doc(alias = "NotifyTouchDown")]
@@ -331,16 +343,17 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// The (x, y) position represents where the touch point position in the
     /// streams logical coordinate space moved.
     ///
-    /// May only be called if TOUCHSCREEN access was provided after starting the
-    /// session.
+    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch motion x coordinate.
     /// * `y` - Touch motion y coordinate.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyTouchMotion`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchMotion).
     #[doc(alias = "NotifyTouchMotion")]
@@ -368,10 +381,12 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyPointerMotionAbsolute`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotionAbsolute).
     #[doc(alias = "NotifyPointerMotionAbsolute")]
@@ -398,9 +413,11 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyPointerMotion`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotion).
     #[doc(alias = "NotifyPointerMotion")]
@@ -418,14 +435,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// Notify pointer button.
     /// The pointer button is encoded according to Linux Evdev button codes.
     ///
-    ///  May only be called if POINTER access was provided after starting the
-    /// session.
+    ///
+    /// **Note** only works if [`DeviceType::Pointer`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyPointerButton`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerButton).
     #[doc(alias = "NotifyPointerButton")]
@@ -446,13 +465,15 @@ impl<'a> RemoteDesktopProxy<'a> {
     }
 
     /// Notify pointer axis discrete.
-    /// May only be called if POINTER access was provided after starting the
-    /// session.
+    ///
+    /// **Note** only works if [`DeviceType::Pointer`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `axis` - The axis that was scrolled.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyPointerAxisDiscrete`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxisDiscrete).
     #[doc(alias = "NotifyPointerAxisDiscrete")]
@@ -477,14 +498,16 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// When applicable, the size of the motion delta should be equivalent to
     /// the motion vector of a pointer motion done using the same advice.
     ///
-    /// May only be called if POINTER access was provided after starting the
-    /// session.
+    ///
+    /// **Note** only works if [`DeviceType::Pointer`] access was provided after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
+    ///
+    /// # Specifications
     ///
     /// See also [`NotifyPointerAxis`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxis).
     #[doc(alias = "NotifyPointerAxis")]
@@ -500,6 +523,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     }
 
     /// Available source types.
+    ///
+    /// # Specifications
     ///
     /// See also [`AvailableDeviceTypes`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-RemoteDesktop.AvailableDeviceTypes).
     #[doc(alias = "AvailableDeviceTypes")]

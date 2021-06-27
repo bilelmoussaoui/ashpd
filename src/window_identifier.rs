@@ -125,7 +125,7 @@ impl WindowIdentifier {
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
     ///
-    /// **Note** The function has to be async as the Wayland handle retrieval
+    /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     pub async fn from_root<W: gtk4::glib::IsA<gtk4::Root>>(win: &W) -> Self {
         use futures::lock::Mutex;
@@ -183,7 +183,7 @@ impl WindowIdentifier {
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
     ///
-    /// **Note** The function has to be async as the Wayland handle retrieval
+    /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     pub async fn from_window<W: gtk3::glib::IsA<gtk3::gdk::Window>>(win: &W) -> Self {
         use gtk3::prelude::{Cast, ObjectExt};

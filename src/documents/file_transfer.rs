@@ -39,7 +39,7 @@ struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
     writeable: Option<bool>,
     /// Whether to stop the transfer automatically after the first
-    /// [`FileTransferProxy::retrieve_files`] call.
+    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
     #[zvariant(rename = "autostop")]
     auto_stop: Option<bool>,
 }
@@ -52,7 +52,7 @@ impl TransferOptions {
     }
 
     /// Whether to stop the transfer automatically after the first
-    /// [`FileTransferProxy::retrieve_files`] call.
+    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
     pub fn auto_stop(mut self, auto_stop: bool) -> Self {
         self.auto_stop = Some(auto_stop);
         self
@@ -95,14 +95,15 @@ impl<'a> FileTransferProxy<'a> {
         &self.0
     }
 
-    /// Adds files to a session.
-    /// This method can be called multiple times on a given session.
-    /// **Note** that only regular files (not directories) can be added.
+    /// Adds files to a session. This method can be called multiple times on a given session.
+    /// **Note** only regular files (not directories) can be added.
     ///
     /// # Arguments
     ///
-    /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
+    /// * `key` - A key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
     /// * `fds` - A list of file descriptors of the files to register.
+    ///
+    /// # Specifications
     ///
     /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.AddFiles).
     #[doc(alias = "AddFiles")]
@@ -115,15 +116,19 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Retrieves files that were previously added to the session with
-    /// [`FileTransferProxy::add_files`]. The files will be exported in the document portal
+    /// [`add_files()`][`FileTransferProxy::add_files`]. The files will be exported in the document portal
     /// as-needed for the caller, and they will be writable if the owner of
     /// the session allowed it.
     ///
-    /// Returns the list of file paths.
-    ///
     /// # Arguments
     ///
-    /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
+    /// * `key` - A key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    ///
+    /// # Returns
+    ///
+    /// The list of file paths.
+    ///
+    /// # Specifications
     ///
     /// See also [`RetrieveFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.RetrieveFiles).
     #[doc(alias = "RetrieveFiles")]
@@ -135,18 +140,19 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Starts a session for a file transfer.
-    /// The caller should call [`FileTransferProxy::add_files`] at least once, to add files to this
+    /// The caller should call [`add_files()`][`FileTransferProxy::add_files`] at least once, to add files to this
     /// session.
     ///
     /// # Arguments
     ///
     /// * `writeable` - Sets whether the chosen application can write to the files or not.
-    /// * `auto_stop` - Whether to stop the transfer automatically after the first
-    ///             [`FileTransferProxy::retrieve_files`] call.
+    /// * `auto_stop` - Whether to stop the transfer automatically after the first [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
     ///
     /// # Returns
     ///
-    /// a key that can be passed to [`FileTransferProxy::retrieve_files`] to obtain the files.
+    /// Key that can be passed to [`retrieve_files()`][`FileTransferProxy::retrieve_files`] to obtain the files.
+    ///
+    /// # Specifications
     ///
     /// See also [`StartTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.StartTransfer).
     pub async fn start_transfer(&self, writeable: bool, auto_stop: bool) -> Result<String, Error> {
@@ -157,12 +163,14 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Ends the transfer.
-    /// Further calls to [`FileTransferProxy::add_files`] or [`FileTransferProxy::retrieve_files`] for this key will
+    /// Further calls to [`add_files()`][`FileTransferProxy::add_files`] or [`retrieve_files()`][`FileTransferProxy::retrieve_files`] for this key will
     /// return an error.
     ///
     /// # Arguments
     ///
-    /// * `key` - A key returned by [`FileTransferProxy::start_transfer`].
+    /// * `key` - A key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    ///
+    /// # Specifications
     ///
     /// See also [`StopTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.StopTransfer).
     #[doc(alias = "StopTransfer")]
@@ -174,7 +182,9 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// # Returns
     ///
-    /// * The key returned by [`FileTransferProxy::start_transfer`]
+    /// * The key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    ///
+    /// # Specifications
     ///
     /// See also [`TransferClosed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-FileTransfer.TransferClosed).
     #[doc(alias = "TransferClosed")]

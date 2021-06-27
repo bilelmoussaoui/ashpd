@@ -160,13 +160,14 @@ impl<'a> EmailProxy<'a> {
 
     /// Presents a window that lets the user compose an email.
     ///
-    /// **Note** that the default email client for the host will need to support
-    /// `mailto:` URIs following RFC 2368.
+    /// **Note** the default email client for the host will need to support `mailto:` URIs following RFC 2368.
     ///
     /// # Arguments
     ///
     /// * `identifier` - Identifier for the application window.
     /// * `email` - An [`Email`].
+    ///
+    /// # Specifications
     ///
     /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
     #[doc(alias = "ComposeEmail")]

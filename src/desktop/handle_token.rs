@@ -10,8 +10,7 @@ use zvariant_derive::Type;
 /// `/org/freedesktop/portal/desktop/request/SENDER/TOKEN` where sender is the
 /// caller's unique name and token is the [`HandleToken`].
 ///
-/// A valid object path element must only contain the ASCII characters
-/// `[A-Z][a-z][0-9]_`
+/// A valid object path element must only contain the ASCII characters `[A-Z][a-z][0-9]_`
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
 pub struct HandleToken(String);
 
@@ -74,6 +73,8 @@ mod test {
         assert_eq!(HandleToken::try_from("/test").is_ok(), false);
 
         assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
+
+        assert_eq!(HandleToken::try_from("test_token").is_ok(), true);
 
         HandleToken::default(); // ensure we don't panic
     }

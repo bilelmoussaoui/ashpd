@@ -118,8 +118,7 @@ struct WallpaperOptions {
 
 impl WallpaperOptions {
     /// Whether to show a preview of the picture.
-    /// **Note** that the portal may decide to show a preview even if this
-    /// option is not set.
+    /// **Note** the portal may decide to show a preview even if this option is not set.
     pub fn show_preview(mut self, show_preview: bool) -> Self {
         self.show_preview = Some(show_preview);
         self
@@ -166,6 +165,8 @@ impl<'a> WallpaperProxy<'a> {
     /// * `show_preview` - Whether to show a preview of the picture.
     /// * `set_on` - Where to set the wallpaper on.
     ///
+    /// # Specifications
+    ///
     /// See also [`SetWallpaperFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperFile).
     #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file<F>(
@@ -198,6 +199,8 @@ impl<'a> WallpaperProxy<'a> {
     /// * `uri` - The wallpaper URI.
     /// * `show_preview` - Whether to show a preview of the picture.
     /// * `set_on` - Where to set the wallpaper on.
+    ///
+    /// # Specifications
     ///
     /// See also [`SetWallpaperURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperURI).
     #[doc(alias = "SetWallpaperURI")]

@@ -62,6 +62,8 @@ impl<'a> SessionProxy<'a> {
 
     /// Emitted when a session is closed.
     ///
+    /// # Specifications
+    ///
     /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Session.Closed).
     #[doc(alias = "Closed")]
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
@@ -70,6 +72,8 @@ impl<'a> SessionProxy<'a> {
 
     /// Closes the portal session to which this object refers and ends all
     /// related user interaction (dialogs, etc).
+    ///
+    /// # Specifications
     ///
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Session.Close).
     #[doc(alias = "Close")]

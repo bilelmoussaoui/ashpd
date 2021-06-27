@@ -538,6 +538,8 @@ impl<'a> PrintProxy<'a> {
     /// * `page_setup` - [`PageSetup`].
     /// * `modal` - Whether the dialog should be a modal.
     ///
+    /// # Specifications
+    ///
     /// See also [`PreparePrint`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Print.PreparePrint).
     #[doc(alias = "PreparePint")]
     pub async fn prepare_print(
@@ -568,8 +570,10 @@ impl<'a> PrintProxy<'a> {
     /// * `identifier` - The application window identifier.
     /// * `title` - The title for the print dialog.
     /// * `fd` - File descriptor for reading the content to print.
-    /// * `token` - A token returned by a call to [`PrintProxy::prepare_print`].
+    /// * `token` - A token returned by a call to [`prepare_print()`][`PrintProxy::prepare_print`].
     /// * `modal` - Whether the dialog should be a modal.
+    ///
+    /// # Specifications
     ///
     /// See also [`Print`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Print.Print).
     #[doc(alias = "Print")]

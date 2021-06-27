@@ -81,16 +81,9 @@
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
+//!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
 //!
-//!     proxy
-//!         .open_uri(
-//!             Default::default(),
-//!             "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
-//!             false,
-//!             true,
-//!         )
-//!         .await?;
-//!
+//!     proxy.open_uri(Default::default(), uri, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -170,6 +163,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `identifier` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
     ///
+    /// # Specifications
+    ///
     /// See also [`OpenDirectory`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenDirectory).
     #[doc(alias = "OpenDirectory")]
     pub async fn open_directory<F>(
@@ -198,6 +193,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `file` - File descriptor for the file to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
+    ///
+    /// # Specifications
     ///
     /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenFile).
     #[doc(alias = "OpenFile")]
@@ -229,6 +226,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `uri` - The uri to open.
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or not.
+    ///
+    /// # Specifications
     ///
     /// See also [`OpenURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenURI).
     #[doc(alias = "OpenURI")]
