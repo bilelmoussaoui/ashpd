@@ -29,7 +29,7 @@ impl Default for HandleToken {
             .take(10)
             .map(char::from)
             .collect();
-        HandleToken::try_from(token).unwrap()
+        HandleToken::try_from(format!("ashpd_{}", token)).unwrap()
     }
 }
 
@@ -47,7 +47,7 @@ impl TryFrom<&str> for HandleToken {
     type Error = HandleInvalidCharacter;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         for char in value.chars() {
-            if !char.is_ascii_alphanumeric() {
+            if !char.is_ascii_alphanumeric() && char != '_' {
                 return Err(HandleInvalidCharacter(char));
             }
         }
@@ -74,5 +74,7 @@ mod test {
         assert_eq!(HandleToken::try_from("/test").is_ok(), false);
 
         assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
+
+        HandleToken::default(); // ensure we don't panic
     }
 }
