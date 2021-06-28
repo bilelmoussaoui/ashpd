@@ -5,7 +5,7 @@ use crate::{
     Error,
 };
 use serde::{
-    de::{self, DeserializeOwned, Error as SeError, Visitor},
+    de::{self, Error as SeError, Visitor},
     Deserialize, Deserializer, Serialize,
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -23,7 +23,7 @@ use zvariant_derive::Type;
 #[derive(Debug)]
 enum Response<T>
 where
-    T: DeserializeOwned + zvariant::Type,
+    T: for<'de> Deserialize<'de> + zvariant::Type,
 {
     /// Success, the request is carried out.
     Ok(T),
@@ -33,7 +33,7 @@ where
 
 impl<T> zvariant::Type for Response<T>
 where
-    T: DeserializeOwned + zvariant::Type,
+    T: for<'de> Deserialize<'de> + zvariant::Type,
 {
     fn signature() -> zvariant::Signature<'static> {
         <(ResponseType, HashMap<&str, OwnedValue>)>::signature()
@@ -42,7 +42,7 @@ where
 
 impl<'de, T> Deserialize<'de> for Response<T>
 where
-    T: DeserializeOwned + zvariant::Type,
+    T: for<'d> Deserialize<'d> + zvariant::Type,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -90,7 +90,7 @@ where
 #[doc(hidden)]
 impl<T> From<(ResponseType, Option<T>)> for Response<T>
 where
-    T: DeserializeOwned + zvariant::Type,
+    T: for<'de> Deserialize<'de> + zvariant::Type,
 {
     fn from(f: (ResponseType, Option<T>)) -> Self {
         match f.0 {
@@ -203,7 +203,7 @@ impl<'a> RequestProxy<'a> {
     #[doc(alias = "Response")]
     pub async fn receive_response<R>(&self) -> Result<R, Error>
     where
-        R: DeserializeOwned + zvariant::Type,
+        R: for<'de> Deserialize<'de> + zvariant::Type,
     {
         match receive_signal::<Response<R>>(&self.0, "Response").await? {
             Response::Err(e) => Err(e.into()),

@@ -5,7 +5,7 @@ use crate::desktop::{
 use crate::Error;
 use futures::StreamExt;
 use futures::TryFutureExt;
-use serde::de::DeserializeOwned;
+use serde::Deserialize;
 
 pub(crate) async fn call_request_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
@@ -14,18 +14,19 @@ pub(crate) async fn call_request_method<R, B>(
     body: &B,
 ) -> Result<R, Error>
 where
-    R: serde::de::DeserializeOwned + zvariant::Type,
+    R: for<'de> Deserialize<'de> + zvariant::Type,
     B: serde::ser::Serialize + zvariant::Type,
 {
     let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
-    let (response, path) = futures::try_join!(
+    let (response, msg) = futures::try_join!(
         request.receive_response::<R>().into_future(),
         proxy
-            .call::<B, zvariant::OwnedObjectPath>(method_name, body)
+            .call_method::<B>(method_name, body)
             .into_future()
             .map_err(From::from),
     )?;
-    assert_eq!(&path.into_inner(), request.inner().path());
+    let path = msg.body::<zvariant::ObjectPath<'_>>()?;
+    assert_eq!(&path, request.inner().path());
     Ok(response)
 }
 
@@ -42,13 +43,16 @@ where
     Ok(())
 }
 
-pub(crate) async fn receive_signal<T: DeserializeOwned + zvariant::Type>(
+pub(crate) async fn receive_signal<R>(
     proxy: &zbus::azync::Proxy<'_>,
     signal_name: &'static str,
-) -> Result<T, Error> {
+) -> Result<R, Error>
+where
+    R: for<'de> Deserialize<'de> + zvariant::Type,
+{
     let mut stream = proxy.receive_signal(signal_name).await?;
     let message = stream.next().await.ok_or(Error::NoResponse)?;
-    message.body::<T>().map_err(From::from)
+    message.body::<R>().map_err(From::from)
 }
 
 pub(crate) async fn call_method<R, B>(
@@ -57,11 +61,12 @@ pub(crate) async fn call_method<R, B>(
     body: &B,
 ) -> Result<R, Error>
 where
-    R: serde::de::DeserializeOwned + zvariant::Type,
+    R: for<'de> Deserialize<'de> + zvariant::Type,
     B: serde::ser::Serialize + zvariant::Type,
 {
     proxy
-        .call::<B, R>(method_name, body)
-        .await
+        .call_method::<B>(method_name, body)
+        .await?
+        .body::<R>()
         .map_err(From::from)
 }
