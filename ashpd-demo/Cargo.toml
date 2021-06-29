@@ -11,19 +11,12 @@ gettext-rs = { version = "0.7", features = ["gettext-system"] }
 gtk-macros = "0.3"
 once_cell = "1.5"
 futures = "0.3"
-gst_video = {package="gstreamer-video", git="https://gitlab.freedesktop.org/gstreamer/gstreamer-rs"}
-gst_base = {package="gstreamer-base", git="https://gitlab.freedesktop.org/gstreamer/gstreamer-rs"}
-gst = {package="gstreamer", git="https://gitlab.freedesktop.org/gstreamer/gstreamer-rs"}
-
-
-[dependencies.gtk]
-package = "gtk4"
-git = "https://github.com/gtk-rs/gtk4-rs"
+gst_video = {package="gstreamer-video", version = "0.17"}
+gst_base = {package="gstreamer-base", version = "0.17"}
+gst = {package="gstreamer", version = "0.17"}
+gtk = {package = "gtk4", version = "0.1"}
+adw = {version = "0.1.0-alpha", package = "libadwaita"}
 
 [dependencies.ashpd]
 git = "https://github.com/bilelmoussaoui/ashpd"
 features = ["feature_gtk4"]
-
-[dependencies.adw]
-package = "libadwaita"
-git = "https://gitlab.gnome.org/World/Rust/libadwaita-rs"

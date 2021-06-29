@@ -1,4 +1,3 @@
-use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 use ashpd::zbus;
 use gtk::glib;
 use gtk::prelude::*;

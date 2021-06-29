@@ -5,11 +5,11 @@ use gtk::{gio, glib, CompositeTemplate};
 use log::warn;
 
 use crate::application::ExampleApplication;
-use crate::config::{APP_ID, PROFILE};
+use crate::config::APP_ID;
 use crate::portals::desktop::{
-    AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, LocationPage,
-    NetworkMonitorPage, NotificationPage, OpenUriPage, ScreenCastPage, ScreenshotPage,
-    WallpaperPage, InhibitPage,
+    AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
+    LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, ScreenCastPage,
+    ScreenshotPage, WallpaperPage,
 };
 use crate::portals::DocumentsPage;
 use crate::sidebar_row::SidebarRow;

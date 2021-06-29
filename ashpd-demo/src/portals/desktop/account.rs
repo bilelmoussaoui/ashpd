@@ -1,4 +1,4 @@
-use ashpd::{desktop::account, zbus, WindowIdentifier};
+use ashpd::{desktop::account, WindowIdentifier};
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -68,7 +68,7 @@ impl AccountPage {
             let identifier = WindowIdentifier::from_window(&root).await;
             let reason = self_.reason.text();
 
-            if let Ok(user_info) = user_information(identifier, &reason).await
+            if let Ok(user_info) = account::user_information(identifier, &reason).await
             {
                 self_.id_label.set_text(user_info.id());
                 self_.name_label.set_text(user_info.name());
@@ -79,14 +79,4 @@ impl AccountPage {
             }
         }));
     }
-}
-
-async fn user_information(
-    window: WindowIdentifier,
-    reason: &str,
-) -> Result<account::UserInfo, ashpd::Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = account::AccountProxy::new(&connection).await?;
-    let info = proxy.user_information(window, reason).await?;
-    Ok(info)
 }

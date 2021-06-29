@@ -3,7 +3,7 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use std::os::unix::prelude::{AsRawFd, RawFd};
+use std::os::unix::prelude::{RawFd};
 
 use crate::widgets::CameraPaintable;
 
@@ -130,6 +130,5 @@ async fn stream() -> Result<RawFd, ashpd::Error> {
     let proxy = camera::CameraProxy::new(&connection).await?;
     proxy.access_camera().await?;
 
-    let fd = proxy.open_pipe_wire_remote().await?;
-    Ok(fd.as_raw_fd())
+    proxy.open_pipe_wire_remote().await
 }

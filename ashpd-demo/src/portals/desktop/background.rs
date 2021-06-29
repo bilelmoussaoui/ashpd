@@ -1,4 +1,3 @@
-use ashpd::zbus;
 use ashpd::{desktop::background, WindowIdentifier};
 use glib::clone;
 use gtk::glib;
@@ -71,10 +70,10 @@ impl BackgroundPage {
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::BackgroundPage::from_instance(&page);
             let identifier = WindowIdentifier::from_window(&root).await;
-            if let Ok(response) = request_background(identifier,
+            if let Ok(response) = background::request(identifier,
                 &reason,
                 auto_start,
-                self_.command_entry.text().split_whitespace().collect::<Vec<&str>>().as_slice(),
+                Some(self_.command_entry.text().split_whitespace().collect::<Vec<&str>>().as_slice()),
                 dbus_activatable).await {
 
                 self_.response_group.show();
@@ -83,24 +82,4 @@ impl BackgroundPage {
             }
         }));
     }
-}
-
-async fn request_background(
-    identifier: WindowIdentifier,
-    reason: &str,
-    auto_start: bool,
-    command: &[&str],
-    dbus_activatable: bool,
-) -> Result<background::Background, ashpd::Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = background::BackgroundProxy::new(&connection).await?;
-    proxy
-        .request_background(
-            identifier,
-            reason,
-            auto_start,
-            Some(command),
-            dbus_activatable,
-        )
-        .await
 }

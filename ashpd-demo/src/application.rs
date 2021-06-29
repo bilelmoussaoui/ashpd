@@ -28,7 +28,7 @@ mod imp {
 
     impl ObjectImpl for ExampleApplication {}
 
-    impl gio::subclass::prelude::ApplicationImpl for ExampleApplication {
+    impl ApplicationImpl for ExampleApplication {
         fn activate(&self, app: &Self::Type) {
             debug!("GtkApplication<ExampleApplication>::activate");
 

@@ -2,7 +2,7 @@ use ashpd::{desktop::inhibit, zbus, WindowIdentifier};
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{gio, glib};
+use gtk::glib;
 use gtk_macros::spawn;
 
 mod imp {

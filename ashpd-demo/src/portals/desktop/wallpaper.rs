@@ -1,11 +1,10 @@
-use std::{cell::RefCell, str::FromStr};
-
 use adw::prelude::*;
-use ashpd::{desktop::wallpaper, zbus, WindowIdentifier};
+use ashpd::{desktop::wallpaper, WindowIdentifier};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use std::{cell::RefCell, str::FromStr};
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -88,7 +87,7 @@ impl WallpaperPage {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak root => async move {
                     let identifier = WindowIdentifier::from_window(&root).await;
-                    let _ =  set_from_uri(
+                    let _ =  wallpaper::set_from_uri(
                         identifier,
                         &wallpaper_uri,
                         show_preview,
@@ -102,18 +101,4 @@ impl WallpaperPage {
         file_chooser.show();
         self_.dialog.replace(Some(file_chooser));
     }
-}
-
-async fn set_from_uri(
-    window: WindowIdentifier,
-    uri: &str,
-    show_preview: bool,
-    set_on: wallpaper::SetOn,
-) -> Result<(), ashpd::Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = wallpaper::WallpaperProxy::new(&connection).await?;
-    proxy
-        .set_wallpaper_uri(window, uri, show_preview, set_on)
-        .await?;
-    Ok(())
 }

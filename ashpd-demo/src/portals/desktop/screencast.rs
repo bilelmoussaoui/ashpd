@@ -13,7 +13,6 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use std::os::unix::io::AsRawFd;
 use std::os::unix::io::RawFd;
 use std::sync::Arc;
 
@@ -178,5 +177,5 @@ pub async fn screencast(
     let streams = proxy.start(&session, window_identifier).await?.to_vec();
 
     let node_id = proxy.open_pipe_wire_remote(&session).await?;
-    Ok((streams, node_id.as_raw_fd(), session))
+    Ok((streams, node_id, session))
 }

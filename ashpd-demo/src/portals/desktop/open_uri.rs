@@ -1,4 +1,4 @@
-use ashpd::{desktop::open_uri, zbus, WindowIdentifier};
+use ashpd::{desktop::open_uri, WindowIdentifier};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -57,19 +57,7 @@ impl OpenUriPage {
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_window(&root).await;
-            let _ = open_uri(identifier, "https://google.com", writable, ask).await;
+            let _ = open_uri::open_uri(identifier, "https://google.com", writable, ask).await;
         });
     }
-}
-
-async fn open_uri(
-    window: WindowIdentifier,
-    uri: &str,
-    writeable: bool,
-    ask: bool,
-) -> Result<(), ashpd::Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
-    let proxy = open_uri::OpenURIProxy::new(&connection).await?;
-    proxy.open_uri(window, uri, writeable, ask).await?;
-    Ok(())
 }
