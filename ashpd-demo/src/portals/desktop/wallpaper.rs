@@ -54,6 +54,7 @@ glib::wrapper! {
 }
 
 impl WallpaperPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a WallpaperPage")
     }
@@ -86,7 +87,7 @@ impl WallpaperPage {
                 let wallpaper_uri = dialog.file().unwrap().uri();
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak root => async move {
-                    let identifier = WindowIdentifier::from_window(&root).await;
+                    let identifier = WindowIdentifier::from_root(&root).await;
                     let _ =  wallpaper::set_from_uri(
                         identifier,
                         &wallpaper_uri,

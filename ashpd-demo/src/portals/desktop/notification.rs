@@ -77,6 +77,7 @@ glib::wrapper! {
 }
 
 impl NotificationPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a NotificationPage")
     }

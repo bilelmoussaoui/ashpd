@@ -52,6 +52,7 @@ glib::wrapper! {
 }
 
 impl EmailPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a EmailPage")
     }
@@ -66,19 +67,19 @@ impl EmailPage {
         let root = self.root().unwrap();
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
             let _ = compose_email(
                 identifier,
                 Email::default()
                     .subject(&subject)
                     .addresses(
                         &addresses
-                            .split(",")
+                            .split(',')
                             .filter(|e| e.len() > 1)
                             .collect::<Vec<_>>(),
                     )
-                    .bcc(&bcc.split(",").filter(|e| e.len() > 1).collect::<Vec<_>>())
-                    .cc(&cc.split(",").filter(|e| e.len() > 1).collect::<Vec<_>>())
+                    .bcc(&bcc.split(',').filter(|e| e.len() > 1).collect::<Vec<_>>())
+                    .cc(&cc.split(',').filter(|e| e.len() > 1).collect::<Vec<_>>())
                     .body(&body),
             )
             .await;

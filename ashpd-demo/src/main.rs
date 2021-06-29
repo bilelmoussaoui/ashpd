@@ -17,12 +17,10 @@ fn main() {
 
     // Prepare i18n
     setlocale(LocaleCategory::LcAll, "");
-    bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
-    textdomain(GETTEXT_PACKAGE);
+    bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).unwrap();
+    textdomain(GETTEXT_PACKAGE).unwrap();
 
     gtk::glib::set_application_name("ASHPD Demo");
-    gtk::glib::set_prgname(Some("ashpd-demo"));
-
     gtk::init().expect("Unable to start GTK4");
     gst::init().expect("Unable to init gstreamer");
 

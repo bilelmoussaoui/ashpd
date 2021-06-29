@@ -69,6 +69,7 @@ glib::wrapper! {
 }
 
 impl ScreenshotPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a ScreenshotPage")
     }
@@ -79,7 +80,7 @@ impl ScreenshotPage {
         let root = self.root().unwrap();
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenshotPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
             if let Ok(color) = screenshot::pick_color(identifier).await {
                 self_.color_widget.set_rgba(color.into());
             }
@@ -92,7 +93,7 @@ impl ScreenshotPage {
             let self_ = imp::ScreenshotPage::from_instance(&page);
             // used for retrieving a window identifier
             let root = page.root().unwrap();
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
 
             let interactive = self_.interactive_switch.is_active();
             let modal = self_.modal_switch.is_active();

@@ -56,6 +56,7 @@ glib::wrapper! {
 }
 
 impl AccountPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a AccountPage")
     }
@@ -65,7 +66,7 @@ impl AccountPage {
         let root = self.root().unwrap();
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::AccountPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
             let reason = self_.reason.text();
 
             if let Ok(user_info) = account::user_information(identifier, &reason).await

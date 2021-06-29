@@ -51,6 +51,7 @@ glib::wrapper! {
 }
 
 impl InhibitPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a InhibitPage")
     }
@@ -59,11 +60,12 @@ impl InhibitPage {
         let root = self.root().unwrap();
         spawn!(clone!(@weak self as page => async move {
             let self_ = imp::InhibitPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
             let reason = self_.reason.text();
 
-            if let Ok(user_info) = inhibit(identifier, &reason).await
+            if let Err(err) = inhibit(identifier, &reason).await
             {
+                log::error!("Failed to request to inhibit stuff {}", err);
             }
         }));
     }

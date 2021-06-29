@@ -85,6 +85,7 @@ glib::wrapper! {
 }
 
 impl SidebarRow {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a SidebarRow")
     }

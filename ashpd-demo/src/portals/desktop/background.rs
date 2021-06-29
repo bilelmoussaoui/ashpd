@@ -55,6 +55,7 @@ glib::wrapper! {
 }
 
 impl BackgroundPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a BackgroundPage")
     }
@@ -69,7 +70,7 @@ impl BackgroundPage {
 
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::BackgroundPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
             if let Ok(response) = background::request(identifier,
                 &reason,
                 auto_start,

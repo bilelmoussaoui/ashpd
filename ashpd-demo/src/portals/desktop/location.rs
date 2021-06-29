@@ -84,6 +84,7 @@ glib::wrapper! {
 }
 
 impl LocationPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a LocationPage")
     }
@@ -97,7 +98,7 @@ impl LocationPage {
         let root = self.root().unwrap();
 
         ctx.spawn_local(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
             if let Ok(location) = locate(identifier, distance_threshold, time_threshold, accuracy).await {
                 let self_ = imp::LocationPage::from_instance(&page);
 

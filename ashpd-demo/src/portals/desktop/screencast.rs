@@ -92,6 +92,7 @@ glib::wrapper! {
 }
 
 impl ScreenCastPage {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         let widget = glib::Object::new(&[]).expect("Failed to create a ScreenCastPage");
 
@@ -118,7 +119,7 @@ impl ScreenCastPage {
             let multiple = self_.multiple_switch.is_active();
 
             let root = page.root().unwrap();
-            let identifier = WindowIdentifier::from_window(&root).await;
+            let identifier = WindowIdentifier::from_root(&root).await;
 
 
 

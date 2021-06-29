@@ -273,6 +273,7 @@ glib::wrapper! {
 }
 
 impl CameraPaintable {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a CameraPaintable")
     }
@@ -319,19 +320,14 @@ impl CameraPaintable {
 
         let bus = pipeline.bus().unwrap();
         bus.add_watch_local(move |_, msg| {
-            use gst::MessageView;
-            match msg.view() {
-                MessageView::Error(err) => {
-                    println!(
-                        "Error from {:?}: {} ({:?})",
-                        err.src().map(|s| s.path_string()),
-                        err.error(),
-                        err.debug()
-                    );
-                }
-                _ => (),
-            };
-
+            if let gst::MessageView::Error(err) = msg.view() {
+                println!(
+                    "Error from {:?}: {} ({:?})",
+                    err.src().map(|s| s.path_string()),
+                    err.error(),
+                    err.debug()
+                );
+            }
             glib::Continue(true)
         })
         .expect("Failed to add bus watch");
