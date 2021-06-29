@@ -68,6 +68,7 @@ pub mod flatpak;
 mod helpers;
 pub use enumflags2;
 pub use zbus;
+pub use zvariant;
 
 /// Check whether the application is running inside a sandbox.
 ///
