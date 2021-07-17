@@ -93,14 +93,13 @@ impl Serialize for WindowIdentifier {
     where
         S: Serializer,
     {
-        let handle = match self {
-            #[cfg(feature = "feature_gtk4")]
-            Self::Gtk4 { root: _, handle } => handle,
-            #[cfg(feature = "feature_gtk3")]
-            Self::Gtk3 { handle, window: _ } => handle,
-            Self::Other(handle) => handle,
-        };
-        serializer.serialize_str(handle)
+        serializer.serialize_str(self.inner())
+    }
+}
+
+impl std::fmt::Display for WindowIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.inner())
     }
 }
 
@@ -108,6 +107,16 @@ impl WindowIdentifier {
     /// Create a new window identifier
     pub fn new(identifier: &str) -> Self {
         Self::Other(identifier.to_string())
+    }
+
+    pub(crate) fn inner(&self) -> &str {
+        match self {
+            #[cfg(feature = "feature_gtk4")]
+            Self::Gtk4 { root: _, handle } => handle,
+            #[cfg(feature = "feature_gtk3")]
+            Self::Gtk3 { handle, window: _ } => handle,
+            Self::Other(handle) => handle,
+        }
     }
 }
 
