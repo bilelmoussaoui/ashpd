@@ -33,6 +33,7 @@ sources = files(
   'portals/desktop/open_uri.rs',
   'portals/desktop/screenshot.rs',
   'portals/desktop/screencast.rs',
+  'portals/desktop/secret.rs',
   'portals/desktop/wallpaper.rs',
   'portals/documents.rs',
   'portals/mod.rs',

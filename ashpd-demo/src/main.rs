@@ -13,7 +13,7 @@ use gtk::gio;
 
 fn main() {
     // Initialize logger, debug is carried out via debug!, info!, and warn!.
-    pretty_env_logger::init();
+    tracing_subscriber::fmt::init();
 
     // Prepare i18n
     setlocale(LocaleCategory::LcAll, "");

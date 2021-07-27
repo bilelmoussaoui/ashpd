@@ -1,10 +1,11 @@
-use crate::config;
 use ashpd::documents::DocumentsProxy;
 use ashpd::zbus;
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+
+use crate::config;
 
 mod imp {
     use adw::subclass::prelude::*;

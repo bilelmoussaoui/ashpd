@@ -5,8 +5,8 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 use gtk_macros::action;
-use log::{debug, info};
 use once_cell::sync::OnceCell;
+use tracing::{debug, info};
 
 use crate::config;
 use crate::window::ExampleApplicationWindow;

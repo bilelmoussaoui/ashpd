@@ -1,10 +1,11 @@
+use std::{cell::RefCell, str::FromStr};
+
 use adw::prelude::*;
 use ashpd::{desktop::wallpaper, WindowIdentifier};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use std::{cell::RefCell, str::FromStr};
 
 mod imp {
     use adw::subclass::prelude::*;

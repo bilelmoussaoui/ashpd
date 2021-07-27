@@ -2,7 +2,7 @@ use ashpd::{desktop::account, WindowIdentifier};
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{gio, glib};
+use gtk::{gdk_pixbuf, gio, glib};
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -73,9 +73,10 @@ impl AccountPage {
             {
                 self_.id_label.set_text(user_info.id());
                 self_.name_label.set_text(user_info.name());
-                let file = gio::File::for_uri(user_info.image());
-                let icon = gio::FileIcon::new(&file);
-                self_.avatar.set_from_gicon(&icon);
+                let path: std::path::PathBuf = user_info.image().trim_start_matches("file://").into();
+                let pixbuf = gdk_pixbuf::Pixbuf::from_file(path).unwrap();
+
+                self_.avatar.set_from_pixbuf(Some(&pixbuf));
                 self_.response_group.show();
             }
         }));

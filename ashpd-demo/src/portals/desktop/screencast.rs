@@ -1,4 +1,6 @@
-use crate::widgets::CameraPaintable;
+use std::os::unix::io::RawFd;
+use std::sync::Arc;
+
 use adw::prelude::*;
 use ashpd::{
     desktop::{
@@ -13,8 +15,8 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use std::os::unix::io::RawFd;
-use std::sync::Arc;
+
+use crate::widgets::CameraPaintable;
 
 mod imp {
     use adw::subclass::prelude::*;

@@ -2,14 +2,14 @@ use glib::signal::Inhibit;
 use gtk::subclass::prelude::*;
 use gtk::{self, prelude::*};
 use gtk::{gio, glib, CompositeTemplate};
-use log::warn;
+use tracing::warn;
 
 use crate::application::ExampleApplication;
 use crate::config::APP_ID;
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
     LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, ScreenCastPage,
-    ScreenshotPage, WallpaperPage,
+    ScreenshotPage, SecretPage, WallpaperPage,
 };
 use crate::portals::DocumentsPage;
 use crate::sidebar_row::SidebarRow;
@@ -69,6 +69,7 @@ mod imp {
             FileChooserPage::static_type();
             OpenUriPage::static_type();
             InhibitPage::static_type();
+            SecretPage::static_type();
             Self::bind_template(klass);
 
             klass.install_action("win.back", None, |win, _, _| {

@@ -1,8 +1,7 @@
 use ashpd::{desktop::inhibit, zbus, WindowIdentifier};
-use glib::clone;
+use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::glib;
 use gtk_macros::spawn;
 
 mod imp {
@@ -28,13 +27,9 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.install_action(
-                "inhibit.request",
-                None,
-                move |page, _action, _target| {
-                    page.inhibit();
-                },
-            );
+            klass.install_action("inhibit.request", None, move |page, _action, _target| {
+                page.inhibit();
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -65,16 +60,13 @@ impl InhibitPage {
 
             if let Err(err) = inhibit(identifier, &reason).await
             {
-                log::error!("Failed to request to inhibit stuff {}", err);
+                tracing::error!("Failed to request to inhibit stuff {}", err);
             }
         }));
     }
 }
 
-async fn inhibit(
-    identifier: WindowIdentifier,
-    reason: &str,
-) -> Result<(), ashpd::Error> {
+async fn inhibit(identifier: WindowIdentifier, reason: &str) -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = inhibit::InhibitProxy::new(&connection).await?;
     let monitor = proxy.create_monitor(identifier.clone()).await?;

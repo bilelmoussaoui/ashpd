@@ -3,8 +3,8 @@ use ashpd::{
     desktop::location::{Accuracy, Location, LocationProxy},
     zbus, WindowIdentifier,
 };
-use glib::clone;
 use futures::TryFutureExt;
+use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;

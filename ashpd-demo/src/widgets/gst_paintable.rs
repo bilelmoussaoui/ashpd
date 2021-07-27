@@ -279,18 +279,18 @@ impl CameraPaintable {
     }
 
     pub fn set_pipewire_fd<F: AsRawFd>(&self, fd: F) {
+        let raw_fd = fd.as_raw_fd();
+        tracing::debug!("Loading PipeWire FD: {}", raw_fd);
         let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
-        pipewire_element
-            .set_property("fd", &fd.as_raw_fd())
-            .unwrap();
+        pipewire_element.set_property("fd", &raw_fd).unwrap();
         self.init_pipeline(pipewire_element);
     }
 
     pub fn set_pipewire_node_id<F: AsRawFd>(&self, fd: F, node_id: u32) {
+        let raw_fd = fd.as_raw_fd();
+        tracing::debug!("Loading PipeWire Node ID: {} with FD: {}", node_id, raw_fd);
         let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
-        pipewire_element
-            .set_property("fd", &fd.as_raw_fd())
-            .unwrap();
+        pipewire_element.set_property("fd", &raw_fd).unwrap();
         pipewire_element
             .set_property("path", &node_id.to_string())
             .unwrap();
@@ -298,6 +298,7 @@ impl CameraPaintable {
     }
 
     fn init_pipeline(&self, pipewire_src: gst::Element) {
+        tracing::debug!("Init pipeline");
         let self_ = imp::CameraPaintable::from_instance(self);
         let pipeline = gst::Pipeline::new(None);
         let convert = gst::ElementFactory::make("videoconvert", None).unwrap();
@@ -320,6 +321,7 @@ impl CameraPaintable {
 
         let bus = pipeline.bus().unwrap();
         bus.add_watch_local(move |_, msg| {
+            println!("{:#?}", msg);
             if let gst::MessageView::Error(err) = msg.view() {
                 println!(
                     "Error from {:?}: {} ({:?})",
@@ -331,11 +333,12 @@ impl CameraPaintable {
             glib::Continue(true)
         })
         .expect("Failed to add bus watch");
-        pipeline.set_state(gst::State::Playing).ok();
+        pipeline.set_state(gst::State::Playing).unwrap();
         self_.pipeline.replace(Some(pipeline));
     }
 
     pub fn close_pipeline(&self) {
+        tracing::debug!("Closing pipeline");
         let self_ = imp::CameraPaintable::from_instance(self);
         if let Some(pipeline) = self_.pipeline.borrow_mut().take() {
             pipeline.set_state(gst::State::Null).unwrap();

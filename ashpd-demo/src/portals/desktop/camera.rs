@@ -1,9 +1,10 @@
+use std::os::unix::prelude::RawFd;
+
 use ashpd::{desktop::camera, zbus};
 use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use std::os::unix::prelude::{RawFd};
 
 use crate::widgets::CameraPaintable;
 

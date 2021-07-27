@@ -1,7 +1,7 @@
 {
     "app-id": "com.belmoussaoui.ashpd.demo.Devel",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "40",
+    "runtime-version": "master",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": ["org.freedesktop.Sdk.Extension.rust-stable"],
     "command": "ashpd-demo",
@@ -11,7 +11,7 @@
         "--socket=wayland",
         "--device=dri",
         "--talk-name=org.a11y.Bus",
-        "--env=RUST_LOG=ashpd-demo=debug",
+        "--env=RUST_LOG=ashpd_demo=debug,ashpd=debug",
         "--env=G_MESSAGES_DEBUG=none",
         "--share=network"
     ],
