@@ -1,10 +1,11 @@
+use std::fmt::Debug;
+
 use crate::desktop::{
     request::{BasicResponse, RequestProxy},
     HandleToken,
 };
 use crate::Error;
 use futures::StreamExt;
-use futures::TryFutureExt;
 use serde::Deserialize;
 
 pub(crate) async fn call_request_method<R, B>(
@@ -14,18 +15,30 @@ pub(crate) async fn call_request_method<R, B>(
     body: &B,
 ) -> Result<R, Error>
 where
-    R: for<'de> Deserialize<'de> + zvariant::Type,
-    B: serde::ser::Serialize + zvariant::Type,
+    R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
+    B: serde::ser::Serialize + zvariant::Type + Debug,
 {
+    tracing::info!(
+        "Calling a request method '{}:{}'",
+        proxy.interface(),
+        method_name
+    );
+    tracing::debug!("The body is: {:#?}", body);
     let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
-    let (response, msg) = futures::try_join!(
-        request.receive_response::<R>().into_future(),
-        proxy
-            .call_method::<B>(method_name, body)
-            .into_future()
-            .map_err(From::from),
+    let (response, path) = futures::try_join!(
+        async {
+            let response = request.receive_response::<R>().await?;
+            tracing::debug!("Received response {:#?}", response);
+            Ok(response) as Result<_, Error>
+        },
+        async {
+            let msg = proxy.call_method::<B>(method_name, body).await?;
+            let path = msg.body::<zvariant::OwnedObjectPath>()?.into_inner();
+
+            tracing::debug!("Received request path {}", path.as_str());
+            Ok(path) as Result<zvariant::ObjectPath<'_>, Error>
+        },
     )?;
-    let path = msg.body::<zvariant::ObjectPath<'_>>()?;
     assert_eq!(&path, request.inner().path());
     Ok(response)
 }
@@ -37,7 +50,7 @@ pub(crate) async fn call_basic_response_method<B>(
     body: &B,
 ) -> Result<(), Error>
 where
-    B: serde::ser::Serialize + zvariant::Type,
+    B: serde::ser::Serialize + zvariant::Type + Debug,
 {
     call_request_method::<BasicResponse, B>(proxy, handle_token, method_name, body).await?;
     Ok(())
@@ -48,11 +61,18 @@ pub(crate) async fn receive_signal<R>(
     signal_name: &'static str,
 ) -> Result<R, Error>
 where
-    R: for<'de> Deserialize<'de> + zvariant::Type,
+    R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
 {
     let mut stream = proxy.receive_signal(signal_name).await?;
     let message = stream.next().await.ok_or(Error::NoResponse)?;
-    message.body::<R>().map_err(From::from)
+    tracing::info!(
+        "Received signal '{}' on '{}'",
+        signal_name,
+        proxy.interface()
+    );
+    let content = message.body::<R>()?;
+    tracing::debug!("With body {:#?}", content);
+    Ok(content)
 }
 
 pub(crate) async fn call_method<R, B>(
@@ -62,8 +82,10 @@ pub(crate) async fn call_method<R, B>(
 ) -> Result<R, Error>
 where
     R: for<'de> Deserialize<'de> + zvariant::Type,
-    B: serde::ser::Serialize + zvariant::Type,
+    B: serde::ser::Serialize + zvariant::Type + Debug,
 {
+    tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
+    tracing::debug!("With body {:#?}", body);
     proxy
         .call_method::<B>(method_name, body)
         .await?

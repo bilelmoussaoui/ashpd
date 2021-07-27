@@ -33,3 +33,4 @@ zbus = "2.0.0-beta.5"
 zvariant = {version = "2.7", features = ["enumflags2"], default-features = false}
 zvariant_derive = "2.7"
 futures = "0.3"
+tracing = "0.1"

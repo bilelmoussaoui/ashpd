@@ -44,6 +44,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{
     collections::HashMap,
+    fmt::Debug,
     os::unix::prelude::{AsRawFd, RawFd},
 };
 use zvariant::{Fd, Value};
@@ -129,13 +130,19 @@ struct CreateSession {
     session_handle: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, TypeDict)]
 /// A response to a [`ScreenCastProxy::start`] request.
 struct Streams {
     pub streams: Vec<Stream>,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+impl Debug for Streams {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_list().entries(self.streams.iter()).finish()
+    }
+}
+
+#[derive(Serialize, Deserialize, Type, Clone)]
 /// A PipeWire stream.
 pub struct Stream(u32, StreamProperties);
 
@@ -165,6 +172,15 @@ impl Stream {
     }
 }
 
+impl Debug for Stream {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Stream")
+            .field("pipewire_node_id", &self.pipe_wire_node_id())
+            .field("position", &self.position())
+            .field("size", &self.size())
+            .finish()
+    }
+}
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone)]
 /// The stream properties.
 struct StreamProperties {

@@ -4,7 +4,7 @@ use crate::{
     Error,
 };
 use serde::{Serialize, Serializer};
-use std::{collections::HashMap, convert::TryFrom};
+use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 use zvariant::{ObjectPath, OwnedValue, Signature};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
@@ -20,7 +20,6 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// call [`SessionProxy::close`] depends on the interface.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Session).
-#[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Session")]
 pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>);
 
@@ -52,6 +51,7 @@ impl<'a> SessionProxy<'a> {
             unique_identifier, handle_token
         ))
         .unwrap();
+        tracing::info!("Creating a org.freedesktop.portal.Session {}", path);
         SessionProxy::new(connection, path).await
     }
 
@@ -94,5 +94,13 @@ impl<'a> Serialize for SessionProxy<'a> {
 impl<'a> zvariant::Type for SessionProxy<'a> {
     fn signature() -> Signature<'static> {
         zvariant::ObjectPath::signature()
+    }
+}
+
+impl<'a> Debug for SessionProxy<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("SessionProxy")
+            .field(&self.inner().path().as_str())
+            .finish()
     }
 }

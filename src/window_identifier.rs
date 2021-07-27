@@ -1,6 +1,6 @@
 use serde::{ser::Serializer, Serialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
@@ -100,6 +100,14 @@ impl Serialize for WindowIdentifier {
 impl std::fmt::Display for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.inner())
+    }
+}
+
+impl std::fmt::Debug for WindowIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("WindowIdentifier")
+            .field(&self.inner())
+            .finish()
     }
 }
 

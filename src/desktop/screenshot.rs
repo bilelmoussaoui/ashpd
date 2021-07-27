@@ -57,6 +57,8 @@
 //! ```
 //!
 
+use std::fmt::Debug;
+
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
@@ -88,11 +90,17 @@ impl ScreenshotOptions {
     }
 }
 
-#[derive(DeserializeDict, SerializeDict, Clone, TypeDict, Debug)]
+#[derive(DeserializeDict, SerializeDict, Clone, TypeDict)]
 /// A response to a [`ScreenshotProxy::screenshot`] request.
 struct Screenshot {
     /// The screenshot uri.
     uri: String,
+}
+
+impl Debug for Screenshot {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.uri)
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
@@ -157,6 +165,17 @@ impl std::fmt::Debug for Color {
             .field("green", &self.green())
             .field("blue", &self.blue())
             .finish()
+    }
+}
+
+impl std::fmt::Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!(
+            "({}, {}, {})",
+            self.red(),
+            self.green(),
+            self.blue()
+        ))
     }
 }
 

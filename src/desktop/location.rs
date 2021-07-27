@@ -24,6 +24,8 @@
 //! }
 //! ```
 
+use std::fmt::Debug;
+
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, receive_signal},
@@ -93,7 +95,7 @@ struct SessionStartOptions {
     handle_token: HandleToken,
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Serialize, Deserialize, Type)]
 /// The response received on a `location_updated` signal.
 pub struct Location(OwnedObjectPath, LocationInner);
 
@@ -137,6 +139,21 @@ impl Location {
     /// The timestamp, as seconds.
     pub fn timestamp(&self) -> u64 {
         self.1.timestamp.0
+    }
+}
+
+impl Debug for Location {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Location")
+            .field("accuracy", &self.accuracy())
+            .field("altitude", &self.altitude())
+            .field("speed", &self.speed())
+            .field("heading", &self.heading())
+            .field("description", &self.description())
+            .field("latitude", &self.latitude())
+            .field("longitude", &self.longitude())
+            .field("timestamp", &self.timestamp())
+            .finish()
     }
 }
 

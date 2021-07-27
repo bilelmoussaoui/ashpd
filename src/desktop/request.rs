@@ -103,10 +103,16 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Serialize, Deserialize, Type)]
 /// The most basic response. Used when only the status of the request is what we
 /// receive as a response.
 pub(crate) struct BasicResponse(HashMap<String, OwnedValue>);
+
+impl Debug for BasicResponse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("BasicResponse").finish()
+    }
+}
 
 #[derive(Debug, Copy, PartialEq, Hash, Clone)]
 /// An error returned a portal request caused by either the user cancelling the
@@ -162,7 +168,6 @@ impl From<ResponseError> for ResponseType {
 /// object.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Request).
-#[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Request")]
 pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>);
 
@@ -191,6 +196,7 @@ impl<'a> RequestProxy<'a> {
             unique_identifier, handle_token
         ))
         .unwrap();
+        tracing::info!("Creating a org.freedesktop.portal.Request {}", path);
         RequestProxy::new(connection, path).await
     }
 
@@ -203,9 +209,10 @@ impl<'a> RequestProxy<'a> {
     #[doc(alias = "Response")]
     pub async fn receive_response<R>(&self) -> Result<R, Error>
     where
-        R: for<'de> Deserialize<'de> + zvariant::Type,
+        R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
     {
-        match receive_signal::<Response<R>>(&self.0, "Response").await? {
+        let response = receive_signal::<Response<R>>(&self.0, "Response").await?;
+        match response {
             Response::Err(e) => Err(e.into()),
             Response::Ok(r) => Ok(r),
         }
@@ -222,5 +229,13 @@ impl<'a> RequestProxy<'a> {
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await
+    }
+}
+
+impl<'a> Debug for RequestProxy<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("RequestProxy")
+            .field(&self.inner().path().as_str())
+            .finish()
     }
 }

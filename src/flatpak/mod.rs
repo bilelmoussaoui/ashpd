@@ -36,7 +36,7 @@ use crate::{
 use enumflags2::BitFlags;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+use std::{collections::HashMap, fmt::Debug, os::unix::prelude::AsRawFd};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -252,7 +252,7 @@ impl<'a> FlatpakProxy<'a> {
     ///
     /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
-    pub async fn spawn<S: AsRef<str> + zvariant::Type + Serialize>(
+    pub async fn spawn<S: AsRef<str> + zvariant::Type + Serialize + Debug>(
         &self,
         cwd_path: &str,
         argv: &[S],
