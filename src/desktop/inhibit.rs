@@ -90,7 +90,8 @@ pub enum InhibitFlags {
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
 /// A response to a [`InhibitProxy::create_monitor`] request.
 struct CreateMonitor {
-    session_handle: OwnedObjectPath,
+    // TODO: investigate why this doesn't return an ObjectPath
+    session_handle: String,
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
@@ -179,7 +180,7 @@ impl<'a> InhibitProxy<'a> {
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future(),
         )?;
-        assert_eq!(proxy.inner().path(), &monitor.session_handle.into_inner());
+        assert_eq!(proxy.inner().path().as_str(), &monitor.session_handle);
         Ok(proxy)
     }
 

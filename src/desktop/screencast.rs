@@ -235,7 +235,7 @@ impl<'a> ScreenCastProxy<'a> {
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future(),
         )?;
-        assert_eq!(proxy.inner().path().to_string(), session.session_handle);
+        assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)
     }
 
