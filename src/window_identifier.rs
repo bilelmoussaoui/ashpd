@@ -20,7 +20,6 @@ use gtk3::{
 #[cfg(feature = "feature_gtk3")]
 use std::{ffi::c_void, os::raw::c_char};
 
-#[derive(Clone)]
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
