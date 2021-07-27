@@ -57,7 +57,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
 pub struct Email {
     /// A string that will be used as the last element of the handle.

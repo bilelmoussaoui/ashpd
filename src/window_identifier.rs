@@ -38,7 +38,7 @@ use std::{ffi::c_void, os::raw::c_char};
 /// ## With GTK 4
 ///
 /// The feature `feature_gtk4` must be enabled. You can get a
-/// [`WindowIdentifier`] from a [`gtk4::Native`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) using `WindowIdentifier::from_native`
+/// [`WindowIdentifier`] from a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) using `WindowIdentifier::from_native`
 ///
 /// ```rust, ignore
 /// let widget = gtk4::Button::new();
