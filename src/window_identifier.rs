@@ -6,12 +6,15 @@ use futures::lock::Mutex;
 use std::sync::Arc;
 
 #[cfg(feature = "feature_gtk4")]
-use gtk4::{glib, prelude::*};
+use gtk4::{
+    glib::{self, clone},
+    prelude::*,
+};
 
 #[cfg(feature = "feature_gtk3")]
 use gtk3::{
     gdk as gdk3,
-    glib::{self, translate::*},
+    glib::{self, clone, translate::*},
     prelude::*,
 };
 #[cfg(feature = "feature_gtk3")]
@@ -183,10 +186,10 @@ impl WindowIdentifier {
                     .downcast_ref::<gdk4wayland::WaylandToplevel>()
                     .unwrap();
 
-                top_level.export_handle(glib::clone!(@strong sender => move |_level, handle| {
+                top_level.export_handle(clone!(@strong sender => move |_level, handle| {
                     let wayland_handle = format!("wayland:{}", handle);
                     let ctx = glib::MainContext::default();
-                    ctx.spawn_local(glib::clone!(@strong sender, @strong wayland_handle => async move {
+                    ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
                         if let Some(m) = sender.lock().await.take() {
                             let _ = m.send(wayland_handle);
                         }
@@ -224,10 +227,10 @@ impl WindowIdentifier {
 
                 export_wayland_handle(
                     win,
-                    glib::clone!(@strong sender => move |_level, handle| {
+                    clone!(@strong sender => move |_level, handle| {
                         let wayland_handle = format!("wayland:{}", handle);
                         let ctx = glib::MainContext::default();
-                        ctx.spawn_local(glib::clone!(@strong sender, @strong wayland_handle => async move {
+                        ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
                             if let Some(m) = sender.lock().await.take() {
                                 let _ = m.send(wayland_handle);
                             }
@@ -258,7 +261,7 @@ impl Drop for WindowIdentifier {
         #[cfg(feature = "feature_gtk4")]
         if let Self::Gtk4 { native, handle: _ } = self {
             let ctx = glib::MainContext::default();
-            ctx.spawn_local(glib::clone!(@strong native => async move {
+            ctx.spawn_local(clone!(@strong native => async move {
                 let native = native.lock().await;
                 let surface = native.surface().unwrap();
                 let name = surface.display()
@@ -275,7 +278,7 @@ impl Drop for WindowIdentifier {
         #[cfg(feature = "feature_gtk3")]
         if let Self::Gtk3 { window, handle: _ } = self {
             let ctx = glib::MainContext::default();
-            ctx.spawn_local(glib::clone!(@strong window => async move {
+            ctx.spawn_local(clone!(@strong window => async move {
                 let window = window.lock().await;
                 let name = window.display().type_().name();
                 if name == "GdkWaylandDisplay" {
