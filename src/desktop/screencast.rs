@@ -60,6 +60,8 @@ pub enum SourceType {
     Monitor = 1,
     /// A specific window
     Window = 2,
+    /// Virtual
+    Virtual = 4,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type, BitFlags)]
@@ -127,8 +129,8 @@ struct StartCastOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to a [`ScreenCastProxy::create_session`] request.
 struct CreateSession {
-    /// A string that will be used as the last element of the session handle.
     // TODO: investigate why this doesn't return an ObjectPath
+    /// A string that will be used as the last element of the session handle.
     session_handle: String,
 }
 
@@ -169,7 +171,7 @@ impl Stream {
     ///
     /// **Note** the size may not be equivalent to a size in a pixel coordinate
     /// space. The size may differ from the size of the stream.
-    pub fn size(&self) -> (i32, i32) {
+    pub fn size(&self) -> Option<(i32, i32)> {
         self.1.size
     }
 }
@@ -187,7 +189,7 @@ impl Debug for Stream {
 /// The stream properties.
 struct StreamProperties {
     position: Option<(i32, i32)>,
-    size: (i32, i32),
+    size: Option<(i32, i32)>,
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.
