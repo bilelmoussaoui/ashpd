@@ -18,14 +18,16 @@
 //! }
 //! ```
 
+use std::fmt;
+
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
 use super::{DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
     Error,
 };
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::fmt;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// The network status, composed of the availability, metered & connectivity

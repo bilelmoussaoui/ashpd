@@ -55,13 +55,13 @@
 //!     Ok(())
 //! }
 //! ```
-//!
 
 use std::fmt::Debug;
 
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::screenshot`] request.
@@ -229,7 +229,8 @@ impl<'a> ScreenshotProxy<'a> {
     /// # Arguments
     ///
     /// * `identifier` - Identifier for the application window.
-    /// * `interactive` - Sets whether the dialog should offer customization before a screenshot or not.
+    /// * `interactive` - Sets whether the dialog should offer customization
+    ///   before a screenshot or not.
     /// * `modal` - Sets whether the dialog should be a modal.
     ///
     /// # Returns

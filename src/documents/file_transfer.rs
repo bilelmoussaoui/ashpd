@@ -24,14 +24,16 @@
 //! }
 //! ```
 
+use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+
+use zvariant::{Fd, Value};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 use super::{DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
     Error,
 };
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
-use zvariant::{Fd, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`FileTransferProxy::start_transfer`] request.
@@ -95,12 +97,14 @@ impl<'a> FileTransferProxy<'a> {
         &self.0
     }
 
-    /// Adds files to a session. This method can be called multiple times on a given session.
-    /// **Note** only regular files (not directories) can be added.
+    /// Adds files to a session. This method can be called multiple times on a
+    /// given session. **Note** only regular files (not directories) can be
+    /// added.
     ///
     /// # Arguments
     ///
-    /// * `key` - A key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    /// * `key` - A key returned by
+    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
     /// * `fds` - A list of file descriptors of the files to register.
     ///
     /// # Specifications
@@ -116,13 +120,14 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Retrieves files that were previously added to the session with
-    /// [`add_files()`][`FileTransferProxy::add_files`]. The files will be exported in the document portal
-    /// as-needed for the caller, and they will be writable if the owner of
-    /// the session allowed it.
+    /// [`add_files()`][`FileTransferProxy::add_files`]. The files will be
+    /// exported in the document portal as-needed for the caller, and they
+    /// will be writable if the owner of the session allowed it.
     ///
     /// # Arguments
     ///
-    /// * `key` - A key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    /// * `key` - A key returned by
+    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
     ///
     /// # Returns
     ///
@@ -140,17 +145,21 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Starts a session for a file transfer.
-    /// The caller should call [`add_files()`][`FileTransferProxy::add_files`] at least once, to add files to this
-    /// session.
+    /// The caller should call [`add_files()`][`FileTransferProxy::add_files`]
+    /// at least once, to add files to this session.
     ///
     /// # Arguments
     ///
-    /// * `writeable` - Sets whether the chosen application can write to the files or not.
-    /// * `auto_stop` - Whether to stop the transfer automatically after the first [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
+    /// * `writeable` - Sets whether the chosen application can write to the
+    ///   files or not.
+    /// * `auto_stop` - Whether to stop the transfer automatically after the
+    ///   first [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
     ///
     /// # Returns
     ///
-    /// Key that can be passed to [`retrieve_files()`][`FileTransferProxy::retrieve_files`] to obtain the files.
+    /// Key that can be passed to
+    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] to obtain the
+    /// files.
     ///
     /// # Specifications
     ///
@@ -163,12 +172,14 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Ends the transfer.
-    /// Further calls to [`add_files()`][`FileTransferProxy::add_files`] or [`retrieve_files()`][`FileTransferProxy::retrieve_files`] for this key will
-    /// return an error.
+    /// Further calls to [`add_files()`][`FileTransferProxy::add_files`] or
+    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] for this key
+    /// will return an error.
     ///
     /// # Arguments
     ///
-    /// * `key` - A key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    /// * `key` - A key returned by
+    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
     ///
     /// # Specifications
     ///
@@ -182,7 +193,8 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// # Returns
     ///
-    /// * The key returned by [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    /// * The key returned by
+    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
     ///
     /// # Specifications
     ///

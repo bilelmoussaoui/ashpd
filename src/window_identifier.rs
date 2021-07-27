@@ -18,7 +18,8 @@ use serde::{ser::Serializer, Serialize};
 ///
 /// ## With GTK 4
 ///
-/// The feature `feature_gtk4` must be enabled. You can get a [`WindowIdentifier`] from a `gtk4::Root` using `WindowIdentifier::from_root`
+/// The feature `feature_gtk4` must be enabled. You can get a
+/// [`WindowIdentifier`] from a `gtk4::Root` using `WindowIdentifier::from_root`
 ///
 /// ```rust, ignore
 /// let widget = gtk::Button::new();
@@ -30,11 +31,14 @@ use serde::{ser::Serializer, Serialize};
 ///     /// Open some portals
 /// });
 /// ```
-/// The constructor should return a valid identifier under both X11 and Wayland and fallback to the [`Default`] implementation otherwise.
+/// The constructor should return a valid identifier under both X11 and Wayland
+/// and fallback to the [`Default`] implementation otherwise.
 ///
 /// ## With GTK 3
 ///
-/// The feature `feature_gtk3` must be enabled. You can get a [`WindowIdentifier`] from a `gdk3::Window` using `WindowIdentifier::from_window`
+/// The feature `feature_gtk3` must be enabled. You can get a
+/// [`WindowIdentifier`] from a `gdk3::Window` using
+/// `WindowIdentifier::from_window`
 ///
 /// ```rust, ignore
 /// let widget = gtk::Button::new();
@@ -45,7 +49,8 @@ use serde::{ser::Serializer, Serialize};
 ///     /// Open some portals
 /// });
 /// ```
-/// The constructor should return a valid identifier under both X11 and Wayland and fallback to the [`Default`] implementation otherwise.
+/// The constructor should return a valid identifier under both X11 and Wayland
+/// and fallback to the [`Default`] implementation otherwise.
 ///
 /// ## Other Toolkits
 ///
@@ -145,10 +150,11 @@ impl WindowIdentifier {
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     pub async fn from_root<W: gtk4::glib::IsA<gtk4::Root>>(win: &W) -> Self {
+        use std::sync::Arc;
+
         use futures::lock::Mutex;
         use gtk4::glib;
         use gtk4::prelude::{Cast, NativeExt, ObjectExt, SurfaceExt};
-        use std::sync::Arc;
 
         let surface = win
             .as_ref()
@@ -207,9 +213,10 @@ impl WindowIdentifier {
 
         let handle = match win.as_ref().display().type_().name().as_ref() {
             "GdkWaylandDisplay" => {
+                use std::sync::Arc;
+
                 use futures::lock::Mutex;
                 use gtk3::glib;
-                use std::sync::Arc;
                 let (sender, receiver) = futures::channel::oneshot::channel::<String>();
                 let sender = Arc::new(Mutex::new(Some(sender)));
 
@@ -294,9 +301,10 @@ pub(crate) fn export_wayland_handle<
     win: &W,
     callback: P,
 ) -> bool {
-    use gtk3::glib::{self, translate::*};
     use std::ffi::c_void;
     use std::os::raw::c_char;
+
+    use gtk3::glib::{self, translate::*};
     extern "C" {
         pub fn gdk_wayland_window_export_handle(
             window: *mut gtk3::gdk::ffi::GdkWindow,

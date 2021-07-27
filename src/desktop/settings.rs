@@ -24,15 +24,17 @@
 //! }
 //! ```
 
+use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
+
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use zvariant::OwnedValue;
+use zvariant_derive::Type;
+
 use super::{DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
     Error,
 };
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
-use zvariant::OwnedValue;
-use zvariant_derive::Type;
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -100,8 +102,9 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// * `namespaces` - List of namespaces to filter results by.
     ///
-    /// If `namespaces` is an empty array or contains an empty string it matches all.
-    /// Globing is supported but only for trailing sections, e.g. `org.example.*`.
+    /// If `namespaces` is an empty array or contains an empty string it matches
+    /// all. Globing is supported but only for trailing sections, e.g.
+    /// `org.example.*`.
     ///
     /// # Returns
     ///

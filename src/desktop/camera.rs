@@ -16,17 +16,19 @@
 //! }
 //! ```
 
+use std::{
+    collections::HashMap,
+    os::unix::prelude::{AsRawFd, RawFd},
+};
+
+use zvariant::{Fd, Value};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method},
     Error,
 };
-use std::{
-    collections::HashMap,
-    os::unix::prelude::{AsRawFd, RawFd},
-};
-use zvariant::{Fd, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`CameraProxy::access_camera`] request.

@@ -34,17 +34,18 @@
 //! }
 //! ```
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method, receive_signal},
-    Error, WindowIdentifier,
-};
 use enumflags2::BitFlags;
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use crate::{
+    helpers::{call_basic_response_method, call_method, call_request_method, receive_signal},
+    Error, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
@@ -222,11 +223,13 @@ impl<'a> InhibitProxy<'a> {
 
     /// Acknowledges that the caller received the "state_changed" signal.
     /// This method should be called within one second after receiving a
-    /// [`receive_state_changed()`][`InhibitProxy::receive_state_changed`] signal with the [`SessionState::QueryEnd`] state.
+    /// [`receive_state_changed()`][`InhibitProxy::receive_state_changed`]
+    /// signal with the [`SessionState::QueryEnd`] state.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_monitor()`][`InhibitProxy::create_monitor`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_monitor()`][`InhibitProxy::create_monitor`].
     ///
     /// # Specifications
     ///

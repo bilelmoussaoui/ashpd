@@ -40,15 +40,16 @@
 //! }
 //! ```
 
+use serde::{self, Deserialize, Serialize, Serializer};
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
+use zvariant::{OwnedValue, Signature};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
 use super::{DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
     Error,
 };
-use serde::{self, Deserialize, Serialize, Serializer};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::{OwnedValue, Signature};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(
     Debug, Clone, Deserialize, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq,

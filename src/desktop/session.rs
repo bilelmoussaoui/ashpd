@@ -1,11 +1,13 @@
+use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
+
+use serde::{Serialize, Serializer};
+use zvariant::{ObjectPath, OwnedValue, Signature};
+
 use crate::{
     desktop::{HandleToken, DESTINATION},
     helpers::{call_method, receive_signal},
     Error,
 };
-use serde::{Serialize, Serializer};
-use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
-use zvariant::{ObjectPath, OwnedValue, Signature};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
 
@@ -15,9 +17,9 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// Session object, which will stay alive for the duration of the session.
 ///
 /// The duration of the session is defined by the interface that creates it.
-/// For convenience, the interface contains a method [`SessionProxy::close`], and a signal
-/// [`SessionProxy::receive_closed`]. Whether it is allowed to directly
-/// call [`SessionProxy::close`] depends on the interface.
+/// For convenience, the interface contains a method [`SessionProxy::close`],
+/// and a signal [`SessionProxy::receive_closed`]. Whether it is allowed to
+/// directly call [`SessionProxy::close`] depends on the interface.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Session).
 #[doc(alias = "org.freedesktop.portal.Session")]

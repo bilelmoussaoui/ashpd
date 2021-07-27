@@ -1,12 +1,14 @@
+use std::collections::HashMap;
 use std::fmt::Debug;
+
+use futures::StreamExt;
+use serde::Deserialize;
 
 use crate::desktop::{
     request::{BasicResponse, RequestProxy},
     HandleToken,
 };
 use crate::Error;
-use futures::StreamExt;
-use serde::Deserialize;
 
 pub(crate) async fn call_request_method<R, B>(
     proxy: &zbus::azync::Proxy<'_>,
@@ -63,12 +65,21 @@ pub(crate) async fn receive_signal<R>(
 where
     R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
 {
+    tracing::info!(
+        "Listening to signal '{}' on '{}'",
+        signal_name,
+        proxy.interface()
+    );
     let mut stream = proxy.receive_signal(signal_name).await?;
     let message = stream.next().await.ok_or(Error::NoResponse)?;
     tracing::info!(
         "Received signal '{}' on '{}'",
         signal_name,
         proxy.interface()
+    );
+    println!(
+        "{:#?}",
+        message.body::<(u32, HashMap<&str, zvariant::OwnedValue>)>()
     );
     let content = message.body::<R>()?;
     tracing::debug!("With body {:#?}", content);

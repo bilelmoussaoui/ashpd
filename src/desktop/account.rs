@@ -39,9 +39,10 @@
 //! }
 //! ```
 
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`AccountProxy::user_information`] request.

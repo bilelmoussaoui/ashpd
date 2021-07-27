@@ -16,12 +16,14 @@
 //! }
 //! ```
 
-use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{fmt::Debug, os::unix::io::AsRawFd};
+
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Fd;
 use zvariant_derive::Type;
+
+use super::{DESTINATION, PATH};
+use crate::{helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
@@ -65,10 +67,10 @@ enum RegisterStatus {
 /// this is necessary.
 ///
 /// Note: GameMode will monitor active clients, i.e. games and other programs
-/// that have successfully called [`GameModeProxy::register_game`]. In the event that a client
-/// terminates without a call to the [`GameModeProxy::unregister_game`] method, GameMode will
-/// automatically un-register the client. This might happen with a (small)
-/// delay.
+/// that have successfully called [`GameModeProxy::register_game`]. In the event
+/// that a client terminates without a call to the
+/// [`GameModeProxy::unregister_game`] method, GameMode will automatically
+/// un-register the client. This might happen with a (small) delay.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.GameMode`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.GameMode).
 #[derive(Debug)]
@@ -113,7 +115,8 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `target` - Pid file descriptor to query the GameMode status of.
-    /// * `requester` - Pid file descriptor of the process requesting the information.
+    /// * `requester` - Pid file descriptor of the process requesting the
+    ///   information.
     ///
     /// # Specifications
     ///
@@ -182,7 +185,8 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `target` - Process file descriptor of the game to register.
-    /// * `requester` - Process file descriptor of the process requesting the registration.
+    /// * `requester` - Process file descriptor of the process requesting the
+    ///   registration.
     ///
     /// # Specifications
     ///
@@ -254,7 +258,8 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `target` - Pid file descriptor of the game to un-register.
-    /// * `requester` - Pid file descriptor of the process requesting the un-registration.
+    /// * `requester` - Pid file descriptor of the process requesting the
+    ///   un-registration.
     ///
     /// # Specifications
     ///
@@ -289,7 +294,8 @@ impl<'a> GameModeProxy<'a> {
     /// # Arguments
     ///
     /// * `target` - Process id of the game to un-register.
-    /// * `requester` - Process id of the process requesting the un-registration.
+    /// * `requester` - Process id of the process requesting the
+    ///   un-registration.
     ///
     /// # Specifications
     ///

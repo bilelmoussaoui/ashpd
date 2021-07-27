@@ -88,11 +88,13 @@
 //! }
 //! ```
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 use std::os::unix::prelude::AsRawFd;
+
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
@@ -102,7 +104,8 @@ struct OpenDirOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
-/// Specified options for a [`OpenURIProxy::open_file`] or [`OpenURIProxy::open_uri`] request.
+/// Specified options for a [`OpenURIProxy::open_file`] or
+/// [`OpenURIProxy::open_uri`] request.
 struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -192,7 +195,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `identifier` - Identifier for the application window.
     /// * `file` - File descriptor for the file to open.
     /// * `writeable` - Whether the file should be writeable or not.
-    /// * `ask` - Whether to always ask the user which application to use or not.
+    /// * `ask` - Whether to always ask the user which application to use or
+    ///   not.
     ///
     /// # Specifications
     ///
@@ -225,7 +229,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `identifier` - Identifier for the application window.
     /// * `uri` - The uri to open.
     /// * `writeable` - Whether the file should be writeable or not.
-    /// * `ask` - Whether to always ask the user which application to use or not.
+    /// * `ask` - Whether to always ask the user which application to use or
+    ///   not.
     ///
     /// # Specifications
     ///

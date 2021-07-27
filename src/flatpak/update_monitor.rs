@@ -21,14 +21,15 @@
 //! }
 //! ```
 
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use zvariant::ObjectPath;
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
 use super::DESTINATION;
 use crate::{
     helpers::{call_method, receive_signal},
     Error, WindowIdentifier,
 };
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::ObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`UpdateMonitorProxy::update`] request.
@@ -94,7 +95,8 @@ pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> UpdateMonitorProxy<'a> {
     /// Create a new instance of [`UpdateMonitorProxy`].
     ///
-    /// **Note** A [`UpdateMonitorProxy`] is not supposed to be created manually.
+    /// **Note** A [`UpdateMonitorProxy`] is not supposed to be created
+    /// manually.
     pub(crate) async fn new(
         connection: &zbus::azync::Connection,
         path: ObjectPath<'a>,
@@ -135,8 +137,8 @@ impl<'a> UpdateMonitorProxy<'a> {
 
     /// Asks to install an update of the calling app.
     ///
-    /// **Note** updates are only allowed if the new version has the same permissions (or less)
-    /// than the currently installed version.
+    /// **Note** updates are only allowed if the new version has the same
+    /// permissions (or less) than the currently installed version.
     ///
     /// # Specifications
     ///

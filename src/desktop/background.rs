@@ -45,10 +45,11 @@
 //! }
 //! ```
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_request_method, Error, WindowIdentifier};
 use serde::Serialize;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
@@ -154,8 +155,9 @@ impl<'a> BackgroundProxy<'a> {
     /// * `identifier` - Identifier for the application window.
     /// * `reason` - Sets a user-visible reason for the request.
     /// * `auto_start` - Sets whether to auto start the application or not.
-    /// * `command_line` - Specifies the command line to execute.
-    ///     If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+    /// * `command_line` - Specifies the command line to execute. If this is not
+    ///   specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables)
+    ///   line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
     /// * `dbus_activatable` - Sets whether the application is dbus activatable.
     ///

@@ -21,17 +21,19 @@
 //! }
 //! ```
 
+use std::collections::HashMap;
+
+use enumflags2::BitFlags;
+use futures::TryFutureExt;
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use zvariant::{OwnedObjectPath, Value};
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method},
     Error, WindowIdentifier,
 };
-use enumflags2::BitFlags;
-use futures::TryFutureExt;
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::collections::HashMap;
-use zvariant::{OwnedObjectPath, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -167,7 +169,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `types` - The device types to request remote controlling of.
     ///
     /// # Specifications
@@ -197,7 +200,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `identifier` - The application window identifier.
     ///
     /// # Specifications
@@ -222,11 +226,13 @@ impl<'a> RemoteDesktopProxy<'a> {
 
     /// Notify keyboard code.
     ///
-    /// **Note** only works if [`DeviceType::Keyboard`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Keyboard`] access was provided
+    /// after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -252,11 +258,13 @@ impl<'a> RemoteDesktopProxy<'a> {
 
     /// Notify keyboard symbol.
     ///
-    /// **Note** only works if [`DeviceType::Keyboard`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Keyboard`] access was provided
+    /// after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -282,11 +290,13 @@ impl<'a> RemoteDesktopProxy<'a> {
 
     /// Notify about a new touch up event.
     ///
-    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided
+    /// after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `slot` - Touch slot where touch point appeared.
     ///
     /// # Specifications
@@ -307,11 +317,13 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// The (x, y) position represents the new touch point position in the
     /// streams logical coordinate space.
     ///
-    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided
+    /// after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
@@ -343,11 +355,13 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// The (x, y) position represents where the touch point position in the
     /// streams logical coordinate space moved.
     ///
-    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided
+    /// after starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch motion x coordinate.
@@ -381,7 +395,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
@@ -413,7 +428,8 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
     ///
@@ -436,11 +452,13 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// The pointer button is encoded according to Linux Evdev button codes.
     ///
     ///
-    /// **Note** only works if [`DeviceType::Pointer`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Pointer`] access was provided after
+    /// starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -466,11 +484,13 @@ impl<'a> RemoteDesktopProxy<'a> {
 
     /// Notify pointer axis discrete.
     ///
-    /// **Note** only works if [`DeviceType::Pointer`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Pointer`] access was provided after
+    /// starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `axis` - The axis that was scrolled.
     ///
     /// # Specifications
@@ -499,11 +519,13 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// the motion vector of a pointer motion done using the same advice.
     ///
     ///
-    /// **Note** only works if [`DeviceType::Pointer`] access was provided after starting the session.
+    /// **Note** only works if [`DeviceType::Pointer`] access was provided after
+    /// starting the session.
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`RemoteDesktopProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
     ///

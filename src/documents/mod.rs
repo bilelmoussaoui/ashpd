@@ -36,15 +36,17 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 
-use crate::{helpers::call_method, Error};
+use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+use std::{fmt::Debug, str::FromStr};
+
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
-use std::{fmt::Debug, str::FromStr};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{Fd, Signature};
 use zvariant_derive::Type;
+
+use crate::{helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
@@ -60,7 +62,8 @@ pub enum Flags {
     ExportDirectory = 8,
 }
 
-/// A [`HashMap`] mapping application IDs to the permissions for that application
+/// A [`HashMap`] mapping application IDs to the permissions for that
+/// application
 pub type Permissions = HashMap<String, Vec<Permission>>;
 
 #[derive(Debug, Clone, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq)]
@@ -113,11 +116,12 @@ impl<'de> Deserialize<'de> for Permission {
 ///
 /// Individual files will appear at `/run/user/$UID/doc/$DOC_ID/filename`,
 /// where `$DOC_ID` is the ID of the file in the document store.
-/// It is returned by the [`DocumentsProxy::add`] and [`DocumentsProxy::add_named`] calls.
+/// It is returned by the [`DocumentsProxy::add`] and
+/// [`DocumentsProxy::add_named`] calls.
 ///
 /// The permissions that the application has for a document store entry (see
-/// [`DocumentsProxy::grant_permissions`]) are reflected in the POSIX mode bits in the fuse
-/// filesystem.
+/// [`DocumentsProxy::grant_permissions`]) are reflected in the POSIX mode bits
+/// in the fuse filesystem.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Documents).
 #[derive(Debug)]
@@ -148,8 +152,10 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `o_path_fd` - Open file descriptor for the file to add.
-    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
-    /// * `persistent` - Whether to add the file only for this session or permanently.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry
+    ///   for the file.
+    /// * `persistent` - Whether to add the file only for this session or
+    ///   permanently.
     ///
     /// # Returns
     ///
@@ -212,8 +218,10 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// * `o_path_parent_fd` - Open file descriptor for the parent directory.
     /// * `filename` - The basename for the file.
-    /// * `reuse_existing` - Whether to reuse an existing document store entry for the file.
-    /// * `persistent` - Whether to add the file only for this session or permanently.
+    /// * `reuse_existing` - Whether to reuse an existing document store entry
+    ///   for the file.
+    /// * `persistent` - Whether to add the file only for this session or
+    ///   permanently.
     ///
     /// # Returns
     ///
@@ -355,7 +363,8 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// # Returns
     ///
-    /// The path of the file in the host filesystem along with the [`Permissions`].
+    /// The path of the file in the host filesystem along with the
+    /// [`Permissions`].
     ///
     /// # Specifications
     ///
@@ -374,7 +383,8 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// # Returns
     ///
-    /// [`HashMap`] mapping document IDs to their filesystem path on the host system.
+    /// [`HashMap`] mapping document IDs to their filesystem path on the host
+    /// system.
     ///
     /// # Specifications
     ///
@@ -394,7 +404,8 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// # Returns
     ///
-    /// The ID of the file in the document store, or [`None`] if the file is not in the document store.
+    /// The ID of the file in the document store, or [`None`] if the file is not
+    /// in the document store.
     ///
     /// # Specifications
     ///
@@ -418,7 +429,8 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
-    /// * `app_id` - The ID of the application from which the permissions are revoked.
+    /// * `app_id` - The ID of the application from which the permissions are
+    ///   revoked.
     /// * `permissions` - The permissions to revoke.
     ///
     /// # Specifications

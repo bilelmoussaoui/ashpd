@@ -29,16 +29,18 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
+use std::{collections::HashMap, fmt::Debug, os::unix::prelude::AsRawFd};
+
+use enumflags2::BitFlags;
+use serde::Serialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use zvariant::Fd;
+use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
 use crate::{
     helpers::{call_method, receive_signal},
     Error,
 };
-use enumflags2::BitFlags;
-use serde::Serialize;
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::{collections::HashMap, fmt::Debug, os::unix::prelude::AsRawFd};
-use zvariant::Fd;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
@@ -66,7 +68,8 @@ pub enum SpawnFlags {
     Latest = 2,
     /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
     Sandbox = 4,
-    /// Spawn without network (equivalent of the `unshare=network` option of `flatpak run`).
+    /// Spawn without network (equivalent of the `unshare=network` option of
+    /// `flatpak run`).
     NoNetwork = 8,
     /// Kill the sandbox when the caller disappears from the session bus.
     Kill = 16,
@@ -222,7 +225,8 @@ impl<'a> FlatpakProxy<'a> {
         receive_signal(&self.0, "SpawnStarted").await
     }
 
-    /// Emitted when a process started by [`spawn()`][`FlatpakProxy::spawn`] exits.
+    /// Emitted when a process started by [`spawn()`][`FlatpakProxy::spawn`]
+    /// exits.
     ///
     /// # Specifications
     ///
@@ -238,9 +242,11 @@ impl<'a> FlatpakProxy<'a> {
     /// # Arguments
     ///
     /// * `cwd_path` - The working directory for the new process.
-    /// * `arvg` - The argv for the new process, starting with the executable to launch.
+    /// * `arvg` - The argv for the new process, starting with the executable to
+    ///   launch.
     /// * `fds` - Array of file descriptors to pass to the new process.
-    /// * `envs` - Array of variable/value pairs for the environment of the new process.
+    /// * `envs` - Array of variable/value pairs for the environment of the new
+    ///   process.
     /// * `flags`
     /// * `options` - A [`SpawnOptions`].
     ///

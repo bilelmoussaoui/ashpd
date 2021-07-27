@@ -26,16 +26,17 @@
 
 use std::fmt::Debug;
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, receive_signal},
-    Error, WindowIdentifier,
-};
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use crate::{
+    helpers::{call_basic_response_method, call_method, receive_signal},
+    Error, WindowIdentifier,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
@@ -216,9 +217,11 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `distance_threshold` - Sets the distance threshold in meters, default to `0`.
+    /// * `distance_threshold` - Sets the distance threshold in meters, default
+    ///   to `0`.
     /// * `time_threshold` - Sets the time threshold in seconds, default to `0`.
-    /// * `accuracy` - Sets the location accuracy, default to [`Accuracy::Exact`].
+    /// * `accuracy` - Sets the location accuracy, default to
+    ///   [`Accuracy::Exact`].
     ///
     /// # Specifications
     ///
@@ -253,7 +256,8 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`LocationProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`LocationProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
     /// # Specifications

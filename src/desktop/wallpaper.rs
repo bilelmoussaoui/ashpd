@@ -63,16 +63,18 @@
 //! }
 //! ```
 
+use std::os::unix::prelude::AsRawFd;
+
+use serde::{self, Deserialize, Serialize, Serializer};
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
+use zvariant::{Fd, Signature, Type};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
     helpers::call_basic_response_method,
     Error, WindowIdentifier,
 };
-use serde::{self, Deserialize, Serialize, Serializer};
-use std::os::unix::prelude::AsRawFd;
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::{Fd, Signature, Type};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(
     Deserialize, Debug, Clone, Copy, PartialEq, Hash, AsRefStr, EnumString, IntoStaticStr, ToString,
@@ -104,7 +106,8 @@ impl Serialize for SetOn {
 }
 
 #[derive(SerializeDict, DeserializeDict, Clone, TypeDict, Debug, Default)]
-/// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a [`WallpaperProxy::set_wallpaper_uri`] request.
+/// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a
+/// [`WallpaperProxy::set_wallpaper_uri`] request.
 struct WallpaperOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -118,7 +121,8 @@ struct WallpaperOptions {
 
 impl WallpaperOptions {
     /// Whether to show a preview of the picture.
-    /// **Note** the portal may decide to show a preview even if this option is not set.
+    /// **Note** the portal may decide to show a preview even if this option is
+    /// not set.
     pub fn show_preview(mut self, show_preview: bool) -> Self {
         self.show_preview = Some(show_preview);
         self

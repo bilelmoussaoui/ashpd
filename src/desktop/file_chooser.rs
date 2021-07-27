@@ -87,11 +87,12 @@
 //! }
 //! ```
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_request_method, Error, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
 #[derive(Serialize, Deserialize, Type, Clone, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -286,7 +287,8 @@ impl SaveFileOptions {
 
     /// Sets the current folder.
     pub fn current_folder(mut self, current_folder: &str) -> Self {
-        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        // TODO: weird api expecting a null terminated byte array instead of a string,
+        // investigate way?
         let mut bytes: Vec<u8> = current_folder.into();
         bytes.push(0);
         self.current_folder = Some(bytes);
@@ -295,7 +297,8 @@ impl SaveFileOptions {
 
     /// Sets the absolute path of the file.
     pub fn current_file(mut self, current_file: &str) -> Self {
-        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        // TODO: weird api expecting a null terminated byte array instead of a string,
+        // investigate way?
         let mut bytes: Vec<u8> = current_file.into();
         bytes.push(0);
         self.current_file = Some(bytes);
@@ -367,14 +370,16 @@ impl SaveFilesOptions {
     pub fn current_folder(mut self, current_folder: &str) -> Self {
         let mut bytes: Vec<u8> = current_folder.into();
         bytes.push(0);
-        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        // TODO: weird api expecting a null terminated byte array instead of a string,
+        // investigate way?
         self.current_folder = Some(bytes);
         self
     }
 
     /// Sets a list of files to save.
     pub fn files<S: AsRef<str> + zvariant::Type + Serialize>(mut self, files: &[S]) -> Self {
-        // TODO: weird api expecting a null terminated byte array instead of a string, investigate way?
+        // TODO: weird api expecting a null terminated byte array instead of a string,
+        // investigate way?
         self.files = Some(
             files
                 .iter()
@@ -390,7 +395,9 @@ impl SaveFilesOptions {
 }
 
 #[derive(Debug, TypeDict, SerializeDict, Clone, DeserializeDict)]
-/// A response to a [`FileChooserProxy::open_file`]/[`FileChooserProxy::save_file`]/[`FileChooserProxy::save_files`] request.
+/// A response to a
+/// [`FileChooserProxy::open_file`]/[`FileChooserProxy::save_file`]/
+/// [`FileChooserProxy::save_files`] request.
 pub struct SelectedFiles {
     uris: Vec<String>,
     choices: Option<Vec<(String, String)>>,

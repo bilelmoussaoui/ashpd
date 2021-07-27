@@ -33,22 +33,24 @@
 //! }
 //! ```
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method},
-    Error, WindowIdentifier,
-};
-use enumflags2::BitFlags;
-use futures::TryFutureExt;
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{
     collections::HashMap,
     fmt::Debug,
     os::unix::prelude::{AsRawFd, RawFd},
 };
+
+use enumflags2::BitFlags;
+use futures::TryFutureExt;
+use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{Fd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+
+use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use crate::{
+    helpers::{call_basic_response_method, call_method, call_request_method},
+    Error, WindowIdentifier,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
 #[repr(u32)]
@@ -155,8 +157,8 @@ impl Stream {
     /// A tuple consisting of the position (x, y) in the compositor coordinate
     /// space.
     ///
-    /// **Note** the position may not be equivalent to a position in a pixel coordinate space.
-    /// Only available for monitor streams.
+    /// **Note** the position may not be equivalent to a position in a pixel
+    /// coordinate space. Only available for monitor streams.
     pub fn position(&self) -> Option<(i32, i32)> {
         self.1.position
     }
@@ -165,8 +167,8 @@ impl Stream {
     /// The size represents the size of the stream as it is displayed in the
     /// compositor coordinate space.
     ///
-    /// **Note** the size may not be equivalent to a size in a pixel coordinate space.
-    /// The size may differ from the size of the stream.
+    /// **Note** the size may not be equivalent to a size in a pixel coordinate
+    /// space. The size may differ from the size of the stream.
     pub fn size(&self) -> (i32, i32) {
         self.1.size
     }
@@ -240,7 +242,8 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`ScreenCastProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`ScreenCastProxy::create_session`].
     ///
     /// # Returns
     ///
@@ -266,8 +269,10 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`ScreenCastProxy::create_session`].
-    /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast stream.
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`ScreenCastProxy::create_session`].
+    /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast
+    ///   stream.
     /// * `types` - Sets the types of content to record.
     /// * `multiple`- Sets whether to allow selecting multiple sources.
     ///
@@ -304,7 +309,8 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with [`create_session()`][`ScreenCastProxy::create_session`].
+    /// * `session` - A [`SessionProxy`], created with
+    ///   [`create_session()`][`ScreenCastProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
     /// # Specifications

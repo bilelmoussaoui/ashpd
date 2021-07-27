@@ -28,12 +28,14 @@
 //! }
 //! ```
 
-use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::io::AsRawFd;
+
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Fd;
 use zvariant_derive::Type;
+
+use super::{DESTINATION, PATH};
+use crate::{helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 #[repr(u32)]

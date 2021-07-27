@@ -48,12 +48,14 @@
 //! }
 //! ```
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
-use serde::Serialize;
 use std::os::unix::prelude::AsRawFd;
+
+use serde::Serialize;
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
@@ -160,7 +162,8 @@ impl<'a> EmailProxy<'a> {
 
     /// Presents a window that lets the user compose an email.
     ///
-    /// **Note** the default email client for the host will need to support `mailto:` URIs following RFC 2368.
+    /// **Note** the default email client for the host will need to support
+    /// `mailto:` URIs following RFC 2368.
     ///
     /// # Arguments
     ///

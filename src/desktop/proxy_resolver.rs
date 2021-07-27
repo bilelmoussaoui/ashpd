@@ -51,7 +51,8 @@ impl<'a> ProxyResolverProxy<'a> {
     /// # Returns
     ///
     /// A list of proxy uris of the form `protocol://[user[:password]host:port`
-    /// The protocol can be `http`, `rtsp`, `socks` or another proxying protocol. `direct://` is used when no proxy is needed.
+    /// The protocol can be `http`, `rtsp`, `socks` or another proxying
+    /// protocol. `direct://` is used when no proxy is needed.
     ///
     /// # Specifications
     ///

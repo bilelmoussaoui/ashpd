@@ -12,15 +12,15 @@
 //!     proxy.access_device(6879, &[Device::Speakers]).await?;
 //!     Ok(())
 //! }
-//!
 //! ```
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error};
 use serde::{Deserialize, Serialize, Serializer};
 use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
+use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_basic_response_method, Error};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -89,7 +89,8 @@ impl<'a> DeviceProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `pid` - The pid of the application on whose behalf the request is made.
+    /// * `pid` - The pid of the application on whose behalf the request is
+    ///   made.
     /// * `devices` - A list of devices to request access to.
     ///
     /// # Specifications

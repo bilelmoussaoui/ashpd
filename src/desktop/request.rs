@@ -1,25 +1,27 @@
-use super::DESTINATION;
-use crate::{
-    desktop::HandleToken,
-    helpers::{call_method, receive_signal},
-    Error,
-};
-use serde::{
-    de::{self, Error as SeError, Visitor},
-    Deserialize, Deserializer, Serialize,
-};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{
     collections::HashMap,
     convert::TryFrom,
     fmt::{self, Debug},
     marker::PhantomData,
 };
+
+use serde::{
+    de::{self, Error as SeError, Visitor},
+    Deserialize, Deserializer, Serialize,
+};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
-/// A typical response returned by the [`RequestProxy::receive_response`] signal of a
-/// [`RequestProxy`].
+use super::DESTINATION;
+use crate::{
+    desktop::HandleToken,
+    helpers::{call_method, receive_signal},
+    Error,
+};
+
+/// A typical response returned by the [`RequestProxy::receive_response`] signal
+/// of a [`RequestProxy`].
 #[derive(Debug)]
 enum Response<T>
 where
@@ -158,14 +160,15 @@ impl From<ResponseError> for ResponseType {
 }
 
 /// The Request interface is shared by all portal interfaces.
-/// When a portal method is called, the reply includes a handle (i.e. object path)
-/// for a Request object, which will stay alive for the duration of the user interaction related to the method call.
+/// When a portal method is called, the reply includes a handle (i.e. object
+/// path) for a Request object, which will stay alive for the duration of the
+/// user interaction related to the method call.
 ///
 /// The portal indicates that a portal request interaction is over by emitting
 /// the "Response" signal on the Request object.
 ///
-/// The application can abort the interaction calling [`close()`][`RequestProxy::close`] on the Request
-/// object.
+/// The application can abort the interaction calling
+/// [`close()`][`RequestProxy::close`] on the Request object.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Request).
 #[doc(alias = "org.freedesktop.portal.Request")]

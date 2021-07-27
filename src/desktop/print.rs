@@ -34,16 +34,18 @@
 //! }
 //! ```
 
+use std::os::unix::prelude::AsRawFd;
+
+use serde::{Deserialize, Serialize, Serializer};
+use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
+use zvariant::{Fd, Signature};
+use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_request_method},
     Error, WindowIdentifier,
 };
-use serde::{Deserialize, Serialize, Serializer};
-use std::os::unix::prelude::AsRawFd;
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
-use zvariant::{Fd, Signature};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 #[derive(
     Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
@@ -473,7 +475,8 @@ struct PrintOptions {
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
     modal: Option<bool>,
-    /// Token that was returned by a previous [`PrintProxy::prepare_print`] call.
+    /// Token that was returned by a previous [`PrintProxy::prepare_print`]
+    /// call.
     token: Option<u32>,
 }
 
@@ -570,7 +573,8 @@ impl<'a> PrintProxy<'a> {
     /// * `identifier` - The application window identifier.
     /// * `title` - The title for the print dialog.
     /// * `fd` - File descriptor for reading the content to print.
-    /// * `token` - A token returned by a call to [`prepare_print()`][`PrintProxy::prepare_print`].
+    /// * `token` - A token returned by a call to
+    ///   [`prepare_print()`][`PrintProxy::prepare_print`].
     /// * `modal` - Whether the dialog should be a modal.
     ///
     /// # Specifications
