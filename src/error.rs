@@ -14,12 +14,10 @@ pub enum Error {
     /// A signal returned no response.
     NoResponse,
     /// Failed to register a game with
-    /// [`GameModeProxy::register_game`](`crate::desktop::game_mode::
-    /// GameModeProxy::register_game`).
+    /// [`GameModeProxy::register_game`](`crate::desktop::game_mode::GameModeProxy::register_game`).
     RegisterGameRejected,
     /// Failed to trash a file, caused by
-    /// [`TrashProxy::trash_file`](`crate::desktop::trash::TrashProxy::
-    /// trash_file`).
+    /// [`TrashProxy::trash_file`](`crate::desktop::trash::TrashProxy::trash_file`).
     TrashFailed,
 }
 

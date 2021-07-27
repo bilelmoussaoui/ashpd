@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::Debug;
 
 use futures::StreamExt;
@@ -76,10 +75,6 @@ where
         "Received signal '{}' on '{}'",
         signal_name,
         proxy.interface()
-    );
-    println!(
-        "{:#?}",
-        message.body::<(u32, HashMap<&str, zvariant::OwnedValue>)>()
     );
     let content = message.body::<R>()?;
     tracing::debug!("With body {:#?}", content);
