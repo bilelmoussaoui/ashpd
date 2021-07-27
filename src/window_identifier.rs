@@ -38,14 +38,14 @@ use std::{ffi::c_void, os::raw::c_char};
 /// ## With GTK 4
 ///
 /// The feature `feature_gtk4` must be enabled. You can get a
-/// [`WindowIdentifier`] from a `gtk4::Native` using `WindowIdentifier::from_native`
+/// [`WindowIdentifier`] from a [`gtk4::Native`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) using `WindowIdentifier::from_native`
 ///
 /// ```rust, ignore
 /// let widget = gtk4::Button::new();
 ///
 /// let ctx = glib::MainContext::default();
 /// ctx.spawn_async(async move {
-///     let identifier = WindowIdentifier::from_native(widget.native().unwrap()).await;
+///     let identifier = WindowIdentifier::from_native(&widget.native().unwrap()).await;
 ///
 ///     /// Open some portals
 /// });
@@ -56,14 +56,14 @@ use std::{ffi::c_void, os::raw::c_char};
 /// ## With GTK 3
 ///
 /// The feature `feature_gtk3` must be enabled. You can get a
-/// [`WindowIdentifier`] from a `gdk3::Window` using
+/// [`WindowIdentifier`] from a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) using
 /// `WindowIdentifier::from_window`
 ///
 /// ```rust, ignore
 /// let widget = gtk4::Button::new();
 /// let ctx = glib::MainContext::default();
 /// ctx.spawn_async(async move {
-///     let identifier = WindowIdentifier::from_window(widget.window().unwrap()).await;
+///     let identifier = WindowIdentifier::from_window(&widget.window().unwrap()).await;
 ///
 ///     /// Open some portals
 /// });
