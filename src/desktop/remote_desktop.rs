@@ -26,7 +26,7 @@ use std::collections::HashMap;
 use enumflags2::BitFlags;
 use futures::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::{OwnedObjectPath, Value};
+use zvariant::Value;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
@@ -79,8 +79,9 @@ struct CreateRemoteOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to a [`RemoteDesktopProxy::create_session`] request.
 struct CreateSession {
+    // FIXME: investigate why is this a String instead of an ObjectPath
     /// A string that will be used as the last element of the session handle.
-    session_handle: OwnedObjectPath,
+    session_handle: String,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -161,7 +162,7 @@ impl<'a> RemoteDesktopProxy<'a> {
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
                 .into_future()
         )?;
-        assert_eq!(proxy.inner().path(), &session.session_handle.into_inner());
+        assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)
     }
 
