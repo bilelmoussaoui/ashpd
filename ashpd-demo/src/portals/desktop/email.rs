@@ -64,10 +64,10 @@ impl EmailPage {
         let addresses = self_.addresses.text();
         let bcc = self_.bcc_entry.text();
         let cc = self_.cc_entry.text();
-        let root = self.root().unwrap();
+        let root = self.native().unwrap();
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
-            let identifier = WindowIdentifier::from_root(&root).await;
+            let identifier = WindowIdentifier::from_native(&root).await;
             let _ = compose_email(
                 identifier,
                 Email::default()

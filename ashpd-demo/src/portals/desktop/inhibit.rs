@@ -52,10 +52,10 @@ impl InhibitPage {
     }
 
     fn inhibit(&self) {
-        let root = self.root().unwrap();
+        let root = self.native().unwrap();
         spawn!(clone!(@weak self as page => async move {
             let self_ = imp::InhibitPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_root(&root).await;
+            let identifier = WindowIdentifier::from_native(&root).await;
             let reason = self_.reason.text();
 
             if let Err(err) = inhibit(identifier, &reason).await

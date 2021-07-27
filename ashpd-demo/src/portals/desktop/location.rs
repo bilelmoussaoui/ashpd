@@ -95,10 +95,10 @@ impl LocationPage {
         let distance_threshold = self_.distance_spin.value() as u32;
         let time_threshold = self_.time_spin.value() as u32;
         let accuracy = unsafe { std::mem::transmute(self_.accuracy_combo.selected()) };
-        let root = self.root().unwrap();
+        let root = self.native().unwrap();
 
         ctx.spawn_local(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_root(&root).await;
+            let identifier = WindowIdentifier::from_native(&root).await;
             if let Ok(location) = locate(identifier, distance_threshold, time_threshold, accuracy).await {
                 let self_ = imp::LocationPage::from_instance(&page);
 

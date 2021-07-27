@@ -120,8 +120,8 @@ impl ScreenCastPage {
             };
             let multiple = self_.multiple_switch.is_active();
 
-            let root = page.root().unwrap();
-            let identifier = WindowIdentifier::from_root(&root).await;
+            let root = page.native().unwrap();
+            let identifier = WindowIdentifier::from_native(&root).await;
 
 
 

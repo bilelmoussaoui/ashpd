@@ -77,10 +77,10 @@ impl ScreenshotPage {
     pub fn pick_color(&self) {
         let ctx = glib::MainContext::default();
         // used for retrieving a window identifier
-        let root = self.root().unwrap();
+        let root = self.native().unwrap();
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenshotPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_root(&root).await;
+            let identifier = WindowIdentifier::from_native(&root).await;
             if let Ok(color) = screenshot::pick_color(identifier).await {
                 self_.color_widget.set_rgba(color.into());
             }
@@ -92,8 +92,8 @@ impl ScreenshotPage {
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenshotPage::from_instance(&page);
             // used for retrieving a window identifier
-            let root = page.root().unwrap();
-            let identifier = WindowIdentifier::from_root(&root).await;
+            let root = page.native().unwrap();
+            let identifier = WindowIdentifier::from_native(&root).await;
 
             let interactive = self_.interactive_switch.is_active();
             let modal = self_.modal_switch.is_active();

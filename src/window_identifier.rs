@@ -43,7 +43,7 @@ use std::{ffi::c_void, os::raw::c_char};
 ///
 /// let ctx = glib::MainContext::default();
 /// ctx.spawn_async(async move {
-///     let identifier = WindowIdentifier::from_native(widget.root().unwrap()).await;
+///     let identifier = WindowIdentifier::from_native(widget.native().unwrap()).await;
 ///
 ///     /// Open some portals
 /// });

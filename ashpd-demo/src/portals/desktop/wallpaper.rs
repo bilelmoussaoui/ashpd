@@ -81,14 +81,14 @@ impl WallpaperPage {
                 .string(),
         )
         .unwrap();
-        let root = self.root().unwrap();
+        let root = self.native().unwrap();
 
         file_chooser.connect_response(clone!(@weak root => move |dialog, response| {
             if response == gtk::ResponseType::Accept {
                 let wallpaper_uri = dialog.file().unwrap().uri();
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak root => async move {
-                    let identifier = WindowIdentifier::from_root(&root).await;
+                    let identifier = WindowIdentifier::from_native(&root).await;
                     let _ =  wallpaper::set_from_uri(
                         identifier,
                         &wallpaper_uri,

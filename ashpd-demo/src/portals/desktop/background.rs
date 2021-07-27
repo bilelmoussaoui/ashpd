@@ -66,11 +66,11 @@ impl BackgroundPage {
         let reason = self_.reason_entry.text();
         let auto_start = self_.auto_start_switch.is_active();
         let dbus_activatable = self_.dbus_activatable_switch.is_active();
-        let root = self.root().unwrap();
+        let root = self.native().unwrap();
 
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::BackgroundPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_root(&root).await;
+            let identifier = WindowIdentifier::from_native(&root).await;
             if let Ok(response) = background::request(identifier,
                 &reason,
                 auto_start,
