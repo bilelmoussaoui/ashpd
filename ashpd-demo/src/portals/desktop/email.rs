@@ -88,12 +88,12 @@ impl EmailPage {
 }
 
 pub async fn compose_email(
-    window_identifier: WindowIdentifier,
+    identifier: WindowIdentifier,
     email: Email,
 ) -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = EmailProxy::new(&connection).await?;
-    proxy.compose_email(window_identifier, email).await?;
+    proxy.compose_email(identifier, email).await?;
 
     Ok(())
 }

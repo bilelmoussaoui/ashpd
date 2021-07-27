@@ -191,10 +191,10 @@ impl<'a> EmailProxy<'a> {
 
 /// A handy wrapper around [`EmailProxy::compose_email`]
 #[doc(alias = "xdp_portal_compose_email")]
-pub async fn compose(window_identifier: WindowIdentifier, email: Email) -> Result<(), Error> {
+pub async fn compose(identifier: WindowIdentifier, email: Email) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = EmailProxy::new(&connection).await?;
-    proxy.compose_email(window_identifier, email).await?;
+    proxy.compose_email(identifier, email).await?;
 
     Ok(())
 }

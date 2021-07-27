@@ -165,7 +165,7 @@ impl ScreenCastPage {
 }
 
 pub async fn screencast(
-    window_identifier: WindowIdentifier,
+    identifier: WindowIdentifier,
     multiple: bool,
     types: BitFlags<SourceType>,
     cursor_mode: BitFlags<CursorMode>,
@@ -177,7 +177,7 @@ pub async fn screencast(
     proxy
         .select_sources(&session, cursor_mode, types, multiple)
         .await?;
-    let streams = proxy.start(&session, window_identifier).await?.to_vec();
+    let streams = proxy.start(&session, identifier).await?.to_vec();
 
     let node_id = proxy.open_pipe_wire_remote(&session).await?;
     Ok((streams, node_id, session))
