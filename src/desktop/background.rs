@@ -6,7 +6,7 @@
 //! use ashpd::desktop::background;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let response = background::request(
 //!         &WindowIdentifier::default(),
 //!         "Automatically fetch your latest mails",
@@ -30,7 +30,7 @@
 //! use ashpd::desktop::background;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let response = background::request(
 //!         &WindowIdentifier::default(),
 //!         "Automatically fetch your latest mails",

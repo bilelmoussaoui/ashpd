@@ -4,7 +4,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = NetworkMonitorProxy::new(&connection).await?;
 //!

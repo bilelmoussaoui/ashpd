@@ -79,7 +79,7 @@ impl SecretPage {
     }
 }
 
-async fn retrieve_secret(old_token: Option<&str>) -> Result<String, ashpd::Error> {
+async fn retrieve_secret(old_token: Option<&str>) -> ashpd::Result<String> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = secret::SecretProxy::new(&connection).await?;
     let tmp_file = glib::mkstemp("some_stuff_XXXXXX");

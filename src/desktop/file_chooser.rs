@@ -6,7 +6,7 @@
 //! use ashpd::desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions};
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
@@ -41,7 +41,7 @@
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions};
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
@@ -68,7 +68,7 @@
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions};
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;

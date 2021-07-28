@@ -7,7 +7,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     email::compose(
 //!         &WindowIdentifier::default(),
@@ -29,7 +29,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = EmailProxy::new(&connection).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();

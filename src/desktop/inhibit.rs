@@ -7,7 +7,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::{thread, time};
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = InhibitProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();

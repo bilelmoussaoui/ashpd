@@ -121,7 +121,7 @@ impl NotificationPage {
     }
 }
 
-async fn notify(id: &str, notification: Notification) -> Result<Action, ashpd::Error> {
+async fn notify(id: &str, notification: Notification) -> ashpd::Result<Action> {
     let cnx = zbus::azync::Connection::new_session().await?;
     let proxy = NotificationProxy::new(&cnx).await?;
     proxy.add_notification(&id, notification).await?;

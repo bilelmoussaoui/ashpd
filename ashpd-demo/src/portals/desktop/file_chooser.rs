@@ -196,7 +196,7 @@ async fn portal_open_file(
     directory: bool,
     modal: bool,
     multiple: bool,
-) -> Result<SelectedFiles, ashpd::Error> {
+) -> ashpd::Result<SelectedFiles> {
     let cnx = zbus::azync::Connection::new_session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
     let selected_files = proxy
@@ -221,7 +221,7 @@ async fn portal_save_file(
     current_name: &str,
     current_folder: &str,
     current_file: &str,
-) -> Result<SelectedFiles, ashpd::Error> {
+) -> ashpd::Result<SelectedFiles> {
     let cnx = zbus::azync::Connection::new_session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
     let selected_files = proxy
@@ -246,7 +246,7 @@ async fn portal_save_files(
     modal: bool,
     current_folder: &str,
     files: &[&str],
-) -> Result<SelectedFiles, ashpd::Error> {
+) -> ashpd::Result<SelectedFiles> {
     let cnx = zbus::azync::Connection::new_session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
     let selected_files = proxy

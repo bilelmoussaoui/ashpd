@@ -6,7 +6,7 @@
 //! use ashpd::desktop::screenshot;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let uri = screenshot::take(&WindowIdentifier::default(), true, true).await?;
 //!     println!("URI: {}", uri);
 //!     Ok(())
@@ -19,7 +19,7 @@
 //! use ashpd::desktop::screenshot::ScreenshotProxy;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!
@@ -35,7 +35,7 @@
 //! use ashpd::desktop::screenshot;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let color = screenshot::pick_color(&WindowIdentifier::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
@@ -49,7 +49,7 @@
 //! use ashpd::desktop::screenshot::ScreenshotProxy;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!

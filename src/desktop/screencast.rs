@@ -8,7 +8,7 @@
 //! use ashpd::WindowIdentifier;
 //! use enumflags2::BitFlags;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ScreenCastProxy::new(&connection).await?;
 //!

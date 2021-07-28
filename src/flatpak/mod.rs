@@ -7,7 +7,7 @@
 //! use enumflags2::BitFlags;
 //! use std::collections::HashMap;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FlatpakProxy::new(&connection).await?;
 //!

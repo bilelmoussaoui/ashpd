@@ -169,7 +169,7 @@ pub async fn screencast(
     multiple: bool,
     types: BitFlags<SourceType>,
     cursor_mode: BitFlags<CursorMode>,
-) -> Result<(Vec<Stream>, RawFd, SessionProxy<'static>), ashpd::Error> {
+) -> ashpd::Result<(Vec<Stream>, RawFd, SessionProxy<'static>)> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = ScreenCastProxy::new(&connection).await?;
     let session = proxy.create_session().await?;

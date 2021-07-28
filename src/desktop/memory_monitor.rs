@@ -3,7 +3,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::memory_monitor::MemoryMonitorProxy;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = MemoryMonitorProxy::new(&connection).await?;
 //!

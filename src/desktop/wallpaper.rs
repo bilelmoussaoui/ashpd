@@ -7,7 +7,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!     wallpaper::set_from_file(&WindowIdentifier::default(), &file, true, SetOn::Both).await?;
 //!     Ok(())
@@ -21,7 +21,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -39,7 +39,7 @@
 //! use ashpd::desktop::wallpaper::{self, SetOn};
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
 //!     wallpaper::set_from_uri(&WindowIdentifier::default(), &uri, true, SetOn::Both).await?;
 //!     Ok(())
@@ -52,7 +52,7 @@
 //! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy

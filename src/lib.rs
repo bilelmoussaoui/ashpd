@@ -13,7 +13,7 @@
 //! use ashpd::desktop::screenshot::ScreenshotProxy;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
@@ -29,7 +29,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::camera::CameraProxy;
 //!
-//! pub async fn run() -> Result<(), ashpd::Error> {
+//! pub async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = CameraProxy::new(&connection).await?;
 //!     if proxy.is_camera_present().await? {
@@ -54,6 +54,9 @@
 //! |  | Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) |
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
 compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
+
+/// Alias for a [`Result`] with the error type `ashpd::Error`.
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// Interact with the user's desktop such as taking a screenshot, setting a
 /// background or querying the user's location.

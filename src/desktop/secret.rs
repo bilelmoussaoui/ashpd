@@ -4,7 +4,7 @@
 //! use ashpd::desktop::secret::SecretProxy;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = SecretProxy::new(&connection).await?;
 //!

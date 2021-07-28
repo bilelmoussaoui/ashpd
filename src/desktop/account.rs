@@ -4,7 +4,7 @@
 //! use ashpd::desktop::account;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let user_info = account::user_information(
 //!         &WindowIdentifier::default(),
 //!         "App would like to access user information",
@@ -23,7 +23,7 @@
 //! use ashpd::desktop::account::AccountProxy;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = AccountProxy::new(&connection).await?;

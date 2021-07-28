@@ -5,7 +5,7 @@
 //! use ashpd::desktop::trash;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-night.jpg").unwrap();
 //!     trash::trash_file(&file).await?;
 //!     Ok(())
@@ -18,7 +18,7 @@
 //! use ashpd::desktop::trash::TrashProxy;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = TrashProxy::new(&connection).await?;

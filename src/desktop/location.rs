@@ -5,7 +5,7 @@
 //! use ashpd::WindowIdentifier;
 //! use futures::TryFutureExt;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = LocationProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();

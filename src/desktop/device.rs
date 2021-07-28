@@ -6,7 +6,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::device::{Device, DeviceProxy};
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = DeviceProxy::new(&connection).await?;
 //!     proxy.access_device(6879, &[Device::Speakers]).await?;

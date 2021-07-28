@@ -66,7 +66,7 @@ impl InhibitPage {
     }
 }
 
-async fn inhibit(identifier: &WindowIdentifier, reason: &str) -> Result<(), ashpd::Error> {
+async fn inhibit(identifier: &WindowIdentifier, reason: &str) -> ashpd::Result<()> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = inhibit::InhibitProxy::new(&connection).await?;
     let monitor = proxy.create_monitor(&identifier).await?;

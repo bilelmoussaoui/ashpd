@@ -4,7 +4,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::proxy_resolver::ProxyResolverProxy;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ProxyResolverProxy::new(&connection).await?;
 //!

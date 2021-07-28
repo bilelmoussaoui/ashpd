@@ -3,7 +3,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::game_mode::GameModeProxy;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = GameModeProxy::new(&connection).await?;
 //!

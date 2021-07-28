@@ -4,7 +4,7 @@
 //! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!

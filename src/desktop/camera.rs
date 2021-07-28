@@ -3,7 +3,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::camera::CameraProxy;
 //!
-//! pub async fn run() -> Result<(), ashpd::Error> {
+//! pub async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = CameraProxy::new(&connection).await?;
 //!     if proxy.is_camera_present().await? {

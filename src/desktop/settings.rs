@@ -1,7 +1,7 @@
 //! ```rust,no_run
 //! use ashpd::desktop::settings::SettingsProxy;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = SettingsProxy::new(&connection).await?;
 //!

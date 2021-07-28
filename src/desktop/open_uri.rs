@@ -7,7 +7,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!     open_uri::open_file(&WindowIdentifier::default(), &file, false, true).await?;
 //!     Ok(())
@@ -21,7 +21,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -39,7 +39,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
 //!     open_uri::open_directory(&WindowIdentifier::default(), &directory).await?;
 //!     Ok(())
@@ -53,7 +53,7 @@
 //! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
 //!
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -71,7 +71,7 @@
 //! use ashpd::desktop::open_uri;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
 //!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true).await?;
 //!     Ok(())
@@ -84,7 +84,7 @@
 //! use ashpd::desktop::open_uri::OpenURIProxy;
 //! use ashpd::WindowIdentifier;
 //!
-//! async fn run() -> Result<(), ashpd::Error> {
+//! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
