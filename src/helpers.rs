@@ -92,9 +92,9 @@ where
 {
     tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
     tracing::debug!("With body {:#?}", body);
-    proxy
-        .call_method::<B>(method_name, body)
-        .await?
-        .body::<R>()
-        .map_err(From::from)
+    let msg = proxy.call_method::<B>(method_name, body).await?;
+    let reply = msg.body::<R>()?;
+    msg.disown_fds();
+
+    Ok(reply)
 }
