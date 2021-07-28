@@ -84,13 +84,18 @@ impl Email {
         Self::default()
     }
 
-    /// Sets the email address to send the email to.
+    /// Similar to `set_address`.
     pub fn address(mut self, address: &str) -> Self {
         self.address = Some(address.to_string());
         self
     }
 
-    /// Sets a list of email addresses to send the email to.
+    /// Sets the email address to send the email to.
+    pub fn set_address(&mut self, address: &str) {
+        self.address = Some(address.to_string());
+    }
+
+    /// Similar to `set_addresses`.
     pub fn addresses<S: AsRef<str> + zvariant::Type + Serialize>(
         mut self,
         addresses: &[S],
@@ -99,10 +104,20 @@ impl Email {
         self
     }
 
+    /// Sets a list of email addresses to send the email to.
+    pub fn set_addresses<S: AsRef<str> + zvariant::Type + Serialize>(&mut self, addresses: &[S]) {
+        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
+    }
+
     /// Sets a list of email addresses to BCC.
     pub fn bcc<S: AsRef<str> + zvariant::Type + Serialize>(mut self, bcc: &[S]) -> Self {
         self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
         self
+    }
+
+    /// Sets a list of email addresses to BCC.
+    pub fn set_bcc<S: AsRef<str> + zvariant::Type + Serialize>(&mut self, bcc: &[S]) {
+        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
     }
 
     /// Sets a list of email addresses to CC.
@@ -111,16 +126,31 @@ impl Email {
         self
     }
 
-    /// Sets the email subject.
+    /// Sets a list of email addresses to CC.
+    pub fn set_cc<S: AsRef<str> + zvariant::Type + Serialize>(&mut self, cc: &[S]) {
+        self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
+    }
+
+    /// Similar to `set_subject`.
     pub fn subject(mut self, subject: &str) -> Self {
         self.subject = Some(subject.to_string());
         self
     }
 
-    /// Sets the email body.
+    /// Sets the email subject.
+    pub fn set_subject(&mut self, subject: &str) {
+        self.subject = Some(subject.to_string());
+    }
+
+    /// Similar to `set_body`.
     pub fn body(mut self, body: &str) -> Self {
         self.body = Some(body.to_string());
         self
+    }
+
+    /// Sets the email body.
+    pub fn set_body(&mut self, body: &str) {
+        self.body = Some(body.to_string());
     }
 
     /// Attaches a file to the email.
