@@ -95,44 +95,7 @@ mod imp {
             obj.init_template();
         }
     }
-    /*
-        <child>
-            <object class="GtkStackPage">
-            <property name="name">background</property>
-            <property name="title">Background</property>
-            <property name="child">
-                <object class="BackgroundPage" id="background" />
-            </property>
-            </object>
-        </child>
-        <child>
-            <object class="GtkStackPage">
-            <property name="name">device</property>
-            <property name="title">Device</property>
-            <property name="child">
-                <object class="DevicePage" id="device" />
-            </property>
-            </object>
-        </child>
-        <child>
-            <object class="GtkStackPage">
-            <property name="name">documents</property>
-            <property name="title">Documents</property>
-            <property name="child">
-                <object class="DocumentsPage" id="documents" />
-            </property>
-            </object>
-        </child>
-        <child>
-            <object class="GtkStackPage">
-            <property name="name">network_monitor</property>
-            <property name="title">Network Monitor</property>
-            <property name="child">
-                <object class="NetworkMonitorPage" id="network_monitor" />
-            </property>
-            </object>
-        </child>
-    */
+
     impl ObjectImpl for ExampleApplicationWindow {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
