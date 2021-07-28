@@ -2,7 +2,7 @@ use ashpd::{desktop::account, WindowIdentifier};
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{gdk_pixbuf, gio, glib};
+use gtk::{gdk_pixbuf, glib};
 
 mod imp {
     use adw::subclass::prelude::*;

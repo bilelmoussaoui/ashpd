@@ -6,6 +6,8 @@ use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
+use crate::portals::{is_empty, split_comma};
+
 mod imp {
     use adw::subclass::prelude::*;
     use gtk::CompositeTemplate;
@@ -61,30 +63,34 @@ impl EmailPage {
 
     pub fn compose_mail(&self) {
         let self_ = imp::EmailPage::from_instance(self);
-        let subject = self_.subject.text();
-        let body = self_.body.text();
-        let addresses = self_.addresses.text();
-        let bcc = self_.bcc_entry.text();
-        let cc = self_.cc_entry.text();
+        let subject = is_empty(self_.subject.text());
+        let body = is_empty(self_.body.text());
+        let addresses = is_empty(self_.addresses.text()).map(|s| split_comma(s));
+        let bcc = is_empty(self_.bcc_entry.text()).map(|s| split_comma(s));
+        let cc = is_empty(self_.cc_entry.text()).map(|s| split_comma(s));
         let root = self.native().unwrap();
         let ctx = glib::MainContext::default();
+
+        let mut email = Email::new();
+        if let Some(subject) = subject {
+            email.set_subject(&subject);
+        }
+        if let Some(body) = body {
+            email.set_body(&body);
+        }
+        if let Some(addresses) = addresses {
+            email.set_addresses(&addresses);
+        }
+        if let Some(bcc) = bcc {
+            email.set_bcc(&bcc);
+        }
+        if let Some(cc) = cc {
+            email.set_cc(&cc);
+        }
+
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_native(&root).await;
-            let _ = email::compose(
-                &identifier,
-                Email::default()
-                    .subject(&subject)
-                    .addresses(
-                        &addresses
-                            .split(',')
-                            .filter(|e| e.len() > 1)
-                            .collect::<Vec<_>>(),
-                    )
-                    .bcc(&bcc.split(',').filter(|e| e.len() > 1).collect::<Vec<_>>())
-                    .cc(&cc.split(',').filter(|e| e.len() > 1).collect::<Vec<_>>())
-                    .body(&body),
-            )
-            .await;
+            let _ = email::compose(&identifier, email).await;
         });
     }
 }

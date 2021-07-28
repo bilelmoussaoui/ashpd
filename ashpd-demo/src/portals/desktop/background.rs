@@ -3,6 +3,8 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+
+use crate::portals::is_empty;
 mod imp {
     use adw::subclass::prelude::*;
     use gtk::CompositeTemplate;
@@ -66,16 +68,17 @@ impl BackgroundPage {
         let reason = self_.reason_entry.text();
         let auto_start = self_.auto_start_switch.is_active();
         let dbus_activatable = self_.dbus_activatable_switch.is_active();
+        let command = is_empty(self_.command_entry.text()).map(|txt| {
+            txt.split_whitespace()
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>()
+        });
         let root = self.native().unwrap();
 
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::BackgroundPage::from_instance(&page);
             let identifier = WindowIdentifier::from_native(&root).await;
-            if let Ok(response) = background::request(&identifier,
-                &reason,
-                auto_start,
-                Some(self_.command_entry.text().split_whitespace().collect::<Vec<&str>>().as_slice()),
-                dbus_activatable).await {
+            if let Ok(response) = background::request(&identifier, &reason, auto_start, command.as_deref(), dbus_activatable).await {
 
                 self_.response_group.show();
                 self_.auto_start_label.set_label(&response.run_in_background().to_string());

@@ -81,7 +81,7 @@ impl ScreenshotPage {
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenshotPage::from_instance(&page);
             let identifier = WindowIdentifier::from_native(&root).await;
-            if let Ok(color) = screenshot::pick_color(identifier).await {
+            if let Ok(color) = screenshot::pick_color(&identifier).await {
                 self_.color_widget.set_rgba(color.into());
             }
         }));

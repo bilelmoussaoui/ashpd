@@ -1,3 +1,4 @@
+use crate::portals::{is_empty, split_comma};
 use ashpd::{
     desktop::file_chooser::{
         FileChooserProxy, OpenFileOptions, SaveFileOptions, SaveFilesOptions, SelectedFiles,
@@ -123,19 +124,20 @@ impl FileChooserPage {
             let identifier = WindowIdentifier::from_native(&root).await;
             let self_ = imp::FileChooserPage::from_instance(&page);
             let title = self_.open_title_entry.text();
-            let accept_label = self_.open_accept_label_entry.text();
+            let accept_label = is_empty(self_.open_accept_label_entry.text());
             let directory = self_.open_directory_switch.is_active();
             let modal = self_.open_modal_switch.is_active();
             let multiple = self_.open_multiple_switch.is_active();
 
-            let files = portal_open_file(&identifier, &title, &accept_label, directory, modal, multiple).await.unwrap();
-            self_.open_response_group.show();
+            if let Ok(files) = portal_open_file(&identifier, &title, accept_label.as_deref(), directory, modal, multiple).await {
+                self_.open_response_group.show();
 
-            while let Some(child) = self_.open_uris_listbox.next_sibling() {
-                self_.open_uris_listbox.remove(&child);
-            }
-            for uri in files.uris() {
-                self_.open_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
+                while let Some(child) = self_.open_uris_listbox.next_sibling() {
+                    self_.open_uris_listbox.remove(&child);
+                }
+                for uri in files.uris() {
+                    self_.open_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
+                }
             }
         }));
     }
@@ -146,20 +148,21 @@ impl FileChooserPage {
             let identifier = WindowIdentifier::from_native(&root).await;
             let self_ = imp::FileChooserPage::from_instance(&page);
             let title = self_.save_file_title_entry.text();
-            let accept_label = self_.save_file_accept_label_entry.text();
+            let accept_label = is_empty(self_.save_file_accept_label_entry.text());
             let modal = self_.save_file_modal_switch.is_active();
-            let current_name = self_.save_file_current_name_entry.text();
-            let current_folder = self_.save_file_current_folder_entry.text();
-            let current_file = self_.save_file_current_file_entry.text();
+            let current_name = is_empty(self_.save_file_current_name_entry.text());
+            let current_folder = is_empty(self_.save_file_current_folder_entry.text());
+            let current_file = is_empty(self_.save_file_current_file_entry.text());
 
-            let files = portal_save_file(&identifier, &title, &accept_label, modal, &current_name, &current_folder, &current_file).await.unwrap();
-            self_.save_file_response_group.show();
+            if let Ok(files) = portal_save_file(&identifier, &title, accept_label.as_deref(), modal, current_name.as_deref(), current_folder.as_deref(), current_file.as_deref()).await {
+                self_.save_file_response_group.show();
 
-            while let Some(child) = self_.save_file_uris_listbox.next_sibling() {
-                self_.save_file_uris_listbox.remove(&child);
-            }
-            for uri in files.uris() {
-                self_.save_file_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
+                while let Some(child) = self_.save_file_uris_listbox.next_sibling() {
+                    self_.save_file_uris_listbox.remove(&child);
+                }
+                for uri in files.uris() {
+                    self_.save_file_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
+                }
             }
         }));
     }
@@ -170,20 +173,20 @@ impl FileChooserPage {
             let identifier = WindowIdentifier::from_native(&root).await;
             let self_ = imp::FileChooserPage::from_instance(&page);
             let title = self_.save_files_title_entry.text();
-            let accept_label = self_.save_files_accept_label_entry.text();
-            let current_folder = self_.save_files_current_folder_entry.text();
+            let accept_label = is_empty(self_.save_files_accept_label_entry.text());
+            let current_folder = is_empty(self_.save_files_current_folder_entry.text());
             let modal = self_.save_files_modal_switch.is_active();
-            let files = self_.save_files_files_entry.text();
-            let files = files.split(',').collect::<Vec<&str>>();
+            let files = is_empty(self_.save_files_files_entry.text()).map(|files| split_comma(files));
 
-            let files = portal_save_files(&identifier, &title, &accept_label, modal, &current_folder, files.as_slice()).await.unwrap();
-            self_.save_files_response_group.show();
+            if let Ok(files) = portal_save_files(&identifier, &title, accept_label.as_deref(), modal, current_folder.as_deref(), files.as_deref()).await {
+                self_.save_files_response_group.show();
 
-            while let Some(child) = self_.save_files_uris_listbox.next_sibling() {
-                self_.save_files_uris_listbox.remove(&child);
-            }
-            for uri in files.uris() {
-                self_.save_files_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
+                while let Some(child) = self_.save_files_uris_listbox.next_sibling() {
+                    self_.save_files_uris_listbox.remove(&child);
+                }
+                for uri in files.uris() {
+                    self_.save_files_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
+                }
             }
         }));
     }
@@ -192,73 +195,95 @@ impl FileChooserPage {
 async fn portal_open_file(
     identifier: &WindowIdentifier,
     title: &str,
-    accept_label: &str,
+    accept_label: Option<&str>,
     directory: bool,
     modal: bool,
     multiple: bool,
 ) -> ashpd::Result<SelectedFiles> {
     let cnx = zbus::azync::Connection::new_session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
-    let selected_files = proxy
-        .open_file(
-            &identifier,
-            title,
-            OpenFileOptions::default()
-                .accept_label(accept_label)
-                .directory(directory)
-                .modal(modal)
-                .multiple(multiple),
-        )
-        .await?;
+    let options = OpenFileOptions::default()
+        .directory(directory)
+        .modal(modal)
+        .multiple(multiple);
+    let options = if let Some(accept_label) = accept_label {
+        options.accept_label(accept_label)
+    } else {
+        options
+    };
+
+    let selected_files = proxy.open_file(&identifier, title, options).await?;
     Ok(selected_files)
 }
 
 async fn portal_save_file(
     identifier: &WindowIdentifier,
     title: &str,
-    accept_label: &str,
+    accept_label: Option<&str>,
     modal: bool,
-    current_name: &str,
-    current_folder: &str,
-    current_file: &str,
+    current_name: Option<&str>,
+    current_folder: Option<&str>,
+    current_file: Option<&str>,
 ) -> ashpd::Result<SelectedFiles> {
     let cnx = zbus::azync::Connection::new_session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
-    let selected_files = proxy
-        .save_file(
-            &identifier,
-            title,
-            SaveFileOptions::default()
-                .accept_label(accept_label)
-                .modal(modal)
-                .current_name(current_name)
-                .current_folder(current_folder)
-                .current_file(current_file),
-        )
-        .await?;
+    let options = SaveFileOptions::default().modal(modal);
+    let options = if let Some(accept_label) = accept_label {
+        options.accept_label(accept_label)
+    } else {
+        options
+    };
+    let options = if let Some(current_name) = current_name {
+        options.current_name(current_name)
+    } else {
+        options
+    };
+    let options = if let Some(current_folder) = current_folder {
+        options.current_folder(current_folder)
+    } else {
+        options
+    };
+    let options = if let Some(current_file) = current_file {
+        options.current_file(current_file)
+    } else {
+        options
+    };
+    let selected_files = proxy.save_file(&identifier, title, options).await?;
     Ok(selected_files)
 }
 
-async fn portal_save_files(
+async fn portal_save_files<S: AsRef<str>>(
     identifier: &WindowIdentifier,
     title: &str,
-    accept_label: &str,
+    accept_label: Option<&str>,
     modal: bool,
-    current_folder: &str,
-    files: &[&str],
+    current_folder: Option<&str>,
+    files: Option<&[S]>,
 ) -> ashpd::Result<SelectedFiles> {
     let cnx = zbus::azync::Connection::new_session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
-    let selected_files = proxy
-        .save_files(
-            &identifier,
-            title,
-            SaveFilesOptions::default()
-                .accept_label(accept_label)
-                .modal(modal)
-                .current_folder(current_folder)
-                .files(files),
+    let options = SaveFilesOptions::default().modal(modal);
+    let options = if let Some(accept_label) = accept_label {
+        options.accept_label(accept_label)
+    } else {
+        options
+    };
+    let options = if let Some(current_folder) = current_folder {
+        options.current_folder(current_folder)
+    } else {
+        options
+    };
+    let options = if let Some(files) = files {
+        options.files(
+            files
+                .iter()
+                .map(|s| s.as_ref())
+                .collect::<Vec<&str>>()
+                .as_slice(),
         )
-        .await?;
+    } else {
+        options
+    };
+    let selected_files = proxy.save_files(&identifier, title, options).await?;
     Ok(selected_files)
 }
