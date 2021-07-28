@@ -179,6 +179,6 @@ pub async fn screencast(
         .await?;
     let streams = proxy.start(&session, identifier).await?.to_vec();
 
-    let node_id = proxy.open_pipe_wire_remote(&session).await?;
-    Ok((streams, node_id, session))
+    let fd = proxy.open_pipe_wire_remote(&session).await?;
+    Ok((streams, fd, session))
 }
