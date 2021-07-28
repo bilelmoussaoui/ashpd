@@ -43,7 +43,6 @@ sources = files(
   'application.rs',
   'config.rs',
   'main.rs',
-  'sidebar_row.rs',
   'window.rs',
 )
 

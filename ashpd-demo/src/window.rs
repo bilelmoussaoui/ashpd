@@ -12,7 +12,6 @@ use crate::portals::desktop::{
     ScreenshotPage, SecretPage, WallpaperPage,
 };
 use crate::portals::DocumentsPage;
-use crate::sidebar_row::SidebarRow;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -50,7 +49,6 @@ mod imp {
         }
 
         fn class_init(klass: &mut Self::Class) {
-            SidebarRow::static_type();
             CameraPage::static_type();
             WallpaperPage::static_type();
             DevicePage::static_type();

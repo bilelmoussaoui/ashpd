@@ -2,7 +2,6 @@ mod application;
 #[rustfmt::skip]
 mod config;
 mod portals;
-mod sidebar_row;
 mod widgets;
 mod window;
 
