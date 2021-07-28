@@ -77,12 +77,15 @@ mod imp {
         }
     }
     impl ObjectImpl for ScreenCastPage {
-        fn constructed(&self, _obj: &Self::Type) {
+        fn constructed(&self, obj: &Self::Type) {
             let model = gtk::StringList::new(&["Monitor", "Window", "Both"]);
             self.types_comborow.set_model(Some(&model));
             let model = gtk::StringList::new(&["Hidden", "Embedded", "Metadata"]);
             self.cursor_comborow.set_model(Some(&model));
+            obj.action_set_enabled("screencast.stop", false);
+
             self.close_session_btn.set_sensitive(false);
+            self.parent_constructed(obj);
         }
     }
     impl WidgetImpl for ScreenCastPage {}
@@ -105,9 +108,8 @@ impl ScreenCastPage {
 
     pub fn start_session(&self) {
         let ctx = glib::MainContext::default();
-        println!("starting session");
         ctx.spawn_local(clone!(@weak self as page => async move {
-        let self_ = imp::ScreenCastPage::from_instance(&page);
+            let self_ = imp::ScreenCastPage::from_instance(&page);
             let types = match self_.types_comborow.selected() {
                 0 => BitFlags::<SourceType>::from_flag(SourceType::Monitor),
                 1 => BitFlags::<SourceType>::from_flag(SourceType::Window),
@@ -121,9 +123,10 @@ impl ScreenCastPage {
             let multiple = self_.multiple_switch.is_active();
 
             let root = page.native().unwrap();
+            page.action_set_enabled("screencast.start", false);
+            page.action_set_enabled("screencast.stop", true);
+
             let identifier = WindowIdentifier::from_native(&root).await;
-
-
 
             match screencast(&identifier, multiple, types, cursor_mode).await {
                 Ok((streams, fd, session)) => {
@@ -141,7 +144,7 @@ impl ScreenCastPage {
                     self_.close_session_btn.set_sensitive(true);
                 }
                 Err(err) => {
-                    println!("{:#?}", err);
+                    tracing::error!("{:#?}", err);
                 }
             };
         }));
@@ -149,6 +152,9 @@ impl ScreenCastPage {
 
     pub fn stop_session(&self) {
         let ctx = glib::MainContext::default();
+        self.action_set_enabled("screencast.start", true);
+        self.action_set_enabled("screencast.stop", false);
+
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenCastPage::from_instance(&page);
             if let Some(session) = self_.session.lock().await.take() {

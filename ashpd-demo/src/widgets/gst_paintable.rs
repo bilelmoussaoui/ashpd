@@ -321,9 +321,8 @@ impl CameraPaintable {
 
         let bus = pipeline.bus().unwrap();
         bus.add_watch_local(move |_, msg| {
-            println!("{:#?}", msg);
             if let gst::MessageView::Error(err) = msg.view() {
-                println!(
+                tracing::error!(
                     "Error from {:?}: {} ({:?})",
                     err.src().map(|s| s.path_string()),
                     err.error(),

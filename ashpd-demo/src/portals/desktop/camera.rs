@@ -105,7 +105,7 @@ impl CameraPage {
                     self_.camera_available.set_text("No");
                }
                Err(err) => {
-                   println!("failed {:#?}", err);
+                   tracing::error!("Failed to start a camera stream {:#?}", err);
                }
             }
         }));

@@ -70,9 +70,7 @@ async fn inhibit(identifier: &WindowIdentifier, reason: &str) -> ashpd::Result<(
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = inhibit::InhibitProxy::new(&connection).await?;
     let monitor = proxy.create_monitor(&identifier).await?;
-    println!("{:#?}", monitor);
     let state = proxy.receive_state_changed().await?;
-    println!("{:#?}", state);
     match state.session_state() {
         inhibit::SessionState::Running => (),
         inhibit::SessionState::QueryEnd => {
@@ -86,7 +84,7 @@ async fn inhibit(identifier: &WindowIdentifier, reason: &str) -> ashpd::Result<(
             proxy.query_end_response(&monitor).await?;
         }
         inhibit::SessionState::Ending => {
-            println!("ending the session");
+            tracing::info!("Ending the session");
         }
     }
     Ok(())
