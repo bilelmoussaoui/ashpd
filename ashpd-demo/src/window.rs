@@ -16,7 +16,6 @@ use crate::sidebar_row::SidebarRow;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::glib::clone;
 
     use super::*;
 
@@ -25,8 +24,6 @@ mod imp {
     pub struct ExampleApplicationWindow {
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
-        #[template_child]
-        pub sidebar: TemplateChild<gtk::ListBox>,
         #[template_child]
         pub leaflet: TemplateChild<adw::Leaflet>,
         #[template_child]
@@ -46,7 +43,6 @@ mod imp {
             Self {
                 screenshot: TemplateChild::default(),
                 stack: TemplateChild::default(),
-                sidebar: TemplateChild::default(),
                 leaflet: TemplateChild::default(),
                 title_label: TemplateChild::default(),
                 settings: gio::Settings::new(APP_ID),
@@ -92,12 +88,6 @@ mod imp {
             let shortcuts = builder.object("shortcuts").unwrap();
             obj.set_help_overlay(Some(&shortcuts));
 
-            let row = self.sidebar.row_at_index(0).unwrap();
-            self.sidebar.unselect_row(&row);
-            self.sidebar
-                .connect_row_activated(clone!(@weak obj as win => move |_, row| {
-                    win.sidebar_row_selected(row);
-                }));
             self.stack.set_visible_child_name("welcome");
             // load latest window state
             obj.load_window_size();
@@ -160,20 +150,6 @@ impl ExampleApplicationWindow {
 
         if is_maximized {
             self.maximize();
-        }
-    }
-
-    pub fn sidebar_row_selected(&self, row: &gtk::ListBoxRow) {
-        let self_ = imp::ExampleApplicationWindow::from_instance(self);
-        let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
-        self_.leaflet.navigate(adw::NavigationDirection::Forward);
-        let page_name = sidebar_row.name();
-        if self_.stack.child_by_name(&page_name).is_some() {
-            self_.stack.set_visible_child_name(&page_name);
-            self_.title_label.set_label(&sidebar_row.title().unwrap());
-        } else {
-            self_.title_label.set_label("");
-            self_.stack.set_visible_child_name("welcome");
         }
     }
 }
