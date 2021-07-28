@@ -23,7 +23,7 @@ use crate::{
 /// A typical response returned by the [`RequestProxy::receive_response`] signal
 /// of a [`RequestProxy`].
 #[derive(Debug)]
-enum Response<T>
+pub(crate) enum Response<T>
 where
     T: for<'de> Deserialize<'de> + zvariant::Type,
 {
@@ -210,6 +210,7 @@ impl<'a> RequestProxy<'a> {
 
     /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Request.Response).
     #[doc(alias = "Response")]
+    #[allow(dead_code)]
     pub async fn receive_response<R>(&self) -> Result<R, Error>
     where
         R: for<'de> Deserialize<'de> + zvariant::Type + Debug,

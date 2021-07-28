@@ -4,7 +4,7 @@ use futures::StreamExt;
 use serde::Deserialize;
 
 use crate::desktop::{
-    request::{BasicResponse, RequestProxy},
+    request::{BasicResponse, RequestProxy, Response},
     HandleToken,
 };
 use crate::Error;
@@ -26,11 +26,27 @@ where
     );
     tracing::debug!("The body is: {:#?}", body);
     let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
+    // We don't use receive_response because we want to create the stream in advance
+    tracing::info!(
+        "Listening to signal 'Response' on '{}'",
+        request.inner().interface()
+    );
+    let mut stream = request.inner().receive_signal("Response").await?;
+
     let (response, path) = futures::try_join!(
         async {
-            let response = request.receive_response::<R>().await?;
+            let message = stream.next().await.ok_or(Error::NoResponse)?;
+            tracing::info!(
+                "Received signal 'Response' on '{}'",
+                request.inner().interface()
+            );
+            let response = match message.body::<Response<R>>()? {
+                Response::Err(e) => Err(e.into()),
+                Response::Ok(r) => Ok(r),
+            };
+
             tracing::debug!("Received response {:#?}", response);
-            Ok(response) as Result<_, Error>
+            response as Result<_, Error>
         },
         async {
             let msg = proxy.call_method::<B>(method_name, body).await?;
