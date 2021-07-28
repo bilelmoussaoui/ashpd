@@ -136,11 +136,6 @@ mod imp {
     impl ObjectImpl for ExampleApplicationWindow {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
-
-            let builder = gtk::Builder::from_resource("/com/belmoussaoui/ashpd/demo/shortcuts.ui");
-            let shortcuts = builder.object("shortcuts").unwrap();
-            obj.set_help_overlay(Some(&shortcuts));
-
             // Add pages based on whether the app is sandboxed
             if ashpd::is_sandboxed() {
                 self.stack

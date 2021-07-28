@@ -84,6 +84,6 @@ async fn retrieve_secret(old_token: Option<&str>) -> ashpd::Result<String> {
     let proxy = secret::SecretProxy::new(&connection).await?;
     let tmp_file = glib::mkstemp("some_stuff_XXXXXX");
     let new_token = proxy.retrieve_secret(&tmp_file, old_token).await?;
-
+    tracing::info!("Received secret {}", new_token);
     Ok(new_token)
 }

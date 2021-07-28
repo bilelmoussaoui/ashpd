@@ -58,19 +58,16 @@ mod imp {
             app.setup_accels();
 
             app.main_window().present();
+            self.parent_activate(app);
         }
 
         fn startup(&self, app: &Self::Type) {
             debug!("GtkApplication<ExampleApplication>::startup");
-            self.parent_startup(app);
             adw::init();
             let provider = gtk::CssProvider::new();
             provider.load_from_resource("/com/belmoussaoui/ashpd/demo/style.css");
-            app.set_resource_base_path(Some("/com/belmoussaoui/ashpd/demo/"));
 
             if let Some(ref display) = gtk::gdk::Display::default() {
-                let theme = gtk::IconTheme::for_display(display).unwrap();
-                theme.add_resource_path("/com/belmoussaoui/ashpd/demo/icons/");
                 gtk::StyleContext::add_provider_for_display(
                     display,
                     &provider,
@@ -82,6 +79,7 @@ mod imp {
             self.settings
                 .bind("dark-mode", &settings, "gtk-application-prefer-dark-theme")
                 .build();
+            self.parent_startup(app);
         }
     }
 
@@ -99,6 +97,7 @@ impl ExampleApplication {
         glib::Object::new(&[
             ("application-id", &Some(config::APP_ID)),
             ("flags", &ApplicationFlags::FLAGS_NONE),
+            ("resource-base-path", &Some("/com/belmoussaoui/ashpd/demo/")),
         ])
         .expect("Application initialization failed...")
     }
