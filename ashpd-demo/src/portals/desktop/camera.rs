@@ -66,6 +66,7 @@ mod imp {
     impl ObjectImpl for CameraPage {
         fn constructed(&self, obj: &Self::Type) {
             self.picture.set_paintable(Some(&self.paintable));
+            obj.action_set_enabled("camera.stop", false);
             self.parent_constructed(obj);
         }
     }
@@ -88,6 +89,8 @@ impl CameraPage {
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::CameraPage::from_instance(&page);
 
+            page.action_set_enabled("camera.stop", true);
+            page.action_set_enabled("camera.start", false);
             match stream().await {
                 Ok(Some(stream_fd)) => {
                     self_.paintable.set_pipewire_fd(stream_fd);
@@ -110,6 +113,8 @@ impl CameraPage {
 
     pub fn stop_stream(&self) {
         let self_ = imp::CameraPage::from_instance(self);
+        self.action_set_enabled("camera.stop", false);
+        self.action_set_enabled("camera.start", true);
 
         self_.paintable.close_pipeline();
         self_.close_session_btn.set_sensitive(false);

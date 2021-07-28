@@ -4,7 +4,7 @@ use glib::WeakRef;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
-use gtk_macros::action;
+use gtk_macros::{action, stateful_action};
 use once_cell::sync::OnceCell;
 use tracing::{debug, info};
 
@@ -14,9 +14,19 @@ use crate::window::ExampleApplicationWindow;
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default)]
+    #[derive(Debug)]
     pub struct ExampleApplication {
         pub window: OnceCell<WeakRef<ExampleApplicationWindow>>,
+        pub settings: gio::Settings,
+    }
+
+    impl Default for ExampleApplication {
+        fn default() -> Self {
+            Self {
+                window: OnceCell::default(),
+                settings: gio::Settings::new(config::APP_ID),
+            }
+        }
     }
 
     #[glib::object_subclass]
@@ -67,6 +77,11 @@ mod imp {
                     gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
                 );
             }
+
+            let settings = gtk::Settings::default().unwrap();
+            self.settings
+                .bind("dark-mode", &settings, "gtk-application-prefer-dark-theme")
+                .build();
         }
     }
 
@@ -94,6 +109,7 @@ impl ExampleApplication {
     }
 
     fn setup_gactions(&self) {
+        let self_ = imp::ExampleApplication::from_instance(self);
         // Quit
         action!(
             self,
@@ -103,6 +119,22 @@ impl ExampleApplication {
                 // and saving the window state
                 app.main_window().close();
                 app.quit();
+            })
+        );
+
+        let is_dark_mode = self_.settings.boolean("dark-mode");
+        stateful_action!(
+            self,
+            "dark-mode",
+            is_dark_mode,
+            clone!(@weak self_.settings as settings =>  move |action, _| {
+                let state = action.state().unwrap();
+                let action_state: bool = state.get().unwrap();
+                let is_dark_mode = !action_state;
+                action.set_state(&is_dark_mode.to_variant());
+                if let Err(err) = settings.set_boolean("dark-mode", is_dark_mode) {
+                    tracing::error!("Failed to switch dark mode: {} ", err);
+                }
             })
         );
 
@@ -118,6 +150,7 @@ impl ExampleApplication {
 
     // Sets up keyboard shortcuts
     fn setup_accels(&self) {
+        self.set_accels_for_action("app.dark-mode", &["<primary>T"]);
         self.set_accels_for_action("app.quit", &["<primary>q"]);
         self.set_accels_for_action("win.show-help-overlay", &["<primary>question"]);
     }

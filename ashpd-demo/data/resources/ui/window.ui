@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
+  <menu id="menu">
+    <item>
+      <attribute name="label" translatable="yes">_Restart</attribute>
+      <attribute name="action">win.restart</attribute>
+    </item>
+    <item>
+      <attribute name="label" translatable="yes">_About ASHPD Demo</attribute>
+      <attribute name="action">app.about</attribute>
+    </item>
+  </menu>
   <template class="ExampleApplicationWindow" parent="AdwApplicationWindow">
     <property name="default-width">600</property>
     <property name="default-height">400</property>
@@ -14,6 +24,21 @@
               <object class="AdwHeaderBar" id="sidebar_headerbar">
                 <property name="show-end-title-buttons">False</property>
                 <property name="show-start-title-buttons">False</property>
+                <child type="start">
+                  <object class="GtkButton">
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="action-name">app.dark-mode</property>
+                    <property name="tooltip-text" translatable="yes">Toggle Dark Mode</property>
+                    <property name="icon-name">dark-mode-symbolic</property>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkMenuButton">
+                    <property name="menu-model">menu</property>
+                    <property name="icon_name">open-menu-symbolic</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
@@ -115,28 +140,10 @@
                         </child>
                         <child>
                           <object class="GtkStackPage">
-                            <property name="name">background</property>
-                            <property name="title">Background</property>
-                            <property name="child">
-                              <object class="BackgroundPage" id="background" />
-                            </property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkStackPage">
                             <property name="name">camera</property>
                             <property name="title">Camera</property>
                             <property name="child">
                               <object class="CameraPage" id="camera" />
-                            </property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkStackPage">
-                            <property name="name">device</property>
-                            <property name="title">Device</property>
-                            <property name="child">
-                              <object class="DevicePage" id="device" />
                             </property>
                           </object>
                         </child>
@@ -178,15 +185,6 @@
                         </child>
                         <child>
                           <object class="GtkStackPage">
-                            <property name="name">network_monitor</property>
-                            <property name="title">Network Monitor</property>
-                            <property name="child">
-                              <object class="NetworkMonitorPage" id="network_monitor" />
-                            </property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkStackPage">
                             <property name="name">notification</property>
                             <property name="title">Notifications</property>
                             <property name="child">
@@ -223,15 +221,6 @@
                         </child>
                         <child>
                           <object class="GtkStackPage">
-                            <property name="name">wallpaper</property>
-                            <property name="title">Wallpaper</property>
-                            <property name="child">
-                              <object class="WallpaperPage" id="wallpaper" />
-                            </property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkStackPage">
                             <property name="name">secret</property>
                             <property name="title">Secret</property>
                             <property name="child">
@@ -241,10 +230,10 @@
                         </child>
                         <child>
                           <object class="GtkStackPage">
-                            <property name="name">documents</property>
-                            <property name="title">Documents</property>
+                            <property name="name">wallpaper</property>
+                            <property name="title">Wallpaper</property>
                             <property name="child">
-                              <object class="DocumentsPage" id="documents" />
+                              <object class="WallpaperPage" id="wallpaper" />
                             </property>
                           </object>
                         </child>

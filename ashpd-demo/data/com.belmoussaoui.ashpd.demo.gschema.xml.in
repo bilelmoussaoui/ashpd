@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <schemalist>
-  <schema path="/com/belmoussaoui/ashpd/demo/" id="@app-id@" gettext-domain="@gettext-package@">
-    <key name="window-width" type="i">
-      <default>-1</default>
-      <summary>Default window width</summary>
-      <description>Default window width</description>
-    </key>
-    <key name="window-height" type="i">
-      <default>-1</default>
-      <summary>Default window height</summary>
-      <description>Default window height</description>
-    </key>
-    <key name="is-maximized" type="b">
-      <default>false</default>
-      <summary>Default window maximized behaviour</summary>
-      <description></description>
-    </key>
-  </schema>
+    <schema path="/com/belmoussaoui/ashpd/demo/" id="@app-id@" gettext-domain="@gettext-package@">
+        <key name="window-width" type="i">
+            <default>-1</default>
+            <summary>Default window width</summary>
+            <description>Default window width</description>
+        </key>
+        <key name="window-height" type="i">
+            <default>-1</default>
+            <summary>Default window height</summary>
+            <description>Default window height</description>
+        </key>
+        <key name="is-maximized" type="b">
+            <default>false</default>
+            <summary>Default window maximized behaviour</summary>
+            <description></description>
+        </key>
+        <key name="dark-mode" type="b">
+            <default>false</default>
+            <summary>Enable or disable dark mode</summary>
+        </key>
+    </schema>
 </schemalist>

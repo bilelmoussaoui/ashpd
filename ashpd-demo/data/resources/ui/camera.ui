@@ -44,7 +44,6 @@
               <object class="GtkButton" id="close_session_btn">
                 <property name="label">Close Session</property>
                 <property name="halign">start</property>
-                <property name="sensitive">False</property>
                 <property name="action-name">camera.stop</property>
                 <property name="halign">end</property>
                 <property name="hexpand">True</property>

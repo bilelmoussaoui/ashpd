@@ -25,5 +25,7 @@
     </gresource>
     <gresource prefix="/com/belmoussaoui/ashpd/demo/icons/16x16/actions/">
         <file compressed="true" preprocess="xml-stripblanks" alias="portals-symbolic.svg">resources/portals-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="light-mode-symbolic.svg">resources/light-mode-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="dark-mode-symbolic.svg">resources/dark-mode-symbolic.svg</file>
     </gresource>
 </gresources>

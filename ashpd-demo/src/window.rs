@@ -29,6 +29,28 @@ mod imp {
         pub screenshot: TemplateChild<ScreenshotPage>,
         #[template_child]
         pub title_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub camera: TemplateChild<CameraPage>,
+        #[template_child]
+        pub wallpaper: TemplateChild<WallpaperPage>,
+        #[template_child]
+        pub location: TemplateChild<LocationPage>,
+        #[template_child]
+        pub notification: TemplateChild<NotificationPage>,
+        #[template_child]
+        pub screencast: TemplateChild<ScreenCastPage>,
+        #[template_child]
+        pub account: TemplateChild<AccountPage>,
+        #[template_child]
+        pub email: TemplateChild<EmailPage>,
+        #[template_child]
+        pub file_chooser: TemplateChild<FileChooserPage>,
+        #[template_child]
+        pub open_uri: TemplateChild<OpenUriPage>,
+        #[template_child]
+        pub inhibit: TemplateChild<InhibitPage>,
+        #[template_child]
+        pub secret: TemplateChild<SecretPage>,
         pub settings: gio::Settings,
     }
 
@@ -44,26 +66,22 @@ mod imp {
                 stack: TemplateChild::default(),
                 leaflet: TemplateChild::default(),
                 title_label: TemplateChild::default(),
+                camera: TemplateChild::default(),
+                wallpaper: TemplateChild::default(),
+                location: TemplateChild::default(),
+                notification: TemplateChild::default(),
+                screencast: TemplateChild::default(),
+                account: TemplateChild::default(),
+                email: TemplateChild::default(),
+                file_chooser: TemplateChild::default(),
+                open_uri: TemplateChild::default(),
+                inhibit: TemplateChild::default(),
+                secret: TemplateChild::default(),
                 settings: gio::Settings::new(APP_ID),
             }
         }
 
         fn class_init(klass: &mut Self::Class) {
-            CameraPage::static_type();
-            WallpaperPage::static_type();
-            DevicePage::static_type();
-            LocationPage::static_type();
-            NotificationPage::static_type();
-            BackgroundPage::static_type();
-            ScreenCastPage::static_type();
-            AccountPage::static_type();
-            NetworkMonitorPage::static_type();
-            EmailPage::static_type();
-            DocumentsPage::static_type();
-            FileChooserPage::static_type();
-            OpenUriPage::static_type();
-            InhibitPage::static_type();
-            SecretPage::static_type();
             Self::bind_template(klass);
 
             klass.install_action("win.back", None, |win, _, _| {
@@ -77,7 +95,44 @@ mod imp {
             obj.init_template();
         }
     }
-
+    /*
+        <child>
+            <object class="GtkStackPage">
+            <property name="name">background</property>
+            <property name="title">Background</property>
+            <property name="child">
+                <object class="BackgroundPage" id="background" />
+            </property>
+            </object>
+        </child>
+        <child>
+            <object class="GtkStackPage">
+            <property name="name">device</property>
+            <property name="title">Device</property>
+            <property name="child">
+                <object class="DevicePage" id="device" />
+            </property>
+            </object>
+        </child>
+        <child>
+            <object class="GtkStackPage">
+            <property name="name">documents</property>
+            <property name="title">Documents</property>
+            <property name="child">
+                <object class="DocumentsPage" id="documents" />
+            </property>
+            </object>
+        </child>
+        <child>
+            <object class="GtkStackPage">
+            <property name="name">network_monitor</property>
+            <property name="title">Network Monitor</property>
+            <property name="child">
+                <object class="NetworkMonitorPage" id="network_monitor" />
+            </property>
+            </object>
+        </child>
+    */
     impl ObjectImpl for ExampleApplicationWindow {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
@@ -85,6 +140,22 @@ mod imp {
             let builder = gtk::Builder::from_resource("/com/belmoussaoui/ashpd/demo/shortcuts.ui");
             let shortcuts = builder.object("shortcuts").unwrap();
             obj.set_help_overlay(Some(&shortcuts));
+
+            // Add pages based on whether the app is sandboxed
+            if ashpd::is_sandboxed() {
+                self.stack
+                    .add_titled(&BackgroundPage::new(), Some("background"), "Background");
+            } else {
+                self.stack
+                    .add_titled(&DevicePage::new(), Some("device"), "Device");
+                self.stack.add_titled(
+                    &NetworkMonitorPage::new(),
+                    Some("network_monitor"),
+                    "Network Monitor",
+                );
+                self.stack
+                    .add_titled(&DocumentsPage::new(), Some("documents"), "Documents");
+            }
 
             self.stack.set_visible_child_name("welcome");
             // load latest window state
