@@ -69,7 +69,7 @@ impl InhibitPage {
 async fn inhibit(identifier: WindowIdentifier, reason: &str) -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = inhibit::InhibitProxy::new(&connection).await?;
-    let monitor = proxy.create_monitor(identifier.clone()).await?;
+    let monitor = proxy.create_monitor(identifier).await?;
     println!("{:#?}", monitor);
     let state = proxy.receive_state_changed().await?;
     println!("{:#?}", state);
@@ -78,7 +78,7 @@ async fn inhibit(identifier: WindowIdentifier, reason: &str) -> Result<(), ashpd
         inhibit::SessionState::QueryEnd => {
             proxy
                 .inhibit(
-                    identifier,
+                    Default::default(),
                     inhibit::InhibitFlags::Logout | inhibit::InhibitFlags::UserSwitch,
                     reason,
                 )

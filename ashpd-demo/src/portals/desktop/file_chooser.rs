@@ -143,7 +143,7 @@ impl FileChooserPage {
     fn save_file(&self) {
         let root = self.native().unwrap();
         spawn!(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_surfaceace(&root).await;
+            let identifier = WindowIdentifier::from_native(&root).await;
             let self_ = imp::FileChooserPage::from_instance(&page);
             let title = self_.save_file_title_entry.text();
             let accept_label = self_.save_file_accept_label_entry.text();
@@ -167,7 +167,7 @@ impl FileChooserPage {
     fn save_files(&self) {
         let root = self.native().unwrap();
         spawn!(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_surfaceace(&root).await;
+            let identifier = WindowIdentifier::from_native(&root).await;
             let self_ = imp::FileChooserPage::from_instance(&page);
             let title = self_.save_files_title_entry.text();
             let accept_label = self_.save_files_accept_label_entry.text();

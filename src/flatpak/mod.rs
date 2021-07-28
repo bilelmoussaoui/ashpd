@@ -212,11 +212,9 @@ impl<'a> FlatpakProxy<'a> {
     #[doc(alias = "CreateUpdateMonitor")]
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
-        let path: zvariant::OwnedObjectPath = self
-            .0
-            .call_method("CreateUpdateMonitor", &(options))
-            .await?
-            .body()?;
+        let path: zvariant::OwnedObjectPath =
+            call_method(&self.0, "CreateUpdateMonitor", &(options)).await?;
+
         UpdateMonitorProxy::new(self.0.connection(), path.into_inner()).await
     }
 
