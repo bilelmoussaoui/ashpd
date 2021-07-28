@@ -5,11 +5,11 @@ use futures::lock::Mutex;
 #[cfg(any(feature = "feature_gtk4", feature = "feature_gtk3"))]
 use std::sync::Arc;
 
+// This is needed for docs so that we include glib only once
+#[cfg(all(feature = "feature_gtk4", not(feature = "feature_gtk3")))]
+use gtk4::glib::{self, clone};
 #[cfg(feature = "feature_gtk4")]
-use gtk4::{
-    glib::{self, clone},
-    prelude::*,
-};
+use gtk4::prelude::*;
 
 #[cfg(feature = "feature_gtk3")]
 use gtk3::{
