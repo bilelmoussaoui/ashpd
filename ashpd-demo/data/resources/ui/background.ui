@@ -8,105 +8,95 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Run the application in background</property>
+            <property name="title" translatable="yes">Run the Application in the Background</property>
             <property name="description">Calls RequestBackground on org.freedesktop.portal.Background</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Reason</property>
+                <property name="activatable-widget">reason_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Reason</property>
-                    <property name="activatable-widget">reason_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="reason_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="reason_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Auto Start</property>
+                <property name="activatable-widget">auto_start_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Auto Start</property>
-                    <property name="activatable-widget">auto_start_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="auto_start_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="auto_start_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">DBus Activatable</property>
+                <property name="activatable-widget">dbus_activatable_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">DBus Activatable</property>
-                    <property name="activatable-widget">dbus_activatable_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="dbus_activatable_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="dbus_activatable_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Command</property>
+                <property name="subtitle" translatable="yes">Comma separated args otherwise the Exec line from desktop file is used</property>
+                <property name="activatable-widget">command_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Command</property>
-                    <property name="subtitle">Comma separated args otherwise the Exec line from desktop file is used</property>
-                    <property name="activatable-widget">command_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="command_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="command_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Request</property>
+            <property name="label" translatable="yes">_Request</property>
+            <property name="use-underline">True</property>
             <property name="halign">start</property>
             <property name="action-name">background.request</property>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title">Response</property>
+            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
-                <property name="hexpand">True</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Run In Background</property>
+                <property name="subtitle" translatable="yes">If the application is allowed to run in the background.</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Run In Background</property>
-                    <property name="subtitle">If the application is allowed to run in the background.</property>
-                    <child>
-                      <object class="GtkLabel" id="run_bg_label">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="run_bg_label">
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Auto Start</property>
+                <property name="subtitle" translatable="yes">If the application will be auto-started.</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Auto Start</property>
-                    <property name="subtitle">If the application will be auto-started.</property>
-                    <child>
-                      <object class="GtkLabel" id="auto_start_label">
-                        <property name="valign">center</property>
-                        <property name="ellipsize">end</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="auto_start_label">
+                    <property name="valign">center</property>
+                    <property name="ellipsize">end</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>

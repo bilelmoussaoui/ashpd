@@ -8,45 +8,38 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Open a URI</property>
+            <property name="title" translatable="yes">Open a URI</property>
             <property name="description">Calls OpenURI on org.freedesktop.portal.OpenURI</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Writeable</property>
+                <property name="subtitle" translatable="yes">Whether the file should be writeable or not</property>
+                <property name="activatable-widget">writeable_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Writeable</property>
-                    <property name="subtitle">Whether the file should be writeable or not</property>
-                    <property name="activatable-widget">writeable_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="writeable_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="writeable_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Ask</property>
+                <property name="subtitle" translatable="yes">Whether to always ask the user which application to use or not</property>
+                <property name="activatable-widget">ask_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Ask</property>
-                    <property name="subtitle">Whether to always ask the user which application to use or not</property>
-                    <property name="activatable-widget">ask_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="ask_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="ask_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Open</property>
+            <property name="label" translatable="yes">_Open</property>
+            <property name="use-underline">True</property>
             <property name="halign">start</property>
             <property name="action-name">open_uri.uri</property>
           </object>

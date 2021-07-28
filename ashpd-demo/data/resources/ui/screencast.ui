@@ -8,34 +8,27 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Screen Cast</property>
+            <property name="title" translatable="yes">Screen Cast</property>
+            <property name="description" translatable="yes">Communicates with org.freedesktop.portal.ScreenCast</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Multiple sources</property>
+                <property name="activatable-widget">multiple_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Multiple sources</property>
-                    <property name="activatable-widget">multiple_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="multiple_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="multiple_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
-                <child>
-                  <object class="AdwComboRow" id="types_comborow">
-                    <property name="title">Content to record</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwComboRow" id="cursor_comborow">
-                    <property name="title">Cursor Mode</property>
-                  </object>
-                </child>
-                <style>
-                  <class name="content" />
-                </style>
+              </object>
+            </child>
+            <child>
+              <object class="AdwComboRow" id="types_comborow">
+                <property name="title" translatable="yes">Content to Record</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwComboRow" id="cursor_comborow">
+                <property name="title" translatable="yes">Cursor Mode</property>
               </object>
             </child>
           </object>
@@ -45,14 +38,16 @@
             <property name="orientation">horizontal</property>
             <child>
               <object class="GtkButton">
-                <property name="label">Start Session</property>
+                <property name="label" translatable="yes">_Start Session</property>
+                <property name="use-underline">True</property>
                 <property name="halign">start</property>
                 <property name="action-name">screencast.start</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="close_session_btn">
-                <property name="label">Close Session</property>
+                <property name="label" translatable="yes">_Close Session</property>
+                <property name="use-underline">True</property>
                 <property name="halign">start</property>
                 <property name="sensitive">False</property>
                 <property name="action-name">screencast.stop</property>
@@ -67,7 +62,7 @@
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title">Response</property>
+            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <child>
               <object class="AdwCarouselIndicatorLines">

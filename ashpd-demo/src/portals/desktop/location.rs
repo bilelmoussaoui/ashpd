@@ -63,6 +63,7 @@ mod imp {
     }
     impl ObjectImpl for LocationPage {
         fn constructed(&self, _obj: &Self::Type) {
+            // TODO Localize strings.
             let model = gtk::StringList::new(&[
                 "None",
                 "Country",

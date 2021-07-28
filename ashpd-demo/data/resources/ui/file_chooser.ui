@@ -8,83 +8,76 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Open File</property>
-            <property name="description">Calls OpenFile on org.freedesktop.portal.FileChooser</property>
+            <property name="title" translatable="yes">Open File</property>
+            <property name="description" translatable="yes">Calls OpenFile on org.freedesktop.portal.FileChooser</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Title</property>
+                <property name="activatable-widget">open_title_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Title</property>
-                    <property name="activatable-widget">open_title_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="open_title_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="open_title_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Accept Label</property>
+                <property name="activatable-widget">open_accept_label_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Accept Label</property>
-                    <property name="activatable-widget">open_accept_label_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="open_accept_label_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="open_accept_label_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Modal</property>
+                <property name="activatable-widget">open_modal_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Modal</property>
-                    <property name="activatable-widget">open_modal_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="open_modal_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="open_modal_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Multiple</property>
+                <property name="activatable-widget">open_multiple_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Multiple</property>
-                    <property name="activatable-widget">open_multiple_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="open_multiple_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="open_multiple_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Directory</property>
+                <property name="activatable-widget">open_directory_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Directory</property>
-                    <property name="activatable-widget">open_directory_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="open_directory_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="open_directory_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Open</property>
+            <property name="label" translatable="yes">_Open</property>
+            <property name="use-underline">True</property>
             <property name="halign">start</property>
             <property name="action-name">file_chooser.open_file</property>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="open_response_group">
-            <property name="title">Response</property>
+            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
             <child>
@@ -98,97 +91,90 @@
             </child>
           </object>
         </child>
-
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Save File</property>
-            <property name="description">Calls SaveFile on org.freedesktop.portal.FileChooser</property>
+            <property name="title" translatable="yes">Save File</property>
+            <property name="description" translatable="yes">Calls SaveFile on org.freedesktop.portal.FileChooser</property>
+            <property name="margin-top">24</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Title</property>
+                <property name="activatable-widget">save_file_title_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Title</property>
-                    <property name="activatable-widget">save_file_title_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_file_title_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_file_title_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Accept Label</property>
+                <property name="activatable-widget">save_file_accept_label_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Accept Label</property>
-                    <property name="activatable-widget">save_file_accept_label_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_file_accept_label_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_file_accept_label_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Modal</property>
+                <property name="activatable-widget">save_file_modal_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Modal</property>
-                    <property name="activatable-widget">save_file_modal_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="save_file_modal_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="save_file_modal_switch">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Current File</property>
+                <property name="activatable-widget">save_file_current_file_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Current File</property>
-                    <property name="activatable-widget">save_file_current_file_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_file_current_file_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_file_current_file_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Current Name</property>
+                <property name="activatable-widget">save_file_current_name_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Current Name</property>
-                    <property name="activatable-widget">save_file_current_name_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_file_current_name_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_file_current_name_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Current Folder</property>
+                <property name="activatable-widget">save_file_current_folder_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Current Folder</property>
-                    <property name="activatable-widget">save_file_current_folder_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_file_current_folder_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_file_current_folder_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Open</property>
+            <property name="label" translatable="yes">_Open</property>
+            <property name="use-underline">True</property>
             <property name="halign">start</property>
             <property name="action-name">file_chooser.save_file</property>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="save_file_response_group">
-            <property name="title">Response</property>
+            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
             <child>
@@ -202,17 +188,16 @@
             </child>
           </object>
         </child>
-
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Save Files</property>
+            <property name="title" translatable="yes">Save Files</property>
             <property name="description">Calls SaveFiles on org.freedesktop.portal.FileChooser</property>
             <child>
               <object class="GtkListBox">
                 <property name="selection-mode">none</property>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Title</property>
+                    <property name="title" translatable="yes">Title</property>
                     <property name="activatable-widget">save_files_title_entry</property>
                     <child>
                       <object class="GtkEntry" id="save_files_title_entry">
@@ -223,7 +208,7 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Accept Label</property>
+                    <property name="title" translatable="yes">Accept Label</property>
                     <property name="activatable-widget">save_files_accept_label_entry</property>
                     <child>
                       <object class="GtkEntry" id="save_files_accept_label_entry">
@@ -234,7 +219,7 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Modal</property>
+                    <property name="title" translatable="yes" comments="Refersto the window modal property">Modal</property>
                     <property name="activatable-widget">save_files_modal_switch</property>
                     <child>
                       <object class="GtkSwitch" id="save_files_modal_switch">
@@ -245,7 +230,7 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Current Folder Path</property>
+                    <property name="title" translatable="yes">Current Folder Path</property>
                     <property name="activatable-widget">save_files_current_folder_entry</property>
                     <child>
                       <object class="GtkEntry" id="save_files_current_folder_entry">
@@ -256,8 +241,8 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title">Files</property>
-                    <property name="subtitle">Comma separated list of files to save</property>
+                    <property name="title" translatable="yes">Files</property>
+                    <property name="subtitle" translatable="yes">Comma separated list of files to save</property>
                     <property name="activatable-widget">save_files_files_entry</property>
                     <child>
                       <object class="GtkEntry" id="save_files_files_entry">
@@ -275,14 +260,15 @@
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Open</property>
+            <property name="label" translatable="yes">_Open</property>
+            <property name="use-underline">True</property>
             <property name="halign">start</property>
             <property name="action-name">file_chooser.save_files</property>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="save_files_response_group">
-            <property name="title">Response</property>
+            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
             <child>
