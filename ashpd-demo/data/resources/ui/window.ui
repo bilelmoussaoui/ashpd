@@ -179,7 +179,7 @@
                         <child>
                           <object class="GtkStackPage">
                             <property name="name">network_monitor</property>
-                            <property name="title">Netowkr Monitor</property>
+                            <property name="title">Network Monitor</property>
                             <property name="child">
                               <object class="NetworkMonitorPage" id="network_monitor" />
                             </property>
@@ -215,7 +215,7 @@
                         <child>
                           <object class="GtkStackPage">
                             <property name="name">screencast</property>
-                            <property name="title">ScreenCast</property>
+                            <property name="title">Screen Cast</property>
                             <property name="child">
                               <object class="ScreenCastPage" id="screencast" />
                             </property>
