@@ -8,24 +8,20 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Information</property>
+            <property name="title" translatable="yes">Information</property>
+            <property name="description" translatable="yes">Communicates with org.freedesktop.portal.Camera</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Is a camera available?</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Is a camera available?</property>
-                    <child>
-                      <object class="GtkLabel" id="camera_available">
-                        <property name="label">Undefined</property>
-                        <property name="halign">start</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="camera_available">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                    <style>
+                      <class name="dim-label"/>
+                    </style>
                   </object>
                 </child>
-                <style>
-                  <class name="content"/>
-                </style>
               </object>
             </child>
           </object>
@@ -35,14 +31,16 @@
             <property name="orientation">horizontal</property>
             <child>
               <object class="GtkButton" id="start_session_btn">
-                <property name="label">Start Session</property>
+                <property name="label" translatable="yes">_Start Session</property>
+                <property name="use-underline">True</property>
                 <property name="halign">start</property>
                 <property name="action-name">camera.start</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="close_session_btn">
-                <property name="label">Close Session</property>
+                <property name="label" translatable="yes">_Close Session</property>
+                <property name="use-underline">True</property>
                 <property name="halign">start</property>
                 <property name="action-name">camera.stop</property>
                 <property name="halign">end</property>

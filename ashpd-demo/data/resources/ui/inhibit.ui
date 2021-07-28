@@ -8,101 +8,90 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Inhibit session status changes</property>
-            <property name="description">Calls Inhibit on org.freedesktop.portal.Inhibit</property>
+            <property name="title" translatable="yes">Inhibit Session Status Changes</property>
+            <property name="description" translatable="yes">Calls Inhibit on org.freedesktop.portal.Inhibit</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Reason</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Reason</property>
+                  <object class="GtkEntry" id="reason">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Status</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
                     <child>
-                      <object class="GtkEntry" id="reason">
+                      <object class="GtkCheckButton" id="logout">
+                        <property name="label" translatable="yes">Logout</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="user_switch">
+                        <property name="label" translatable="yes">User Switch</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="suspend">
+                        <property name="label" translatable="yes">Suspens</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="idle">
+                        <property name="label" translatable="yes">Idle</property>
                         <property name="valign">center</property>
                       </object>
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Status</property>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="orientation">horizontal</property>
-                        <child>
-                          <object class="GtkCheckButton" id="logout">
-                            <property name="label">Logout</property>
-                            <property name="valign">center</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkCheckButton" id="user_switch">
-                            <property name="label">User Switch</property>
-                            <property name="valign">center</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkCheckButton" id="suspend">
-                            <property name="label">Suspens</property>
-                            <property name="valign">center</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkCheckButton" id="idle">
-                            <property name="label">Idle</property>
-                            <property name="valign">center</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Request</property>
+            <property name="label" translatable="yes">Request</property>
             <property name="halign">start</property>
             <property name="action-name">inhibit.request</property>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title">Response</property>
+            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
-                <property name="hexpand">True</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Screensaver Status</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Screensaver Status</property>
-                    <child>
-                      <object class="GtkLabel" id="screensaver_status_label">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="screensaver_status_label">
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Session State</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Session State</property>
-                    <child>
-                      <object class="GtkLabel" id="session_state_label">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="session_state_label">
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>

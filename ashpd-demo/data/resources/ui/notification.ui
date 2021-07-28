@@ -8,106 +8,100 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title">Notification</property>
+            <property name="title" translatable="yes">Notification</property>
+            <property name="description" translatable="yes">Calls AddNotification on org.freedesktop.portal.Notification</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">ID</property>
+                <property name="activatable-widget">id_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">ID</property>
-                    <property name="activatable-widget">id_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="id_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="id_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Title</property>
+                <property name="activatable-widget">title_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Title</property>
-                    <property name="activatable-widget">title_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="title_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="title_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Body</property>
+                <property name="activatable-widget">body_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Body</property>
-                    <property name="activatable-widget">body_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="body_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="body_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
-                <child>
-                  <object class="AdwComboRow" id="priority_combo">
-                    <property name="title">Priority</property>
-                  </object>
-                </child>
-                <style>
-                  <class name="content" />
-                </style>
+              </object>
+            </child>
+            <child>
+              <object class="AdwComboRow" id="priority_combo">
+                <property name="title" translatable="yes">Priority</property>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Send</property>
+            <property name="label" translatable="yes">_Send</property>
+            <property name="use-underline">True</property>
             <property name="halign">start</property>
             <property name="action-name">notification.send</property>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title">Response</property>
+            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
-                <property name="hexpand">True</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Notification ID</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Notification ID</property>
-                    <child>
-                      <object class="GtkLabel" id="id_label">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="id_label">
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Action Name</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Action Name</property>
-                    <child>
-                      <object class="GtkLabel" id="action_name_label">
-                        <property name="valign">center</property>
-                        <property name="ellipsize">end</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="action_name_label">
+                    <property name="valign">center</property>
+                    <property name="ellipsize">end</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Parameters</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Parameters</property>
-                    <child>
-                      <object class="GtkLabel" id="parameters_label">
-                        <property name="valign">center</property>
-                        <property name="ellipsize">end</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="parameters_label">
+                    <property name="valign">center</property>
+                    <property name="ellipsize">end</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>
