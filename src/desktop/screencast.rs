@@ -5,6 +5,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screencast::{CursorMode, ScreenCastProxy, SourceType};
+//! use ashpd::WindowIdentifier;
 //! use enumflags2::BitFlags;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
@@ -22,7 +23,7 @@
 //!         )
 //!         .await?;
 //!
-//!     let streams = proxy.start(&session, Default::default()).await?;
+//!     let streams = proxy.start(&session, &WindowIdentifier::default()).await?;
 //!
 //!     streams.iter().for_each(|stream| {
 //!         println!("node id: {}", stream.pipe_wire_node_id());
@@ -322,14 +323,14 @@ impl<'a> ScreenCastProxy<'a> {
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
     ) -> Result<Vec<Stream>, Error> {
         let options = StartCastOptions::default();
         let streams: Streams = call_request_method(
             &self.0,
             &options.handle_token,
             "Start",
-            &(session, identifier, &options),
+            &(session, &identifier, &options),
         )
         .await?;
         Ok(streams.streams.to_vec())

@@ -5,6 +5,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::flatpak::FlatpakProxy;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -13,7 +14,7 @@
 //!     let monitor = proxy.create_update_monitor().await?;
 //!     let info = monitor.receive_update_available().await?;
 //!
-//!     monitor.update(Default::default()).await?;
+//!     monitor.update(&WindowIdentifier::default()).await?;
 //!     let progress = monitor.receive_progress().await?;
 //!     println!("{:#?}", progress);
 //!
@@ -144,9 +145,9 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// See also [`Update`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Update).
     #[doc(alias = "Update")]
-    pub async fn update(&self, identifier: WindowIdentifier) -> Result<(), Error> {
+    pub async fn update(&self, identifier: &WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
-        call_method(&self.0, "Update", &(identifier, options)).await
+        call_method(&self.0, "Update", &(&identifier, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.

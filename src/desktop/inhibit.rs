@@ -4,13 +4,15 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState};
+//! use ashpd::WindowIdentifier;
 //! use std::{thread, time};
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = InhibitProxy::new(&connection).await?;
+//!     let identifier = WindowIdentifier::default();
 //!
-//!     let session = proxy.create_monitor(Default::default()).await?;
+//!     let session = proxy.create_monitor(&identifier).await?;
 //!
 //!     let state = proxy.receive_state_changed().await?;
 //!     match state.session_state() {
@@ -18,7 +20,7 @@
 //!         SessionState::QueryEnd => {
 //!             proxy
 //!                 .inhibit(
-//!                     Default::default(),
+//!                     &identifier,
 //!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
 //!                     "please save the opened project first",
 //!                 )
@@ -170,10 +172,10 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "CreateMonitor")]
     pub async fn create_monitor(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
     ) -> Result<SessionProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
-        let body = &(identifier, &options);
+        let body = &(&identifier, &options);
         let (monitor, proxy): (CreateMonitor, SessionProxy) = futures::try_join!(
             call_request_method(&self.0, &options.handle_token, "CreateMonitor", body)
                 .into_future(),
@@ -198,7 +200,7 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "Inhibit")]
     pub async fn inhibit(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         reason: &str,
     ) -> Result<(), Error> {
@@ -207,7 +209,7 @@ impl<'a> InhibitProxy<'a> {
             &self.0,
             &options.handle_token,
             "Inhibit",
-            &(identifier, flags, &options),
+            &(&identifier, flags, &options),
         )
         .await
     }

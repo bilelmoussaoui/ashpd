@@ -71,7 +71,7 @@ impl BackgroundPage {
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::BackgroundPage::from_instance(&page);
             let identifier = WindowIdentifier::from_native(&root).await;
-            if let Ok(response) = background::request(identifier,
+            if let Ok(response) = background::request(&identifier,
                 &reason,
                 auto_start,
                 Some(self_.command_entry.text().split_whitespace().collect::<Vec<&str>>().as_slice()),

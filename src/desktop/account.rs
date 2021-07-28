@@ -2,10 +2,11 @@
 //!
 //! ```rust, no_run
 //! use ashpd::desktop::account;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let user_info = account::user_information(
-//!         Default::default(),
+//!         &WindowIdentifier::default(),
 //!         "App would like to access user information",
 //!     ).await?;
 //!
@@ -20,6 +21,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::account::AccountProxy;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -27,7 +29,7 @@
 //!     let proxy = AccountProxy::new(&connection).await?;
 //!     let user_info = proxy
 //!         .user_information(
-//!             Default::default(),
+//!             &WindowIdentifier::default(),
 //!             "App would like to access user information",
 //!         )
 //!         .await?;
@@ -126,7 +128,7 @@ impl<'a> AccountProxy<'a> {
     #[doc(alias = "GetUserInformation")]
     pub async fn user_information(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         reason: &str,
     ) -> Result<UserInfo, Error> {
         let options = UserInfoOptions::default().reason(reason);
@@ -134,7 +136,7 @@ impl<'a> AccountProxy<'a> {
             &self.0,
             &options.handle_token,
             "GetUserInformation",
-            &(identifier, &options),
+            &(&identifier, &options),
         )
         .await
     }
@@ -144,10 +146,10 @@ impl<'a> AccountProxy<'a> {
 #[doc(alias = "get_user_information")]
 /// A handy wrapper around [`AccountProxy::user_information`].
 pub async fn user_information(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     reason: &str,
 ) -> Result<UserInfo, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = AccountProxy::new(&connection).await?;
-    proxy.user_information(identifier, reason).await
+    proxy.user_information(&identifier, reason).await
 }

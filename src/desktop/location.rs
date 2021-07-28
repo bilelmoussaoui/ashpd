@@ -2,16 +2,18 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::location::{Accuracy, LocationProxy};
+//! use ashpd::WindowIdentifier;
 //! use futures::TryFutureExt;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = LocationProxy::new(&connection).await?;
+//!     let identifier = WindowIdentifier::default();
 //!
 //!     let session = proxy.create_session(None, None, Some(Accuracy::Street)).await?;
 //!
 //!     let (_, location) = futures::try_join!(
-//!         proxy.start(&session, Default::default()).into_future(),
+//!         proxy.start(&session, &identifier).into_future(),
 //!         proxy.receive_location_updated().into_future()
 //!     )?;
 //!
@@ -267,14 +269,14 @@ impl<'a> LocationProxy<'a> {
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
     ) -> Result<(), Error> {
         let options = SessionStartOptions::default();
         call_basic_response_method(
             &self.0,
             &options.handle_token,
             "Start",
-            &(session, identifier, &options),
+            &(session, &identifier, &options),
         )
         .await
     }

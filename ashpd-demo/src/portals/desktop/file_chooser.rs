@@ -128,7 +128,7 @@ impl FileChooserPage {
             let modal = self_.open_modal_switch.is_active();
             let multiple = self_.open_multiple_switch.is_active();
 
-            let files = portal_open_file(identifier, &title, &accept_label, directory, modal, multiple).await.unwrap();
+            let files = portal_open_file(&identifier, &title, &accept_label, directory, modal, multiple).await.unwrap();
             self_.open_response_group.show();
 
             while let Some(child) = self_.open_uris_listbox.next_sibling() {
@@ -152,7 +152,7 @@ impl FileChooserPage {
             let current_folder = self_.save_file_current_folder_entry.text();
             let current_file = self_.save_file_current_file_entry.text();
 
-            let files = portal_save_file(identifier, &title, &accept_label, modal, &current_name, &current_folder, &current_file).await.unwrap();
+            let files = portal_save_file(&identifier, &title, &accept_label, modal, &current_name, &current_folder, &current_file).await.unwrap();
             self_.save_file_response_group.show();
 
             while let Some(child) = self_.save_file_uris_listbox.next_sibling() {
@@ -176,7 +176,7 @@ impl FileChooserPage {
             let files = self_.save_files_files_entry.text();
             let files = files.split(',').collect::<Vec<&str>>();
 
-            let files = portal_save_files(identifier, &title, &accept_label, modal, &current_folder, files.as_slice()).await.unwrap();
+            let files = portal_save_files(&identifier, &title, &accept_label, modal, &current_folder, files.as_slice()).await.unwrap();
             self_.save_files_response_group.show();
 
             while let Some(child) = self_.save_files_uris_listbox.next_sibling() {
@@ -190,7 +190,7 @@ impl FileChooserPage {
 }
 
 async fn portal_open_file(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     title: &str,
     accept_label: &str,
     directory: bool,
@@ -201,7 +201,7 @@ async fn portal_open_file(
     let proxy = FileChooserProxy::new(&cnx).await?;
     let selected_files = proxy
         .open_file(
-            identifier,
+            &identifier,
             title,
             OpenFileOptions::default()
                 .accept_label(accept_label)
@@ -214,7 +214,7 @@ async fn portal_open_file(
 }
 
 async fn portal_save_file(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     title: &str,
     accept_label: &str,
     modal: bool,
@@ -226,7 +226,7 @@ async fn portal_save_file(
     let proxy = FileChooserProxy::new(&cnx).await?;
     let selected_files = proxy
         .save_file(
-            identifier,
+            &identifier,
             title,
             SaveFileOptions::default()
                 .accept_label(accept_label)
@@ -240,7 +240,7 @@ async fn portal_save_file(
 }
 
 async fn portal_save_files(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     title: &str,
     accept_label: &str,
     modal: bool,
@@ -251,7 +251,7 @@ async fn portal_save_files(
     let proxy = FileChooserProxy::new(&cnx).await?;
     let selected_files = proxy
         .save_files(
-            identifier,
+            &identifier,
             title,
             SaveFilesOptions::default()
                 .accept_label(accept_label)

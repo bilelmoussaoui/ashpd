@@ -4,9 +4,10 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screenshot;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let uri = screenshot::take(Default::default(), true, true).await?;
+//!     let uri = screenshot::take(&WindowIdentifier::default(), true, true).await?;
 //!     println!("URI: {}", uri);
 //!     Ok(())
 //! }
@@ -16,12 +17,13 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screenshot::ScreenshotProxy;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!
-//!     let uri = proxy.screenshot(Default::default(), true, true).await?;
+//!     let uri = proxy.screenshot(&WindowIdentifier::default(), true, true).await?;
 //!     println!("URI: {}", uri);
 //!     Ok(())
 //! }
@@ -31,9 +33,10 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screenshot;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
-//!     let color = screenshot::pick_color(Default::default()).await?;
+//!     let color = screenshot::pick_color(&WindowIdentifier::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -44,12 +47,13 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::screenshot::ScreenshotProxy;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!
-//!     let color = proxy.pick_color(Default::default()).await?;
+//!     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -213,13 +217,13 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
     #[doc(alias = "PickColor")]
-    pub async fn pick_color(&self, identifier: WindowIdentifier) -> Result<Color, Error> {
+    pub async fn pick_color(&self, identifier: &WindowIdentifier) -> Result<Color, Error> {
         let options = PickColorOptions::default();
         call_request_method(
             &self.0,
             &options.handle_token,
             "PickColor",
-            &(identifier, &options),
+            &(&identifier, &options),
         )
         .await
     }
@@ -243,7 +247,7 @@ impl<'a> ScreenshotProxy<'a> {
     #[doc(alias = "Screenshot")]
     pub async fn screenshot(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         interactive: bool,
         modal: bool,
     ) -> Result<String, Error> {
@@ -254,7 +258,7 @@ impl<'a> ScreenshotProxy<'a> {
             &self.0,
             &options.handle_token,
             "Screenshot",
-            &(identifier, &options),
+            &(&identifier, &options),
         )
         .await?;
         Ok(response.uri)
@@ -263,7 +267,7 @@ impl<'a> ScreenshotProxy<'a> {
 
 #[doc(alias = "xdp_portal_pick_color")]
 /// A handy wrapper around [`ScreenshotProxy::pick_color`].
-pub async fn pick_color(identifier: WindowIdentifier) -> Result<Color, Error> {
+pub async fn pick_color(identifier: &WindowIdentifier) -> Result<Color, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
     proxy.pick_color(identifier).await
@@ -272,11 +276,11 @@ pub async fn pick_color(identifier: WindowIdentifier) -> Result<Color, Error> {
 #[doc(alias = "xdp_portal_take_screenshot")]
 /// A handy wrapper around [`ScreenshotProxy::screenshot`].
 pub async fn take(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     interactive: bool,
     modal: bool,
 ) -> Result<String, Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
-    proxy.screenshot(identifier, interactive, modal).await
+    proxy.screenshot(&identifier, interactive, modal).await
 }

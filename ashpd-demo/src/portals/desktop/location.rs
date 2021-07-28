@@ -99,7 +99,7 @@ impl LocationPage {
 
         ctx.spawn_local(clone!(@weak self as page => async move {
             let identifier = WindowIdentifier::from_native(&root).await;
-            if let Ok(location) = locate(identifier, distance_threshold, time_threshold, accuracy).await {
+            if let Ok(location) = locate(&identifier, distance_threshold, time_threshold, accuracy).await {
                 let self_ = imp::LocationPage::from_instance(&page);
 
                 self_.response_group.show();
@@ -117,7 +117,7 @@ impl LocationPage {
 }
 
 pub async fn locate(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,

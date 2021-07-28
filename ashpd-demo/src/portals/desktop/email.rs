@@ -71,7 +71,7 @@ impl EmailPage {
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_native(&root).await;
             let _ = email::compose(
-                identifier,
+                &identifier,
                 Email::default()
                     .subject(&subject)
                     .addresses(

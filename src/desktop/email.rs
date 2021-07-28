@@ -10,7 +10,7 @@
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     email::compose(
-//!         WindowIdentifier::default(),
+//!         &WindowIdentifier::default(),
 //!         Email::new()
 //!             .address("test@gmail.com")
 //!             .subject("email subject")
@@ -35,7 +35,7 @@
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
 //!         .compose_email(
-//!             WindowIdentifier::default(),
+//!             &WindowIdentifier::default(),
 //!             Email::new()
 //!                 .address("test@gmail.com")
 //!                 .subject("email subject")
@@ -176,14 +176,14 @@ impl<'a> EmailProxy<'a> {
     #[doc(alias = "ComposeEmail")]
     pub async fn compose_email(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         email: Email,
     ) -> Result<(), Error> {
         call_basic_response_method(
             &self.0,
             &email.handle_token,
             "ComposeEmail",
-            &(identifier, &email),
+            &(&identifier, &email),
         )
         .await
     }
@@ -191,10 +191,10 @@ impl<'a> EmailProxy<'a> {
 
 /// A handy wrapper around [`EmailProxy::compose_email`]
 #[doc(alias = "xdp_portal_compose_email")]
-pub async fn compose(identifier: WindowIdentifier, email: Email) -> Result<(), Error> {
+pub async fn compose(identifier: &WindowIdentifier, email: Email) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = EmailProxy::new(&connection).await?;
-    proxy.compose_email(identifier, email).await?;
+    proxy.compose_email(&identifier, email).await?;
 
     Ok(())
 }

@@ -4,17 +4,19 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::print::PrintProxy;
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = PrintProxy::new(&connection).await?;
+//!     let identifier = WindowIdentifier::default();
 //!
 //!     let file = File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
 //!     let pre_print = proxy
 //!         .prepare_print(
-//!             Default::default(),
-//!             "prepare print ",
+//!             &identifier,
+//!             "prepare print",
 //!             Default::default(),
 //!             Default::default(),
 //!             true,
@@ -22,7 +24,7 @@
 //!         .await?;
 //!     proxy
 //!         .print(
-//!             Default::default(),
+//!             &identifier,
 //!             "test",
 //!             &file,
 //!             Some(pre_print.token),
@@ -547,7 +549,7 @@ impl<'a> PrintProxy<'a> {
     #[doc(alias = "PreparePint")]
     pub async fn prepare_print(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
@@ -558,7 +560,7 @@ impl<'a> PrintProxy<'a> {
             &self.0,
             &options.handle_token,
             "PreparePint",
-            &(identifier, title, settings, page_setup, &options),
+            &(&identifier, title, settings, page_setup, &options),
         )
         .await
     }
@@ -583,7 +585,7 @@ impl<'a> PrintProxy<'a> {
     #[doc(alias = "Print")]
     pub async fn print<F>(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         title: &str,
         fd: &F,
         token: Option<u32>,
@@ -599,7 +601,7 @@ impl<'a> PrintProxy<'a> {
             &self.0,
             &options.handle_token,
             "Print",
-            &(identifier, title, Fd::from(fd.as_raw_fd()), &options),
+            &(&identifier, title, Fd::from(fd.as_raw_fd()), &options),
         )
         .await
     }

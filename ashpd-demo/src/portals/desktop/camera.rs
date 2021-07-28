@@ -64,24 +64,9 @@ mod imp {
         }
     }
     impl ObjectImpl for CameraPage {
-        fn constructed(&self, _obj: &Self::Type) {
-            let ctx = glib::MainContext::default();
-            let start_session_btn = self.start_session_btn.get();
-            let camera_available = self.camera_available.get();
-
-            ctx.spawn_local(
-                clone!(@weak start_session_btn, @weak camera_available => async move {
-                    let is_present = true; // TODO: fix me
-                    if is_present {
-                        camera_available.set_text("Yes");
-                    } else {
-                        camera_available.set_text("No");
-                    }
-                    start_session_btn.set_sensitive(is_present);
-                }),
-            );
-
+        fn constructed(&self, obj: &Self::Type) {
             self.picture.set_paintable(Some(&self.paintable));
+            self.parent_constructed(obj);
         }
     }
     impl WidgetImpl for CameraPage {}
@@ -104,11 +89,17 @@ impl CameraPage {
             let self_ = imp::CameraPage::from_instance(&page);
 
             match stream().await {
-                Ok(stream_fd) => {
+                Ok(Some(stream_fd)) => {
                     self_.paintable.set_pipewire_fd(stream_fd);
                     self_.start_session_btn.set_sensitive(false);
                     self_.close_session_btn.set_sensitive(true);
                     self_.revealer.set_reveal_child(true);
+                    self_.camera_available.set_text("Yes");
+               }
+               Ok(None) => {
+                    self_.start_session_btn.set_sensitive(false);
+                    self_.close_session_btn.set_sensitive(false);
+                    self_.camera_available.set_text("No");
                }
                Err(err) => {
                    println!("failed {:#?}", err);
@@ -127,10 +118,14 @@ impl CameraPage {
     }
 }
 
-async fn stream() -> Result<RawFd, ashpd::Error> {
+async fn stream() -> Result<Option<RawFd>, ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = camera::CameraProxy::new(&connection).await?;
-    proxy.access_camera().await?;
+    if proxy.is_camera_present().await? {
+        proxy.access_camera().await?;
 
-    proxy.open_pipe_wire_remote().await
+        Ok(Some(proxy.open_pipe_wire_remote().await?))
+    } else {
+        Ok(None)
+    }
 }

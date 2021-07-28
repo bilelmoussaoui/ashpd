@@ -58,7 +58,7 @@ impl OpenUriPage {
         let ctx = glib::MainContext::default();
         ctx.spawn_local(async move {
             let identifier = WindowIdentifier::from_native(&root).await;
-            let _ = open_uri::open_uri(identifier, "https://google.com", writable, ask).await;
+            let _ = open_uri::open_uri(&identifier, "https://google.com", writable, ask).await;
         });
     }
 }

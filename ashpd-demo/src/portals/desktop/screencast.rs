@@ -125,7 +125,7 @@ impl ScreenCastPage {
 
 
 
-            match screencast(identifier, multiple, types, cursor_mode).await {
+            match screencast(&identifier, multiple, types, cursor_mode).await {
                 Ok((streams, fd, session)) => {
                     streams.iter().for_each(|stream| {
                         let paintable = CameraPaintable::new();
@@ -165,7 +165,7 @@ impl ScreenCastPage {
 }
 
 pub async fn screencast(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     multiple: bool,
     types: BitFlags<SourceType>,
     cursor_mode: BitFlags<CursorMode>,

@@ -98,7 +98,7 @@ impl ScreenshotPage {
             let interactive = self_.interactive_switch.is_active();
             let modal = self_.modal_switch.is_active();
 
-            if let Ok(uri) = screenshot::take(identifier, interactive, modal).await
+            if let Ok(uri) = screenshot::take(&identifier, interactive, modal).await
             {
                 let file = gio::File::for_uri(&uri);
                 self_.screenshot_photo.set_file(Some(&file));

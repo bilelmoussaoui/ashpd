@@ -11,12 +11,13 @@
 //! Ask the compositor to pick a color
 //! ```rust,no_run
 //! use ashpd::desktop::screenshot::ScreenshotProxy;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
-//!     let color = proxy.pick_color(Default::default()).await?;
+//!     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
 //!
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!

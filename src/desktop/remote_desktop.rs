@@ -2,6 +2,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -11,7 +12,7 @@
 //!
 //!     proxy.select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer).await?;
 //!
-//!     let devices = proxy.start(&session, Default::default()).await?;
+//!     let devices = proxy.start(&session, &WindowIdentifier::default()).await?;
 //!     println!("{:#?}", devices);
 //!
 //!     // 13 for Enter key code
@@ -212,14 +213,14 @@ impl<'a> RemoteDesktopProxy<'a> {
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
     ) -> Result<BitFlags<DeviceType>, Error> {
         let options = StartRemoteOptions::default();
         let response: SelectedDevices = call_request_method(
             &self.0,
             &options.handle_token,
             "Start",
-            &(session, identifier, &options),
+            &(session, &identifier, &options),
         )
         .await?;
         Ok(response.devices)

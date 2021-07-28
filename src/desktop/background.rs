@@ -4,10 +4,11 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::background;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let response = background::request(
-//!         Default::default(),
+//!         &WindowIdentifier::default(),
 //!         "Automatically fetch your latest mails",
 //!         true,
 //!         Some(&["geary"]),
@@ -27,10 +28,11 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::background;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let response = background::request(
-//!         Default::default(),
+//!         &WindowIdentifier::default(),
 //!         "Automatically fetch your latest mails",
 //!         true,
 //!         None::<&[&str]>,
@@ -167,7 +169,7 @@ impl<'a> BackgroundProxy<'a> {
     #[doc(alias = "RequestBackground")]
     pub async fn request_background<S: AsRef<str> + zvariant::Type + Serialize>(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         reason: &str,
         auto_start: bool,
         command_line: Option<&[S]>,
@@ -182,7 +184,7 @@ impl<'a> BackgroundProxy<'a> {
             &self.0,
             &options.handle_token,
             "RequestBackground",
-            &(identifier, &options),
+            &(&identifier, &options),
         )
         .await
     }
@@ -191,7 +193,7 @@ impl<'a> BackgroundProxy<'a> {
 #[doc(alias = "xdp_portal_request_background")]
 /// A handy wrapper around [`BackgroundProxy::request_background`].
 pub async fn request<S: AsRef<str> + zvariant::Type + Serialize>(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     reason: &str,
     auto_start: bool,
     command_line: Option<&[S]>,
@@ -201,7 +203,7 @@ pub async fn request<S: AsRef<str> + zvariant::Type + Serialize>(
     let proxy = BackgroundProxy::new(&connection).await?;
     proxy
         .request_background(
-            identifier,
+            &identifier,
             reason,
             auto_start,
             command_line,

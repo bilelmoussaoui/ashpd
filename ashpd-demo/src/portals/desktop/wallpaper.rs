@@ -90,7 +90,7 @@ impl WallpaperPage {
                 ctx.spawn_local(clone!(@weak root => async move {
                     let identifier = WindowIdentifier::from_native(&root).await;
                     let _ =  wallpaper::set_from_uri(
-                        identifier,
+                        &identifier,
                         &wallpaper_uri,
                         show_preview,
                         set_on,

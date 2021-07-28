@@ -69,7 +69,7 @@ impl AccountPage {
             let identifier = WindowIdentifier::from_native(&root).await;
             let reason = self_.reason.text();
 
-            if let Ok(user_info) = account::user_information(identifier, &reason).await
+            if let Ok(user_info) = account::user_information(&identifier, &reason).await
             {
                 self_.id_label.set_text(user_info.id());
                 self_.name_label.set_text(user_info.name());

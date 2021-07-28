@@ -4,11 +4,12 @@
 //!
 //!```rust,no_run
 //! use ashpd::desktop::wallpaper::{self, SetOn};
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
-//!     wallpaper::set_from_file(Default::default(), &file, true, SetOn::Both).await?;
+//!     wallpaper::set_from_file(&WindowIdentifier::default(), &file, true, SetOn::Both).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -17,6 +18,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
@@ -25,7 +27,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy
-//!         .set_wallpaper_file(Default::default(), &wallpaper, true, SetOn::Both)
+//!         .set_wallpaper_file(&WindowIdentifier::default(), &wallpaper, true, SetOn::Both)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -35,10 +37,11 @@
 //!
 //!```rust,no_run
 //! use ashpd::desktop::wallpaper::{self, SetOn};
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
-//!     wallpaper::set_from_uri(Default::default(), &uri, true, SetOn::Both).await?;
+//!     wallpaper::set_from_uri(&WindowIdentifier::default(), &uri, true, SetOn::Both).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -47,13 +50,14 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy
 //!         .set_wallpaper_uri(
-//!             Default::default(),
+//!             &WindowIdentifier::default(),
 //!             "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
 //!             true,
 //!             SetOn::Both,
@@ -175,7 +179,7 @@ impl<'a> WallpaperProxy<'a> {
     #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file<F>(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         file: &F,
         show_preview: bool,
         set_on: SetOn,
@@ -190,7 +194,7 @@ impl<'a> WallpaperProxy<'a> {
             &self.0,
             &options.handle_token,
             "SetWallpaperFile",
-            &(identifier, Fd::from(file.as_raw_fd()), &options),
+            &(&identifier, Fd::from(file.as_raw_fd()), &options),
         )
         .await
     }
@@ -210,7 +214,7 @@ impl<'a> WallpaperProxy<'a> {
     #[doc(alias = "SetWallpaperURI")]
     pub async fn set_wallpaper_uri(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         uri: &str,
         show_preview: bool,
         set_on: SetOn,
@@ -222,7 +226,7 @@ impl<'a> WallpaperProxy<'a> {
             &self.0,
             &options.handle_token,
             "SetWallpaperURI",
-            &(identifier, uri, &options),
+            &(&identifier, uri, &options),
         )
         .await
     }
@@ -231,7 +235,7 @@ impl<'a> WallpaperProxy<'a> {
 #[doc(alias = "xdp_portal_set_wallpaper")]
 /// A handy wrapper around [`WallpaperProxy::set_wallpaper_uri`].
 pub async fn set_from_uri(
-    window: WindowIdentifier,
+    identifier: &WindowIdentifier,
     uri: &str,
     show_preview: bool,
     set_on: SetOn,
@@ -239,7 +243,7 @@ pub async fn set_from_uri(
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = WallpaperProxy::new(&connection).await?;
     proxy
-        .set_wallpaper_uri(window, uri, show_preview, set_on)
+        .set_wallpaper_uri(identifier, uri, show_preview, set_on)
         .await?;
     Ok(())
 }
@@ -247,7 +251,7 @@ pub async fn set_from_uri(
 #[doc(alias = "xdp_portal_set_wallpaper")]
 /// A handy wrapper around [`WallpaperProxy::set_wallpaper_file`].
 pub async fn set_from_file<F: AsRawFd>(
-    window: WindowIdentifier,
+    identifier: &WindowIdentifier,
     file: &F,
     show_preview: bool,
     set_on: SetOn,
@@ -255,7 +259,7 @@ pub async fn set_from_file<F: AsRawFd>(
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = WallpaperProxy::new(&connection).await?;
     proxy
-        .set_wallpaper_file(window, file, show_preview, set_on)
+        .set_wallpaper_file(identifier, file, show_preview, set_on)
         .await?;
     Ok(())
 }

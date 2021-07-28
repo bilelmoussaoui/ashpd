@@ -4,6 +4,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions};
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -11,7 +12,7 @@
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .open_file(
-//!             Default::default(),
+//!             &WindowIdentifier::default(),
 //!             "open a file to read",
 //!             OpenFileOptions::default()
 //!                 .accept_label("read")
@@ -38,13 +39,14 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions};
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .save_file(
-//!             Default::default(),
+//!             &WindowIdentifier::default(),
 //!             "open a file to write",
 //!             SaveFileOptions::default()
 //!                 .accept_label("write")
@@ -64,6 +66,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions};
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
@@ -71,7 +74,7 @@
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .save_files(
-//!             Default::default(),
+//!             &WindowIdentifier::default(),
 //!             "open files to write",
 //!             SaveFilesOptions::default()
 //!                 .accept_label("write files")
@@ -455,7 +458,7 @@ impl<'a> FileChooserProxy<'a> {
     #[doc(alias = "OpenFile")]
     pub async fn open_file(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
     ) -> Result<SelectedFiles, Error> {
@@ -463,7 +466,7 @@ impl<'a> FileChooserProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenFile",
-            &(identifier, title, &options),
+            &(&identifier, title, &options),
         )
         .await
     }
@@ -482,7 +485,7 @@ impl<'a> FileChooserProxy<'a> {
     #[doc(alias = "SaveFile")]
     pub async fn save_file(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
     ) -> Result<SelectedFiles, Error> {
@@ -490,7 +493,7 @@ impl<'a> FileChooserProxy<'a> {
             &self.0,
             &options.handle_token,
             "SaveFile",
-            &(identifier, title, &options),
+            &(&identifier, title, &options),
         )
         .await
     }
@@ -514,7 +517,7 @@ impl<'a> FileChooserProxy<'a> {
     #[doc(alias = "SaveFiles")]
     pub async fn save_files(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
     ) -> Result<SelectedFiles, Error> {
@@ -522,7 +525,7 @@ impl<'a> FileChooserProxy<'a> {
             &self.0,
             &options.handle_token,
             "SaveFiles",
-            &(identifier, title, &options),
+            &(&identifier, title, &options),
         )
         .await
     }

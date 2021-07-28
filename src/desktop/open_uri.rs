@@ -4,11 +4,12 @@
 //!
 //!```rust,no_run
 //! use ashpd::desktop::open_uri;
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
-//!     open_uri::open_file(Default::default(), &file, false, true).await?;
+//!     open_uri::open_file(&WindowIdentifier::default(), &file, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -17,6 +18,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::open_uri::OpenURIProxy;
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
@@ -25,7 +27,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
-//!     proxy.open_file(Default::default(), &file, false, true).await?;
+//!     proxy.open_file(&WindowIdentifier::default(), &file, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -34,11 +36,12 @@
 //!
 //!```rust,no_run
 //! use ashpd::desktop::open_uri;
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
-//!     open_uri::open_directory(Default::default(), &directory).await?;
+//!     open_uri::open_directory(&WindowIdentifier::default(), &directory).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -47,6 +50,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::open_uri::OpenURIProxy;
+//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
@@ -55,7 +59,7 @@
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
-//!     proxy.open_directory(Default::default(), &directory).await?;
+//!     proxy.open_directory(&WindowIdentifier::default(), &directory).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -65,10 +69,11 @@
 //!
 //!```rust,no_run
 //! use ashpd::desktop::open_uri;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
-//!     open_uri::open_uri(Default::default(), uri, false, true).await?;
+//!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -77,13 +82,14 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::open_uri::OpenURIProxy;
+//! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> Result<(), ashpd::Error> {
 //!     let connection = zbus::azync::Connection::new_session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
 //!
-//!     proxy.open_uri(Default::default(), uri, false, true).await?;
+//!     proxy.open_uri(&WindowIdentifier::default(), uri, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -172,7 +178,7 @@ impl<'a> OpenURIProxy<'a> {
     #[doc(alias = "OpenDirectory")]
     pub async fn open_directory<F>(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         directory: &F,
     ) -> Result<(), Error>
     where
@@ -183,7 +189,7 @@ impl<'a> OpenURIProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenDirectory",
-            &(identifier, Fd::from(directory.as_raw_fd()), &options),
+            &(&identifier, Fd::from(directory.as_raw_fd()), &options),
         )
         .await
     }
@@ -204,7 +210,7 @@ impl<'a> OpenURIProxy<'a> {
     #[doc(alias = "OpenFile")]
     pub async fn open_file<F>(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         file: &F,
         writeable: bool,
         ask: bool,
@@ -217,7 +223,7 @@ impl<'a> OpenURIProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenFile",
-            &(identifier, Fd::from(file.as_raw_fd()), &options),
+            &(&identifier, Fd::from(file.as_raw_fd()), &options),
         )
         .await
     }
@@ -238,7 +244,7 @@ impl<'a> OpenURIProxy<'a> {
     #[doc(alias = "OpenURI")]
     pub async fn open_uri(
         &self,
-        identifier: WindowIdentifier,
+        identifier: &WindowIdentifier,
         uri: &str,
         writeable: bool,
         ask: bool,
@@ -248,7 +254,7 @@ impl<'a> OpenURIProxy<'a> {
             &self.0,
             &options.handle_token,
             "OpenURI",
-            &(identifier, uri, &options),
+            &(&identifier, uri, &options),
         )
         .await
     }
@@ -257,38 +263,38 @@ impl<'a> OpenURIProxy<'a> {
 #[doc(alias = "xdp_portal_open_uri")]
 /// A handy wrapper around [`OpenURIProxy::open_uri`].
 pub async fn open_uri(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     uri: &str,
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_uri(identifier, uri, writeable, ask).await?;
+    proxy.open_uri(&identifier, uri, writeable, ask).await?;
     Ok(())
 }
 
 /// A handy wrapper around [`OpenURIProxy::open_file`].
 pub async fn open_file<F: AsRawFd>(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     file: &F,
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_file(identifier, file, writeable, ask).await?;
+    proxy.open_file(&identifier, file, writeable, ask).await?;
     Ok(())
 }
 
 #[doc(alias = "xdp_portal_open_directory")]
 /// A handy wrapper around [`OpenURIProxy::open_directory`].
 pub async fn open_directory<F: AsRawFd>(
-    identifier: WindowIdentifier,
+    identifier: &WindowIdentifier,
     directory: &F,
 ) -> Result<(), Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_directory(identifier, directory).await?;
+    proxy.open_directory(&identifier, directory).await?;
     Ok(())
 }

@@ -58,7 +58,7 @@ impl InhibitPage {
             let identifier = WindowIdentifier::from_native(&root).await;
             let reason = self_.reason.text();
 
-            if let Err(err) = inhibit(identifier, &reason).await
+            if let Err(err) = inhibit(&identifier, &reason).await
             {
                 tracing::error!("Failed to request to inhibit stuff {}", err);
             }
@@ -66,10 +66,10 @@ impl InhibitPage {
     }
 }
 
-async fn inhibit(identifier: WindowIdentifier, reason: &str) -> Result<(), ashpd::Error> {
+async fn inhibit(identifier: &WindowIdentifier, reason: &str) -> Result<(), ashpd::Error> {
     let connection = zbus::azync::Connection::new_session().await?;
     let proxy = inhibit::InhibitProxy::new(&connection).await?;
-    let monitor = proxy.create_monitor(identifier).await?;
+    let monitor = proxy.create_monitor(&identifier).await?;
     println!("{:#?}", monitor);
     let state = proxy.receive_state_changed().await?;
     println!("{:#?}", state);
@@ -78,7 +78,7 @@ async fn inhibit(identifier: WindowIdentifier, reason: &str) -> Result<(), ashpd
         inhibit::SessionState::QueryEnd => {
             proxy
                 .inhibit(
-                    Default::default(),
+                    &identifier,
                     inhibit::InhibitFlags::Logout | inhibit::InhibitFlags::UserSwitch,
                     reason,
                 )
