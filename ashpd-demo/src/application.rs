@@ -156,7 +156,6 @@ impl ExampleApplication {
 
     fn show_about_dialog(&self) {
         let dialog = gtk::AboutDialogBuilder::new()
-            .program_name("ASHPD Demo")
             .logo_icon_name(config::APP_ID)
             .license_type(gtk::License::MitX11)
             .website("https://github.com/bilelmoussaoui/ashpd/")
