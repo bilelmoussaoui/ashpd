@@ -28,8 +28,6 @@ mod imp {
         #[template_child]
         pub screenshot: TemplateChild<ScreenshotPage>,
         #[template_child]
-        pub title_label: TemplateChild<gtk::Label>,
-        #[template_child]
         pub camera: TemplateChild<CameraPage>,
         #[template_child]
         pub wallpaper: TemplateChild<WallpaperPage>,
@@ -65,7 +63,6 @@ mod imp {
                 screenshot: TemplateChild::default(),
                 stack: TemplateChild::default(),
                 leaflet: TemplateChild::default(),
-                title_label: TemplateChild::default(),
                 camera: TemplateChild::default(),
                 wallpaper: TemplateChild::default(),
                 location: TemplateChild::default(),
