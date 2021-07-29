@@ -24,11 +24,29 @@
             <child>
               <object class="AdwComboRow" id="types_comborow">
                 <property name="title" translatable="yes">Content to Record</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">Monitor</item>
+                      <item translatable="yes">Window</item>
+                      <item translatable="yes">Both</item>
+                    </items>
+                  </object>
+                </property>
               </object>
             </child>
             <child>
               <object class="AdwComboRow" id="cursor_comborow">
                 <property name="title" translatable="yes">Cursor Mode</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">Hidden</item>
+                      <item translatable="yes">Embedded</item>
+                      <item translatable="yes">Metadata</item>
+                    </items>
+                  </object>
+                </property>
               </object>
             </child>
           </object>

@@ -78,10 +78,6 @@ mod imp {
     }
     impl ObjectImpl for ScreenCastPage {
         fn constructed(&self, obj: &Self::Type) {
-            let model = gtk::StringList::new(&["Monitor", "Window", "Both"]);
-            self.types_comborow.set_model(Some(&model));
-            let model = gtk::StringList::new(&["Hidden", "Embedded", "Metadata"]);
-            self.cursor_comborow.set_model(Some(&model));
             obj.action_set_enabled("screencast.stop", false);
 
             self.close_session_btn.set_sensitive(false);

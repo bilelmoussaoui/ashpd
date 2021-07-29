@@ -24,6 +24,15 @@
             <child>
               <object class="AdwComboRow" id="set_on_combo">
                 <property name="title" translatable="yes">Set On</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">Background</item>
+                      <item translatable="yes">Lockscreen</item>
+                      <item translatable="yes">Both</item>
+                    </items>
+                  </object>
+                </property>
               </object>
             </child>
           </object>

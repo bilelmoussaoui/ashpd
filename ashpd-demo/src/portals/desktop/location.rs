@@ -61,21 +61,7 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for LocationPage {
-        fn constructed(&self, _obj: &Self::Type) {
-            // TODO Localize strings.
-            let model = gtk::StringList::new(&[
-                "None",
-                "Country",
-                "City",
-                "Neighborhood",
-                "Street",
-                "Exact",
-            ]);
-            self.accuracy_combo.set_model(Some(&model));
-            self.accuracy_combo.set_selected(Accuracy::Exact as u32);
-        }
-    }
+    impl ObjectImpl for LocationPage {}
     impl WidgetImpl for LocationPage {}
     impl BinImpl for LocationPage {}
 }
@@ -95,7 +81,15 @@ impl LocationPage {
         let self_ = imp::LocationPage::from_instance(self);
         let distance_threshold = self_.distance_spin.value() as u32;
         let time_threshold = self_.time_spin.value() as u32;
-        let accuracy = unsafe { std::mem::transmute(self_.accuracy_combo.selected()) };
+        let accuracy = match self_.accuracy_combo.selected() {
+            0 => Accuracy::None,
+            1 => Accuracy::Country,
+            2 => Accuracy::City,
+            3 => Accuracy::Neighborhood,
+            4 => Accuracy::Street,
+            5 => Accuracy::Exact,
+            _ => unimplemented!(),
+        };
         let root = self.native().unwrap();
 
         ctx.spawn_local(clone!(@weak self as page => async move {
