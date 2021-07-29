@@ -49,6 +49,19 @@
             <child>
               <object class="AdwComboRow" id="accuracy_combo">
                 <property name="title" translatable="yes">Accuracy</property>
+                <property name="selected">5</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">None</item>
+                      <item translatable="yes">Country</item>
+                      <item translatable="yes">City</item>
+                      <item translatable="yes">Neighborhood</item>
+                      <item translatable="yes">Street</item>
+                      <item translatable="yes">Exact</item>
+                    </items>
+                  </object>
+                </property>
               </object>
             </child>
           </object>

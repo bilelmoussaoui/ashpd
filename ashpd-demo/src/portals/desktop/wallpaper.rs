@@ -1,4 +1,4 @@
-use std::{cell::RefCell, str::FromStr};
+use std::cell::RefCell;
 
 use adw::prelude::*;
 use ashpd::{desktop::wallpaper, WindowIdentifier};
@@ -40,12 +40,7 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for WallpaperPage {
-        fn constructed(&self, _obj: &Self::Type) {
-            let model = gtk::StringList::new(&["Background", "Lockscreen", "Both"]);
-            self.set_on_combo.set_model(Some(&model));
-        }
-    }
+    impl ObjectImpl for WallpaperPage {}
     impl WidgetImpl for WallpaperPage {}
     impl BinImpl for WallpaperPage {}
 }
@@ -73,14 +68,12 @@ impl WallpaperPage {
         file_chooser.add_filter(&filter);
 
         let show_preview = self_.preview_switch.is_active();
-        let selected_item = self_.set_on_combo.selected_item().unwrap();
-        let set_on = wallpaper::SetOn::from_str(
-            &selected_item
-                .downcast_ref::<gtk::StringObject>()
-                .unwrap()
-                .string(),
-        )
-        .unwrap();
+        let set_on = match self_.set_on_combo.selected() {
+            0 => wallpaper::SetOn::Background,
+            1 => wallpaper::SetOn::Lockscreen,
+            2 => wallpaper::SetOn::Both,
+            _ => unimplemented!(),
+        };
         let root = self.native().unwrap();
 
         file_chooser.connect_response(clone!(@weak root => move |dialog, response| {

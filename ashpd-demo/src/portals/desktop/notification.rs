@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use adw::prelude::*;
 use ashpd::{
     desktop::notification::{Action, Button, Notification, NotificationProxy, Priority},
@@ -56,18 +54,7 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for NotificationPage {
-        fn constructed(&self, _obj: &Self::Type) {
-            let model = gtk::StringList::new(&[
-                &Priority::Low.to_string(),
-                &Priority::Normal.to_string(),
-                &Priority::High.to_string(),
-                &Priority::Urgent.to_string(),
-            ]);
-            self.priority_combo.set_model(Some(&model));
-            self.priority_combo.set_selected(Priority::Normal as u32);
-        }
-    }
+    impl ObjectImpl for NotificationPage {}
     impl WidgetImpl for NotificationPage {}
     impl BinImpl for NotificationPage {}
 }
@@ -88,14 +75,13 @@ impl NotificationPage {
         let notification_id = self_.id_entry.text();
         let title = self_.title_entry.text();
         let body = self_.body_entry.text();
-        let selected_item = self_
-            .priority_combo
-            .selected_item()
-            .unwrap()
-            .downcast::<gtk::StringObject>()
-            .unwrap()
-            .string();
-        let priority = Priority::from_str(&selected_item).unwrap();
+        let priority = match self_.priority_combo.selected() {
+            0 => Priority::Low,
+            1 => Priority::Normal,
+            2 => Priority::High,
+            3 => Priority::Urgent,
+            _ => unimplemented!(),
+        };
 
         spawn!(clone!(@weak self as page => async move {
             let self_ = imp::NotificationPage::from_instance(&page);
