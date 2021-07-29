@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Bilal Elmoussaoui 2019 <bil.elmoussaoui@gmail.com> -->
+<!-- Bilal Elmoussaoui 2021 <bil.elmoussaoui@gmail.com> -->
 <component type="desktop-application">
   <id>@app-id@</id>
   <metadata_license>CC0</metadata_license>
-  <project_license>GPL-3.0+</project_license>
+  <project_license>MIT</project_license>
   <name>ASHPD Demo</name>
-  <summary>A GTK + Rust application template.</summary>
+  <summary>Play with portals</summary>
   <description>
-    <p>A boilerplate template for GTK + Rust. It uses Meson as a build system and has flatpak support by default.</p>
+    <p>Demo that shows the capabilities of the ASHPD crate.</p>
   </description>
   <screenshots>
     <screenshot type="default">
