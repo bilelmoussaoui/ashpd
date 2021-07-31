@@ -203,6 +203,7 @@ impl RemoteDesktopPage {
             }
             Err(err) => {
                 tracing::error!("{:#?}", err);
+                self.stop_session().await;
             }
         };
     }
