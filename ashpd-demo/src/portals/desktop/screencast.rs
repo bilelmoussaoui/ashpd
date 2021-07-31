@@ -95,11 +95,7 @@ glib::wrapper! {
 impl ScreenCastPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        let widget = glib::Object::new(&[]).expect("Failed to create a ScreenCastPage");
-
-        let self_ = imp::ScreenCastPage::from_instance(&widget);
-        self_.close_session_btn.set_sensitive(false);
-        widget
+        glib::Object::new(&[]).expect("Failed to create a ScreenCastPage")
     }
 
     pub fn start_session(&self) {
