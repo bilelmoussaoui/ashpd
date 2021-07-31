@@ -13,6 +13,7 @@
             <child>
               <object class="AdwActionRow">
                 <property name="title" translatable="yes">Reason</property>
+                <property name="activatable-widget">reason</property>
                 <child>
                   <object class="GtkEntry" id="reason">
                     <property name="valign">center</property>
@@ -20,36 +21,51 @@
                 </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="description" translatable="yes">Actions to inhibit that can end user's session</property>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">Status</property>
+                <property name="title" translatable="yes">Logout</property>
+                <property name="activatable-widget">logout_check</property>
                 <child>
-                  <object class="GtkBox">
-                    <property name="orientation">horizontal</property>
-                    <child>
-                      <object class="GtkCheckButton" id="logout_check">
-                        <property name="label" translatable="yes">Logout</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="user_switch_check">
-                        <property name="label" translatable="yes">User Switch</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="suspend_check">
-                        <property name="label" translatable="yes">Suspens</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="idle_check">
-                        <property name="label" translatable="yes">Idle</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkCheckButton" id="logout_check">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">User Switch</property>
+                <property name="activatable-widget">user_switch_check</property>
+                <child>
+                  <object class="GtkCheckButton" id="user_switch_check">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Suspend</property>
+                <property name="activatable-widget">suspend_check</property>
+                <child>
+                  <object class="GtkCheckButton" id="suspend_check">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Idle</property>
+                <property name="activatable-widget">idle_check</property>
+                <child>
+                  <object class="GtkCheckButton" id="idle_check">
+                    <property name="valign">center</property>
                   </object>
                 </child>
               </object>

@@ -30,7 +30,7 @@ mod imp {
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
         #[template_child]
-        pub screencast_row: TemplateChild<adw::ExpanderRow>,
+        pub screencast_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub multiple_switch: TemplateChild<gtk::Switch>,
         #[template_child]
@@ -180,7 +180,7 @@ impl RemoteDesktopPage {
         let root = self.native().unwrap();
         self.action_set_enabled("remote_desktop.start", false);
         self.action_set_enabled("remote_desktop.stop", true);
-        let is_screencast = self_.screencast_row.get().enables_expansion();
+        let is_screencast = self_.screencast_switch.get().is_active();
         let multiple_sources = self_.multiple_switch.is_active();
         let cursor_mode = self.selected_cursor_mode();
         let sources = self.selected_sources();

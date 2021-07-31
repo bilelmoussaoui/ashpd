@@ -27,60 +27,80 @@
                         </child>
                       </object>
                     </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="description" translatable="yes">Content to Record</property>
                     <child>
                       <object class="AdwActionRow">
-                        <property name="title" translatable="yes">Content to Record</property>
+                        <property name="title" translatable="yes">Monitor</property>
+                        <property name="activatable-widget">monitor_check</property>
                         <child>
-                          <object class="GtkBox">
-                            <property name="orientation">horizontal</property>
-                            <child>
-                              <object class="GtkCheckButton" id="monitor_check">
-                                <property name="label" translatable="yes">Monitor</property>
-                                <property name="active">True</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="window_check">
-                                <property name="label" translatable="yes">Window</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="virtual_check">
-                                <property name="label" translatable="yes">Virtual</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
+                          <object class="GtkCheckButton" id="monitor_check">
+                            <property name="active">True</property>
+                            <property name="valign">center</property>
                           </object>
                         </child>
                       </object>
                     </child>
                     <child>
                       <object class="AdwActionRow">
-                        <property name="title" translatable="yes">Cursor Mode</property>
+                        <property name="title" translatable="yes">Window</property>
+                        <property name="activatable-widget">window_check</property>
                         <child>
-                          <object class="GtkBox">
-                            <property name="orientation">horizontal</property>
-                            <child>
-                              <object class="GtkCheckButton" id="hidden_check">
-                                <property name="label" translatable="yes">Hidden</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="embedded_check">
-                                <property name="label" translatable="yes">Embedded</property>
-                                <property name="active">True</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="metadata_check">
-                                <property name="label" translatable="yes">Metadata</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
+                          <object class="GtkCheckButton" id="window_check">
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Virtual</property>
+                        <property name="activatable-widget">virtual_check</property>
+                        <child>
+                          <object class="GtkCheckButton" id="virtual_check">
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="description" translatable="yes">Cursor Mode</property>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Hidden</property>
+                        <property name="activatable-widget">hidden_check</property>
+                        <child>
+                          <object class="GtkCheckButton" id="hidden_check">
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Embedded</property>
+                        <property name="activatable-widget">embedded_check</property>
+                        <child>
+                          <object class="GtkCheckButton" id="embedded_check">
+                            <property name="active">True</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Metadata</property>
+                        <property name="activatable-widget">metadata_check</property>
+                        <child>
+                          <object class="GtkCheckButton" id="metadata_check">
+                            <property name="valign">center</property>
                           </object>
                         </child>
                       </object>

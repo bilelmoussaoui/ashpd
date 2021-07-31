@@ -19,8 +19,8 @@
     </section>
   </menu>
   <template class="ExampleApplicationWindow" parent="AdwApplicationWindow">
-    <property name="default-width">600</property>
-    <property name="default-height">400</property>
+    <property name="default-width">820</property>
+    <property name="default-height">640</property>
     <child>
       <object class="AdwLeaflet" id="leaflet">
         <property name="can-swipe-back">True</property>
@@ -54,6 +54,7 @@
             <child>
               <object class="GtkScrolledWindow">
                 <property name="vexpand">True</property>
+                <property name="min-content-width">200</property>
                 <child>
                   <object class="GtkListBox" id="sidebar">
                     <property name="selection-mode">browse</property>
@@ -206,7 +207,7 @@
             </child>
             <child>
               <object class="GtkScrolledWindow">
-                <property name="min-content-width">300</property>
+                <property name="min-content-width">360</property>
                 <property name="hscrollbar-policy">never</property>
                 <property name="min-content-height">250</property>
                 <property name="vexpand">True</property>
