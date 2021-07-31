@@ -180,7 +180,7 @@ impl ExampleApplication {
     }
 
     pub fn stop_current_instance() -> ashpd::Result<()> {
-        let bus = gio::bus_get_future(gio::BusType::Session).unwrap();
+        let bus = gio::bus_get_sync(gio::BusType::Session, gio::NONE_CANCELLABLE).unwrap();
         gio::bus_watch_name_on_connection(
             &bus,
             config::APP_ID,
