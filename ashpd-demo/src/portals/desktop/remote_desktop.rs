@@ -19,6 +19,8 @@ mod imp {
     use adw::subclass::prelude::*;
     use gtk::CompositeTemplate;
 
+    use crate::portals::desktop::screencast::available_types;
+
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
@@ -44,6 +46,8 @@ mod imp {
         #[template_child]
         pub window_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
+        pub virtual_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
         pub hidden_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub embedded_check: TemplateChild<gtk::CheckButton>,
@@ -59,6 +63,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
+            klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action(
                 "remote_desktop.start",
                 None,
@@ -83,7 +88,24 @@ mod imp {
         fn constructed(&self, obj: &Self::Type) {
             obj.action_set_enabled("remote_desktop.stop", false);
 
-            self.close_session_btn.set_sensitive(false);
+            let ctx = glib::MainContext::default();
+            ctx.spawn_local(clone!(@weak obj as page => async move {
+                let self_ = imp::RemoteDesktopPage::from_instance(&page);
+                if let Ok((cursor_modes, source_types)) = available_types().await {
+                    self_.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
+                    self_.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
+                    self_.window_check.set_sensitive(source_types.contains(SourceType::Window));
+                    self_.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
+                    self_.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
+                    self_.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
+                }
+
+                if let Ok(devices) = available_devices().await {
+                    self_.touchscreen_check.set_sensitive(devices.contains(DeviceType::Touchscreen));
+                    self_.pointer_check.set_sensitive(devices.contains(DeviceType::Pointer));
+                    self_.keyboard_check.set_sensitive(devices.contains(DeviceType::Keyboard));
+                }
+            }));
             self.parent_constructed(obj);
         }
     }
@@ -171,7 +193,6 @@ impl RemoteDesktopPage {
                 }
                 Err(err) => {
                     tracing::error!("{:#?}", err);
-                    page.stop_session();
                 }
             };
         }));
@@ -214,4 +235,10 @@ pub async fn remote(
 
     let (devices, streams) = proxy.start(&session, identifier).await?;
     Ok((devices, streams, session))
+}
+
+pub async fn available_devices() -> ashpd::Result<BitFlags<DeviceType>> {
+    let cnx = zbus::azync::Connection::session().await?;
+    let proxy = RemoteDesktopProxy::new(&cnx).await?;
+    proxy.available_device_types().await
 }

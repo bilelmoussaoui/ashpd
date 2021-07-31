@@ -28,6 +28,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
+            klass.set_layout_manager_type::<adw::ClampLayout>();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

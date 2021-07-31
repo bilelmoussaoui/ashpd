@@ -350,7 +350,7 @@ impl CameraPaintable {
         let receiver = self_.receiver.borrow_mut().take().unwrap();
         receiver.attach(
             None,
-            glib::clone!(@weak self as paintable => @default-panic, move |action| paintable.do_action(action)),
+            glib::clone!(@weak self as paintable => @default-return glib::Continue(false), move |action| paintable.do_action(action)),
         );
     }
 

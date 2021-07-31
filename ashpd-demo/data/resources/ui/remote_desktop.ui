@@ -73,6 +73,12 @@
                             <property name="valign">center</property>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkCheckButton" id="virtual_check">
+                            <property name="label" translatable="yes">Virtual</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

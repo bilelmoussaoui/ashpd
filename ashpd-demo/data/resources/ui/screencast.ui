@@ -7,105 +7,121 @@
         <property name="spacing">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Screen Cast</property>
-            <property name="description" translatable="yes">Communicates with org.freedesktop.portal.ScreenCast</property>
+          <object class="AdwClamp">
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Multiple sources</property>
-                <property name="activatable-widget">multiple_switch</property>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">12</property>
                 <child>
-                  <object class="GtkSwitch" id="multiple_switch">
-                    <property name="valign">center</property>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">Screen Cast</property>
+                    <property name="description" translatable="yes">Communicates with org.freedesktop.portal.ScreenCast</property>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Multiple sources</property>
+                        <property name="activatable-widget">multiple_switch</property>
+                        <child>
+                          <object class="GtkSwitch" id="multiple_switch">
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Content to Record</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="orientation">horizontal</property>
+                            <child>
+                              <object class="GtkCheckButton" id="monitor_check">
+                                <property name="label" translatable="yes">Monitor</property>
+                                <property name="active">True</property>
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="window_check">
+                                <property name="label" translatable="yes">Window</property>
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="virtual_check">
+                                <property name="label" translatable="yes">Virtual</property>
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Cursor Mode</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="orientation">horizontal</property>
+                            <child>
+                              <object class="GtkCheckButton" id="hidden_check">
+                                <property name="label" translatable="yes">Hidden</property>
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="embedded_check">
+                                <property name="label" translatable="yes">Embedded</property>
+                                <property name="active">True</property>
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="metadata_check">
+                                <property name="label" translatable="yes">Metadata</property>
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Content to Record</property>
                 <child>
                   <object class="GtkBox">
                     <property name="orientation">horizontal</property>
                     <child>
-                      <object class="GtkCheckButton" id="monitor_check">
-                        <property name="label" translatable="yes">Monitor</property>
-                        <property name="active">True</property>
-                        <property name="valign">center</property>
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">_Start Session</property>
+                        <property name="use-underline">True</property>
+                        <property name="halign">start</property>
+                        <property name="action-name">screencast.start</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="window_check">
-                        <property name="label" translatable="yes">Window</property>
-                        <property name="valign">center</property>
+                      <object class="GtkButton" id="close_session_btn">
+                        <property name="label" translatable="yes">_Close Session</property>
+                        <property name="use-underline">True</property>
+                        <property name="halign">start</property>
+                        <property name="sensitive">False</property>
+                        <property name="action-name">screencast.stop</property>
+                        <property name="halign">end</property>
+                        <property name="hexpand">True</property>
+                        <style>
+                          <class name="destructive-action" />
+                        </style>
                       </object>
                     </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Cursor Mode</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="orientation">horizontal</property>
-                    <child>
-                      <object class="GtkCheckButton" id="hidden_check">
-                        <property name="label" translatable="yes">Hidden</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="embedded_check">
-                        <property name="label" translatable="yes">Embedded</property>
-                        <property name="active">True</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="metadata_check">
-                        <property name="label" translatable="yes">Metadata</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="orientation">horizontal</property>
-            <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">_Start Session</property>
-                <property name="use-underline">True</property>
-                <property name="halign">start</property>
-                <property name="action-name">screencast.start</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="close_session_btn">
-                <property name="label" translatable="yes">_Close Session</property>
-                <property name="use-underline">True</property>
-                <property name="halign">start</property>
-                <property name="sensitive">False</property>
-                <property name="action-name">screencast.stop</property>
-                <property name="halign">end</property>
-                <property name="hexpand">True</property>
-                <style>
-                  <class name="destructive-action" />
-                </style>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
+            <property name="vexpand">True</property>
             <child>
               <object class="AdwCarouselIndicatorLines">
                 <property name="carousel">streams_carousel</property>
@@ -115,6 +131,7 @@
             </child>
             <child>
               <object class="AdwCarousel" id="streams_carousel">
+                <property name="vexpand">True</property>
               </object>
             </child>
           </object>

@@ -20,6 +20,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
+            klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("device.request", None, move |_page, _action, _target| {
                 //page.pick_color().unwrap();
             });

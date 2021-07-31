@@ -39,6 +39,8 @@ mod imp {
         #[template_child]
         pub window_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
+        pub virtual_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
         pub hidden_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub embedded_check: TemplateChild<gtk::CheckButton>,
@@ -69,8 +71,18 @@ mod imp {
     impl ObjectImpl for ScreenCastPage {
         fn constructed(&self, obj: &Self::Type) {
             obj.action_set_enabled("screencast.stop", false);
-
-            self.close_session_btn.set_sensitive(false);
+            let ctx = glib::MainContext::default();
+            ctx.spawn_local(clone!(@weak obj as page => async move {
+                let self_ = imp::ScreenCastPage::from_instance(&page);
+                if let Ok((cursor_modes, source_types)) = available_types().await {
+                    self_.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
+                    self_.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
+                    self_.window_check.set_sensitive(source_types.contains(SourceType::Window));
+                    self_.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
+                    self_.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
+                    self_.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
+                }
+            }));
             self.parent_constructed(obj);
         }
     }
@@ -136,10 +148,13 @@ impl ScreenCastPage {
                 Ok((streams, fd, session)) => {
                     streams.iter().for_each(|stream| {
                         let paintable = CameraPaintable::new();
-                        let picture = gtk::Picture::new();
-                        picture.set_paintable(Some(&paintable));
-                        picture.set_size_request(400, 400);
+                        let picture = gtk::Picture::builder()
+                            .paintable(&paintable)
+                            .hexpand(true)
+                            .vexpand(true)
+                            .build();
                         paintable.set_pipewire_node_id(fd, stream.pipe_wire_node_id());
+                        println!("{:#?}", stream);
                         self_.streams_carousel.append(&picture);
                     });
 
@@ -165,10 +180,21 @@ impl ScreenCastPage {
             if let Some(session) = self_.session.lock().await.take() {
                 let _ = session.close().await;
             }
-            while let Some(child) = self_.streams_carousel.next_sibling() {
-                self_.streams_carousel.remove(&child);
+            if let Some(mut child) = self_.streams_carousel.first_child() {
+                loop {
+                    let picture = child.downcast_ref::<gtk::Picture>().unwrap();
+                    let paintable = picture.paintable().unwrap().downcast::<CameraPaintable>().unwrap();
+                    paintable.close_pipeline();
+                    self_.streams_carousel.remove(picture);
+
+                    if let Some(next_child) = child.next_sibling() {
+                        child = next_child;
+                    } else {
+                        break;
+                    }
+                }
             }
-            //paintable.close_pipeline();
+
             self_.response_group.hide();
             self_.close_session_btn.set_sensitive(false);
         }));
@@ -192,4 +218,14 @@ pub async fn screencast(
 
     let fd = proxy.open_pipe_wire_remote(&session).await?;
     Ok((streams, fd, session))
+}
+
+pub async fn available_types() -> ashpd::Result<(BitFlags<CursorMode>, BitFlags<SourceType>)> {
+    let cnx = zbus::azync::Connection::session().await?;
+    let proxy = ScreenCastProxy::new(&cnx).await?;
+
+    let cursor_modes = proxy.available_cursor_modes().await?;
+    let source_types = proxy.available_source_types().await?;
+
+    Ok((cursor_modes, source_types))
 }

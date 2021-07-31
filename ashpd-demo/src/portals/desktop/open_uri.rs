@@ -26,6 +26,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
+            klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("open_uri.uri", None, move |page, _action, _target| {
                 page.open_uri();
             });

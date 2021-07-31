@@ -1,10 +1,10 @@
-use std::sync::{Arc, Mutex};
-
 use ashpd::{desktop::secret, zbus};
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
+use std::sync::{Arc, Mutex};
+use std::{fs::File, io::Read};
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -40,6 +40,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
+            klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("secret.retrieve", None, move |page, _action, _target| {
                 page.retrieve_secret();
             });
@@ -80,10 +81,35 @@ impl SecretPage {
 }
 
 async fn retrieve_secret(old_token: Option<&str>) -> ashpd::Result<String> {
+    use glib::translate::*;
     let connection = zbus::azync::Connection::session().await?;
     let proxy = secret::SecretProxy::new(&connection).await?;
-    let tmp_file = glib::mkstemp("some_stuff_XXXXXX");
-    let new_token = proxy.retrieve_secret(&tmp_file, old_token).await?;
+
+    let path: std::path::PathBuf =
+        unsafe { from_glib_none(glib::ffi::g_mkdtemp("some_stuff_XXXXXX".to_glib_none().0)) };
+    let mut file = File::open(path).unwrap();
+
+    let new_token = proxy.retrieve_secret(&file, old_token).await?;
     tracing::info!("Received secret {}", new_token);
+
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+    println!("{}", contents);
     Ok(new_token)
+}
+
+// Todo: upstream this to gtk-rs-core
+use std::os::unix::prelude::AsRawFd;
+#[doc(alias = "g_close")]
+fn close<F: AsRawFd>(fd: F) -> Result<(), glib::Error> {
+    use glib::translate::*;
+    unsafe {
+        let error = std::ptr::null_mut();
+        let ret: bool = from_glib(glib::ffi::g_close(fd.as_raw_fd(), error));
+        if ret {
+            Ok(())
+        } else {
+            Err(from_glib_full(error as *const _))
+        }
+    }
 }
