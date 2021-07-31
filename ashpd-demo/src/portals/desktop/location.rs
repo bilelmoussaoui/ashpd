@@ -54,7 +54,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("location.locate", None, move |page, _action, _target| {
-                page.locate();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.locate().await;
+                }));
             });
         }
 
@@ -77,8 +80,7 @@ impl LocationPage {
         glib::Object::new(&[]).expect("Failed to create a LocationPage")
     }
 
-    pub fn locate(&self) {
-        let ctx = glib::MainContext::default();
+    async fn locate(&self) {
         let self_ = imp::LocationPage::from_instance(self);
         let distance_threshold = self_.distance_spin.value() as u32;
         let time_threshold = self_.time_spin.value() as u32;
@@ -93,22 +95,32 @@ impl LocationPage {
         };
         let root = self.native().unwrap();
 
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_native(&root).await;
-            if let Ok(location) = locate(&identifier, distance_threshold, time_threshold, accuracy).await {
-                let self_ = imp::LocationPage::from_instance(&page);
-
-                self_.response_group.show();
-                self_.accuracy_label.set_label(&location.accuracy().to_string());
-                self_.altitude_label.set_label(&location.altitude().to_string());
-                self_.speed_label.set_label(&location.speed().to_string());
-                self_.heading_label.set_label(&location.heading().to_string());
-                self_.description_label.set_label(&location.description());
-                self_.latitude_label.set_label(&location.latitude().to_string());
-                self_.longitude_label.set_label(&location.longitude().to_string());
-                self_.timestamp_label.set_label(&location.timestamp().to_string());
-            }
-        }));
+        let identifier = WindowIdentifier::from_native(&root).await;
+        if let Ok(location) =
+            locate(&identifier, distance_threshold, time_threshold, accuracy).await
+        {
+            self_.response_group.show();
+            self_
+                .accuracy_label
+                .set_label(&location.accuracy().to_string());
+            self_
+                .altitude_label
+                .set_label(&location.altitude().to_string());
+            self_.speed_label.set_label(&location.speed().to_string());
+            self_
+                .heading_label
+                .set_label(&location.heading().to_string());
+            self_.description_label.set_label(&location.description());
+            self_
+                .latitude_label
+                .set_label(&location.latitude().to_string());
+            self_
+                .longitude_label
+                .set_label(&location.longitude().to_string());
+            self_
+                .timestamp_label
+                .set_label(&location.timestamp().to_string());
+        }
     }
 }
 

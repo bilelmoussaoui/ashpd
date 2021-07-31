@@ -8,7 +8,6 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk_macros::spawn;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -47,7 +46,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("notification.send", None, move |page, _action, _target| {
-                page.send_notification().unwrap();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.send_notification().await;
+                }));
             });
         }
 
@@ -70,7 +72,7 @@ impl NotificationPage {
         glib::Object::new(&[]).expect("Failed to create a NotificationPage")
     }
 
-    pub fn send_notification(&self) -> zbus::fdo::Result<()> {
+    async fn send_notification(&self) {
         let self_ = imp::NotificationPage::from_instance(self);
 
         let notification_id = self_.id_entry.text();
@@ -84,27 +86,25 @@ impl NotificationPage {
             _ => unimplemented!(),
         };
 
-        spawn!(clone!(@weak self as page => async move {
-            let self_ = imp::NotificationPage::from_instance(&page);
-            let action = notify(
-                &notification_id,
-                Notification::new(&title)
-                    .default_action("open")
-                    .default_action_target(Value::U32(100).into())
-                    .body(&body)
-                    .priority(priority)
-                    .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-                    .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
-            )
-            .await
-            .unwrap();
+        if let Ok(action) = notify(
+            &notification_id,
+            Notification::new(&title)
+                .default_action("open")
+                .default_action_target(Value::U32(100).into())
+                .body(&body)
+                .priority(priority)
+                .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
+                .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
+        )
+        .await
+        {
             self_.response_group.show();
             self_.id_label.set_text(action.id());
             self_.action_name_label.set_text(action.name());
-            self_.parameters_label.set_text(&format!("{:#?}", action.parameter()));
-        }));
-
-        Ok(())
+            self_
+                .parameters_label
+                .set_text(&format!("{:#?}", action.parameter()));
+        }
     }
 }
 

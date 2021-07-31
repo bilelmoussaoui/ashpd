@@ -2,7 +2,6 @@ use ashpd::{desktop::inhibit, zbus, WindowIdentifier};
 use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk_macros::spawn;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -29,7 +28,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("inhibit.request", None, move |page, _action, _target| {
-                page.inhibit();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.inhibit().await;
+                }));
             });
         }
 
@@ -52,18 +54,15 @@ impl InhibitPage {
         glib::Object::new(&[]).expect("Failed to create a InhibitPage")
     }
 
-    fn inhibit(&self) {
+    async fn inhibit(&self) {
         let root = self.native().unwrap();
-        spawn!(clone!(@weak self as page => async move {
-            let self_ = imp::InhibitPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_native(&root).await;
-            let reason = self_.reason.text();
+        let self_ = imp::InhibitPage::from_instance(self);
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let reason = self_.reason.text();
 
-            if let Err(err) = inhibit(&identifier, &reason).await
-            {
-                tracing::error!("Failed to request to inhibit stuff {}", err);
-            }
-        }));
+        if let Err(err) = inhibit(&identifier, &reason).await {
+            tracing::error!("Failed to request to inhibit stuff {}", err);
+        }
     }
 }
 

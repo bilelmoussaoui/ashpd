@@ -1,7 +1,7 @@
 use adw::prelude::*;
 use ashpd::{
     desktop::{
-        remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy},
+        remote_desktop::{DeviceType, RemoteDesktopProxy},
         screencast::{CursorMode, ScreenCastProxy, SourceType, Stream},
         SessionProxy,
     },
@@ -66,14 +66,20 @@ mod imp {
                 "remote_desktop.start",
                 None,
                 move |page, _action, _target| {
-                    page.start_session();
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.start_session().await;
+                    }));
                 },
             );
             klass.install_action(
                 "remote_desktop.stop",
                 None,
                 move |page, _action, _target| {
-                    page.stop_session();
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.stop_session().await;
+                    }));
                 },
             );
         }
@@ -168,45 +174,48 @@ impl RemoteDesktopPage {
         cursor_mode
     }
 
-    pub fn start_session(&self) {
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::RemoteDesktopPage::from_instance(&page);
+    async fn start_session(&self) {
+        let self_ = imp::RemoteDesktopPage::from_instance(self);
 
-            let root = page.native().unwrap();
-            page.action_set_enabled("remote_desktop.start", false);
-            page.action_set_enabled("remote_desktop.stop", true);
-            let is_screencast = self_.screencast_row.get().enables_expansion();
-            let multiple_sources = self_.multiple_switch.is_active();
-            let cursor_mode = page.selected_cursor_mode();
-            let sources = page.selected_sources();
-            let devices = page.selected_devices();
+        let root = self.native().unwrap();
+        self.action_set_enabled("remote_desktop.start", false);
+        self.action_set_enabled("remote_desktop.stop", true);
+        let is_screencast = self_.screencast_row.get().enables_expansion();
+        let multiple_sources = self_.multiple_switch.is_active();
+        let cursor_mode = self.selected_cursor_mode();
+        let sources = self.selected_sources();
+        let devices = self.selected_devices();
 
-            let identifier = WindowIdentifier::from_native(&root).await;
-            match remote(&identifier, devices, is_screencast, multiple_sources, cursor_mode, sources).await {
-                Ok((selected_devices, streams, session)) => {
-                    self_.response_group.show();
-                    self_.session.lock().await.replace(session);
-                }
-                Err(err) => {
-                    tracing::error!("{:#?}", err);
-                }
-            };
-        }));
+        let identifier = WindowIdentifier::from_native(&root).await;
+        match remote(
+            &identifier,
+            devices,
+            is_screencast,
+            multiple_sources,
+            cursor_mode,
+            sources,
+        )
+        .await
+        {
+            Ok((selected_devices, streams, session)) => {
+                self_.response_group.show();
+                self_.session.lock().await.replace(session);
+            }
+            Err(err) => {
+                tracing::error!("{:#?}", err);
+            }
+        };
     }
 
-    pub fn stop_session(&self) {
-        let ctx = glib::MainContext::default();
+    async fn stop_session(&self) {
         self.action_set_enabled("remote_desktop.start", true);
         self.action_set_enabled("remote_desktop.stop", false);
 
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::RemoteDesktopPage::from_instance(&page);
-            if let Some(session) = self_.session.lock().await.take() {
-                let _ = session.close().await;
-            }
-            self_.response_group.hide();
-        }));
+        let self_ = imp::RemoteDesktopPage::from_instance(self);
+        if let Some(session) = self_.session.lock().await.take() {
+            let _ = session.close().await;
+        }
+        self_.response_group.hide();
     }
 }
 

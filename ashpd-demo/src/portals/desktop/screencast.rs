@@ -55,10 +55,16 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
             klass.install_action("screencast.start", None, move |page, _action, _target| {
-                page.start_session();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.start_session().await;
+                }));
             });
             klass.install_action("screencast.stop", None, move |page, _action, _target| {
-                page.stop_session();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.stop_session().await;
+                }));
             });
         }
 
@@ -128,72 +134,71 @@ impl ScreenCastPage {
         cursor_mode
     }
 
-    pub fn start_session(&self) {
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::ScreenCastPage::from_instance(&page);
-            let sources = page.selected_sources();
-            let cursor_mode = page.selected_cursor_mode();
-            let multiple = self_.multiple_switch.is_active();
+    async fn start_session(&self) {
+        let self_ = imp::ScreenCastPage::from_instance(self);
+        let sources = self.selected_sources();
+        let cursor_mode = self.selected_cursor_mode();
+        let multiple = self_.multiple_switch.is_active();
 
-            let root = page.native().unwrap();
-            page.action_set_enabled("screencast.start", false);
-            page.action_set_enabled("screencast.stop", true);
+        let root = self.native().unwrap();
+        self.action_set_enabled("screencast.start", false);
+        self.action_set_enabled("screencast.stop", true);
 
-            let identifier = WindowIdentifier::from_native(&root).await;
+        let identifier = WindowIdentifier::from_native(&root).await;
 
-            match screencast(&identifier, multiple, sources, cursor_mode).await {
-                Ok((streams, fd, session)) => {
-                    streams.iter().for_each(|stream| {
-                        let paintable = CameraPaintable::new();
-                        let picture = gtk::Picture::builder()
-                            .paintable(&paintable)
-                            .hexpand(true)
-                            .vexpand(true)
-                            .build();
-                        paintable.set_pipewire_node_id(fd, stream.pipe_wire_node_id());
-                        println!("{:#?}", stream);
-                        self_.streams_carousel.append(&picture);
-                    });
+        match screencast(&identifier, multiple, sources, cursor_mode).await {
+            Ok((streams, fd, session)) => {
+                streams.iter().for_each(|stream| {
+                    let paintable = CameraPaintable::new();
+                    let picture = gtk::Picture::builder()
+                        .paintable(&paintable)
+                        .hexpand(true)
+                        .vexpand(true)
+                        .build();
+                    paintable.set_pipewire_node_id(fd, stream.pipe_wire_node_id());
+                    println!("{:#?}", stream);
+                    self_.streams_carousel.append(&picture);
+                });
 
-                    self_.response_group.show();
-                    self_.session.lock().await.replace(session);
-                }
-                Err(err) => {
-                    tracing::error!("{:#?}", err);
-                    page.stop_session();
-                }
-            };
-        }));
+                self_.response_group.show();
+                self_.session.lock().await.replace(session);
+            }
+            Err(err) => {
+                tracing::error!("{:#?}", err);
+                self.stop_session().await;
+            }
+        };
     }
 
-    pub fn stop_session(&self) {
-        let ctx = glib::MainContext::default();
+    async fn stop_session(&self) {
+        let self_ = imp::ScreenCastPage::from_instance(self);
+
         self.action_set_enabled("screencast.start", true);
         self.action_set_enabled("screencast.stop", false);
 
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::ScreenCastPage::from_instance(&page);
-            if let Some(session) = self_.session.lock().await.take() {
-                let _ = session.close().await;
-            }
-            if let Some(mut child) = self_.streams_carousel.first_child() {
-                loop {
-                    let picture = child.downcast_ref::<gtk::Picture>().unwrap();
-                    let paintable = picture.paintable().unwrap().downcast::<CameraPaintable>().unwrap();
-                    paintable.close_pipeline();
-                    self_.streams_carousel.remove(picture);
+        if let Some(session) = self_.session.lock().await.take() {
+            let _ = session.close().await;
+        }
+        if let Some(mut child) = self_.streams_carousel.first_child() {
+            loop {
+                let picture = child.downcast_ref::<gtk::Picture>().unwrap();
+                let paintable = picture
+                    .paintable()
+                    .unwrap()
+                    .downcast::<CameraPaintable>()
+                    .unwrap();
+                paintable.close_pipeline();
+                self_.streams_carousel.remove(picture);
 
-                    if let Some(next_child) = child.next_sibling() {
-                        child = next_child;
-                    } else {
-                        break;
-                    }
+                if let Some(next_child) = child.next_sibling() {
+                    child = next_child;
+                } else {
+                    break;
                 }
             }
+        }
 
-            self_.response_group.hide();
-        }));
+        self_.response_group.hide();
     }
 }
 

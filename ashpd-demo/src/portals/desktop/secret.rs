@@ -1,8 +1,8 @@
 use ashpd::{desktop::secret, zbus};
 use glib::clone;
+use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{gio, glib};
 use std::sync::{Arc, Mutex};
 use std::{fs::File, io::Read};
 
@@ -42,7 +42,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("secret.retrieve", None, move |page, _action, _target| {
-                page.retrieve_secret();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.retrieve_secret().await;
+                }));
             });
         }
 
@@ -65,18 +68,14 @@ impl SecretPage {
         glib::Object::new(&[]).expect("Failed to create a SecretPage")
     }
 
-    pub fn retrieve_secret(&self) {
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::SecretPage::from_instance(&page);
+    async fn retrieve_secret(&self) {
+        let self_ = imp::SecretPage::from_instance(self);
 
-            if let Ok(token) = retrieve_secret(None).await
-            {
-                tracing::debug!("Received token: {:#?}", token);
-                self_.token_label.set_text(&token);
-                self_.response_group.show();
-            }
-        }));
+        if let Ok(token) = retrieve_secret(None).await {
+            tracing::debug!("Received token: {:#?}", token);
+            self_.token_label.set_text(&token);
+            self_.response_group.show();
+        }
     }
 }
 
@@ -96,20 +95,4 @@ async fn retrieve_secret(old_token: Option<&str>) -> ashpd::Result<String> {
     file.read_to_string(&mut contents).unwrap();
     println!("{}", contents);
     Ok(new_token)
-}
-
-// Todo: upstream this to gtk-rs-core
-use std::os::unix::prelude::AsRawFd;
-#[doc(alias = "g_close")]
-fn close<F: AsRawFd>(fd: F) -> Result<(), glib::Error> {
-    use glib::translate::*;
-    unsafe {
-        let error = std::ptr::null_mut();
-        let ret: bool = from_glib(glib::ffi::g_close(fd.as_raw_fd(), error));
-        if ret {
-            Ok(())
-        } else {
-            Err(from_glib_full(error as *const _))
-        }
-    }
 }

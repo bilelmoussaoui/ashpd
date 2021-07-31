@@ -273,7 +273,6 @@ glib::wrapper! {
 }
 
 impl CameraPaintable {
-    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a CameraPaintable")
     }
@@ -368,5 +367,11 @@ impl CameraPaintable {
         }
 
         glib::Continue(true)
+    }
+}
+
+impl Default for CameraPaintable {
+    fn default() -> Self {
+        Self::new()
     }
 }

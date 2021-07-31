@@ -1,5 +1,5 @@
 use ashpd::{desktop::open_uri, WindowIdentifier};
-use gtk::glib;
+use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -28,7 +28,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("open_uri.uri", None, move |page, _action, _target| {
-                page.open_uri();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.open_uri().await;
+                }));
             });
         }
 
@@ -51,15 +54,18 @@ impl OpenUriPage {
         glib::Object::new(&[]).expect("Failed to create a OpenUriPage")
     }
 
-    pub fn open_uri(&self) {
+    async fn open_uri(&self) {
         let self_ = imp::OpenUriPage::from_instance(self);
         let writable = self_.writeable_switch.is_active();
         let ask = self_.ask_switch.is_active();
         let root = self.native().unwrap();
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(async move {
-            let identifier = WindowIdentifier::from_native(&root).await;
-            let _ = open_uri::open_uri(&identifier, "https://google.com", writable, ask).await;
-        });
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let _ = open_uri::open_uri(
+            &identifier,
+            "https://github.com/bilelmoussaoui/ashpd",
+            writable,
+            ask,
+        )
+        .await;
     }
 }

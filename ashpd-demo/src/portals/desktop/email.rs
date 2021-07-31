@@ -2,7 +2,7 @@ use ashpd::{
     desktop::email::{self, Email},
     WindowIdentifier,
 };
-use gtk::glib;
+use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -39,7 +39,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("email.compose", None, move |page, _action, _target| {
-                page.compose_mail();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.compose_mail().await;
+                }));
             });
         }
 
@@ -62,15 +65,14 @@ impl EmailPage {
         glib::Object::new(&[]).expect("Failed to create a EmailPage")
     }
 
-    pub fn compose_mail(&self) {
+    async fn compose_mail(&self) {
         let self_ = imp::EmailPage::from_instance(self);
         let subject = is_empty(self_.subject.text());
         let body = is_empty(self_.body.text());
-        let addresses = is_empty(self_.addresses.text()).map(|s| split_comma(s));
-        let bcc = is_empty(self_.bcc_entry.text()).map(|s| split_comma(s));
-        let cc = is_empty(self_.cc_entry.text()).map(|s| split_comma(s));
+        let addresses = is_empty(self_.addresses.text()).map(split_comma);
+        let bcc = is_empty(self_.bcc_entry.text()).map(split_comma);
+        let cc = is_empty(self_.cc_entry.text()).map(split_comma);
         let root = self.native().unwrap();
-        let ctx = glib::MainContext::default();
 
         let mut email = Email::new();
         if let Some(subject) = subject {
@@ -89,9 +91,7 @@ impl EmailPage {
             email.set_cc(&cc);
         }
 
-        ctx.spawn_local(async move {
-            let identifier = WindowIdentifier::from_native(&root).await;
-            let _ = email::compose(&identifier, email).await;
-        });
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let _ = email::compose(&identifier, email).await;
     }
 }

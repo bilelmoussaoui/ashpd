@@ -40,7 +40,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("background.request", None, move |page, _action, _target| {
-                page.request_background();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.request_background().await;
+                }));
             });
         }
 
@@ -63,8 +66,7 @@ impl BackgroundPage {
         glib::Object::new(&[]).expect("Failed to create a BackgroundPage")
     }
 
-    fn request_background(&self) {
-        let ctx = glib::MainContext::default();
+    async fn request_background(&self) {
         let self_ = imp::BackgroundPage::from_instance(self);
         let reason = self_.reason_entry.text();
         let auto_start = self_.auto_start_switch.is_active();
@@ -76,15 +78,23 @@ impl BackgroundPage {
         });
         let root = self.native().unwrap();
 
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::BackgroundPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_native(&root).await;
-            if let Ok(response) = background::request(&identifier, &reason, auto_start, command.as_deref(), dbus_activatable).await {
-
-                self_.response_group.show();
-                self_.auto_start_label.set_label(&response.auto_start().to_string());
-                self_.run_bg_label.set_label(&response.run_in_background().to_string());
-            }
-        }));
+        let identifier = WindowIdentifier::from_native(&root).await;
+        if let Ok(response) = background::request(
+            &identifier,
+            &reason,
+            auto_start,
+            command.as_deref(),
+            dbus_activatable,
+        )
+        .await
+        {
+            self_.response_group.show();
+            self_
+                .auto_start_label
+                .set_label(&response.auto_start().to_string());
+            self_
+                .run_bg_label
+                .set_label(&response.run_in_background().to_string());
+        }
     }
 }

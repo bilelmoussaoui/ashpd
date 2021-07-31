@@ -33,7 +33,10 @@ mod imp {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("wallpaper.select", None, move |page, _action, _target| {
-                page.pick_wallpaper();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.pick_wallpaper().await;
+                }));
             });
         }
 
@@ -56,12 +59,15 @@ impl WallpaperPage {
         glib::Object::new(&[]).expect("Failed to create a WallpaperPage")
     }
 
-    pub fn pick_wallpaper(&self) {
+    async fn pick_wallpaper(&self) {
         let self_ = imp::WallpaperPage::from_instance(self);
+        let root = self.native().unwrap();
+
         let file_chooser = gtk::FileChooserNativeBuilder::new()
             .accept_label("Select")
             .action(gtk::FileChooserAction::Open)
             .modal(true)
+            .transient_for(root.downcast_ref::<gtk::Window>().unwrap())
             .build();
         let filter = gtk::FileFilter::new();
         filter.add_pixbuf_formats();
@@ -75,26 +81,17 @@ impl WallpaperPage {
             2 => wallpaper::SetOn::Both,
             _ => unimplemented!(),
         };
-        let root = self.native().unwrap();
+        if file_chooser.run_future().await == gtk::ResponseType::Accept {
+            let wallpaper_uri = file_chooser.file().unwrap().uri();
 
-        file_chooser.connect_response(clone!(@weak root => move |dialog, response| {
-            if response == gtk::ResponseType::Accept {
-                let wallpaper_uri = dialog.file().unwrap().uri();
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak root => async move {
-                    let identifier = WindowIdentifier::from_native(&root).await;
-                    let _ =  wallpaper::set_from_uri(
-                        &identifier,
-                        &wallpaper_uri,
-                        show_preview,
-                        set_on,
-                    )
-                    .await;
-                }));
-            };
-            dialog.destroy();
-        }));
-        file_chooser.show();
+            let identifier = WindowIdentifier::from_native(&root).await;
+            if let Err(err) =
+                wallpaper::set_from_uri(&identifier, &wallpaper_uri, show_preview, set_on).await
+            {
+                tracing::error!("Failed to set wallpaper {}", err);
+            }
+        };
+        file_chooser.destroy();
         self_.dialog.replace(Some(file_chooser));
     }
 }

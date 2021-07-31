@@ -14,7 +14,7 @@ mod imp {
 
     use super::*;
 
-    #[derive(Debug, CompositeTemplate)]
+    #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/camera.ui")]
     pub struct CameraPage {
         #[template_child]
@@ -26,17 +26,6 @@ mod imp {
         pub revealer: TemplateChild<gtk::Revealer>,
     }
 
-    impl Default for CameraPage {
-        fn default() -> Self {
-            Self {
-                camera_available: TemplateChild::default(),
-                picture: TemplateChild::default(),
-                paintable: CameraPaintable::new(),
-                revealer: TemplateChild::default(),
-            }
-        }
-    }
-
     #[glib::object_subclass]
     impl ObjectSubclass for CameraPage {
         const NAME: &'static str = "CameraPage";
@@ -46,7 +35,10 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
             klass.install_action("camera.start", None, move |page, _action, _target| {
-                page.start_stream();
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.start_stream().await;
+                }));
             });
             klass.install_action("camera.stop", None, move |page, _, _| {
                 page.stop_stream();
@@ -78,31 +70,28 @@ impl CameraPage {
         glib::Object::new(&[]).expect("Failed to create a CameraPage")
     }
 
-    pub fn start_stream(&self) {
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::CameraPage::from_instance(&page);
+    async fn start_stream(&self) {
+        let self_ = imp::CameraPage::from_instance(&self);
 
-            page.action_set_enabled("camera.stop", true);
-            page.action_set_enabled("camera.start", false);
-            match stream().await {
-                Ok(Some(stream_fd)) => {
-                    self_.paintable.set_pipewire_fd(stream_fd);
-                    self_.revealer.set_reveal_child(true);
-                    self_.camera_available.set_text("Yes");
-               }
-               Ok(None) => {
-                    self_.camera_available.set_text("No");
-               }
-               Err(err) => {
-                   tracing::error!("Failed to start a camera stream {:#?}", err);
-                   page.stop_stream();
-               }
+        self.action_set_enabled("camera.stop", true);
+        self.action_set_enabled("camera.start", false);
+        match stream().await {
+            Ok(Some(stream_fd)) => {
+                self_.paintable.set_pipewire_fd(stream_fd);
+                self_.revealer.set_reveal_child(true);
+                self_.camera_available.set_text("Yes");
             }
-        }));
+            Ok(None) => {
+                self_.camera_available.set_text("No");
+            }
+            Err(err) => {
+                tracing::error!("Failed to start a camera stream {:#?}", err);
+                self.stop_stream();
+            }
+        }
     }
 
-    pub fn stop_stream(&self) {
+    fn stop_stream(&self) {
         let self_ = imp::CameraPage::from_instance(self);
         self.action_set_enabled("camera.stop", false);
         self.action_set_enabled("camera.start", true);

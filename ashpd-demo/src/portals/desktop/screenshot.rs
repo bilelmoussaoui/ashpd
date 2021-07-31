@@ -40,14 +40,20 @@ mod imp {
                 "screenshot.pick-color",
                 None,
                 move |page, _action, _target| {
-                    page.pick_color();
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.pick_color().await;
+                    }));
                 },
             );
             klass.install_action(
                 "screenshot.screenshot",
                 None,
                 move |page, _action, _target| {
-                    page.screenshot();
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.screenshot().await;
+                    }));
                 },
             );
         }
@@ -75,39 +81,32 @@ impl ScreenshotPage {
         glib::Object::new(&[]).expect("Failed to create a ScreenshotPage")
     }
 
-    pub fn pick_color(&self) {
-        let ctx = glib::MainContext::default();
+    async fn pick_color(&self) {
         // used for retrieving a window identifier
         let root = self.native().unwrap();
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::ScreenshotPage::from_instance(&page);
-            let identifier = WindowIdentifier::from_native(&root).await;
-            if let Ok(color) = screenshot::pick_color(&identifier).await {
-                self_.color_widget.set_rgba(color.into());
-            }
-        }));
+        let self_ = imp::ScreenshotPage::from_instance(self);
+        let identifier = WindowIdentifier::from_native(&root).await;
+        if let Ok(color) = screenshot::pick_color(&identifier).await {
+            self_.color_widget.set_rgba(color.into());
+        }
     }
 
-    pub fn screenshot(&self) {
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak self as page => async move {
-            let self_ = imp::ScreenshotPage::from_instance(&page);
-            // used for retrieving a window identifier
-            let root = page.native().unwrap();
-            let identifier = WindowIdentifier::from_native(&root).await;
+    async fn screenshot(&self) {
+        let self_ = imp::ScreenshotPage::from_instance(self);
+        // used for retrieving a window identifier
+        let root = self.native().unwrap();
+        let identifier = WindowIdentifier::from_native(&root).await;
 
-            let interactive = self_.interactive_switch.is_active();
-            let modal = self_.modal_switch.is_active();
+        let interactive = self_.interactive_switch.is_active();
+        let modal = self_.modal_switch.is_active();
 
-            if let Ok(uri) = screenshot::take(&identifier, interactive, modal).await
-            {
-                let file = gio::File::for_uri(&uri);
-                self_.screenshot_photo.set_file(Some(&file));
-                self_.revealer.show(); // Revealer has a weird issue where it still
-                                 // takes space even if it's child is hidden
+        if let Ok(uri) = screenshot::take(&identifier, interactive, modal).await {
+            let file = gio::File::for_uri(&uri);
+            self_.screenshot_photo.set_file(Some(&file));
+            self_.revealer.show(); // Revealer has a weird issue where it still
+                                   // takes space even if it's child is hidden
 
-                self_.revealer.set_reveal_child(true);
-            }
-        }));
+            self_.revealer.set_reveal_child(true);
+        }
     }
 }

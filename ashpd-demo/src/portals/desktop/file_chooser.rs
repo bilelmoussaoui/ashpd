@@ -9,7 +9,6 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk_macros::spawn;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -81,21 +80,30 @@ mod imp {
                 "file_chooser.open_file",
                 None,
                 move |page, _action, _target| {
-                    page.open_file();
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.open_file().await;
+                    }));
                 },
             );
             klass.install_action(
                 "file_chooser.save_file",
                 None,
                 move |page, _action, _target| {
-                    page.save_file();
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.save_file().await;
+                    }));
                 },
             );
             klass.install_action(
                 "file_chooser.save_files",
                 None,
                 move |page, _action, _target| {
-                    page.save_files();
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.save_files().await;
+                    }));
                 },
             );
         }
@@ -119,77 +127,105 @@ impl FileChooserPage {
         glib::Object::new(&[]).expect("Failed to create a FileChooserPage")
     }
 
-    fn open_file(&self) {
+    async fn open_file(&self) {
         let root = self.native().unwrap();
-        spawn!(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_native(&root).await;
-            let self_ = imp::FileChooserPage::from_instance(&page);
-            let title = self_.open_title_entry.text();
-            let accept_label = is_empty(self_.open_accept_label_entry.text());
-            let directory = self_.open_directory_switch.is_active();
-            let modal = self_.open_modal_switch.is_active();
-            let multiple = self_.open_multiple_switch.is_active();
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let self_ = imp::FileChooserPage::from_instance(self);
+        let title = self_.open_title_entry.text();
+        let accept_label = is_empty(self_.open_accept_label_entry.text());
+        let directory = self_.open_directory_switch.is_active();
+        let modal = self_.open_modal_switch.is_active();
+        let multiple = self_.open_multiple_switch.is_active();
 
-            if let Ok(files) = portal_open_file(&identifier, &title, accept_label.as_deref(), directory, modal, multiple).await {
-                self_.open_response_group.show();
+        if let Ok(files) = portal_open_file(
+            &identifier,
+            &title,
+            accept_label.as_deref(),
+            directory,
+            modal,
+            multiple,
+        )
+        .await
+        {
+            self_.open_response_group.show();
 
-                while let Some(child) = self_.open_uris_listbox.next_sibling() {
-                    self_.open_uris_listbox.remove(&child);
-                }
-                for uri in files.uris() {
-                    self_.open_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
-                }
+            while let Some(child) = self_.open_uris_listbox.next_sibling() {
+                self_.open_uris_listbox.remove(&child);
             }
-        }));
+            for uri in files.uris() {
+                self_
+                    .open_uris_listbox
+                    .append(&adw::ActionRow::builder().title(uri).build());
+            }
+        }
     }
 
-    fn save_file(&self) {
+    async fn save_file(&self) {
         let root = self.native().unwrap();
-        spawn!(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_native(&root).await;
-            let self_ = imp::FileChooserPage::from_instance(&page);
-            let title = self_.save_file_title_entry.text();
-            let accept_label = is_empty(self_.save_file_accept_label_entry.text());
-            let modal = self_.save_file_modal_switch.is_active();
-            let current_name = is_empty(self_.save_file_current_name_entry.text());
-            let current_folder = is_empty(self_.save_file_current_folder_entry.text());
-            let current_file = is_empty(self_.save_file_current_file_entry.text());
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let self_ = imp::FileChooserPage::from_instance(self);
+        let title = self_.save_file_title_entry.text();
+        let accept_label = is_empty(self_.save_file_accept_label_entry.text());
+        let modal = self_.save_file_modal_switch.is_active();
+        let current_name = is_empty(self_.save_file_current_name_entry.text());
+        let current_folder = is_empty(self_.save_file_current_folder_entry.text());
+        let current_file = is_empty(self_.save_file_current_file_entry.text());
 
-            if let Ok(files) = portal_save_file(&identifier, &title, accept_label.as_deref(), modal, current_name.as_deref(), current_folder.as_deref(), current_file.as_deref()).await {
-                self_.save_file_response_group.show();
+        if let Ok(files) = portal_save_file(
+            &identifier,
+            &title,
+            accept_label.as_deref(),
+            modal,
+            current_name.as_deref(),
+            current_folder.as_deref(),
+            current_file.as_deref(),
+        )
+        .await
+        {
+            self_.save_file_response_group.show();
 
-                while let Some(child) = self_.save_file_uris_listbox.next_sibling() {
-                    self_.save_file_uris_listbox.remove(&child);
-                }
-                for uri in files.uris() {
-                    self_.save_file_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
-                }
+            while let Some(child) = self_.save_file_uris_listbox.next_sibling() {
+                self_.save_file_uris_listbox.remove(&child);
             }
-        }));
+            for uri in files.uris() {
+                self_
+                    .save_file_uris_listbox
+                    .append(&adw::ActionRow::builder().title(uri).build());
+            }
+        }
     }
 
-    fn save_files(&self) {
+    async fn save_files(&self) {
         let root = self.native().unwrap();
-        spawn!(clone!(@weak self as page => async move {
-            let identifier = WindowIdentifier::from_native(&root).await;
-            let self_ = imp::FileChooserPage::from_instance(&page);
-            let title = self_.save_files_title_entry.text();
-            let accept_label = is_empty(self_.save_files_accept_label_entry.text());
-            let current_folder = is_empty(self_.save_files_current_folder_entry.text());
-            let modal = self_.save_files_modal_switch.is_active();
-            let files = is_empty(self_.save_files_files_entry.text()).map(|files| split_comma(files));
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let self_ = imp::FileChooserPage::from_instance(self);
+        let title = self_.save_files_title_entry.text();
+        let accept_label = is_empty(self_.save_files_accept_label_entry.text());
+        let current_folder = is_empty(self_.save_files_current_folder_entry.text());
+        let modal = self_.save_files_modal_switch.is_active();
+        let files = is_empty(self_.save_files_files_entry.text()).map(split_comma);
 
-            if let Ok(files) = portal_save_files(&identifier, &title, accept_label.as_deref(), modal, current_folder.as_deref(), files.as_deref()).await {
-                self_.save_files_response_group.show();
+        if let Ok(files) = portal_save_files(
+            &identifier,
+            &title,
+            accept_label.as_deref(),
+            modal,
+            current_folder.as_deref(),
+            files.as_deref(),
+        )
+        .await
+        {
+            self_.save_files_response_group.show();
 
-                while let Some(child) = self_.save_files_uris_listbox.next_sibling() {
-                    self_.save_files_uris_listbox.remove(&child);
-                }
-                for uri in files.uris() {
-                    self_.save_files_uris_listbox.append(&adw::ActionRow::builder().title(uri).build());
-                }
+            while let Some(child) = self_.save_files_uris_listbox.next_sibling() {
+                self_.save_files_uris_listbox.remove(&child);
             }
-        }));
+            for uri in files.uris() {
+                self_
+                    .save_files_uris_listbox
+                    .append(&adw::ActionRow::builder().title(uri).build());
+            }
+        }
     }
 }
 
