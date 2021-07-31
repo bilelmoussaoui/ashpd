@@ -285,6 +285,14 @@
                     </child>
                     <child>
                       <object class="GtkStackPage">
+                        <property name="name">print</property>
+                        <property name="child">
+                          <object class="PrintPage" id="print" />
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
                         <property name="name">remote_desktop</property>
                         <property name="child">
                           <object class="RemoteDesktopPage" id="remote_desktop" />
