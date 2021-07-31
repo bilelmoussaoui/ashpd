@@ -27,11 +27,12 @@
         <child>
           <object class="GtkBox">
             <property name="orientation">vertical</property>
-            <property name="width-request">280</property>
+            <property name="width-request">240</property>
             <child>
               <object class="AdwHeaderBar" id="sidebar_headerbar">
-                <property name="show-end-title-buttons">False</property>
-                <property name="show-start-title-buttons">False</property>
+                <binding name="show-end-title-buttons">
+                  <lookup name="folded">leaflet</lookup>
+                </binding>
                 <child type="start">
                   <object class="GtkButton">
                     <property name="halign">center</property>
