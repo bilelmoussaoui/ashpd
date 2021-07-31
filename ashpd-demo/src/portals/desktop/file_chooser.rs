@@ -249,7 +249,7 @@ async fn portal_open_file(
         options
     };
 
-    let selected_files = proxy.open_file(&identifier, title, options).await?;
+    let selected_files = proxy.open_file(identifier, title, options).await?;
     Ok(selected_files)
 }
 
@@ -285,7 +285,7 @@ async fn portal_save_file(
     } else {
         options
     };
-    let selected_files = proxy.save_file(&identifier, title, options).await?;
+    let selected_files = proxy.save_file(identifier, title, options).await?;
     Ok(selected_files)
 }
 
@@ -321,6 +321,6 @@ async fn portal_save_files<S: AsRef<str>>(
     } else {
         options
     };
-    let selected_files = proxy.save_files(&identifier, title, options).await?;
+    let selected_files = proxy.save_files(identifier, title, options).await?;
     Ok(selected_files)
 }

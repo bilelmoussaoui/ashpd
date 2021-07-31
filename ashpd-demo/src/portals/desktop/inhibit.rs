@@ -46,7 +46,9 @@ mod imp {
             klass.install_action("inhibit.request", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
-                    page.inhibit().await;
+                    if let Err(err) = page.inhibit().await {
+                        tracing::error!("Failed to inhibit {}", err);
+                    }
                 }));
             });
             klass.install_action("inhibit.stop", None, move |page, _action, _target| {

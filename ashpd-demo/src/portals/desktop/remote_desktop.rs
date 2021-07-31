@@ -1,4 +1,3 @@
-use adw::prelude::*;
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktopProxy},
@@ -197,9 +196,11 @@ impl RemoteDesktopPage {
         )
         .await
         {
-            Ok((selected_devices, streams, session)) => {
+            Ok((_selected_devices, _streams, session)) => {
                 self_.response_group.show();
                 self_.session.lock().await.replace(session);
+                self.action_set_enabled("remote_desktop.start", false);
+                self.action_set_enabled("remote_desktop.stop", true);
             }
             Err(err) => {
                 tracing::error!("{:#?}", err);

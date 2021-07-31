@@ -71,7 +71,7 @@ impl CameraPage {
     }
 
     async fn start_stream(&self) {
-        let self_ = imp::CameraPage::from_instance(&self);
+        let self_ = imp::CameraPage::from_instance(self);
 
         self.action_set_enabled("camera.stop", true);
         self.action_set_enabled("camera.start", false);

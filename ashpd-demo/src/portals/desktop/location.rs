@@ -110,7 +110,7 @@ impl LocationPage {
             self_
                 .heading_label
                 .set_label(&location.heading().to_string());
-            self_.description_label.set_label(&location.description());
+            self_.description_label.set_label(location.description());
             self_
                 .latitude_label
                 .set_label(&location.latitude().to_string());

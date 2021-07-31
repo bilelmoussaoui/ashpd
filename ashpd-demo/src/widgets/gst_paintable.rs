@@ -47,7 +47,7 @@ mod camera_sink {
     impl Frame {
         pub fn new(buffer: &gst::Buffer, info: &gst_video::VideoInfo) -> Self {
             let video_frame =
-                gst_video::VideoFrame::from_buffer_readable(buffer.clone(), &info).unwrap();
+                gst_video::VideoFrame::from_buffer_readable(buffer.clone(), info).unwrap();
             Self(video_frame)
         }
 

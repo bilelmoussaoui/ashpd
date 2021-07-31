@@ -67,7 +67,7 @@ impl AccountPage {
 
     async fn fetch_user_information(&self) {
         let root = self.native().unwrap();
-        let self_ = imp::AccountPage::from_instance(&self);
+        let self_ = imp::AccountPage::from_instance(self);
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = self_.reason.text();
 

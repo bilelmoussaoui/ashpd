@@ -148,7 +148,9 @@ impl ExampleApplication {
                 // and saving the window state
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak app => async move {
-                    app.restart().await;
+                    if let Err(err) = app.restart().await {
+                        tracing::error!("Failed to restart the application {}", err);
+                    }
                 }));
             })
         );
