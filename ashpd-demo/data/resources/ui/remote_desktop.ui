@@ -11,42 +11,101 @@
             <property name="title" translatable="yes">Remote Desktop</property>
             <property name="description" translatable="yes">Communicates with org.freedesktop.portal.RemoteDesktop</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Multiple sources</property>
-                <property name="activatable-widget">multiple_switch</property>
+              <object class="AdwActionRow" id="devices_comborow">
+                <property name="title" translatable="yes">Input Devices</property>
                 <child>
-                  <object class="GtkSwitch" id="multiple_switch">
-                    <property name="valign">center</property>
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkCheckButton" id="keyboard_check">
+                        <property name="label" translatable="yes">Keyboard</property>
+                        <property name="active">True</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="pointer_check">
+                        <property name="label" translatable="yes">Pointer</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="touchscreen_check">
+                        <property name="label" translatable="yes">Touchscreen</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwComboRow" id="types_comborow">
-                <property name="title" translatable="yes">Content to Record</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">Monitor</item>
-                      <item translatable="yes">Window</item>
-                      <item translatable="yes">Both</item>
-                    </items>
+              <object class="AdwExpanderRow" id="screencast_row">
+                <property name="title" translatable="yes">Screen Cast</property>
+                <property name="show-enable-switch">True</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Multiple sources</property>
+                    <property name="activatable-widget">multiple_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="multiple_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
-                </property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwComboRow" id="cursor_comborow">
-                <property name="title" translatable="yes">Cursor Mode</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">Hidden</item>
-                      <item translatable="yes">Embedded</item>
-                      <item translatable="yes">Metadata</item>
-                    </items>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Content to Record</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <child>
+                          <object class="GtkCheckButton" id="monitor_check">
+                            <property name="label" translatable="yes">Monitor</property>
+                            <property name="active">True</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="window_check">
+                            <property name="label" translatable="yes">Window</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
-                </property>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Cursor Mode</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <child>
+                          <object class="GtkCheckButton" id="hidden_check">
+                            <property name="label" translatable="yes">Hidden</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="embedded_check">
+                            <property name="label" translatable="yes">Embedded</property>
+                            <property name="active">True</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="metadata_check">
+                            <property name="label" translatable="yes">Metadata</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
