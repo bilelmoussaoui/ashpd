@@ -27,7 +27,7 @@ mod imp {
                 network_available: TemplateChild::default(),
                 metered: TemplateChild::default(),
                 connectivity: TemplateChild::default(),
-                connection: zbus::Connection::new_session().unwrap(),
+                connection: zbus::Connection::session().unwrap(),
             }
         }
     }

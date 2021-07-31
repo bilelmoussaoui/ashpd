@@ -205,6 +205,15 @@
                         </child>
                         <child>
                           <object class="GtkStackPage">
+                            <property name="name">remote_desktop</property>
+                            <property name="title" translatable="yes">Remote Desktop</property>
+                            <property name="child">
+                              <object class="RemoteDesktopPage" id="remote_desktop" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
                             <property name="name">screenshot</property>
                             <property name="title" translatable="yes">Screenshot</property>
                             <property name="child">

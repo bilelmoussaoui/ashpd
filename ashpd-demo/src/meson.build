@@ -31,6 +31,7 @@ sources = files(
   'portals/desktop/network_monitor.rs',
   'portals/desktop/notification.rs',
   'portals/desktop/open_uri.rs',
+  'portals/desktop/remote_desktop.rs',
   'portals/desktop/screenshot.rs',
   'portals/desktop/screencast.rs',
   'portals/desktop/secret.rs',

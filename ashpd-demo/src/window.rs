@@ -8,8 +8,8 @@ use crate::application::ExampleApplication;
 use crate::config::APP_ID;
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
-    LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, ScreenCastPage,
-    ScreenshotPage, SecretPage, WallpaperPage,
+    LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, RemoteDesktopPage,
+    ScreenCastPage, ScreenshotPage, SecretPage, WallpaperPage,
 };
 use crate::portals::DocumentsPage;
 
@@ -49,6 +49,8 @@ mod imp {
         pub inhibit: TemplateChild<InhibitPage>,
         #[template_child]
         pub secret: TemplateChild<SecretPage>,
+        #[template_child]
+        pub remote_desktop: TemplateChild<RemoteDesktopPage>,
         pub settings: gio::Settings,
     }
 
@@ -74,6 +76,7 @@ mod imp {
                 open_uri: TemplateChild::default(),
                 inhibit: TemplateChild::default(),
                 secret: TemplateChild::default(),
+                remote_desktop: TemplateChild::default(),
                 settings: gio::Settings::new(APP_ID),
             }
         }

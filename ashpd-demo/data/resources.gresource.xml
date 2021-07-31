@@ -16,6 +16,7 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="network_monitor.ui">resources/ui/network_monitor.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="notification.ui">resources/ui/notification.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="open_uri.ui">resources/ui/open_uri.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="remote_desktop.ui">resources/ui/remote_desktop.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screenshot.ui">resources/ui/screenshot.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screencast.ui">resources/ui/screencast.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="secret.ui">resources/ui/secret.ui</file>

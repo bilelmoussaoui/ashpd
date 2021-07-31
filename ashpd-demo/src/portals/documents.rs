@@ -39,7 +39,7 @@ mod imp {
             let ctx = glib::MainContext::default();
             let mount_point_label = self.mount_point.get();
             ctx.spawn_local(clone!(@weak mount_point_label => async move {
-                            let cnx = zbus::azync::Connection::new_session().await.unwrap();
+                            let cnx = zbus::azync::Connection::session().await.unwrap();
                             let proxy = DocumentsProxy::new(&cnx).await.unwrap();
                             let info = proxy.list(config::APP_ID).await;
                             println!("{:#?}", info);
