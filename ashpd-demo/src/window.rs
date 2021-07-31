@@ -9,7 +9,7 @@ use gtk::{
 };
 use tracing::warn;
 
-use crate::application::ExampleApplication;
+use crate::application::Application;
 use crate::config::APP_ID;
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
@@ -26,7 +26,7 @@ mod imp {
 
     #[derive(Debug, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/window.ui")]
-    pub struct ExampleApplicationWindow {
+    pub struct ApplicationWindow {
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
@@ -65,9 +65,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for ExampleApplicationWindow {
-        const NAME: &'static str = "ExampleApplicationWindow";
-        type Type = super::ExampleApplicationWindow;
+    impl ObjectSubclass for ApplicationWindow {
+        const NAME: &'static str = "ApplicationWindow";
+        type Type = super::ApplicationWindow;
         type ParentType = adw::ApplicationWindow;
 
         fn new() -> Self {
@@ -98,7 +98,7 @@ mod imp {
             SidebarRow::static_type();
 
             klass.install_action("win.back", None, |win, _, _| {
-                let self_ = imp::ExampleApplicationWindow::from_instance(win);
+                let self_ = imp::ApplicationWindow::from_instance(win);
                 self_.leaflet.navigate(adw::NavigationDirection::Back);
             });
         }
@@ -109,7 +109,7 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for ExampleApplicationWindow {
+    impl ObjectImpl for ApplicationWindow {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
             // Add pages based on whether the app is sandboxed
@@ -148,8 +148,8 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for ExampleApplicationWindow {}
-    impl WindowImpl for ExampleApplicationWindow {
+    impl WidgetImpl for ApplicationWindow {}
+    impl WindowImpl for ApplicationWindow {
         // save window state on delete event
         fn close_request(&self, obj: &Self::Type) -> Inhibit {
             if let Err(err) = obj.save_window_size() {
@@ -159,29 +159,22 @@ mod imp {
         }
     }
 
-    impl ApplicationWindowImpl for ExampleApplicationWindow {}
-    impl AdwApplicationWindowImpl for ExampleApplicationWindow {}
+    impl ApplicationWindowImpl for ApplicationWindow {}
+    impl AdwApplicationWindowImpl for ApplicationWindow {}
 }
 
 glib::wrapper! {
-    pub struct ExampleApplicationWindow(ObjectSubclass<imp::ExampleApplicationWindow>)
+    pub struct ApplicationWindow(ObjectSubclass<imp::ApplicationWindow>)
         @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow, adw::ApplicationWindow, @implements gio::ActionMap, gio::ActionGroup;
 }
 
-impl ExampleApplicationWindow {
-    pub fn new(app: &ExampleApplication) -> Self {
-        let window: Self =
-            glib::Object::new(&[]).expect("Failed to create ExampleApplicationWindow");
-        window.set_application(Some(app));
-
-        // Set icons for shell
-        gtk::Window::set_default_icon_name(APP_ID);
-
-        window
+impl ApplicationWindow {
+    pub fn new(app: &Application) -> Self {
+        glib::Object::new(&[("application", &app)]).expect("Failed to create ApplicationWindow")
     }
 
-    pub fn save_window_size(&self) -> Result<(), glib::BoolError> {
-        let settings = &imp::ExampleApplicationWindow::from_instance(self).settings;
+    fn save_window_size(&self) -> Result<(), glib::BoolError> {
+        let settings = &imp::ApplicationWindow::from_instance(self).settings;
 
         let size = self.default_size();
 
@@ -194,7 +187,7 @@ impl ExampleApplicationWindow {
     }
 
     fn sidebar_row_selected(&self, row: &gtk::ListBoxRow) {
-        let self_ = imp::ExampleApplicationWindow::from_instance(self);
+        let self_ = imp::ApplicationWindow::from_instance(self);
         let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
         self_.leaflet.navigate(adw::NavigationDirection::Forward);
         let page_name = sidebar_row.name();
@@ -208,7 +201,7 @@ impl ExampleApplicationWindow {
     }
 
     fn load_window_size(&self) {
-        let settings = &imp::ExampleApplicationWindow::from_instance(self).settings;
+        let settings = &imp::ApplicationWindow::from_instance(self).settings;
 
         let width = settings.int("window-width");
         let height = settings.int("window-height");

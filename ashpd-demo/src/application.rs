@@ -16,18 +16,18 @@ use serde::Serialize;
 use tracing::{debug, info};
 
 use crate::config;
-use crate::window::ExampleApplicationWindow;
+use crate::window::ApplicationWindow;
 
 mod imp {
     use super::*;
 
     #[derive(Debug)]
-    pub struct ExampleApplication {
-        pub window: OnceCell<WeakRef<ExampleApplicationWindow>>,
+    pub struct Application {
+        pub window: OnceCell<WeakRef<ApplicationWindow>>,
         pub settings: gio::Settings,
     }
 
-    impl Default for ExampleApplication {
+    impl Default for Application {
         fn default() -> Self {
             Self {
                 window: OnceCell::default(),
@@ -37,13 +37,13 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for ExampleApplication {
-        const NAME: &'static str = "ExampleApplication";
-        type Type = super::ExampleApplication;
+    impl ObjectSubclass for Application {
+        const NAME: &'static str = "Application";
+        type Type = super::Application;
         type ParentType = gtk::Application;
     }
 
-    impl ObjectImpl for ExampleApplication {
+    impl ObjectImpl for Application {
         fn constructed(&self, obj: &Self::Type) {
             obj.add_main_option(
                 "replace",
@@ -57,18 +57,18 @@ mod imp {
         }
     }
 
-    impl ApplicationImpl for ExampleApplication {
+    impl ApplicationImpl for Application {
         fn activate(&self, app: &Self::Type) {
-            debug!("GtkApplication<ExampleApplication>::activate");
+            debug!("Application::activate");
 
-            let priv_ = ExampleApplication::from_instance(app);
+            let priv_ = Application::from_instance(app);
             if let Some(window) = priv_.window.get() {
                 let window = window.upgrade().unwrap();
                 window.show();
                 window.present();
                 return;
             }
-            let window = ExampleApplicationWindow::new(app);
+            let window = ApplicationWindow::new(app);
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
@@ -81,10 +81,12 @@ mod imp {
         }
 
         fn startup(&self, app: &Self::Type) {
-            debug!("GtkApplication<ExampleApplication>::startup");
+            debug!("Application::startup");
             adw::init();
             let provider = gtk::CssProvider::new();
             provider.load_from_resource("/com/belmoussaoui/ashpd/demo/style.css");
+            // Set icons for shell
+            gtk::Window::set_default_icon_name(config::APP_ID);
 
             if let Some(ref display) = gtk::gdk::Display::default() {
                 gtk::StyleContext::add_provider_for_display(
@@ -102,15 +104,15 @@ mod imp {
         }
     }
 
-    impl GtkApplicationImpl for ExampleApplication {}
+    impl GtkApplicationImpl for Application {}
 }
 
 glib::wrapper! {
-    pub struct ExampleApplication(ObjectSubclass<imp::ExampleApplication>)
+    pub struct Application(ObjectSubclass<imp::Application>)
         @extends gio::Application, gtk::Application, @implements gio::ActionMap, gio::ActionGroup;
 }
 
-impl ExampleApplication {
+impl Application {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[
@@ -121,13 +123,13 @@ impl ExampleApplication {
         .expect("Application initialization failed...")
     }
 
-    fn main_window(&self) -> ExampleApplicationWindow {
-        let priv_ = imp::ExampleApplication::from_instance(self);
+    fn main_window(&self) -> ApplicationWindow {
+        let priv_ = imp::Application::from_instance(self);
         priv_.window.get().unwrap().upgrade().unwrap()
     }
 
     fn setup_gactions(&self) {
-        let self_ = imp::ExampleApplication::from_instance(self);
+        let self_ = imp::Application::from_instance(self);
         // Quit
         action!(
             self,

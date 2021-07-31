@@ -5,7 +5,7 @@ mod portals;
 mod widgets;
 mod window;
 
-use application::ExampleApplication;
+use application::Application;
 use config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
 use gettextrs::*;
 use gtk::gio;
@@ -28,11 +28,11 @@ fn main() {
 
     let mut args = std::env::args();
     if args.any(|x| x == "--replace") {
-        if let Err(err) = ExampleApplication::stop_current_instance() {
+        if let Err(err) = Application::stop_current_instance() {
             tracing::error!("Failed to replace current instance {}", err);
         };
     }
 
-    let app = ExampleApplication::new();
+    let app = Application::new();
     app.run();
 }
