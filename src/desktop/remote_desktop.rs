@@ -154,7 +154,7 @@ struct SelectedDevices {
     /// The selected devices.
     pub devices: BitFlags<DeviceType>,
     /// The selected streams if a ScreenCast portal is used on the same session
-    pub streams: Vec<Stream>,
+    pub streams: Option<Vec<Stream>>,
 }
 
 /// The interface lets sandboxed applications create remote desktop sessions.
@@ -264,7 +264,7 @@ impl<'a> RemoteDesktopProxy<'a> {
             &(session, &identifier, &options),
         )
         .await?;
-        Ok((response.devices, response.streams))
+        Ok((response.devices, response.streams.unwrap_or_default()))
     }
 
     /// Notify keyboard code.
