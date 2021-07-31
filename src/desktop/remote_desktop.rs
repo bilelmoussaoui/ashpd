@@ -12,8 +12,46 @@
 //!
 //!     proxy.select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer).await?;
 //!
-//!     let devices = proxy.start(&session, &WindowIdentifier::default()).await?;
+//!     let (devices, _) = proxy.start(&session, &WindowIdentifier::default()).await?;
 //!     println!("{:#?}", devices);
+//!
+//!     // 13 for Enter key code
+//!     proxy.notify_keyboard_keycode(&session, 13, KeyState::Pressed).await?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! You can also use the Remote Desktop portal with the ScreenCast one. In order to do so,
+//! you need to call [`ScreenCastProxy::select_sources`](super::screencast::ScreencastProxy::select_sources)
+//! on the session created with [`RemoteDesktopProxy::create_session`]
+//!
+//! ```rust,no_run
+//! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
+//! use ashpd::desktop::screencast::{CursorMode, ScreenCastProxy, SourceType};
+//! use ashpd::WindowIdentifier;
+//!
+//! async fn run() -> ashpd::Result<()> {
+//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let proxy = RemoteDesktopProxy::new(&connection).await?;
+//!     let screencast = ScreenCastProxy::new(&connection).await?;
+//!     let identifier = WindowIdentifier::default();
+//!
+//!     let session = proxy.create_session().await?;
+//!
+//!     proxy.select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer).await?;
+//!     screencast
+//!         .select_sources(
+//!             &session,
+//!             CursorMode::Metadata.into(),
+//!             SourceType::Monitor | SourceType::Window,
+//!             true,
+//!         )
+//!         .await?;
+//!
+//!     let (devices, streams) = proxy.start(&session, &identifier).await?;
+//!     println!("{:#?}", devices);
+//!     println!("{:#?}", streams);
 //!
 //!     // 13 for Enter key code
 //!     proxy.notify_keyboard_keycode(&session, 13, KeyState::Pressed).await?;
@@ -30,7 +68,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Value;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use super::{screencast::Stream, HandleToken, SessionProxy, DESTINATION, PATH};
+
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method},
     Error, WindowIdentifier,
@@ -114,6 +153,8 @@ struct StartRemoteOptions {
 struct SelectedDevices {
     /// The selected devices.
     pub devices: BitFlags<DeviceType>,
+    /// The selected streams if a ScreenCast portal is used on the same session
+    pub streams: Vec<Stream>,
 }
 
 /// The interface lets sandboxed applications create remote desktop sessions.
@@ -214,7 +255,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         &self,
         session: &SessionProxy<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<BitFlags<DeviceType>, Error> {
+    ) -> Result<(BitFlags<DeviceType>, Vec<Stream>), Error> {
         let options = StartRemoteOptions::default();
         let response: SelectedDevices = call_request_method(
             &self.0,
@@ -223,7 +264,7 @@ impl<'a> RemoteDesktopProxy<'a> {
             &(session, &identifier, &options),
         )
         .await?;
-        Ok(response.devices)
+        Ok((response.devices, response.streams))
     }
 
     /// Notify keyboard code.
