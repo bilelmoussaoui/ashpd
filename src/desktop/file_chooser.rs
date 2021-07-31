@@ -92,6 +92,8 @@
 
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::os::unix::ffi::OsStrExt;
+use std::{ffi::CString, path::Path};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -289,22 +291,24 @@ impl SaveFileOptions {
     }
 
     /// Sets the current folder.
-    pub fn current_folder(mut self, current_folder: &str) -> Self {
-        // TODO: weird api expecting a null terminated byte array instead of a string,
-        // investigate way?
-        let mut bytes: Vec<u8> = current_folder.into();
-        bytes.push(0);
-        self.current_folder = Some(bytes);
+    pub fn current_folder<S: AsRef<Path> + zvariant::Type + Serialize>(
+        mut self,
+        current_folder: S,
+    ) -> Self {
+        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
+            .expect("`current_folder` should not be null terminated");
+        self.current_folder = Some(cstr.into_bytes_with_nul());
         self
     }
 
     /// Sets the absolute path of the file.
-    pub fn current_file(mut self, current_file: &str) -> Self {
-        // TODO: weird api expecting a null terminated byte array instead of a string,
-        // investigate way?
-        let mut bytes: Vec<u8> = current_file.into();
-        bytes.push(0);
-        self.current_file = Some(bytes);
+    pub fn current_file<S: AsRef<Path> + zvariant::Type + Serialize>(
+        mut self,
+        current_file: S,
+    ) -> Self {
+        let cstr = CString::new(current_file.as_ref().as_os_str().as_bytes())
+            .expect("`current_file` should not be null terminated");
+        self.current_file = Some(cstr.into_bytes_with_nul());
         self
     }
 
@@ -370,26 +374,25 @@ impl SaveFilesOptions {
     }
 
     /// Specifies the current folder path.
-    pub fn current_folder(mut self, current_folder: &str) -> Self {
-        let mut bytes: Vec<u8> = current_folder.into();
-        bytes.push(0);
-        // TODO: weird api expecting a null terminated byte array instead of a string,
-        // investigate way?
-        self.current_folder = Some(bytes);
+    pub fn current_folder<S: AsRef<Path> + zvariant::Type + Serialize>(
+        mut self,
+        current_folder: S,
+    ) -> Self {
+        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
+            .expect("`current_folder` should not be null terminated");
+        self.current_folder = Some(cstr.into_bytes_with_nul());
         self
     }
 
     /// Sets a list of files to save.
-    pub fn files<S: AsRef<str> + zvariant::Type + Serialize>(mut self, files: &[S]) -> Self {
-        // TODO: weird api expecting a null terminated byte array instead of a string,
-        // investigate way?
+    pub fn files<S: AsRef<Path> + zvariant::Type + Serialize>(mut self, files: &[S]) -> Self {
         self.files = Some(
             files
                 .iter()
                 .map(|s| {
-                    let mut bytes: Vec<u8> = s.as_ref().into();
-                    bytes.push(0);
-                    bytes
+                    let cstr = CString::new(s.as_ref().as_os_str().as_bytes())
+                        .expect("`files` should not be null terminated");
+                    cstr.into_bytes_with_nul()
                 })
                 .collect(),
         );

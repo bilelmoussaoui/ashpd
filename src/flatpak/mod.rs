@@ -13,7 +13,7 @@
 //!
 //!     proxy
 //!         .spawn(
-//!             "/home/bilelmoussaoui".into(),
+//!             "/",
 //!             &["contrast"],
 //!             HashMap::new(),
 //!             HashMap::new(),
@@ -29,11 +29,11 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
-use std::{collections::HashMap, ffi::CString, fmt::Debug, os::unix::prelude::AsRawFd};
-
 use enumflags2::BitFlags;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use std::os::unix::ffi::OsStrExt;
+use std::{collections::HashMap, ffi::CString, fmt::Debug, os::unix::prelude::AsRawFd, path::Path};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -256,19 +256,26 @@ impl<'a> FlatpakProxy<'a> {
     ///
     /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
-    pub async fn spawn<S: AsRef<str> + zvariant::Type + Serialize + Debug>(
+    pub async fn spawn<
+        C: AsRef<Path> + zvariant::Type + Serialize + Debug,
+        S: AsRef<Path> + zvariant::Type + Serialize + Debug,
+    >(
         &self,
-        cwd_path: &str,
+        cwd_path: C,
         argv: &[S],
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
     ) -> Result<u32, Error> {
-        let cwd_path = CString::new(cwd_path).unwrap();
+        let cwd_path = CString::new(cwd_path.as_ref().as_os_str().as_bytes())
+            .expect("The `cwd_path` should not contain a trailing 0 bytes");
         let argv = argv
             .iter()
-            .map(|s| CString::new(s.as_ref()).unwrap())
+            .map(|s| {
+                CString::new(s.as_ref().as_os_str().as_bytes())
+                    .expect("The `argv` should not contain a trailing 0 bytes")
+            })
             .collect::<Vec<_>>();
         call_method(
             &self.0,
