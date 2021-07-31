@@ -131,6 +131,7 @@ struct StartCastOptions {
 /// A response to a [`ScreenCastProxy::create_session`] request.
 struct CreateSession {
     // TODO: investigate why this doesn't return an ObjectPath
+    // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
     /// A string that will be used as the last element of the session handle.
     session_handle: String,
 }

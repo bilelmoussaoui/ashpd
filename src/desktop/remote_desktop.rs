@@ -119,7 +119,8 @@ struct CreateRemoteOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to a [`RemoteDesktopProxy::create_session`] request.
 struct CreateSession {
-    // TODO: investigate why is this a String instead of an ObjectPath
+    // TODO: investigate why this doesn't return an ObjectPath
+    // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
     /// A string that will be used as the last element of the session handle.
     session_handle: String,
 }

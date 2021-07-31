@@ -93,6 +93,7 @@ pub enum InhibitFlags {
 /// A response to a [`InhibitProxy::create_monitor`] request.
 struct CreateMonitor {
     // TODO: investigate why this doesn't return an ObjectPath
+    // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
     session_handle: String,
 }
 
