@@ -179,8 +179,8 @@ impl ExampleApplication {
         );
     }
 
-    pub async fn stop_current_instance() -> ashpd::Result<()> {
-        let bus = gio::bus_get_future(gio::BusType::Session).await.unwrap();
+    pub fn stop_current_instance() -> ashpd::Result<()> {
+        let bus = gio::bus_get_future(gio::BusType::Session).unwrap();
         gio::bus_watch_name_on_connection(
             &bus,
             config::APP_ID,
