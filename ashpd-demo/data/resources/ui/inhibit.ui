@@ -27,25 +27,25 @@
                   <object class="GtkBox">
                     <property name="orientation">horizontal</property>
                     <child>
-                      <object class="GtkCheckButton" id="logout">
+                      <object class="GtkCheckButton" id="logout_check">
                         <property name="label" translatable="yes">Logout</property>
                         <property name="valign">center</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="user_switch">
+                      <object class="GtkCheckButton" id="user_switch_check">
                         <property name="label" translatable="yes">User Switch</property>
                         <property name="valign">center</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="suspend">
+                      <object class="GtkCheckButton" id="suspend_check">
                         <property name="label" translatable="yes">Suspens</property>
                         <property name="valign">center</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="idle">
+                      <object class="GtkCheckButton" id="idle_check">
                         <property name="label" translatable="yes">Idle</property>
                         <property name="valign">center</property>
                       </object>
@@ -57,10 +57,30 @@
           </object>
         </child>
         <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">Request</property>
-            <property name="halign">start</property>
-            <property name="action-name">inhibit.request</property>
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Request</property>
+                <property name="use-underline">True</property>
+                <property name="halign">start</property>
+                <property name="action-name">inhibit.request</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Close Session</property>
+                <property name="use-underline">True</property>
+                <property name="halign">start</property>
+                <property name="sensitive">False</property>
+                <property name="action-name">inhibit.stop</property>
+                <property name="halign">end</property>
+                <property name="hexpand">True</property>
+                <style>
+                  <class name="destructive-action" />
+                </style>
+              </object>
+            </child>
           </object>
         </child>
         <child>

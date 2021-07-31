@@ -1,7 +1,14 @@
-use ashpd::{desktop::inhibit, zbus, WindowIdentifier};
+use ashpd::{
+    desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState},
+    desktop::SessionProxy,
+    enumflags2::BitFlags,
+    zbus, WindowIdentifier,
+};
+use futures::lock::Mutex;
 use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use std::sync::Arc;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -16,6 +23,15 @@ mod imp {
         pub reason: TemplateChild<gtk::Entry>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub idle_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub logout_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub user_switch_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub suspend_check: TemplateChild<gtk::CheckButton>,
+        pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
     }
 
     #[glib::object_subclass]
@@ -33,13 +49,24 @@ mod imp {
                     page.inhibit().await;
                 }));
             });
+            klass.install_action("inhibit.stop", None, move |page, _action, _target| {
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.stop().await;
+                }));
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
         }
     }
-    impl ObjectImpl for InhibitPage {}
+    impl ObjectImpl for InhibitPage {
+        fn constructed(&self, obj: &Self::Type) {
+            obj.action_set_enabled("inhibit.stop", false);
+            self.parent_constructed(obj);
+        }
+    }
     impl WidgetImpl for InhibitPage {}
     impl BinImpl for InhibitPage {}
 }
@@ -54,38 +81,64 @@ impl InhibitPage {
         glib::Object::new(&[]).expect("Failed to create a InhibitPage")
     }
 
-    async fn inhibit(&self) {
+    fn inhibit_flags(&self) -> BitFlags<InhibitFlags> {
+        let self_ = imp::InhibitPage::from_instance(self);
+        let mut flags = BitFlags::empty();
+
+        if self_.user_switch_check.is_active() {
+            flags.insert(InhibitFlags::UserSwitch);
+        }
+        if self_.suspend_check.is_active() {
+            flags.insert(InhibitFlags::Suspend);
+        }
+        if self_.idle_check.is_active() {
+            flags.insert(InhibitFlags::Idle);
+        }
+        if self_.logout_check.is_active() {
+            flags.insert(InhibitFlags::Logout);
+        }
+
+        flags
+    }
+
+    async fn inhibit(&self) -> ashpd::Result<()> {
         let root = self.native().unwrap();
         let self_ = imp::InhibitPage::from_instance(self);
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = self_.reason.text();
+        let flags = self.inhibit_flags();
 
-        if let Err(err) = inhibit(&identifier, &reason).await {
-            tracing::error!("Failed to request to inhibit stuff {}", err);
+        let connection = zbus::azync::Connection::session().await?;
+        let proxy = InhibitProxy::new(&connection).await?;
+        let monitor = proxy.create_monitor(&identifier).await?;
+
+        self_.session.lock().await.replace(monitor);
+        self.action_set_enabled("inhibit.stop", true);
+        self.action_set_enabled("inhibit.request", false);
+
+        let state = proxy.receive_state_changed().await?;
+        match state.session_state() {
+            SessionState::Running => tracing::info!("Session running"),
+            SessionState::QueryEnd => {
+                tracing::info!("Session: query end");
+                proxy.inhibit(&identifier, flags, &reason).await?;
+                if let Some(session) = self_.session.lock().await.as_ref() {
+                    proxy.query_end_response(session).await?;
+                }
+            }
+            SessionState::Ending => {
+                tracing::info!("Ending the session");
+            }
+        }
+        Ok(())
+    }
+
+    async fn stop(&self) {
+        let self_ = imp::InhibitPage::from_instance(self);
+        self.action_set_enabled("inhibit.stop", false);
+        self.action_set_enabled("inhibit.request", true);
+        if let Some(session) = self_.session.lock().await.take() {
+            let _ = session.close().await;
         }
     }
-}
-
-async fn inhibit(identifier: &WindowIdentifier, reason: &str) -> ashpd::Result<()> {
-    let connection = zbus::azync::Connection::session().await?;
-    let proxy = inhibit::InhibitProxy::new(&connection).await?;
-    let monitor = proxy.create_monitor(&identifier).await?;
-    let state = proxy.receive_state_changed().await?;
-    match state.session_state() {
-        inhibit::SessionState::Running => (),
-        inhibit::SessionState::QueryEnd => {
-            proxy
-                .inhibit(
-                    &identifier,
-                    inhibit::InhibitFlags::Logout | inhibit::InhibitFlags::UserSwitch,
-                    reason,
-                )
-                .await?;
-            proxy.query_end_response(&monitor).await?;
-        }
-        inhibit::SessionState::Ending => {
-            tracing::info!("Ending the session");
-        }
-    }
-    Ok(())
 }
