@@ -29,7 +29,7 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
-use std::{collections::HashMap, fmt::Debug, os::unix::prelude::AsRawFd};
+use std::{collections::HashMap, ffi::CString, fmt::Debug, os::unix::prelude::AsRawFd};
 
 use enumflags2::BitFlags;
 use serde::Serialize;
@@ -265,10 +265,24 @@ impl<'a> FlatpakProxy<'a> {
         flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
     ) -> Result<u32, Error> {
+        let cwd_path = CString::new(cwd_path).unwrap();
+        let argv = argv
+            .iter()
+            .map(|s| CString::new(s.as_ref()).unwrap())
+            .collect::<Vec<_>>();
         call_method(
             &self.0,
             "Spawn",
-            &(cwd_path, argv, fds, envs, flags, options),
+            &(
+                cwd_path.as_bytes_with_nul(),
+                argv.iter()
+                    .map(|c| c.as_bytes_with_nul())
+                    .collect::<Vec<_>>(),
+                fds,
+                envs,
+                flags,
+                options,
+            ),
         )
         .await
     }

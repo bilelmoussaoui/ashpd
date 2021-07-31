@@ -4,7 +4,7 @@
     <section>
       <item>
         <attribute name="label" translatable="yes">_Restart</attribute>
-        <attribute name="action">win.restart</attribute>
+        <attribute name="action">app.restart</attribute>
       </item>
     </section>
     <section>
@@ -121,7 +121,6 @@
                 <property name="hscrollbar-policy">never</property>
                 <property name="min-content-height">250</property>
                 <property name="vexpand">True</property>
-
                 <child>
                   <object class="GtkStack" id="stack">
                     <property name="hexpand">True</property>

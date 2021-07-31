@@ -151,5 +151,5 @@ pub async fn user_information(
 ) -> Result<UserInfo, Error> {
     let connection = zbus::azync::Connection::session().await?;
     let proxy = AccountProxy::new(&connection).await?;
-    proxy.user_information(&identifier, reason).await
+    proxy.user_information(identifier, reason).await
 }

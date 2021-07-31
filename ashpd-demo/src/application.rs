@@ -1,3 +1,9 @@
+use std::collections::HashMap;
+
+use ashpd::{
+    flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions},
+    zbus,
+};
 use gio::ApplicationFlags;
 use glib::clone;
 use glib::WeakRef;
@@ -121,6 +127,19 @@ impl ExampleApplication {
             })
         );
 
+        action!(
+            self,
+            "restart",
+            clone!(@weak self as app => move |_, _| {
+                // This is needed to trigger the delete event
+                // and saving the window state
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak app => async move {
+                    app.restart().await;
+                }));
+            })
+        );
+
         let is_dark_mode = self_.settings.boolean("dark-mode");
         stateful_action!(
             self,
@@ -167,6 +186,22 @@ impl ExampleApplication {
             .build();
 
         dialog.show();
+    }
+
+    async fn restart(&self) -> ashpd::Result<()> {
+        let cnx = zbus::azync::Connection::session().await?;
+        let proxy = FlatpakProxy::new(&cnx).await?;
+        proxy
+            .spawn(
+                "/",
+                &["ashpd-demo", "--replace"],
+                HashMap::new(),
+                HashMap::new(),
+                SpawnFlags::Latest.into(),
+                SpawnOptions::default(),
+            )
+            .await?;
+        Ok(())
     }
 
     pub fn run(&self) {

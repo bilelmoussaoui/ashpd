@@ -224,7 +224,7 @@ impl<'a> EmailProxy<'a> {
 pub async fn compose(identifier: &WindowIdentifier, email: Email) -> Result<(), Error> {
     let connection = zbus::azync::Connection::session().await?;
     let proxy = EmailProxy::new(&connection).await?;
-    proxy.compose_email(&identifier, email).await?;
+    proxy.compose_email(identifier, email).await?;
 
     Ok(())
 }

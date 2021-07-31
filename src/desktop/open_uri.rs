@@ -270,7 +270,7 @@ pub async fn open_uri(
 ) -> Result<(), Error> {
     let connection = zbus::azync::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_uri(&identifier, uri, writeable, ask).await?;
+    proxy.open_uri(identifier, uri, writeable, ask).await?;
     Ok(())
 }
 
@@ -283,7 +283,7 @@ pub async fn open_file<F: AsRawFd>(
 ) -> Result<(), Error> {
     let connection = zbus::azync::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_file(&identifier, file, writeable, ask).await?;
+    proxy.open_file(identifier, file, writeable, ask).await?;
     Ok(())
 }
 
@@ -295,6 +295,6 @@ pub async fn open_directory<F: AsRawFd>(
 ) -> Result<(), Error> {
     let connection = zbus::azync::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_directory(&identifier, directory).await?;
+    proxy.open_directory(identifier, directory).await?;
     Ok(())
 }

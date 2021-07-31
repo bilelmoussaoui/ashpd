@@ -203,7 +203,7 @@ pub async fn request<S: AsRef<str> + zvariant::Type + Serialize>(
     let proxy = BackgroundProxy::new(&connection).await?;
     proxy
         .request_background(
-            &identifier,
+            identifier,
             reason,
             auto_start,
             command_line,

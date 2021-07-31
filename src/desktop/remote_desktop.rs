@@ -198,7 +198,7 @@ impl<'a> RemoteDesktopProxy<'a> {
                 &self.0,
                 &options.handle_token,
                 "CreateSession",
-                &(&options)
+                &options
             )
             .into_future(),
             SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)

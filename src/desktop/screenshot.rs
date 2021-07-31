@@ -282,5 +282,5 @@ pub async fn take(
 ) -> Result<String, Error> {
     let connection = zbus::azync::Connection::session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
-    proxy.screenshot(&identifier, interactive, modal).await
+    proxy.screenshot(identifier, interactive, modal).await
 }
