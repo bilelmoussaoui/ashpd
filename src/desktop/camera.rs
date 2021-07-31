@@ -86,7 +86,8 @@ impl<'a> CameraProxy<'a> {
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Camera.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(&self) -> Result<RawFd, Error> {
-        // FIXME: figure out what are the possible options
+        // `options` parameter doesn't seems to be used yet
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/camera.c#L178
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd: Fd = call_method(&self.0, "OpenPipeWireRemote", &(options)).await?;
         Ok(fd.as_raw_fd())

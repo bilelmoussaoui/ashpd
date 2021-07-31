@@ -112,7 +112,7 @@ impl<'a> FileTransferProxy<'a> {
     /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.AddFiles).
     #[doc(alias = "AddFiles")]
     pub async fn add_files<F: AsRawFd>(&self, key: &str, fds: &[&F]) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // `options` parameter doesn't seems to be used yet
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
 
@@ -138,7 +138,8 @@ impl<'a> FileTransferProxy<'a> {
     /// See also [`RetrieveFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.RetrieveFiles).
     #[doc(alias = "RetrieveFiles")]
     pub async fn retrieve_files(&self, key: &str) -> Result<Vec<String>, Error> {
-        // FIXME: figure out the options we can take here
+        // `options` parameter doesn't seems to be used yet
+        // see https://github.com/GNOME/gtk/blob/master/gdk/filetransferportal.c#L284
         let options: HashMap<&str, Value<'_>> = HashMap::new();
 
         call_method(&self.0, "RetrieveFiles", &(key, options)).await

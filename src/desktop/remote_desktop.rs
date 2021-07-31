@@ -119,7 +119,7 @@ struct CreateRemoteOptions {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
 /// A response to a [`RemoteDesktopProxy::create_session`] request.
 struct CreateSession {
-    // FIXME: investigate why is this a String instead of an ObjectPath
+    // TODO: investigate why is this a String instead of an ObjectPath
     /// A string that will be used as the last element of the session handle.
     session_handle: String,
 }
@@ -289,7 +289,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         keycode: i32,
         state: KeyState,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
@@ -321,7 +322,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         keysym: i32,
         state: KeyState,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
@@ -351,7 +353,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         session: &SessionProxy<'_>,
         slot: u32,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(&self.0, "NotifyTouchUp", &(session, options, slot)).await
     }
@@ -384,7 +387,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
@@ -422,7 +426,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
@@ -455,7 +460,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         x: f64,
         y: f64,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
@@ -486,7 +492,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         dx: f64,
         dy: f64,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(&self.0, "NotifyPointerMotion", &(session, options, dx, dy)).await
     }
@@ -515,7 +522,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         button: i32,
         state: KeyState,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
@@ -546,7 +554,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         axis: Axis,
         steps: i32,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
             &self.0,
@@ -582,7 +591,8 @@ impl<'a> RemoteDesktopProxy<'a> {
         dx: f64,
         dy: f64,
     ) -> Result<(), Error> {
-        // FIXME: figure out the options we can take here
+        // The `notify` methods don't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(&self.0, "NotifyPointerAxis", &(session, options, dx, dy)).await
     }
