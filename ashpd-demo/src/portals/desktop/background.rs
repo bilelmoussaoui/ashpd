@@ -81,8 +81,8 @@ impl BackgroundPage {
             if let Ok(response) = background::request(&identifier, &reason, auto_start, command.as_deref(), dbus_activatable).await {
 
                 self_.response_group.show();
-                self_.auto_start_label.set_label(&response.run_in_background().to_string());
-                self_.run_bg_label.set_label(&response.auto_start().to_string());
+                self_.auto_start_label.set_label(&response.auto_start().to_string());
+                self_.run_bg_label.set_label(&response.run_in_background().to_string());
             }
         }));
     }
