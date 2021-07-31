@@ -54,8 +54,96 @@
               <object class="GtkScrolledWindow">
                 <property name="vexpand">True</property>
                 <child>
-                  <object class="GtkStackSidebar">
-                    <property name="stack">stack</property>
+                  <object class="GtkListBox" id="sidebar">
+                    <property name="selection-mode">browse</property>
+                    <property name="width-request">200</property>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Account</property>
+                        <property name="page-name">account</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Camera</property>
+                        <property name="page-name">camera</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Email</property>
+                        <property name="page-name">email</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">File Chooser</property>
+                        <property name="page-name">file_chooser</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Inhibit</property>
+                        <property name="page-name">inhibit</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Location</property>
+                        <property name="page-name">location</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Notification</property>
+                        <property name="page-name">notification</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Open URI</property>
+                        <property name="page-name">open_uri</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Print</property>
+                        <property name="page-name">print</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Remote Desktop</property>
+                        <property name="page-name">remote_desktop</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Screen Cast</property>
+                        <property name="page-name">screencast</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Screenshot</property>
+                        <property name="page-name">screenshot</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Secret</property>
+                        <property name="page-name">secret</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SidebarRow">
+                        <property name="label" translatable="yes">Wallpaper</property>
+                        <property name="page-name">wallpaper</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="navigation-sidebar"/>
+                    </style>
                   </object>
                 </child>
               </object>
@@ -99,7 +187,7 @@
             <child>
               <object class="AdwHeaderBar" id="main_headerbar">
                 <property name="title-widget">
-                  <object class="AdwWindowTitle" />
+                  <object class="AdwWindowTitle" id="window_title" />
                 </property>
                 <child type="start">
                   <object class="GtkRevealer">
@@ -132,7 +220,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">account</property>
-                        <property name="title" translatable="yes">Account</property>
                         <property name="child">
                           <object class="AccountPage" id="account" />
                         </property>
@@ -141,7 +228,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">camera</property>
-                        <property name="title" translatable="yes">Camera</property>
                         <property name="child">
                           <object class="CameraPage" id="camera" />
                         </property>
@@ -150,7 +236,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">email</property>
-                        <property name="title" translatable="yes">Email</property>
                         <property name="child">
                           <object class="EmailPage" id="email" />
                         </property>
@@ -159,7 +244,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">file_chooser</property>
-                        <property name="title" translatable="yes">File Chooser</property>
                         <property name="child">
                           <object class="FileChooserPage" id="file_chooser" />
                         </property>
@@ -168,7 +252,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">inhibit</property>
-                        <property name="title" translatable="yes">Inhibit</property>
                         <property name="child">
                           <object class="InhibitPage" id="inhibit" />
                         </property>
@@ -177,7 +260,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">location</property>
-                        <property name="title" translatable="yes">Location</property>
                         <property name="child">
                           <object class="LocationPage" id="location" />
                         </property>
@@ -186,7 +268,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">notification</property>
-                        <property name="title" translatable="yes">Notifications</property>
                         <property name="child">
                           <object class="NotificationPage" id="notification" />
                         </property>
@@ -195,7 +276,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">open_uri</property>
-                        <property name="title" translatable="yes">Open URI</property>
                         <property name="child">
                           <object class="OpenUriPage" id="open_uri" />
                         </property>
@@ -204,7 +284,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">remote_desktop</property>
-                        <property name="title" translatable="yes">Remote Desktop</property>
                         <property name="child">
                           <object class="RemoteDesktopPage" id="remote_desktop" />
                         </property>
@@ -213,7 +292,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">screenshot</property>
-                        <property name="title" translatable="yes">Screenshot</property>
                         <property name="child">
                           <object class="ScreenshotPage" id="screenshot" />
                         </property>
@@ -222,7 +300,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">screencast</property>
-                        <property name="title" translatable="yes">Screen Cast</property>
                         <property name="child">
                           <object class="ScreenCastPage" id="screencast" />
                         </property>
@@ -231,7 +308,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">secret</property>
-                        <property name="title" translatable="yes">Secret</property>
                         <property name="child">
                           <object class="SecretPage" id="secret" />
                         </property>
@@ -240,7 +316,6 @@
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">wallpaper</property>
-                        <property name="title" translatable="yes">Wallpaper</property>
                         <property name="child">
                           <object class="WallpaperPage" id="wallpaper" />
                         </property>

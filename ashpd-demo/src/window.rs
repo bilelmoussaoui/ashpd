@@ -1,7 +1,12 @@
+use gettextrs::gettext;
 use glib::signal::Inhibit;
 use gtk::subclass::prelude::*;
 use gtk::{self, prelude::*};
-use gtk::{gio, glib, CompositeTemplate};
+use gtk::{
+    gio,
+    glib::{self, clone},
+    CompositeTemplate,
+};
 use tracing::warn;
 
 use crate::application::ExampleApplication;
@@ -12,6 +17,7 @@ use crate::portals::desktop::{
     ScreenCastPage, ScreenshotPage, SecretPage, WallpaperPage,
 };
 use crate::portals::DocumentsPage;
+use crate::widgets::SidebarRow;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -23,6 +29,10 @@ mod imp {
     pub struct ExampleApplicationWindow {
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
+        #[template_child]
+        pub sidebar: TemplateChild<gtk::ListBox>,
+        #[template_child]
+        pub window_title: TemplateChild<adw::WindowTitle>,
         #[template_child]
         pub leaflet: TemplateChild<adw::Leaflet>,
         #[template_child]
@@ -64,6 +74,8 @@ mod imp {
             Self {
                 screenshot: TemplateChild::default(),
                 stack: TemplateChild::default(),
+                sidebar: TemplateChild::default(),
+                window_title: TemplateChild::default(),
                 leaflet: TemplateChild::default(),
                 camera: TemplateChild::default(),
                 wallpaper: TemplateChild::default(),
@@ -83,6 +95,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
+            SidebarRow::static_type();
 
             klass.install_action("win.back", None, |win, _, _| {
                 let self_ = imp::ExampleApplicationWindow::from_instance(win);
@@ -101,20 +114,34 @@ mod imp {
             self.parent_constructed(obj);
             // Add pages based on whether the app is sandboxed
             if ashpd::is_sandboxed() {
+                self.sidebar
+                    .insert(&SidebarRow::new(&gettext("Background"), "background"), 1);
                 self.stack
-                    .add_titled(&BackgroundPage::new(), Some("background"), "Background");
+                    .add_named(&BackgroundPage::new(), Some("background"));
             } else {
+                self.sidebar
+                    .insert(&SidebarRow::new(&gettext("Device"), "device"), 2);
+                self.stack.add_named(&DevicePage::new(), Some("device"));
+
+                self.sidebar
+                    .insert(&SidebarRow::new(&gettext("Documents"), "documents"), 3);
                 self.stack
-                    .add_titled(&DevicePage::new(), Some("device"), "Device");
-                self.stack.add_titled(
-                    &NetworkMonitorPage::new(),
-                    Some("network_monitor"),
-                    "Network Monitor",
+                    .add_named(&DocumentsPage::new(), Some("documents"));
+
+                self.sidebar.insert(
+                    &SidebarRow::new(&gettext("Network Monitor"), "network_monitor"),
+                    7,
                 );
                 self.stack
-                    .add_titled(&DocumentsPage::new(), Some("documents"), "Documents");
+                    .add_named(&NetworkMonitorPage::new(), Some("network_monitor"));
             }
 
+            let row = self.sidebar.row_at_index(0).unwrap();
+            self.sidebar.unselect_row(&row);
+            self.sidebar
+                .connect_row_activated(clone!(@weak obj as win => move |_, row| {
+                    win.sidebar_row_selected(row);
+                }));
             self.stack.set_visible_child_name("welcome");
             // load latest window state
             obj.load_window_size();
@@ -164,6 +191,20 @@ impl ExampleApplicationWindow {
         settings.set_boolean("is-maximized", self.is_maximized())?;
 
         Ok(())
+    }
+
+    fn sidebar_row_selected(&self, row: &gtk::ListBoxRow) {
+        let self_ = imp::ExampleApplicationWindow::from_instance(self);
+        let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
+        self_.leaflet.navigate(adw::NavigationDirection::Forward);
+        let page_name = sidebar_row.name();
+        if self_.stack.child_by_name(&page_name).is_some() {
+            self_.stack.set_visible_child_name(&page_name);
+            self_.window_title.set_title(sidebar_row.title().as_deref());
+        } else {
+            self_.window_title.set_title(None);
+            self_.stack.set_visible_child_name("welcome");
+        }
     }
 
     fn load_window_size(&self) {
