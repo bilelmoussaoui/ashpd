@@ -546,7 +546,7 @@ impl<'a> PrintProxy<'a> {
     /// # Specifications
     ///
     /// See also [`PreparePrint`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Print.PreparePrint).
-    #[doc(alias = "PreparePint")]
+    #[doc(alias = "PreparePrint")]
     pub async fn prepare_print(
         &self,
         identifier: &WindowIdentifier,
@@ -559,7 +559,7 @@ impl<'a> PrintProxy<'a> {
         call_request_method(
             &self.0,
             &options.handle_token,
-            "PreparePint",
+            "PreparePrint",
             &(&identifier, title, settings, page_setup, &options),
         )
         .await
