@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryFrom};
 
 use ashpd::{
     flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions},
-    zbus,
+    zbus, zvariant,
 };
 use gio::ApplicationFlags;
 use glib::clone;
@@ -12,6 +12,7 @@ use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 use gtk_macros::{action, stateful_action};
 use once_cell::sync::OnceCell;
+use serde::Serialize;
 use tracing::{debug, info};
 
 use crate::config;
@@ -42,7 +43,19 @@ mod imp {
         type ParentType = gtk::Application;
     }
 
-    impl ObjectImpl for ExampleApplication {}
+    impl ObjectImpl for ExampleApplication {
+        fn constructed(&self, obj: &Self::Type) {
+            obj.add_main_option(
+                "replace",
+                glib::Char::try_from('r').unwrap(),
+                glib::OptionFlags::NONE,
+                glib::OptionArg::None,
+                "Replace the running instance",
+                None,
+            );
+            self.parent_constructed(obj);
+        }
+    }
 
     impl ApplicationImpl for ExampleApplication {
         fn activate(&self, app: &Self::Type) {
@@ -166,10 +179,51 @@ impl ExampleApplication {
         );
     }
 
+    pub async fn stop_current_instance() -> ashpd::Result<()> {
+        let bus = gio::bus_get_future(gio::BusType::Session).await.unwrap();
+        gio::bus_watch_name_on_connection(
+            &bus,
+            config::APP_ID,
+            gio::BusNameWatcherFlags::NONE,
+            move |_bus, _, _| tracing::info!("Name owned"),
+            move |_bus, _| tracing::info!("Name unowned"),
+        );
+
+        let cnx = zbus::Connection::session()?;
+        let proxy: zbus::Proxy = zbus::ProxyBuilder::new_bare(&cnx)
+            .path(format!(
+                "/{}",
+                config::APP_ID.split('.').collect::<Vec<_>>().join("/")
+            ))?
+            .interface("org.gtk.Actions")?
+            .destination(config::APP_ID)?
+            .build()?;
+        #[derive(Debug, Serialize)]
+        pub struct Params(
+            String,
+            Vec<zvariant::OwnedValue>,
+            HashMap<String, zvariant::OwnedValue>,
+        );
+
+        impl zvariant::Type for Params {
+            fn signature() -> zvariant::Signature<'static> {
+                zvariant::Signature::from_str_unchecked("(sava{sv})")
+            }
+        }
+
+        proxy.call_method(
+            "Activate",
+            &Params("quit".to_string(), Vec::new(), HashMap::new()),
+        )?;
+
+        Ok(())
+    }
+
     // Sets up keyboard shortcuts
     fn setup_accels(&self) {
         self.set_accels_for_action("app.dark-mode", &["<primary>T"]);
-        self.set_accels_for_action("app.quit", &["<primary>q"]);
+        self.set_accels_for_action("app.restart", &["<primary>R"]);
+        self.set_accels_for_action("app.quit", &["<primary>Q"]);
         self.set_accels_for_action("win.show-help-overlay", &["<primary>question"]);
     }
 
@@ -182,7 +236,6 @@ impl ExampleApplication {
             .transient_for(&self.main_window())
             .modal(true)
             .authors(vec!["Bilal Elmoussaoui".into()])
-            .artists(vec!["Bilal Elmoussaoui".into()])
             .build();
 
         dialog.show();

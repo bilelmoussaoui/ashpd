@@ -29,7 +29,7 @@ checksum = "595d3cfa7a60d4555cb5067b99f07142a08ea778de5cf993f7b75c7d8fabc486"
 [[package]]
 name = "ashpd"
 version = "0.2.0-alpha-2"
-source = "git+https://github.com/bilelmoussaoui/ashpd#a4dc37a794f37802b646949992df09fc0059aad5"
+source = "git+https://github.com/bilelmoussaoui/ashpd#0a84aee49753663bd2257f52515077f5c1a6cb9e"
 dependencies = [
  "enumflags2",
  "futures",
@@ -62,6 +62,7 @@ dependencies = [
  "gtk4",
  "libadwaita",
  "once_cell",
+ "serde",
  "tracing",
  "tracing-subscriber",
 ]
