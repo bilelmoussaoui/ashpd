@@ -28,6 +28,7 @@
                 <child>
                   <object class="GtkSwitch" id="modal_switch">
                     <property name="valign">center</property>
+                    <property name="active">True</property>
                   </object>
                 </child>
               </object>

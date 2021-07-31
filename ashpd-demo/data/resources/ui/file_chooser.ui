@@ -39,6 +39,7 @@
                 <child>
                   <object class="GtkSwitch" id="open_modal_switch">
                     <property name="valign">center</property>
+                    <property name="active">True</property>
                   </object>
                 </child>
               </object>
@@ -125,6 +126,7 @@
                 <child>
                   <object class="GtkSwitch" id="save_file_modal_switch">
                     <property name="valign">center</property>
+                    <property name="active">True</property>
                   </object>
                 </child>
               </object>
@@ -224,6 +226,7 @@
                     <child>
                       <object class="GtkSwitch" id="save_files_modal_switch">
                         <property name="valign">center</property>
+                        <property name="active">True</property>
                       </object>
                     </child>
                   </object>
