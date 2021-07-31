@@ -36,7 +36,7 @@
                   <object class="GtkBox">
                     <property name="orientation">horizontal</property>
                     <child>
-                      <object class="GtkButton" id="start_session_btn">
+                      <object class="GtkButton">
                         <property name="label" translatable="yes">_Start Session</property>
                         <property name="use-underline">True</property>
                         <property name="halign">start</property>
@@ -44,7 +44,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkButton" id="close_session_btn">
+                      <object class="GtkButton">
                         <property name="label" translatable="yes">_Close Session</property>
                         <property name="use-underline">True</property>
                         <property name="halign">start</property>

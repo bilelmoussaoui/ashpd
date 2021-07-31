@@ -30,8 +30,6 @@ mod imp {
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
         #[template_child]
-        pub close_session_btn: TemplateChild<gtk::Button>,
-        #[template_child]
         pub screencast_row: TemplateChild<adw::ExpanderRow>,
         #[template_child]
         pub multiple_switch: TemplateChild<gtk::Switch>,
@@ -189,7 +187,6 @@ impl RemoteDesktopPage {
                 Ok((selected_devices, streams, session)) => {
                     self_.response_group.show();
                     self_.session.lock().await.replace(session);
-                    self_.close_session_btn.set_sensitive(true);
                 }
                 Err(err) => {
                     tracing::error!("{:#?}", err);
@@ -209,7 +206,6 @@ impl RemoteDesktopPage {
                 let _ = session.close().await;
             }
             self_.response_group.hide();
-            self_.close_session_btn.set_sensitive(false);
         }));
     }
 }

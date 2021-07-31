@@ -33,8 +33,6 @@ mod imp {
         pub multiple_switch: TemplateChild<gtk::Switch>,
         pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
         #[template_child]
-        pub close_session_btn: TemplateChild<gtk::Button>,
-        #[template_child]
         pub monitor_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub window_check: TemplateChild<gtk::CheckButton>,
@@ -160,7 +158,6 @@ impl ScreenCastPage {
 
                     self_.response_group.show();
                     self_.session.lock().await.replace(session);
-                    self_.close_session_btn.set_sensitive(true);
                 }
                 Err(err) => {
                     tracing::error!("{:#?}", err);
@@ -196,7 +193,6 @@ impl ScreenCastPage {
             }
 
             self_.response_group.hide();
-            self_.close_session_btn.set_sensitive(false);
         }));
     }
 }

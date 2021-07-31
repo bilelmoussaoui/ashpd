@@ -23,10 +23,6 @@ mod imp {
         pub picture: TemplateChild<gtk::Picture>,
         pub paintable: CameraPaintable,
         #[template_child]
-        pub start_session_btn: TemplateChild<gtk::Button>,
-        #[template_child]
-        pub close_session_btn: TemplateChild<gtk::Button>,
-        #[template_child]
         pub revealer: TemplateChild<gtk::Revealer>,
     }
 
@@ -36,8 +32,6 @@ mod imp {
                 camera_available: TemplateChild::default(),
                 picture: TemplateChild::default(),
                 paintable: CameraPaintable::new(),
-                start_session_btn: TemplateChild::default(),
-                close_session_btn: TemplateChild::default(),
                 revealer: TemplateChild::default(),
             }
         }
@@ -94,14 +88,10 @@ impl CameraPage {
             match stream().await {
                 Ok(Some(stream_fd)) => {
                     self_.paintable.set_pipewire_fd(stream_fd);
-                    self_.start_session_btn.set_sensitive(false);
-                    self_.close_session_btn.set_sensitive(true);
                     self_.revealer.set_reveal_child(true);
                     self_.camera_available.set_text("Yes");
                }
                Ok(None) => {
-                    self_.start_session_btn.set_sensitive(false);
-                    self_.close_session_btn.set_sensitive(false);
                     self_.camera_available.set_text("No");
                }
                Err(err) => {
@@ -118,8 +108,6 @@ impl CameraPage {
         self.action_set_enabled("camera.start", true);
 
         self_.paintable.close_pipeline();
-        self_.close_session_btn.set_sensitive(false);
-        self_.start_session_btn.set_sensitive(true);
         self_.revealer.set_reveal_child(false);
     }
 }
