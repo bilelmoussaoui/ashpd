@@ -22,31 +22,55 @@
               </object>
             </child>
             <child>
-              <object class="AdwComboRow" id="types_comborow">
+              <object class="AdwActionRow">
                 <property name="title" translatable="yes">Content to Record</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">Monitor</item>
-                      <item translatable="yes">Window</item>
-                      <item translatable="yes">Both</item>
-                    </items>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkCheckButton" id="monitor_check">
+                        <property name="label" translatable="yes">Monitor</property>
+                        <property name="active">True</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="window_check">
+                        <property name="label" translatable="yes">Window</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
-                </property>
+                </child>
               </object>
             </child>
             <child>
-              <object class="AdwComboRow" id="cursor_comborow">
+              <object class="AdwActionRow">
                 <property name="title" translatable="yes">Cursor Mode</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">Hidden</item>
-                      <item translatable="yes">Embedded</item>
-                      <item translatable="yes">Metadata</item>
-                    </items>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkCheckButton" id="hidden_check">
+                        <property name="label" translatable="yes">Hidden</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="embedded_check">
+                        <property name="label" translatable="yes">Embedded</property>
+                        <property name="active">True</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="metadata_check">
+                        <property name="label" translatable="yes">Metadata</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
-                </property>
+                </child>
               </object>
             </child>
           </object>

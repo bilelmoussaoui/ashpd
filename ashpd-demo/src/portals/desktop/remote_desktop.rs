@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use adw::prelude::*;
 use ashpd::{
     desktop::{
@@ -15,6 +13,7 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use std::sync::Arc;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -49,7 +48,7 @@ mod imp {
         #[template_child]
         pub embedded_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
-        pub metadata_check: TemplateChild<gtk::CheckButton>
+        pub metadata_check: TemplateChild<gtk::CheckButton>,
     }
 
     #[glib::object_subclass]

@@ -1,7 +1,3 @@
-use std::os::unix::io::RawFd;
-use std::sync::Arc;
-
-use adw::prelude::*;
 use ashpd::{
     desktop::{
         screencast::{CursorMode, ScreenCastProxy, SourceType, Stream},
@@ -15,6 +11,8 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use std::os::unix::io::RawFd;
+use std::sync::Arc;
 
 use crate::widgets::CameraPaintable;
 
@@ -24,7 +22,7 @@ mod imp {
 
     use super::*;
 
-    #[derive(Debug, CompositeTemplate)]
+    #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screencast.ui")]
     pub struct ScreenCastPage {
         #[template_child]
@@ -32,28 +30,20 @@ mod imp {
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
-        pub types_comborow: TemplateChild<adw::ComboRow>,
-        #[template_child]
-        pub cursor_comborow: TemplateChild<adw::ComboRow>,
-        #[template_child]
         pub multiple_switch: TemplateChild<gtk::Switch>,
         pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
         #[template_child]
         pub close_session_btn: TemplateChild<gtk::Button>,
-    }
-
-    impl Default for ScreenCastPage {
-        fn default() -> Self {
-            Self {
-                response_group: TemplateChild::default(),
-                streams_carousel: TemplateChild::default(),
-                cursor_comborow: TemplateChild::default(),
-                types_comborow: TemplateChild::default(),
-                multiple_switch: TemplateChild::default(),
-                close_session_btn: TemplateChild::default(),
-                session: Arc::new(Mutex::new(None)),
-            }
-        }
+        #[template_child]
+        pub monitor_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub window_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub hidden_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub embedded_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub metadata_check: TemplateChild<gtk::CheckButton>,
     }
 
     #[glib::object_subclass]
@@ -98,20 +88,42 @@ impl ScreenCastPage {
         glib::Object::new(&[]).expect("Failed to create a ScreenCastPage")
     }
 
+    /// Returns the selected SourceType
+    fn selected_sources(&self) -> BitFlags<SourceType> {
+        let self_ = imp::ScreenCastPage::from_instance(self);
+        let mut sources: BitFlags<SourceType> = BitFlags::empty();
+        if self_.monitor_check.is_active() {
+            sources.insert(SourceType::Monitor);
+        }
+        if self_.window_check.is_active() {
+            sources.insert(SourceType::Window);
+        }
+        sources
+    }
+
+    /// Returns the selected CursorMode
+    fn selected_cursor_mode(&self) -> BitFlags<CursorMode> {
+        let self_ = imp::ScreenCastPage::from_instance(self);
+
+        let mut cursor_mode: BitFlags<CursorMode> = BitFlags::empty();
+        if self_.hidden_check.is_active() {
+            cursor_mode.insert(CursorMode::Hidden);
+        }
+        if self_.embedded_check.is_active() {
+            cursor_mode.insert(CursorMode::Embedded);
+        }
+        if self_.metadata_check.is_active() {
+            cursor_mode.insert(CursorMode::Metadata);
+        }
+        cursor_mode
+    }
+
     pub fn start_session(&self) {
         let ctx = glib::MainContext::default();
         ctx.spawn_local(clone!(@weak self as page => async move {
             let self_ = imp::ScreenCastPage::from_instance(&page);
-            let types = match self_.types_comborow.selected() {
-                0 => BitFlags::<SourceType>::from_flag(SourceType::Monitor),
-                1 => BitFlags::<SourceType>::from_flag(SourceType::Window),
-                _ => SourceType::Monitor | SourceType::Window,
-            };
-            let cursor_mode = match self_.cursor_comborow.selected() {
-                0 => BitFlags::<CursorMode>::from_flag(CursorMode::Hidden),
-                1 => BitFlags::<CursorMode>::from_flag(CursorMode::Embedded),
-                _ => BitFlags::<CursorMode>::from_flag(CursorMode::Metadata),
-            };
+            let sources = page.selected_sources();
+            let cursor_mode = page.selected_cursor_mode();
             let multiple = self_.multiple_switch.is_active();
 
             let root = page.native().unwrap();
@@ -120,7 +132,7 @@ impl ScreenCastPage {
 
             let identifier = WindowIdentifier::from_native(&root).await;
 
-            match screencast(&identifier, multiple, types, cursor_mode).await {
+            match screencast(&identifier, multiple, sources, cursor_mode).await {
                 Ok((streams, fd, session)) => {
                     streams.iter().for_each(|stream| {
                         let paintable = CameraPaintable::new();
