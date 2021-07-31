@@ -23,8 +23,8 @@
 //! ```
 //!
 //! You can also use the Remote Desktop portal with the ScreenCast one. In order to do so,
-//! you need to call [`ScreenCastProxy::select_sources`](super::screencast::ScreencastProxy::select_sources)
-//! on the session created with [`RemoteDesktopProxy::create_session`]
+//! you need to call [`ScreenCastProxy::select_sources()`](crate::desktop::screencast::ScreenCastProxy::select_sources)
+//! on the session created with [`RemoteDesktopProxy::create_session()`](crate::desktop::remote_desktop::RemoteDesktopProxy::create_session)
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
