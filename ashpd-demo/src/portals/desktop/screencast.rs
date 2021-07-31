@@ -149,6 +149,7 @@ impl ScreenCastPage {
                 }
                 Err(err) => {
                     tracing::error!("{:#?}", err);
+                    page.stop_session();
                 }
             };
         }));

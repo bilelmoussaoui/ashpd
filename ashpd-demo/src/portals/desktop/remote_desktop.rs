@@ -171,6 +171,7 @@ impl RemoteDesktopPage {
                 }
                 Err(err) => {
                     tracing::error!("{:#?}", err);
+                    page.stop_session();
                 }
             };
         }));

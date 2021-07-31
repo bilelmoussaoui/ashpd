@@ -106,6 +106,7 @@ impl CameraPage {
                }
                Err(err) => {
                    tracing::error!("Failed to start a camera stream {:#?}", err);
+                   page.stop_stream();
                }
             }
         }));
