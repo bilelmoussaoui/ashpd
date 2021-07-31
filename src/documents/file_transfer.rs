@@ -5,7 +5,7 @@
 //! use std::fs::File;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = FileTransferProxy::new(&connection).await?;
 //!
 //!     let key = proxy.start_transfer(true, true).await?;
@@ -83,11 +83,11 @@ pub struct FileTransferProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> FileTransferProxy<'a> {
     /// Create a new instance of [`FileTransferProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FileTransferProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.FileTransfer")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.FileTransfer")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

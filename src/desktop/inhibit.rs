@@ -8,7 +8,7 @@
 //! use std::{thread, time};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = InhibitProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
 //!
@@ -144,11 +144,11 @@ pub struct InhibitProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> InhibitProxy<'a> {
     /// Create a new instance of [`InhibitProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<InhibitProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Inhibit")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Inhibit")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

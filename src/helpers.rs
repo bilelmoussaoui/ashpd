@@ -49,7 +49,7 @@ where
             response as Result<_, Error>
         },
         async {
-            let msg = proxy.call_method::<B>(method_name, body).await?;
+            let msg = proxy.call_method(method_name, body).await?;
             let path = msg.body::<zvariant::OwnedObjectPath>()?.into_inner();
 
             tracing::debug!("Received request path {}", path.as_str());
@@ -108,7 +108,7 @@ where
 {
     tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
     tracing::debug!("With body {:#?}", body);
-    let msg = proxy.call_method::<B>(method_name, body).await?;
+    let msg = proxy.call_method(method_name, body).await?;
     let reply = msg.body::<R>()?;
     msg.disown_fds();
 

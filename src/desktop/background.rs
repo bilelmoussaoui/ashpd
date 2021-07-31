@@ -136,11 +136,11 @@ pub struct BackgroundProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> BackgroundProxy<'a> {
     /// Create a new instance of [`BackgroundProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<BackgroundProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Background")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Background")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }
@@ -199,7 +199,7 @@ pub async fn request<S: AsRef<str> + zvariant::Type + Serialize>(
     command_line: Option<&[S]>,
     dbus_activatable: bool,
 ) -> Result<Background, Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
+    let connection = zbus::azync::Connection::session().await?;
     let proxy = BackgroundProxy::new(&connection).await?;
     proxy
         .request_background(

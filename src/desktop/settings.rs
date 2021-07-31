@@ -2,7 +2,7 @@
 //! use ashpd::desktop::settings::SettingsProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = SettingsProxy::new(&connection).await?;
 //!
 //!     println!(
@@ -82,11 +82,11 @@ pub struct SettingsProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> SettingsProxy<'a> {
     /// Create a new instance of [`SettingsProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<SettingsProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Settings")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Settings")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

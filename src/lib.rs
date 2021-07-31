@@ -14,7 +14,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
@@ -30,7 +30,7 @@
 //! use ashpd::desktop::camera::CameraProxy;
 //!
 //! pub async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = CameraProxy::new(&connection).await?;
 //!     if proxy.is_camera_present().await? {
 //!         proxy.access_camera().await?;

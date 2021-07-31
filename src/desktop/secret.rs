@@ -5,7 +5,7 @@
 //! use std::fs::File;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = SecretProxy::new(&connection).await?;
 //!
 //!     let file = File::open("test.txt").unwrap();
@@ -53,11 +53,11 @@ pub struct SecretProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> SecretProxy<'a> {
     /// Create a new instance of [`SecretProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<SecretProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Secret")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Secret")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

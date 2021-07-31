@@ -33,11 +33,11 @@ impl<'a> SessionProxy<'a> {
         connection: &zbus::azync::Connection,
         path: ObjectPath<'a>,
     ) -> Result<SessionProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Session")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Session")?
             .path(path)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

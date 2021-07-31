@@ -179,11 +179,11 @@ impl<'a> RequestProxy<'a> {
         connection: &zbus::azync::Connection,
         path: zvariant::ObjectPath<'a>,
     ) -> Result<RequestProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Request")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Request")?
             .path(path)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

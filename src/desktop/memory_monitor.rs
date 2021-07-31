@@ -4,7 +4,7 @@
 //! use ashpd::desktop::memory_monitor::MemoryMonitorProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = MemoryMonitorProxy::new(&connection).await?;
 //!
 //!     let level = proxy.receive_low_memory_warning().await?;
@@ -31,11 +31,11 @@ impl<'a> MemoryMonitorProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
     ) -> Result<MemoryMonitorProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.MemoryMonitor")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.MemoryMonitor")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

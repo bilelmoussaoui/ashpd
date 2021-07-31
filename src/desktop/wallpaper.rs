@@ -24,7 +24,7 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy
 //!         .set_wallpaper_file(&WindowIdentifier::default(), &wallpaper, true, SetOn::Both)
@@ -53,7 +53,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = WallpaperProxy::new(&connection).await?;
 //!     proxy
 //!         .set_wallpaper_uri(
@@ -149,11 +149,11 @@ pub struct WallpaperProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> WallpaperProxy<'a> {
     /// Create a new instance of [`WallpaperProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<WallpaperProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Wallpaper")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Wallpaper")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }
@@ -240,7 +240,7 @@ pub async fn set_from_uri(
     show_preview: bool,
     set_on: SetOn,
 ) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
+    let connection = zbus::azync::Connection::session().await?;
     let proxy = WallpaperProxy::new(&connection).await?;
     proxy
         .set_wallpaper_uri(identifier, uri, show_preview, set_on)
@@ -256,7 +256,7 @@ pub async fn set_from_file<F: AsRawFd>(
     show_preview: bool,
     set_on: SetOn,
 ) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
+    let connection = zbus::azync::Connection::session().await?;
     let proxy = WallpaperProxy::new(&connection).await?;
     proxy
         .set_wallpaper_file(identifier, file, show_preview, set_on)

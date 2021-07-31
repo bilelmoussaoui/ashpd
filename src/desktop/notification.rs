@@ -6,7 +6,7 @@
 //! use zvariant::Value;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = NotificationProxy::new(&connection).await?;
 //!
 //!     let notification_id = "org.gnome.design.Contrast";
@@ -245,11 +245,11 @@ pub struct NotificationProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> NotificationProxy<'a> {
     /// Create a new instance of [`NotificationProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<NotificationProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Notification")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Notification")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

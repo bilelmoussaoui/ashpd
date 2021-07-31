@@ -8,7 +8,7 @@
 //! use std::fs::File;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = PrintProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
 //!
@@ -518,11 +518,11 @@ pub struct PrintProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> PrintProxy<'a> {
     /// Create a new instance of [`PrintProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<PrintProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Print")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Print")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

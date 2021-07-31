@@ -20,7 +20,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!
 //!     let uri = proxy.screenshot(&WindowIdentifier::default(), true, true).await?;
@@ -50,7 +50,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!
 //!     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
@@ -193,11 +193,11 @@ pub struct ScreenshotProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> ScreenshotProxy<'a> {
     /// Create a new instance of [`ScreenshotProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenshotProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Screenshot")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Screenshot")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }
@@ -268,7 +268,7 @@ impl<'a> ScreenshotProxy<'a> {
 #[doc(alias = "xdp_portal_pick_color")]
 /// A handy wrapper around [`ScreenshotProxy::pick_color`].
 pub async fn pick_color(identifier: &WindowIdentifier) -> Result<Color, Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
+    let connection = zbus::azync::Connection::session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
     proxy.pick_color(identifier).await
 }
@@ -280,7 +280,7 @@ pub async fn take(
     interactive: bool,
     modal: bool,
 ) -> Result<String, Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
+    let connection = zbus::azync::Connection::session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
     proxy.screenshot(&identifier, interactive, modal).await
 }

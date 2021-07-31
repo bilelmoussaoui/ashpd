@@ -9,7 +9,7 @@
 //! use enumflags2::BitFlags;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = ScreenCastProxy::new(&connection).await?;
 //!
 //!     let session = proxy.create_session().await?;
@@ -203,11 +203,11 @@ pub struct ScreenCastProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> ScreenCastProxy<'a> {
     /// Create a new instance of [`ScreenCastProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenCastProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.ScreenCast")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.ScreenCast")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

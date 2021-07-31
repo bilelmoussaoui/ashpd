@@ -4,7 +4,7 @@
 //! use ashpd::documents::{DocumentsProxy, Permission};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = DocumentsProxy::new(&connection).await?;
 //!
 //!     println!("{:#?}", proxy.mount_point().await?);
@@ -131,11 +131,11 @@ pub struct DocumentsProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> DocumentsProxy<'a> {
     /// Create a new instance of [`DocumentsProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<DocumentsProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Documents")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Documents")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

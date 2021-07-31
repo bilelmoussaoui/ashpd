@@ -7,7 +7,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
@@ -42,7 +42,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .save_file(
@@ -69,7 +69,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
@@ -430,11 +430,11 @@ pub struct FileChooserProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> FileChooserProxy<'a> {
     /// Create a new instance of [`FileChooserProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<FileChooserProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.FileChooser")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.FileChooser")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

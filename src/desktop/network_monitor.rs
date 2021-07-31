@@ -5,7 +5,7 @@
 //! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = NetworkMonitorProxy::new(&connection).await?;
 //!
 //!     println!("{}", proxy.can_reach("www.google.com", 80).await?);
@@ -81,11 +81,11 @@ impl<'a> NetworkMonitorProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
     ) -> Result<NetworkMonitorProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.NetworkMonitor")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.NetworkMonitor")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

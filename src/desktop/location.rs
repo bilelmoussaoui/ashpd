@@ -6,7 +6,7 @@
 //! use futures::TryFutureExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = LocationProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
 //!
@@ -191,11 +191,11 @@ pub struct LocationProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> LocationProxy<'a> {
     /// Create a new instance of [`LocationProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<LocationProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Location")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Location")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

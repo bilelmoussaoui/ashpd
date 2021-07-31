@@ -5,7 +5,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!
 //!     let session = proxy.create_session().await?;
@@ -32,7 +32,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!     let screencast = ScreenCastProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
@@ -169,11 +169,11 @@ impl<'a> RemoteDesktopProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
     ) -> Result<RemoteDesktopProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.RemoteDesktop")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.RemoteDesktop")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

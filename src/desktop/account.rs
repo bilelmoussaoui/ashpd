@@ -24,7 +24,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!
 //!     let proxy = AccountProxy::new(&connection).await?;
 //!     let user_info = proxy
@@ -105,11 +105,11 @@ pub struct AccountProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> AccountProxy<'a> {
     /// Create a new instance of [`AccountProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<AccountProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Account")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Account")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }
@@ -149,7 +149,7 @@ pub async fn user_information(
     identifier: &WindowIdentifier,
     reason: &str,
 ) -> Result<UserInfo, Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
+    let connection = zbus::azync::Connection::session().await?;
     let proxy = AccountProxy::new(&connection).await?;
     proxy.user_information(&identifier, reason).await
 }

@@ -4,7 +4,7 @@
 //! use ashpd::desktop::camera::CameraProxy;
 //!
 //! pub async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = CameraProxy::new(&connection).await?;
 //!     if proxy.is_camera_present().await? {
 //!         proxy.access_camera().await?;
@@ -48,11 +48,11 @@ pub struct CameraProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> CameraProxy<'a> {
     /// Create a new instance of [`CameraProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<CameraProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Camera")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Camera")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

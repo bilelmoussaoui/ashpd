@@ -7,7 +7,7 @@
 //! use ashpd::desktop::device::{Device, DeviceProxy};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = DeviceProxy::new(&connection).await?;
 //!     proxy.access_device(6879, &[Device::Speakers]).await?;
 //!     Ok(())
@@ -71,11 +71,11 @@ pub struct DeviceProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> DeviceProxy<'a> {
     /// Create a new instance of [`DeviceProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<DeviceProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Device")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Device")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }

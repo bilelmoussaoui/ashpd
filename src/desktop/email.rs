@@ -30,7 +30,7 @@
 //! use std::fs::File;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = EmailProxy::new(&connection).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
@@ -176,11 +176,11 @@ pub struct EmailProxy<'a>(zbus::azync::Proxy<'a>);
 impl<'a> EmailProxy<'a> {
     /// Create a new instance of [`EmailProxy`].
     pub async fn new(connection: &zbus::azync::Connection) -> Result<EmailProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.Email")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.Email")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }
@@ -222,7 +222,7 @@ impl<'a> EmailProxy<'a> {
 /// A handy wrapper around [`EmailProxy::compose_email`]
 #[doc(alias = "xdp_portal_compose_email")]
 pub async fn compose(identifier: &WindowIdentifier, email: Email) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::new_session().await?;
+    let connection = zbus::azync::Connection::session().await?;
     let proxy = EmailProxy::new(&connection).await?;
     proxy.compose_email(&identifier, email).await?;
 

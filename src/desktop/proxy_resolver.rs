@@ -5,7 +5,7 @@
 //! use ashpd::desktop::proxy_resolver::ProxyResolverProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::new_session().await?;
+//!     let connection = zbus::azync::Connection::session().await?;
 //!     let proxy = ProxyResolverProxy::new(&connection).await?;
 //!
 //!     println!("{:#?}", proxy.lookup("www.google.com").await?);
@@ -32,11 +32,11 @@ impl<'a> ProxyResolverProxy<'a> {
     pub async fn new(
         connection: &zbus::azync::Connection,
     ) -> Result<ProxyResolverProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
-            .interface("org.freedesktop.portal.ProxyResolver")
+        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+            .interface("org.freedesktop.portal.ProxyResolver")?
             .path(PATH)?
-            .destination(DESTINATION)
-            .build_async()
+            .destination(DESTINATION)?
+            .build()
             .await?;
         Ok(Self(proxy))
     }
