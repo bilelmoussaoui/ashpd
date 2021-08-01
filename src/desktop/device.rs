@@ -93,6 +93,8 @@ impl<'a> DeviceProxy<'a> {
     ///   made.
     /// * `devices` - A list of devices to request access to.
     ///
+    /// *Note* Asking for multiple devices at the same time may or may not be supported
+    ///
     /// # Specifications
     ///
     /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Device.AccessDevice).
