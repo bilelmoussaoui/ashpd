@@ -1,4 +1,8 @@
-use gtk::glib;
+use ashpd::{
+    desktop::device::{Device, DeviceProxy},
+    zbus,
+};
+use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -10,7 +14,14 @@ mod imp {
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/device.ui")]
-    pub struct DevicePage {}
+    pub struct DevicePage {
+        #[template_child]
+        pub camera_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub microphone_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub speakers_switch: TemplateChild<gtk::Switch>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for DevicePage {
@@ -21,8 +32,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
             klass.set_layout_manager_type::<adw::ClampLayout>();
-            klass.install_action("device.request", None, move |_page, _action, _target| {
-                //page.pick_color().unwrap();
+            klass.install_action("device.request", None, move |page, _action, _target| {
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    if let Err(err) = page.request().await {
+                        tracing::error!("Failed to request device access {}", err);
+                    }
+                }));
             });
         }
 
@@ -47,5 +63,33 @@ impl DevicePage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a DevicePage")
+    }
+
+    async fn request(&self) -> ashpd::Result<()> {
+        let cnx = zbus::azync::Connection::session().await?;
+        let proxy = DeviceProxy::new(&cnx).await?;
+
+        proxy
+            .access_device(std::process::id(), self.selected_devices().as_slice())
+            .await?;
+
+        Ok(())
+    }
+
+    /// Returns the selected Devices
+    fn selected_devices(&self) -> Vec<Device> {
+        let self_ = imp::DevicePage::from_instance(self);
+
+        let mut devices = Vec::new();
+        if self_.speakers_switch.is_active() {
+            devices.push(Device::Speakers);
+        }
+        if self_.camera_switch.is_active() {
+            devices.push(Device::Camera);
+        }
+        if self_.microphone_switch.is_active() {
+            devices.push(Device::Microphone);
+        }
+        devices
     }
 }

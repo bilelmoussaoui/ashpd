@@ -7,54 +7,50 @@
         <property name="spacing">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Device Access</property>
-            <property name="halign">start</property>
-            <style>
-              <class name="title-2"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Take a screenshot of a window or an area</property>
-            <property name="halign">start</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">Options</property>
-            <property name="halign">start</property>
-            <property name="margin-top">12</property>
-            <style>
-              <class name="title-4"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="orientation">horizontal</property>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Device Access</property>
+            <property name="description" translatable="yes">Calls AccessDevice on org.freedesktop.portal.Device. Asking for multiple devices at the same time may or may not be supported.</property>
             <child>
-              <object class="GtkCheckButton">
-                <property name="label">Camera</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Camera</property>
+                <property name="activatable-widget">camera_switch</property>
+                <child>
+                  <object class="GtkSwitch" id="camera_switch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
-              <object class="GtkCheckButton">
-                <property name="label">Headphones</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Speakers</property>
+                <property name="activatable-widget">speakers_switch</property>
+                <child>
+                  <object class="GtkSwitch" id="speakers_switch">
+                    <property name="active">True</property>
+                    <property name="valign">center</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
-              <object class="GtkCheckButton">
-                <property name="label">Microphone</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Microphone</property>
+                <property name="activatable-widget">microphone_switch</property>
+                <child>
+                  <object class="GtkSwitch" id="microphone_switch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Request Access</property>
+            <property name="label">Request</property>
             <property name="halign">start</property>
+            <property name="action-name">device.request</property>
           </object>
         </child>
       </object>
