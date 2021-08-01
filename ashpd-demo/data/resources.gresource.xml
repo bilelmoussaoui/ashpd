@@ -18,6 +18,7 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="notification.ui">resources/ui/notification.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="open_uri.ui">resources/ui/open_uri.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="print.ui">resources/ui/print.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="proxy_resolver.ui">resources/ui/proxy_resolver.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="remote_desktop.ui">resources/ui/remote_desktop.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screenshot.ui">resources/ui/screenshot.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="screencast.ui">resources/ui/screencast.ui</file>

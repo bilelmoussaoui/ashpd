@@ -13,8 +13,8 @@ use crate::application::Application;
 use crate::config::APP_ID;
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
-    LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, PrintPage, RemoteDesktopPage,
-    ScreenCastPage, ScreenshotPage, SecretPage, WallpaperPage,
+    LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage,
+    RemoteDesktopPage, ScreenCastPage, ScreenshotPage, SecretPage, WallpaperPage,
 };
 use crate::portals::DocumentsPage;
 use crate::widgets::SidebarRow;
@@ -133,10 +133,18 @@ mod imp {
 
                 self.sidebar.insert(
                     &SidebarRow::new(&gettext("Network Monitor"), "network_monitor"),
-                    7,
+                    8,
                 );
                 self.stack
                     .add_named(&NetworkMonitorPage::new(), Some("network_monitor"));
+
+                self.sidebar.insert(
+                    &SidebarRow::new(&gettext("Proxy Resolver"), "proxy_resolver"),
+                    12,
+                );
+
+                self.stack
+                    .add_named(&ProxyResolverPage::new(), Some("proxy_resolver"));
             }
 
             let row = self.sidebar.row_at_index(0).unwrap();

@@ -35,23 +35,17 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for DocumentsPage {
-        fn constructed(&self, _obj: &Self::Type) {
+    impl ObjectImpl for DocumentsPage {}
+
+    impl WidgetImpl for DocumentsPage {
+        fn map(&self, widget: &Self::Type) {
             let ctx = glib::MainContext::default();
-            let mount_point_label = self.mount_point.get();
-            ctx.spawn_local(clone!(@weak mount_point_label => async move {
-                            let cnx = zbus::azync::Connection::session().await.unwrap();
-                            let proxy = DocumentsProxy::new(&cnx).await.unwrap();
-                            let info = proxy.list(config::APP_ID).await;
-                            println!("{:#?}", info);
-                            let mount_point = proxy.mount_point().await;
-                            println!("{:#?}", mount_point);
-            //                mount_point_label.set_text(&mount_point);
-                        }));
+            ctx.spawn_local(clone!(@weak widget => async move {
+                widget.refresh().await;
+            }));
+            self.parent_map(widget);
         }
     }
-
-    impl WidgetImpl for DocumentsPage {}
     impl BinImpl for DocumentsPage {}
 }
 
@@ -63,5 +57,9 @@ impl DocumentsPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create a DocumentsPage")
+    }
+
+    async fn refresh(&self) -> ashpd::Result<()> {
+        Ok(())
     }
 }

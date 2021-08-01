@@ -75,8 +75,14 @@ mod imp {
     impl ObjectImpl for ScreenCastPage {
         fn constructed(&self, obj: &Self::Type) {
             obj.action_set_enabled("screencast.stop", false);
+
+            self.parent_constructed(obj);
+        }
+    }
+    impl WidgetImpl for ScreenCastPage {
+        fn map(&self, widget: &Self::Type) {
             let ctx = glib::MainContext::default();
-            ctx.spawn_local(clone!(@weak obj as page => async move {
+            ctx.spawn_local(clone!(@weak widget as page => async move {
                 let self_ = imp::ScreenCastPage::from_instance(&page);
                 if let Ok((cursor_modes, source_types)) = available_types().await {
                     self_.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
@@ -87,10 +93,9 @@ mod imp {
                     self_.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
                 }
             }));
-            self.parent_constructed(obj);
+            self.parent_map(widget);
         }
     }
-    impl WidgetImpl for ScreenCastPage {}
     impl BinImpl for ScreenCastPage {}
 }
 
