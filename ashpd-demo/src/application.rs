@@ -156,6 +156,8 @@ impl Application {
                 }));
             })
         );
+        // The restart app requires the Flatpak portal
+        gtk_macros::get_action!(self, @restart).set_enabled(ashpd::is_sandboxed());
 
         let is_dark_mode = self_.settings.boolean("dark-mode");
         stateful_action!(
