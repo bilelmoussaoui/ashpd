@@ -36,8 +36,17 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
-use std::{fmt::Debug, str::FromStr};
+use std::{
+    collections::HashMap,
+    ffi::{CString, OsString},
+    os::unix::prelude::AsRawFd,
+    os::unix::{ffi::OsStrExt, prelude::OsStringExt},
+};
+use std::{
+    fmt::Debug,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
@@ -231,22 +240,25 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`AddNamed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddNamed).
     #[doc(alias = "AddNamed")]
-    pub async fn add_named<F>(
+    pub async fn add_named<F, P>(
         &self,
         o_path_parent_fd: &F,
-        filename: &str,
+        filename: P,
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<String, Error>
     where
         F: AsRawFd + Debug,
+        P: AsRef<Path> + Serialize + zvariant::Type + Debug,
     {
+        let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
+            .expect("`filename` should not be null terminated");
         call_method(
             &self.0,
             "AddNamed",
             &(
                 Fd::from(o_path_parent_fd.as_raw_fd()),
-                filename,
+                cstr.as_bytes_with_nul(),
                 reuse_existing,
                 persistent,
             ),
@@ -274,23 +286,26 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`AddNamedFull`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.AddNamedFull).
     #[doc(alias = "AddNamedFull")]
-    pub async fn add_named_full<F>(
+    pub async fn add_named_full<F, P>(
         &self,
         o_path_fd: &F,
-        filename: &str,
+        filename: P,
         flags: BitFlags<Flags>,
         app_id: &str,
         permissions: &[Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error>
     where
         F: AsRawFd + Debug,
+        P: AsRef<Path> + Serialize + zvariant::Type + Debug,
     {
+        let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
+            .expect("`filename` should not be null terminated");
         call_method(
             &self.0,
             "AddNamedFull",
             &(
                 Fd::from(o_path_fd.as_raw_fd()),
-                filename,
+                cstr.as_bytes_with_nul(),
                 flags,
                 app_id,
                 permissions,
@@ -325,8 +340,10 @@ impl<'a> DocumentsProxy<'a> {
     /// See also [`GetMountPoint`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.GetMountPoint).
     #[doc(alias = "GetMountPoint")]
     #[doc(alias = "get_mount_point")]
-    pub async fn mount_point(&self) -> Result<String, Error> {
-        call_method(&self.0, "GetMountPoint", &()).await
+    pub async fn mount_point(&self) -> Result<PathBuf, Error> {
+        let bytes: Vec<u8> = call_method(&self.0, "GetMountPoint", &()).await?;
+        let cstr: OsString = OsStringExt::from_vec(bytes);
+        Ok(Path::new(&cstr).to_path_buf())
     }
 
     /// Grants access permissions for a file in the document store to an
@@ -370,8 +387,12 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Info`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Info).
     #[doc(alias = "Info")]
-    pub async fn info(&self, doc_id: &str) -> Result<(String, Permissions), Error> {
-        call_method(&self.0, "Info", &(doc_id)).await
+    pub async fn info(&self, doc_id: &str) -> Result<(PathBuf, Permissions), Error> {
+        let (bytes, permissions): (Vec<u8>, Permissions) =
+            call_method(&self.0, "Info", &(doc_id)).await?;
+        let cstr: OsString = OsStringExt::from_vec(bytes);
+
+        Ok((Path::new(&cstr).to_path_buf(), permissions))
     }
 
     /// Lists documents in the document store for an application (or for all
@@ -411,8 +432,13 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup(&self, filename: &str) -> Result<Option<String>, Error> {
-        let doc_id: String = call_method(&self.0, "Lookup", &(filename)).await?;
+    pub async fn lookup<P: AsRef<Path> + Serialize + zvariant::Type + Debug>(
+        &self,
+        filename: P,
+    ) -> Result<Option<String>, Error> {
+        let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
+            .expect("`filename` should not be null terminated");
+        let doc_id: String = call_method(&self.0, "Lookup", &(cstr.as_bytes_with_nul())).await?;
         if doc_id.is_empty() {
             Ok(None)
         } else {
