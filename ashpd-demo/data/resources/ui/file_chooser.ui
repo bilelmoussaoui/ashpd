@@ -81,15 +81,6 @@
             <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
-            <child>
-              <object class="GtkListBox" id="open_uris_listbox">
-                <property name="selection-mode">none</property>
-                <property name="hexpand">True</property>
-                <style>
-                  <class name="content" />
-                </style>
-              </object>
-            </child>
           </object>
         </child>
         <child>
@@ -179,15 +170,6 @@
             <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
-            <child>
-              <object class="GtkListBox" id="save_file_uris_listbox">
-                <property name="selection-mode">none</property>
-                <property name="hexpand">True</property>
-                <style>
-                  <class name="content" />
-                </style>
-              </object>
-            </child>
           </object>
         </child>
         <child>
@@ -195,68 +177,60 @@
             <property name="title" translatable="yes">Save Files</property>
             <property name="description">Calls SaveFiles on org.freedesktop.portal.FileChooser</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Title</property>
+                <property name="activatable-widget">save_files_title_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Title</property>
-                    <property name="activatable-widget">save_files_title_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_files_title_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_files_title_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Accept Label</property>
+                <property name="activatable-widget">save_files_accept_label_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Accept Label</property>
-                    <property name="activatable-widget">save_files_accept_label_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_files_accept_label_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_files_accept_label_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes" comments="Refersto the window modal property">Modal</property>
+                <property name="activatable-widget">save_files_modal_switch</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes" comments="Refersto the window modal property">Modal</property>
-                    <property name="activatable-widget">save_files_modal_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="save_files_modal_switch">
-                        <property name="valign">center</property>
-                        <property name="active">True</property>
-                      </object>
-                    </child>
+                  <object class="GtkSwitch" id="save_files_modal_switch">
+                    <property name="valign">center</property>
+                    <property name="active">True</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Current Folder Path</property>
+                <property name="activatable-widget">save_files_current_folder_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Current Folder Path</property>
-                    <property name="activatable-widget">save_files_current_folder_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_files_current_folder_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_files_current_folder_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Files</property>
+                <property name="subtitle" translatable="yes">Comma separated list of files to save</property>
+                <property name="activatable-widget">save_files_files_entry</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Files</property>
-                    <property name="subtitle" translatable="yes">Comma separated list of files to save</property>
-                    <property name="activatable-widget">save_files_files_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="save_files_files_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+                  <object class="GtkEntry" id="save_files_files_entry">
+                    <property name="valign">center</property>
                   </object>
                 </child>
-                <style>
-                  <class name="content" />
-                </style>
               </object>
             </child>
           </object>
@@ -274,15 +248,6 @@
             <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
-            <child>
-              <object class="GtkListBox" id="save_files_uris_listbox">
-                <property name="selection-mode">none</property>
-                <property name="hexpand">True</property>
-                <style>
-                  <class name="content" />
-                </style>
-              </object>
-            </child>
           </object>
         </child>
       </object>

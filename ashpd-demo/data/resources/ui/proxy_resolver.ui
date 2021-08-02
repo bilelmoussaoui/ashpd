@@ -35,15 +35,6 @@
             <property name="title" translatable="yes">Response</property>
             <property name="visible">False</property>
             <property name="margin-top">24</property>
-            <child>
-              <object class="GtkListBox" id="listbox">
-                <property name="selection-mode">none</property>
-                <property name="hexpand">True</property>
-                <style>
-                  <class name="content" />
-                </style>
-              </object>
-            </child>
           </object>
         </child>
       </object>

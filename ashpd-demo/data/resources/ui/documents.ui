@@ -10,22 +10,17 @@
           <object class="AdwPreferencesGroup">
             <property name="title">Information</property>
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title">Mount point</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Mount point</property>
-                    <child>
-                      <object class="GtkLabel" id="mount_point">
-                        <property name="label">Undefined</property>
-                        <property name="halign">start</property>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="mount_point">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
-                <style>
-                  <class name="content"/>
-                </style>
               </object>
             </child>
           </object>

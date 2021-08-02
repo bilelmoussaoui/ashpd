@@ -1,4 +1,5 @@
 use crate::portals::{is_empty, split_comma};
+use adw::prelude::*;
 use ashpd::{
     desktop::file_chooser::{
         FileChooserProxy, OpenFileOptions, SaveFileOptions, SaveFilesOptions, SelectedFiles,
@@ -31,8 +32,6 @@ mod imp {
         pub open_directory_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub open_response_group: TemplateChild<adw::PreferencesGroup>,
-        #[template_child]
-        pub open_uris_listbox: TemplateChild<gtk::ListBox>,
 
         #[template_child]
         pub save_file_title_entry: TemplateChild<gtk::Entry>,
@@ -48,8 +47,6 @@ mod imp {
         pub save_file_modal_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub save_file_response_group: TemplateChild<adw::PreferencesGroup>,
-        #[template_child]
-        pub save_file_uris_listbox: TemplateChild<gtk::ListBox>,
 
         #[template_child]
         pub save_files_title_entry: TemplateChild<gtk::Entry>,
@@ -63,8 +60,6 @@ mod imp {
         pub save_files_files_entry: TemplateChild<gtk::Entry>,
         #[template_child]
         pub save_files_response_group: TemplateChild<adw::PreferencesGroup>,
-        #[template_child]
-        pub save_files_uris_listbox: TemplateChild<gtk::ListBox>,
     }
 
     #[glib::object_subclass]
@@ -149,13 +144,10 @@ impl FileChooserPage {
         {
             self_.open_response_group.show();
 
-            while let Some(child) = self_.open_uris_listbox.next_sibling() {
-                self_.open_uris_listbox.remove(&child);
-            }
             for uri in files.uris() {
                 self_
-                    .open_uris_listbox
-                    .append(&adw::ActionRow::builder().title(uri).build());
+                    .open_response_group
+                    .add(&adw::ActionRow::builder().title(uri).build());
             }
         }
     }
@@ -184,13 +176,10 @@ impl FileChooserPage {
         {
             self_.save_file_response_group.show();
 
-            while let Some(child) = self_.save_file_uris_listbox.next_sibling() {
-                self_.save_file_uris_listbox.remove(&child);
-            }
             for uri in files.uris() {
                 self_
-                    .save_file_uris_listbox
-                    .append(&adw::ActionRow::builder().title(uri).build());
+                    .save_file_response_group
+                    .add(&adw::ActionRow::builder().title(uri).build());
             }
         }
     }
@@ -217,13 +206,10 @@ impl FileChooserPage {
         {
             self_.save_files_response_group.show();
 
-            while let Some(child) = self_.save_files_uris_listbox.next_sibling() {
-                self_.save_files_uris_listbox.remove(&child);
-            }
             for uri in files.uris() {
                 self_
-                    .save_files_uris_listbox
-                    .append(&adw::ActionRow::builder().title(uri).build());
+                    .save_files_response_group
+                    .add(&adw::ActionRow::builder().title(uri).build());
             }
         }
     }

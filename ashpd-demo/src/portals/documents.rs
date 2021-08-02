@@ -1,11 +1,7 @@
-use ashpd::documents::DocumentsProxy;
-use ashpd::zbus;
-use glib::clone;
-use gtk::glib;
+use ashpd::{documents::DocumentsProxy, zbus};
+use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-
-use crate::config;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -17,7 +13,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/documents.ui")]
     pub struct DocumentsPage {
         #[template_child]
-        mount_point: TemplateChild<gtk::Label>,
+        pub mount_point: TemplateChild<gtk::Label>,
     }
 
     #[glib::object_subclass]
@@ -41,7 +37,9 @@ mod imp {
         fn map(&self, widget: &Self::Type) {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak widget => async move {
-                widget.refresh().await;
+                if let Err(err) = widget.refresh().await {
+                    tracing::error!("Failed to call a method on Documents portal{}", err);
+                }
             }));
             self.parent_map(widget);
         }
@@ -60,6 +58,14 @@ impl DocumentsPage {
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {
+        let self_ = imp::DocumentsPage::from_instance(self);
+
+        let cnx = zbus::azync::Connection::session().await?;
+        let proxy = DocumentsProxy::new(&cnx).await?;
+
+        let mount_point = proxy.mount_point().await?;
+        self_.mount_point.set_label(mount_point.to_str().unwrap());
+
         Ok(())
     }
 }

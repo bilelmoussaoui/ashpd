@@ -1,3 +1,4 @@
+use adw::prelude::*;
 use ashpd::{desktop::proxy_resolver::ProxyResolverProxy, zbus};
 use gtk::glib::{self, clone};
 use gtk::prelude::*;
@@ -16,8 +17,6 @@ mod imp {
         pub uri: TemplateChild<gtk::Entry>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
-        #[template_child]
-        pub listbox: TemplateChild<gtk::ListBox>,
     }
 
     #[glib::object_subclass]
@@ -70,13 +69,10 @@ impl ProxyResolverPage {
         let proxy = ProxyResolverProxy::new(&cnx).await?;
 
         let resolved_uris = proxy.lookup(&uri).await?;
-        let resolved_uris = resolved_uris.iter().map(String::as_str).collect::<Vec<_>>();
 
-        let model = gtk::StringList::new(&resolved_uris);
-        self_.listbox.bind_model(Some(&model), move |obj| {
-            let uri = obj.downcast_ref::<gtk::StringObject>().unwrap();
-            let row = adw::ActionRow::builder().title(&uri.string()).build();
-            row.upcast()
+        resolved_uris.iter().for_each(|uri| {
+            let row = adw::ActionRow::builder().title(uri).build();
+            self_.response_group.add(&row);
         });
 
         self_.response_group.show();

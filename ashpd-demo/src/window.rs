@@ -36,6 +36,8 @@ mod imp {
         #[template_child]
         pub leaflet: TemplateChild<adw::Leaflet>,
         #[template_child]
+        pub documents: TemplateChild<DocumentsPage>,
+        #[template_child]
         pub screenshot: TemplateChild<ScreenshotPage>,
         #[template_child]
         pub camera: TemplateChild<CameraPage>,
@@ -84,6 +86,7 @@ mod imp {
                 location: TemplateChild::default(),
                 notification: TemplateChild::default(),
                 screencast: TemplateChild::default(),
+                documents: TemplateChild::default(),
                 account: TemplateChild::default(),
                 email: TemplateChild::default(),
                 file_chooser: TemplateChild::default(),
@@ -126,21 +129,16 @@ mod imp {
                     .insert(&SidebarRow::new(&gettext("Device"), "device"), 2);
                 self.stack.add_named(&DevicePage::new(), Some("device"));
 
-                self.sidebar
-                    .insert(&SidebarRow::new(&gettext("Documents"), "documents"), 3);
-                self.stack
-                    .add_named(&DocumentsPage::new(), Some("documents"));
-
                 self.sidebar.insert(
                     &SidebarRow::new(&gettext("Network Monitor"), "network_monitor"),
-                    8,
+                    7,
                 );
                 self.stack
                     .add_named(&NetworkMonitorPage::new(), Some("network_monitor"));
 
                 self.sidebar.insert(
                     &SidebarRow::new(&gettext("Proxy Resolver"), "proxy_resolver"),
-                    12,
+                    11,
                 );
 
                 self.stack

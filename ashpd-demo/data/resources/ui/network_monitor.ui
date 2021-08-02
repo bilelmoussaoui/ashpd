@@ -9,54 +9,47 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title">Status</property>
+
             <child>
-              <object class="GtkListBox">
-                <property name="selection-mode">none</property>
+              <object class="AdwActionRow">
+                <property name="title">Availability</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Availability</property>
-                    <child>
-                      <object class="GtkLabel" id="network_available">
-                        <property name="label">Undefined</property>
-                        <property name="halign">start</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="network_available">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Metered</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Metered</property>
-                    <child>
-                      <object class="GtkLabel" id="metered">
-                        <property name="label">Undefined</property>
-                        <property name="halign">start</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="metered">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Connectivity</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Connectivity</property>
-                    <child>
-                      <object class="GtkLabel" id="connectivity">
-                        <property name="label">Undefined</property>
-                        <property name="halign">start</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
-                      </object>
-                    </child>
+                  <object class="GtkLabel" id="connectivity">
+                    <property name="label">Undefined</property>
+                    <property name="halign">start</property>
+                    <style>
+                      <class name="dim-label" />
+                    </style>
                   </object>
                 </child>
-                <style>
-                  <class name="content"/>
-                </style>
               </object>
             </child>
           </object>
