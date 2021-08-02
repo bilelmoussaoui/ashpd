@@ -37,10 +37,7 @@ pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 
 use std::{
-    collections::HashMap,
-    ffi::{CString, OsString},
-    os::unix::prelude::AsRawFd,
-    os::unix::{ffi::OsStrExt, prelude::OsStringExt},
+    collections::HashMap, ffi::CString, os::unix::ffi::OsStrExt, os::unix::prelude::AsRawFd,
 };
 use std::{
     fmt::Debug,
@@ -55,7 +52,10 @@ use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{Fd, Signature};
 use zvariant_derive::Type;
 
-use crate::{helpers::call_method, Error};
+use crate::{
+    helpers::{call_method, path_from_null_terminated},
+    Error,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
 #[repr(u32)]
@@ -342,8 +342,7 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "get_mount_point")]
     pub async fn mount_point(&self) -> Result<PathBuf, Error> {
         let bytes: Vec<u8> = call_method(&self.0, "GetMountPoint", &()).await?;
-        let cstr: OsString = OsStringExt::from_vec(bytes);
-        Ok(Path::new(&cstr).to_path_buf())
+        Ok(path_from_null_terminated(bytes))
     }
 
     /// Grants access permissions for a file in the document store to an
@@ -390,9 +389,7 @@ impl<'a> DocumentsProxy<'a> {
     pub async fn info(&self, doc_id: &str) -> Result<(PathBuf, Permissions), Error> {
         let (bytes, permissions): (Vec<u8>, Permissions) =
             call_method(&self.0, "Info", &(doc_id)).await?;
-        let cstr: OsString = OsStringExt::from_vec(bytes);
-
-        Ok((Path::new(&cstr).to_path_buf(), permissions))
+        Ok((path_from_null_terminated(bytes), permissions))
     }
 
     /// Lists documents in the document store for an application (or for all

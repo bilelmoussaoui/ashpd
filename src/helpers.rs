@@ -1,4 +1,9 @@
-use std::fmt::Debug;
+use std::{
+    ffi::OsStr,
+    fmt::Debug,
+    os::unix::prelude::OsStrExt,
+    path::{Path, PathBuf},
+};
 
 use futures::StreamExt;
 use serde::Deserialize;
@@ -113,4 +118,10 @@ where
     msg.disown_fds();
 
     Ok(reply)
+}
+
+// Some portals returns paths which are bytes and not a typical string
+// as those might be null terminated. This might make sense to provide in form of a helper in zvariant
+pub(crate) fn path_from_null_terminated(bytes: Vec<u8>) -> PathBuf {
+    Path::new(OsStr::from_bytes(bytes.split_last().unwrap().1)).to_path_buf()
 }
