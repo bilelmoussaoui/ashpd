@@ -408,8 +408,15 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`List`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.List).
     #[doc(alias = "List")]
-    pub async fn list(&self, app_id: &str) -> Result<HashMap<String, String>, Error> {
-        call_method(&self.0, "List", &(app_id)).await
+    pub async fn list(&self, app_id: &str) -> Result<HashMap<String, PathBuf>, Error> {
+        let response: HashMap<String, Vec<u8>> = call_method(&self.0, "List", &(app_id)).await?;
+
+        let mut new_response: HashMap<String, PathBuf> = HashMap::new();
+        for (key, bytes) in response {
+            new_response.insert(key, path_from_null_terminated(bytes));
+        }
+
+        Ok(new_response)
     }
 
     /// Looks up the document ID for a file.
