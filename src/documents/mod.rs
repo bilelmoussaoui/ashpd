@@ -373,6 +373,8 @@ impl<'a> DocumentsProxy<'a> {
     /// Gets the filesystem path and application permissions for a document
     /// store entry.
     ///
+    /// **Note** This call is not available inside the sandbox.
+    ///
     /// # Arguments
     ///
     /// * `doc_id` - The ID of the file in the document store.
@@ -394,6 +396,8 @@ impl<'a> DocumentsProxy<'a> {
 
     /// Lists documents in the document store for an application (or for all
     /// applications).
+    ///
+    /// **Note** This call is not available inside the sandbox.
     ///
     /// # Arguments
     ///
