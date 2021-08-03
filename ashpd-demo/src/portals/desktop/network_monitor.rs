@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{desktop::network_monitor::NetworkMonitorProxy, zbus};
 use gtk::glib::{self, clone};
@@ -33,11 +34,10 @@ mod imp {
     impl ObjectSubclass for NetworkMonitorPage {
         const NAME: &'static str = "NetworkMonitorPage";
         type Type = super::NetworkMonitorPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action(
                 "network_monitor.can_reach",
                 None,
@@ -70,10 +70,11 @@ mod imp {
         }
     }
     impl BinImpl for NetworkMonitorPage {}
+    impl PortalPageImpl for NetworkMonitorPage {}
 }
 
 glib::wrapper! {
-    pub struct NetworkMonitorPage(ObjectSubclass<imp::NetworkMonitorPage>) @extends gtk::Widget, adw::Bin;
+    pub struct NetworkMonitorPage(ObjectSubclass<imp::NetworkMonitorPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl NetworkMonitorPage {
@@ -106,10 +107,20 @@ impl NetworkMonitorPage {
 
         let hostname = self_.host_entry.text();
         let port = self_.port_entry.text().parse().unwrap_or(80);
-        let response = proxy.can_reach(&hostname, port).await?;
+        match proxy.can_reach(&hostname, port).await {
+            Ok(response) => {
+                self_.can_reach_row.set_title(Some(&response.to_string()));
+                self_.response_group.show();
+                self.send_notification(
+                    "Can reach request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification("Request failed", NotificationKind::Error);
+            }
+        }
 
-        self_.can_reach_row.set_title(Some(&response.to_string()));
-        self_.response_group.show();
         Ok(())
     }
 }

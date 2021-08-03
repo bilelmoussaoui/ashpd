@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktopProxy},
@@ -56,11 +57,11 @@ mod imp {
     impl ObjectSubclass for RemoteDesktopPage {
         const NAME: &'static str = "RemoteDesktopPage";
         type Type = super::RemoteDesktopPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action(
                 "remote_desktop.start",
                 None,
@@ -78,6 +79,7 @@ mod imp {
                     let ctx = glib::MainContext::default();
                     ctx.spawn_local(clone!(@weak page => async move {
                         page.stop_session().await;
+                        page.send_notification("Remote desktop session stopped", NotificationKind::Info);
                     }));
                 },
             );
@@ -117,10 +119,11 @@ mod imp {
         }
     }
     impl BinImpl for RemoteDesktopPage {}
+    impl PortalPageImpl for RemoteDesktopPage {}
 }
 
 glib::wrapper! {
-    pub struct RemoteDesktopPage(ObjectSubclass<imp::RemoteDesktopPage>) @extends gtk::Widget, adw::Bin;
+    pub struct RemoteDesktopPage(ObjectSubclass<imp::RemoteDesktopPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl RemoteDesktopPage {
@@ -179,34 +182,26 @@ impl RemoteDesktopPage {
     async fn start_session(&self) {
         let self_ = imp::RemoteDesktopPage::from_instance(self);
 
-        let root = self.native().unwrap();
         self.action_set_enabled("remote_desktop.start", false);
         self.action_set_enabled("remote_desktop.stop", true);
-        let is_screencast = self_.screencast_switch.get().is_active();
-        let multiple_sources = self_.multiple_switch.is_active();
-        let cursor_mode = self.selected_cursor_mode();
-        let sources = self.selected_sources();
-        let devices = self.selected_devices();
 
-        let identifier = WindowIdentifier::from_native(&root).await;
-        match remote(
-            &identifier,
-            devices,
-            is_screencast,
-            multiple_sources,
-            cursor_mode,
-            sources,
-        )
-        .await
-        {
+        match self.remote().await {
             Ok((_selected_devices, _streams, session)) => {
                 self_.response_group.show();
                 self_.session.lock().await.replace(session);
                 self.action_set_enabled("remote_desktop.start", false);
                 self.action_set_enabled("remote_desktop.stop", true);
+                self.send_notification(
+                    "Remote desktop session started successfully",
+                    NotificationKind::Success,
+                );
             }
             Err(err) => {
                 tracing::error!("{:#?}", err);
+                self.send_notification(
+                    "Failed to start a remote desktop session",
+                    NotificationKind::Error,
+                );
                 self.stop_session().await;
             }
         };
@@ -222,29 +217,34 @@ impl RemoteDesktopPage {
         }
         self_.response_group.hide();
     }
-}
 
-pub async fn remote(
-    identifier: &WindowIdentifier,
-    devices: BitFlags<DeviceType>,
-    is_screencast: bool,
-    multiple_sources: bool,
-    cursor_mode: BitFlags<CursorMode>,
-    sources: BitFlags<SourceType>,
-) -> ashpd::Result<(BitFlags<DeviceType>, Vec<Stream>, SessionProxy<'static>)> {
-    let connection = zbus::azync::Connection::session().await?;
-    let proxy = RemoteDesktopProxy::new(&connection).await?;
-    let session = proxy.create_session().await?;
-    if is_screencast {
-        let screencast_proxy = ScreenCastProxy::new(&connection).await?;
-        screencast_proxy
-            .select_sources(&session, cursor_mode, sources, multiple_sources)
-            .await?;
+    async fn remote(
+        &self,
+    ) -> ashpd::Result<(BitFlags<DeviceType>, Vec<Stream>, SessionProxy<'static>)> {
+        let self_ = imp::RemoteDesktopPage::from_instance(self);
+        let root = self.native().unwrap();
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let is_screencast = self_.screencast_switch.get().is_active();
+        let multiple_sources = self_.multiple_switch.is_active();
+        let cursor_mode = self.selected_cursor_mode();
+        let sources = self.selected_sources();
+        let devices = self.selected_devices();
+
+        let connection = zbus::azync::Connection::session().await?;
+        let proxy = RemoteDesktopProxy::new(&connection).await?;
+        let session = proxy.create_session().await?;
+        if is_screencast {
+            let screencast_proxy = ScreenCastProxy::new(&connection).await?;
+            screencast_proxy
+                .select_sources(&session, cursor_mode, sources, multiple_sources)
+                .await?;
+        }
+        proxy.select_devices(&session, devices).await?;
+
+        self.send_notification("Starting a remote desktop session", NotificationKind::Info);
+        let (devices, streams) = proxy.start(&session, &identifier).await?;
+        Ok((devices, streams, session))
     }
-    proxy.select_devices(&session, devices).await?;
-
-    let (devices, streams) = proxy.start(&session, identifier).await?;
-    Ok((devices, streams, session))
 }
 
 pub async fn available_devices() -> ashpd::Result<BitFlags<DeviceType>> {

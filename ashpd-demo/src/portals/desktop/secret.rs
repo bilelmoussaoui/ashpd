@@ -1,3 +1,4 @@
+use crate::widgets::{PortalPage, PortalPageImpl};
 use ashpd::{desktop::secret, zbus};
 use glib::clone;
 use gtk::glib;
@@ -12,7 +13,7 @@ mod imp {
 
     use super::*;
 
-    #[derive(Debug, CompositeTemplate)]
+    #[derive(Debug, Default, CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/secret.ui")]
     pub struct SecretPage {
         #[template_child]
@@ -22,25 +23,15 @@ mod imp {
         pub key: Arc<Mutex<Option<String>>>,
     }
 
-    impl Default for SecretPage {
-        fn default() -> Self {
-            Self {
-                key: Arc::new(Mutex::new(None)),
-                token_label: TemplateChild::default(),
-                response_group: TemplateChild::default(),
-            }
-        }
-    }
-
     #[glib::object_subclass]
     impl ObjectSubclass for SecretPage {
         const NAME: &'static str = "SecretPage";
         type Type = super::SecretPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("secret.retrieve", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -56,10 +47,11 @@ mod imp {
     impl ObjectImpl for SecretPage {}
     impl WidgetImpl for SecretPage {}
     impl BinImpl for SecretPage {}
+    impl PortalPageImpl for SecretPage {}
 }
 
 glib::wrapper! {
-    pub struct SecretPage(ObjectSubclass<imp::SecretPage>) @extends gtk::Widget, adw::Bin;
+    pub struct SecretPage(ObjectSubclass<imp::SecretPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl SecretPage {

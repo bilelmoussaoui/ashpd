@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="Notification" parent="AdwBin">
+    <child>
+      <object class="GtkInfoBar" id="info_bar">
+        <property name="show-close-button">False</property>
+        <property name="revealed">False</property>
+        <child>
+          <object class="GtkLabel" id="message_label">
+
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

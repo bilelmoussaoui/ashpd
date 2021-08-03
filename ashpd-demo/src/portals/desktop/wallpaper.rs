@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{desktop::wallpaper, WindowIdentifier};
 use glib::clone;
@@ -27,11 +28,11 @@ mod imp {
     impl ObjectSubclass for WallpaperPage {
         const NAME: &'static str = "WallpaperPage";
         type Type = super::WallpaperPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("wallpaper.select", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -47,10 +48,11 @@ mod imp {
     impl ObjectImpl for WallpaperPage {}
     impl WidgetImpl for WallpaperPage {}
     impl BinImpl for WallpaperPage {}
+    impl PortalPageImpl for WallpaperPage {}
 }
 
 glib::wrapper! {
-    pub struct WallpaperPage(ObjectSubclass<imp::WallpaperPage>) @extends gtk::Widget, adw::Bin;
+    pub struct WallpaperPage(ObjectSubclass<imp::WallpaperPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl WallpaperPage {
@@ -85,10 +87,18 @@ impl WallpaperPage {
             let wallpaper_uri = file_chooser.file().unwrap().uri();
 
             let identifier = WindowIdentifier::from_native(&root).await;
-            if let Err(err) =
-                wallpaper::set_from_uri(&identifier, &wallpaper_uri, show_preview, set_on).await
-            {
-                tracing::error!("Failed to set wallpaper {}", err);
+            match wallpaper::set_from_uri(&identifier, &wallpaper_uri, show_preview, set_on).await {
+                Err(err) => {
+                    tracing::error!("Failed to set wallpaper {}", err);
+                    self.send_notification(
+                        "Request to set a wallpaper failed",
+                        NotificationKind::Error,
+                    );
+                }
+                Ok(_) => self.send_notification(
+                    "Set a wallpaper request was successful",
+                    NotificationKind::Success,
+                ),
             }
         };
         file_chooser.destroy();

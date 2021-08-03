@@ -1,6 +1,6 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use ashpd::{desktop::background, WindowIdentifier};
-use glib::clone;
-use gtk::glib;
+use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -34,11 +34,10 @@ mod imp {
     impl ObjectSubclass for BackgroundPage {
         const NAME: &'static str = "BackgroundPage";
         type Type = super::BackgroundPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action("background.request", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -54,10 +53,11 @@ mod imp {
     impl ObjectImpl for BackgroundPage {}
     impl WidgetImpl for BackgroundPage {}
     impl BinImpl for BackgroundPage {}
+    impl PortalPageImpl for BackgroundPage {}
 }
 
 glib::wrapper! {
-    pub struct BackgroundPage(ObjectSubclass<imp::BackgroundPage>) @extends gtk::Widget, adw::Bin;
+    pub struct BackgroundPage(ObjectSubclass<imp::BackgroundPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl BackgroundPage {
@@ -79,7 +79,9 @@ impl BackgroundPage {
         let root = self.native().unwrap();
 
         let identifier = WindowIdentifier::from_native(&root).await;
-        if let Ok(response) = background::request(
+        self.send_notification("Requesting background access", NotificationKind::Info);
+
+        match background::request(
             &identifier,
             &reason,
             auto_start,
@@ -88,13 +90,25 @@ impl BackgroundPage {
         )
         .await
         {
-            self_.response_group.show();
-            self_
-                .auto_start_label
-                .set_label(&response.auto_start().to_string());
-            self_
-                .run_bg_label
-                .set_label(&response.run_in_background().to_string());
+            Ok(response) => {
+                self_.response_group.show();
+                self_
+                    .auto_start_label
+                    .set_label(&response.auto_start().to_string());
+                self_
+                    .run_bg_label
+                    .set_label(&response.run_in_background().to_string());
+                self.send_notification(
+                    "Background request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification(
+                    "Request to run in background failed",
+                    NotificationKind::Error,
+                );
+            }
         }
     }
 }

@@ -43,6 +43,8 @@ sources = files(
   'widgets/color_widget.rs',
   'widgets/gst_paintable.rs',
   'widgets/mod.rs',
+  'widgets/notification.rs',
+  'widgets/portal_page.rs',
   'widgets/sidebar_row.rs',
   'application.rs',
   'config.rs',

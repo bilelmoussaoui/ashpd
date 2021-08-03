@@ -1,91 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="ScreenshotPage" parent="AdwBin">
+  <template class="ScreenshotPage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Take a Screenshot</property>
-            <property name="description">Calls Screenshot on org.freedesktop.portal.Screenshot</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Interactive</property>
-                <property name="activatable-widget">interactive_switch</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Take a Screenshot</property>
+                <property name="description">Calls Screenshot on org.freedesktop.portal.Screenshot</property>
                 <child>
-                  <object class="GtkSwitch" id="interactive_switch">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Interactive</property>
+                    <property name="activatable-widget">interactive_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="interactive_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Modal</property>
+                    <property name="activatable-widget">modal_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="modal_switch">
+                        <property name="valign">center</property>
+                        <property name="active">True</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Modal</property>
-                <property name="activatable-widget">modal_switch</property>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Request</property>
+                <property name="use-underline">True</property>
+                <property name="margin-bottom">18</property>
+                <property name="halign">start</property>
+                <property name="action-name">screenshot.screenshot</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkRevealer" id="revealer">
+                <property name="reveal-child">False</property>
+                <property name="visible">False</property>
+                <property name="transition-type">crossfade</property>
                 <child>
-                  <object class="GtkSwitch" id="modal_switch">
-                    <property name="valign">center</property>
-                    <property name="active">True</property>
+                  <object class="AdwPreferencesGroup" id="response_group">
+                    <property name="title" translatable="yes">Response</property>
+                    <child>
+                      <object class="GtkPicture" id="screenshot_photo" />
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Pick a Color</property>
+                <property name="description" translatable="yes">Calls PickColor on org.freedesktop.portal.Screenshot</property>
+                <property name="margin-top">18</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">_Request</property>
+                        <property name="use-underline">True</property>
+                        <property name="halign">start</property>
+                        <property name="action-name">screenshot.pick-color</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="ColorWidget" id="color_widget">
+                        <property name="halign">end</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">_Take a Screenshot</property>
-            <property name="use-underline">True</property>
-            <property name="margin-bottom">18</property>
-            <property name="halign">start</property>
-            <property name="action-name">screenshot.screenshot</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRevealer" id="revealer">
-            <property name="reveal-child">False</property>
-            <property name="visible">False</property>
-            <property name="transition-type">crossfade</property>
-            <child>
-              <object class="AdwPreferencesGroup" id="response_group">
-                <property name="title" translatable="yes">Response</property>
-                <child>
-                  <object class="GtkPicture" id="screenshot_photo" />
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Ask the Compositor to Pick a Color</property>
-            <property name="description" translatable="yes">Calls PickColor on org.freedesktop.portal.Screenshot</property>
-            <property name="margin-top">18</property>
-            <child>
-              <object class="GtkBox">
-                <property name="orientation">horizontal</property>
-                <child>
-                  <object class="GtkButton">
-                    <property name="label" translatable="yes">_Pick a Color</property>
-                    <property name="use-underline">True</property>
-                    <property name="halign">start</property>
-                    <property name="action-name">screenshot.pick-color</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="ColorWidget" id="color_widget">
-                    <property name="halign">end</property>
-                    <property name="hexpand">True</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
+
   </template>
 </interface>

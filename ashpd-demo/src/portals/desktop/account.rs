@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use ashpd::{desktop::account, WindowIdentifier};
 use glib::clone;
 use gtk::prelude::*;
@@ -29,11 +30,10 @@ mod imp {
     impl ObjectSubclass for AccountPage {
         const NAME: &'static str = "AccountPage";
         type Type = super::AccountPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
             klass.install_action(
                 "account.information",
                 None,
@@ -53,10 +53,11 @@ mod imp {
     impl ObjectImpl for AccountPage {}
     impl WidgetImpl for AccountPage {}
     impl BinImpl for AccountPage {}
+    impl PortalPageImpl for AccountPage {}
 }
 
 glib::wrapper! {
-    pub struct AccountPage(ObjectSubclass<imp::AccountPage>) @extends gtk::Widget, adw::Bin;
+    pub struct AccountPage(ObjectSubclass<imp::AccountPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl AccountPage {
@@ -70,15 +71,29 @@ impl AccountPage {
         let self_ = imp::AccountPage::from_instance(self);
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = self_.reason.text();
+        self.send_notification("Fetching user information...", NotificationKind::Info);
 
-        if let Ok(user_info) = account::user_information(&identifier, &reason).await {
-            self_.id_label.set_text(user_info.id());
-            self_.name_label.set_text(user_info.name());
-            let path: std::path::PathBuf = user_info.image().trim_start_matches("file://").into();
-            let pixbuf = gdk_pixbuf::Pixbuf::from_file(path).unwrap();
+        match account::user_information(&identifier, &reason).await {
+            Ok(user_info) => {
+                self.send_notification(
+                    "User information request was successful",
+                    NotificationKind::Success,
+                );
+                self_.id_label.set_text(user_info.id());
+                self_.name_label.set_text(user_info.name());
+                let path: std::path::PathBuf =
+                    user_info.image().trim_start_matches("file://").into();
+                let pixbuf = gdk_pixbuf::Pixbuf::from_file(path).unwrap();
 
-            self_.avatar.set_from_pixbuf(Some(&pixbuf));
-            self_.response_group.show();
+                self_.avatar.set_from_pixbuf(Some(&pixbuf));
+                self_.response_group.show();
+            }
+            Err(_err) => {
+                self.send_notification(
+                    "Request to fetch user information failed",
+                    NotificationKind::Error,
+                );
+            }
         }
     }
 }

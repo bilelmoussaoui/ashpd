@@ -4,7 +4,7 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 
-use crate::widgets::ColorWidget;
+use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -31,11 +31,11 @@ mod imp {
     impl ObjectSubclass for ScreenshotPage {
         const NAME: &'static str = "ScreenshotPage";
         type Type = super::ScreenshotPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action(
                 "screenshot.pick-color",
                 None,
@@ -69,10 +69,11 @@ mod imp {
     }
     impl WidgetImpl for ScreenshotPage {}
     impl BinImpl for ScreenshotPage {}
+    impl PortalPageImpl for ScreenshotPage {}
 }
 
 glib::wrapper! {
-    pub struct ScreenshotPage(ObjectSubclass<imp::ScreenshotPage>) @extends gtk::Widget, adw::Bin;
+    pub struct ScreenshotPage(ObjectSubclass<imp::ScreenshotPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl ScreenshotPage {
@@ -86,8 +87,17 @@ impl ScreenshotPage {
         let root = self.native().unwrap();
         let self_ = imp::ScreenshotPage::from_instance(self);
         let identifier = WindowIdentifier::from_native(&root).await;
-        if let Ok(color) = screenshot::pick_color(&identifier).await {
-            self_.color_widget.set_rgba(color.into());
+        match screenshot::pick_color(&identifier).await {
+            Ok(color) => {
+                self_.color_widget.set_rgba(color.into());
+                self.send_notification(
+                    "Color pick request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification("Request to pick a color failed", NotificationKind::Error);
+            }
         }
     }
 
@@ -100,13 +110,25 @@ impl ScreenshotPage {
         let interactive = self_.interactive_switch.is_active();
         let modal = self_.modal_switch.is_active();
 
-        if let Ok(uri) = screenshot::take(&identifier, interactive, modal).await {
-            let file = gio::File::for_uri(&uri);
-            self_.screenshot_photo.set_file(Some(&file));
-            self_.revealer.show(); // Revealer has a weird issue where it still
-                                   // takes space even if it's child is hidden
+        match screenshot::take(&identifier, interactive, modal).await {
+            Ok(uri) => {
+                let file = gio::File::for_uri(&uri);
+                self_.screenshot_photo.set_file(Some(&file));
+                self_.revealer.show(); // Revealer has a weird issue where it still
+                                       // takes space even if it's child is hidden
 
-            self_.revealer.set_reveal_child(true);
+                self_.revealer.set_reveal_child(true);
+                self.send_notification(
+                    "Screenshot request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification(
+                    "Request to take a screenshot failed",
+                    NotificationKind::Error,
+                );
+            }
         }
     }
 }

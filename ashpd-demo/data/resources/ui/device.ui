@@ -1,58 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="DevicePage" parent="AdwBin">
+  <template class="DevicePage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Device Access</property>
-            <property name="description" translatable="yes">Calls AccessDevice on org.freedesktop.portal.Device. Asking for multiple devices at the same time may or may not be supported.</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Camera</property>
-                <property name="activatable-widget">camera_switch</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Device Access</property>
+                <property name="description" translatable="yes">Calls AccessDevice on org.freedesktop.portal.Device. Asking for multiple devices at the same time may or may not be supported.</property>
                 <child>
-                  <object class="GtkSwitch" id="camera_switch">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Camera</property>
+                    <property name="activatable-widget">camera_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="camera_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Speakers</property>
+                    <property name="activatable-widget">speakers_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="speakers_switch">
+                        <property name="active">True</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Microphone</property>
+                    <property name="activatable-widget">microphone_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="microphone_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Speakers</property>
-                <property name="activatable-widget">speakers_switch</property>
-                <child>
-                  <object class="GtkSwitch" id="speakers_switch">
-                    <property name="active">True</property>
-                    <property name="valign">center</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Microphone</property>
-                <property name="activatable-widget">microphone_switch</property>
-                <child>
-                  <object class="GtkSwitch" id="microphone_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
+              <object class="GtkButton">
+                <property name="label">Request</property>
+                <property name="halign">start</property>
+                <property name="action-name">device.request</property>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label">Request</property>
-            <property name="halign">start</property>
-            <property name="action-name">device.request</property>
-          </object>
-        </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
   </template>

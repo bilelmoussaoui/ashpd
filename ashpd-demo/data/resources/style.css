@@ -4,3 +4,17 @@ picture {
 color {
     border-radius: 4px;
 }
+
+.page-content {
+    margin-top: 24px;
+    margin-bottom: 24px;
+    margin-left: 12px;
+    margin-right: 12px;
+}
+notification .success {
+    background-color: mix(@success_color, @theme_base_color, 0.3);
+}
+
+notification infobar label {
+    padding: 6px;
+}

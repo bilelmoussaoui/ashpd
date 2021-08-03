@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{
     desktop::location::{Accuracy, Location, LocationProxy},
@@ -48,11 +49,11 @@ mod imp {
     impl ObjectSubclass for LocationPage {
         const NAME: &'static str = "LocationPage";
         type Type = super::LocationPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("location.locate", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -68,10 +69,11 @@ mod imp {
     impl ObjectImpl for LocationPage {}
     impl WidgetImpl for LocationPage {}
     impl BinImpl for LocationPage {}
+    impl PortalPageImpl for LocationPage {}
 }
 
 glib::wrapper! {
-    pub struct LocationPage(ObjectSubclass<imp::LocationPage>) @extends gtk::Widget, adw::Bin;
+    pub struct LocationPage(ObjectSubclass<imp::LocationPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl LocationPage {
@@ -96,30 +98,34 @@ impl LocationPage {
         let root = self.native().unwrap();
 
         let identifier = WindowIdentifier::from_native(&root).await;
-        if let Ok(location) =
-            locate(&identifier, distance_threshold, time_threshold, accuracy).await
-        {
-            self_.response_group.show();
-            self_
-                .accuracy_label
-                .set_label(&location.accuracy().to_string());
-            self_
-                .altitude_label
-                .set_label(&location.altitude().to_string());
-            self_.speed_label.set_label(&location.speed().to_string());
-            self_
-                .heading_label
-                .set_label(&location.heading().to_string());
-            self_.description_label.set_label(location.description());
-            self_
-                .latitude_label
-                .set_label(&location.latitude().to_string());
-            self_
-                .longitude_label
-                .set_label(&location.longitude().to_string());
-            self_
-                .timestamp_label
-                .set_label(&location.timestamp().to_string());
+        match locate(&identifier, distance_threshold, time_threshold, accuracy).await {
+            Ok(location) => {
+                self_.response_group.show();
+                self_
+                    .accuracy_label
+                    .set_label(&location.accuracy().to_string());
+                self_
+                    .altitude_label
+                    .set_label(&location.altitude().to_string());
+                self_.speed_label.set_label(&location.speed().to_string());
+                self_
+                    .heading_label
+                    .set_label(&location.heading().to_string());
+                self_.description_label.set_label(location.description());
+                self_
+                    .latitude_label
+                    .set_label(&location.latitude().to_string());
+                self_
+                    .longitude_label
+                    .set_label(&location.longitude().to_string());
+                self_
+                    .timestamp_label
+                    .set_label(&location.timestamp().to_string());
+                self.send_notification("Position updated", NotificationKind::Success);
+            }
+            Err(_err) => {
+                self.send_notification("Failed to locate", NotificationKind::Error);
+            }
         }
     }
 }

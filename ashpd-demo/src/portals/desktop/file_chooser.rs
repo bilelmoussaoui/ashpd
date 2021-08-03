@@ -1,4 +1,5 @@
 use crate::portals::{is_empty, split_comma};
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{
     desktop::file_chooser::{
@@ -66,11 +67,11 @@ mod imp {
     impl ObjectSubclass for FileChooserPage {
         const NAME: &'static str = "FileChooserPage";
         type Type = super::FileChooserPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action(
                 "file_chooser.open_file",
                 None,
@@ -110,10 +111,11 @@ mod imp {
     impl ObjectImpl for FileChooserPage {}
     impl WidgetImpl for FileChooserPage {}
     impl BinImpl for FileChooserPage {}
+    impl PortalPageImpl for FileChooserPage {}
 }
 
 glib::wrapper! {
-    pub struct FileChooserPage(ObjectSubclass<imp::FileChooserPage>) @extends gtk::Widget, adw::Bin;
+    pub struct FileChooserPage(ObjectSubclass<imp::FileChooserPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl FileChooserPage {
@@ -132,7 +134,7 @@ impl FileChooserPage {
         let modal = self_.open_modal_switch.is_active();
         let multiple = self_.open_multiple_switch.is_active();
 
-        if let Ok(files) = portal_open_file(
+        match portal_open_file(
             &identifier,
             &title,
             accept_label.as_deref(),
@@ -142,12 +144,21 @@ impl FileChooserPage {
         )
         .await
         {
-            self_.open_response_group.show();
+            Ok(files) => {
+                self_.open_response_group.show();
 
-            for uri in files.uris() {
-                self_
-                    .open_response_group
-                    .add(&adw::ActionRow::builder().title(uri).build());
+                for uri in files.uris() {
+                    self_
+                        .open_response_group
+                        .add(&adw::ActionRow::builder().title(uri).build());
+                }
+                self.send_notification(
+                    "Open file request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification("Request to open a file failed", NotificationKind::Error);
             }
         }
     }
@@ -163,7 +174,7 @@ impl FileChooserPage {
         let current_folder = is_empty(self_.save_file_current_folder_entry.text());
         let current_file = is_empty(self_.save_file_current_file_entry.text());
 
-        if let Ok(files) = portal_save_file(
+        match portal_save_file(
             &identifier,
             &title,
             accept_label.as_deref(),
@@ -174,12 +185,22 @@ impl FileChooserPage {
         )
         .await
         {
-            self_.save_file_response_group.show();
+            Ok(files) => {
+                self_.save_file_response_group.show();
 
-            for uri in files.uris() {
-                self_
-                    .save_file_response_group
-                    .add(&adw::ActionRow::builder().title(uri).build());
+                for uri in files.uris() {
+                    self_
+                        .save_file_response_group
+                        .add(&adw::ActionRow::builder().title(uri).build());
+                }
+
+                self.send_notification(
+                    "Save file request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification("Request to save a file failed", NotificationKind::Error);
             }
         }
     }
@@ -194,7 +215,7 @@ impl FileChooserPage {
         let modal = self_.save_files_modal_switch.is_active();
         let files = is_empty(self_.save_files_files_entry.text()).map(split_comma);
 
-        if let Ok(files) = portal_save_files(
+        match portal_save_files(
             &identifier,
             &title,
             accept_label.as_deref(),
@@ -204,12 +225,21 @@ impl FileChooserPage {
         )
         .await
         {
-            self_.save_files_response_group.show();
+            Ok(files) => {
+                self_.save_files_response_group.show();
 
-            for uri in files.uris() {
-                self_
-                    .save_files_response_group
-                    .add(&adw::ActionRow::builder().title(uri).build());
+                for uri in files.uris() {
+                    self_
+                        .save_files_response_group
+                        .add(&adw::ActionRow::builder().title(uri).build());
+                }
+                self.send_notification(
+                    "Save files request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification("Request to save files failed", NotificationKind::Error);
             }
         }
     }

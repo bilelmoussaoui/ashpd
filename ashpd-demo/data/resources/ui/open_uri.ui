@@ -1,49 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="OpenUriPage" parent="AdwBin">
+  <template class="OpenUriPage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Open a URI</property>
-            <property name="description">Calls OpenURI on org.freedesktop.portal.OpenURI</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Writeable</property>
-                <property name="subtitle" translatable="yes">Whether the file should be writeable or not</property>
-                <property name="activatable-widget">writeable_switch</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Open a URI</property>
+                <property name="description">Calls OpenURI on org.freedesktop.portal.OpenURI</property>
                 <child>
-                  <object class="GtkSwitch" id="writeable_switch">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Writeable</property>
+                    <property name="subtitle" translatable="yes">Whether the file should be writeable or not</property>
+                    <property name="activatable-widget">writeable_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="writeable_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Ask</property>
+                    <property name="subtitle" translatable="yes">Whether to always ask the user which application to use or not</property>
+                    <property name="activatable-widget">ask_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="ask_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Ask</property>
-                <property name="subtitle" translatable="yes">Whether to always ask the user which application to use or not</property>
-                <property name="activatable-widget">ask_switch</property>
-                <child>
-                  <object class="GtkSwitch" id="ask_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Request</property>
+                <property name="use-underline">True</property>
+                <property name="halign">start</property>
+                <property name="action-name">open_uri.uri</property>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">_Open</property>
-            <property name="use-underline">True</property>
-            <property name="halign">start</property>
-            <property name="action-name">open_uri.uri</property>
-          </object>
-        </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
   </template>

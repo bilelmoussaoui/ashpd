@@ -1,43 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="ProxyResolverPage" parent="AdwBin">
+  <template class="ProxyResolverPage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Resolve a URI through a proxy</property>
-            <property name="description" translatable="yes">Calls Lookup on org.freedesktop.portal.ProxyResolver</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">URI</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Resolve a URI through a proxy</property>
+                <property name="description" translatable="yes">Calls Lookup on org.freedesktop.portal.ProxyResolver</property>
                 <child>
-                  <object class="GtkEntry" id="uri">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">URI</property>
+                    <child>
+                      <object class="GtkEntry" id="uri">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Lookup</property>
+                <property name="use-underline">True</property>
+                <property name="halign">start</property>
+                <property name="action-name">proxy_resolver.resolve</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup" id="response_group">
+                <property name="title" translatable="yes">Response</property>
+                <property name="visible">False</property>
+                <property name="margin-top">24</property>
+              </object>
+            </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">_Lookup</property>
-            <property name="use-underline">True</property>
-            <property name="halign">start</property>
-            <property name="action-name">proxy_resolver.resolve</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title" translatable="yes">Response</property>
-            <property name="visible">False</property>
-            <property name="margin-top">24</property>
-          </object>
-        </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
+
   </template>
 </interface>

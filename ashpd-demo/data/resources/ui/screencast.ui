@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="ScreenCastPage" parent="AdwBin">
+  <template class="ScreenCastPage" parent="PortalPage">
     <child>
       <object class="GtkBox">
         <property name="hexpand">True</property>
@@ -156,6 +156,9 @@
             </child>
           </object>
         </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
   </template>

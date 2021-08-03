@@ -10,188 +10,195 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
-  <template class="LocationPage" parent="AdwBin">
+  <template class="LocationPage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Request the User Location</property>
-            <property name="description">Communicates with org.freedesktop.portal.Location</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Distance Threshold</property>
-                <property name="subtitle" translatable="yes">In meters</property>
-                <property name="activatable-widget">distance_spin</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Request the User Location</property>
+                <property name="description">Communicates with org.freedesktop.portal.Location</property>
                 <child>
-                  <object class="GtkSpinButton" id="distance_spin">
-                    <property name="valign">center</property>
-                    <property name="adjustment">distance_adjustment</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Distance Threshold</property>
+                    <property name="subtitle" translatable="yes">In meters</property>
+                    <property name="activatable-widget">distance_spin</property>
+                    <child>
+                      <object class="GtkSpinButton" id="distance_spin">
+                        <property name="valign">center</property>
+                        <property name="adjustment">distance_adjustment</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Time Threshold</property>
+                    <property name="subtitle" translatable="yes">In meters</property>
+                    <property name="activatable-widget">time_spin</property>
+                    <child>
+                      <object class="GtkSpinButton" id="time_spin">
+                        <property name="valign">center</property>
+                        <property name="adjustment">time_adjustment</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="accuracy_combo">
+                    <property name="title" translatable="yes">Accuracy</property>
+                    <property name="selected">5</property>
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">None</item>
+                          <item translatable="yes">Country</item>
+                          <item translatable="yes">City</item>
+                          <item translatable="yes">Neighborhood</item>
+                          <item translatable="yes">Street</item>
+                          <item translatable="yes">Exact</item>
+                        </items>
+                      </object>
+                    </property>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Time Threshold</property>
-                <property name="subtitle" translatable="yes">In meters</property>
-                <property name="activatable-widget">time_spin</property>
-                <child>
-                  <object class="GtkSpinButton" id="time_spin">
-                    <property name="valign">center</property>
-                    <property name="adjustment">time_adjustment</property>
-                  </object>
-                </child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Locate</property>
+                <property name="use-underline">True</property>
+                <property name="halign">start</property>
+                <property name="action-name">location.locate</property>
               </object>
             </child>
             <child>
-              <object class="AdwComboRow" id="accuracy_combo">
-                <property name="title" translatable="yes">Accuracy</property>
-                <property name="selected">5</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">None</item>
-                      <item translatable="yes">Country</item>
-                      <item translatable="yes">City</item>
-                      <item translatable="yes">Neighborhood</item>
-                      <item translatable="yes">Street</item>
-                      <item translatable="yes">Exact</item>
-                    </items>
+              <object class="AdwPreferencesGroup" id="response_group">
+                <property name="title" translatable="yes">Response</property>
+                <property name="visible">False</property>
+                <property name="margin-top">24</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Accuracy</property>
+                    <property name="subtitle" translatable="yes">In meters</property>
+                    <child>
+                      <object class="GtkLabel" id="accuracy_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
                   </object>
-                </property>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Altitude</property>
+                    <property name="subtitle" translatable="yes">In meters</property>
+                    <child>
+                      <object class="GtkLabel" id="altitude_label">
+                        <property name="valign">center</property>
+                        <property name="ellipsize">end</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Speed</property>
+                    <property name="subtitle" translatable="yes">In meters per second</property>
+                    <child>
+                      <object class="GtkLabel" id="speed_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Heading</property>
+                    <property name="subtitle" translatable="yes">In degrees, clockwise</property>
+                    <child>
+                      <object class="GtkLabel" id="heading_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Description</property>
+                    <child>
+                      <object class="GtkLabel" id="description_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Latitude</property>
+                    <property name="subtitle" translatable="yes">In degrees</property>
+                    <child>
+                      <object class="GtkLabel" id="latitude_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Longitude</property>
+                    <property name="subtitle" translatable="yes">In degrees</property>
+                    <child>
+                      <object class="GtkLabel" id="longitude_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Timestamp</property>
+                    <child>
+                      <object class="GtkLabel" id="timestamp_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">_Locate</property>
-            <property name="use-underline">True</property>
-            <property name="halign">start</property>
-            <property name="action-name">location.locate</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title" translatable="yes">Response</property>
-            <property name="visible">False</property>
-            <property name="margin-top">24</property>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Accuracy</property>
-                <property name="subtitle" translatable="yes">In meters</property>
-                <child>
-                  <object class="GtkLabel" id="accuracy_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Altitude</property>
-                <property name="subtitle" translatable="yes">In meters</property>
-                <child>
-                  <object class="GtkLabel" id="altitude_label">
-                    <property name="valign">center</property>
-                    <property name="ellipsize">end</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Speed</property>
-                <property name="subtitle" translatable="yes">In meters per second</property>
-                <child>
-                  <object class="GtkLabel" id="speed_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Heading</property>
-                <property name="subtitle" translatable="yes">In degrees, clockwise</property>
-                <child>
-                  <object class="GtkLabel" id="heading_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Description</property>
-                <child>
-                  <object class="GtkLabel" id="description_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Latitude</property>
-                <property name="subtitle" translatable="yes">In degrees</property>
-                <child>
-                  <object class="GtkLabel" id="latitude_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Longitude</property>
-                <property name="subtitle" translatable="yes">In degrees</property>
-                <child>
-                  <object class="GtkLabel" id="longitude_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Timestamp</property>
-                <child>
-                  <object class="GtkLabel" id="timestamp_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
   </template>

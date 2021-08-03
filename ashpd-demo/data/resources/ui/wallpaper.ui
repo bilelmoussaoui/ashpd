@@ -1,50 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="WallpaperPage" parent="AdwBin">
+  <template class="WallpaperPage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Set a File as a Wallpaper</property>
-            <property name="description">Calls SetWallpaperURI on org.freedesktop.portal.Wallpaper</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Show Preview</property>
-                <property name="activatable-widget">preview_switch</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Set a File as a Wallpaper</property>
+                <property name="description">Calls SetWallpaperURI on org.freedesktop.portal.Wallpaper</property>
                 <child>
-                  <object class="GtkSwitch" id="preview_switch">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Show Preview</property>
+                    <property name="activatable-widget">preview_switch</property>
+                    <child>
+                      <object class="GtkSwitch" id="preview_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="set_on_combo">
+                    <property name="title" translatable="yes">Set On</property>
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">Background</item>
+                          <item translatable="yes">Lockscreen</item>
+                          <item translatable="yes">Both</item>
+                        </items>
+                      </object>
+                    </property>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwComboRow" id="set_on_combo">
-                <property name="title" translatable="yes">Set On</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">Background</item>
-                      <item translatable="yes">Lockscreen</item>
-                      <item translatable="yes">Both</item>
-                    </items>
-                  </object>
-                </property>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Select A File</property>
+                <property name="use-underline">True</property>
+                <property name="halign">start</property>
+                <property name="action-name">wallpaper.select</property>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">_Select A File</property>
-            <property name="use-underline">True</property>
-            <property name="halign">start</property>
-            <property name="action-name">wallpaper.select</property>
-          </object>
-        </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
   </template>

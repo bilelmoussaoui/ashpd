@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use std::os::unix::prelude::AsRawFd;
 
 use ashpd::{
@@ -27,11 +28,11 @@ mod imp {
     impl ObjectSubclass for PrintPage {
         const NAME: &'static str = "PrintPage";
         type Type = super::PrintPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("print.select_file", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -47,10 +48,11 @@ mod imp {
     impl ObjectImpl for PrintPage {}
     impl WidgetImpl for PrintPage {}
     impl BinImpl for PrintPage {}
+    impl PortalPageImpl for PrintPage {}
 }
 
 glib::wrapper! {
-    pub struct PrintPage(ObjectSubclass<imp::PrintPage>) @extends gtk::Widget, adw::Bin;
+    pub struct PrintPage(ObjectSubclass<imp::PrintPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl PrintPage {
@@ -81,8 +83,17 @@ impl PrintPage {
             let path = file_chooser.file().unwrap().path().unwrap();
             let file = std::fs::File::open(path).unwrap();
 
-            if let Err(err) = print(&identifier, &title, file, modal).await {
-                tracing::error!("Failed to print {}", err);
+            match print(&identifier, &title, file, modal).await {
+                Ok(_) => {
+                    self.send_notification(
+                        "Print request was successful",
+                        NotificationKind::Success,
+                    );
+                }
+                Err(err) => {
+                    tracing::error!("Failed to print {}", err);
+                    self.send_notification("Request to print failed", NotificationKind::Error);
+                }
             }
         };
 

@@ -1,122 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="NotificationPage" parent="AdwBin">
+  <template class="NotificationPage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes">Notification</property>
-            <property name="description" translatable="yes">Calls AddNotification on org.freedesktop.portal.Notification</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">ID</property>
-                <property name="activatable-widget">id_entry</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Notification</property>
+                <property name="description" translatable="yes">Calls AddNotification on org.freedesktop.portal.Notification</property>
                 <child>
-                  <object class="GtkEntry" id="id_entry">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">ID</property>
+                    <property name="activatable-widget">id_entry</property>
+                    <child>
+                      <object class="GtkEntry" id="id_entry">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Title</property>
+                    <property name="activatable-widget">title_entry</property>
+                    <child>
+                      <object class="GtkEntry" id="title_entry">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Body</property>
+                    <property name="activatable-widget">body_entry</property>
+                    <child>
+                      <object class="GtkEntry" id="body_entry">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="priority_combo">
+                    <property name="title" translatable="yes">Priority</property>
+                    <property name="selected">1</property>
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">Low</item>
+                          <item translatable="yes">Normal</item>
+                          <item translatable="yes">High</item>
+                          <item translatable="yes">Urgent</item>
+                        </items>
+                      </object>
+                    </property>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Title</property>
-                <property name="activatable-widget">title_entry</property>
-                <child>
-                  <object class="GtkEntry" id="title_entry">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Send</property>
+                <property name="use-underline">True</property>
+                <property name="halign">start</property>
+                <property name="action-name">notification.send</property>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Body</property>
-                <property name="activatable-widget">body_entry</property>
+              <object class="AdwPreferencesGroup" id="response_group">
+                <property name="title" translatable="yes">Response</property>
+                <property name="visible">False</property>
+                <property name="margin-top">24</property>
                 <child>
-                  <object class="GtkEntry" id="body_entry">
-                    <property name="valign">center</property>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Notification ID</property>
+                    <child>
+                      <object class="GtkLabel" id="id_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwComboRow" id="priority_combo">
-                <property name="title" translatable="yes">Priority</property>
-                <property name="selected">1</property>
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">Low</item>
-                      <item translatable="yes">Normal</item>
-                      <item translatable="yes">High</item>
-                      <item translatable="yes">Urgent</item>
-                    </items>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Action Name</property>
+                    <child>
+                      <object class="GtkLabel" id="action_name_label">
+                        <property name="valign">center</property>
+                        <property name="ellipsize">end</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
                   </object>
-                </property>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Parameters</property>
+                    <child>
+                      <object class="GtkLabel" id="parameters_label">
+                        <property name="valign">center</property>
+                        <property name="ellipsize">end</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">_Send</property>
-            <property name="use-underline">True</property>
-            <property name="halign">start</property>
-            <property name="action-name">notification.send</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwPreferencesGroup" id="response_group">
-            <property name="title" translatable="yes">Response</property>
-            <property name="visible">False</property>
-            <property name="margin-top">24</property>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Notification ID</property>
-                <child>
-                  <object class="GtkLabel" id="id_label">
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Action Name</property>
-                <child>
-                  <object class="GtkLabel" id="action_name_label">
-                    <property name="valign">center</property>
-                    <property name="ellipsize">end</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Parameters</property>
-                <child>
-                  <object class="GtkLabel" id="parameters_label">
-                    <property name="valign">center</property>
-                    <property name="ellipsize">end</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
   </template>

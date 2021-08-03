@@ -1,3 +1,6 @@
+use crate::widgets::{
+    CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
+};
 use std::os::unix::prelude::RawFd;
 
 use ashpd::{desktop::camera, zbus};
@@ -5,8 +8,6 @@ use glib::clone;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-
-use crate::widgets::CameraPaintable;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -30,10 +31,11 @@ mod imp {
     impl ObjectSubclass for CameraPage {
         const NAME: &'static str = "CameraPage";
         type Type = super::CameraPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
+
             klass.install_action("camera.start", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -58,10 +60,11 @@ mod imp {
     }
     impl WidgetImpl for CameraPage {}
     impl BinImpl for CameraPage {}
+    impl PortalPageImpl for CameraPage {}
 }
 
 glib::wrapper! {
-    pub struct CameraPage(ObjectSubclass<imp::CameraPage>) @extends gtk::Widget, adw::Bin;
+    pub struct CameraPage(ObjectSubclass<imp::CameraPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl CameraPage {
@@ -80,12 +83,24 @@ impl CameraPage {
                 self_.paintable.set_pipewire_fd(stream_fd);
                 self_.revealer.set_reveal_child(true);
                 self_.camera_available.set_text("Yes");
+
+                self.send_notification(
+                    "Camera stream started successfully",
+                    NotificationKind::Success,
+                );
             }
             Ok(None) => {
                 self_.camera_available.set_text("No");
+                self.send_notification("No camera seems to be available", NotificationKind::Info);
+                self.action_set_enabled("camera.start", false);
+                self.action_set_enabled("camera.stop", false);
             }
             Err(err) => {
                 tracing::error!("Failed to start a camera stream {:#?}", err);
+                self.send_notification(
+                    "Request to start a camera stream failed",
+                    NotificationKind::Error,
+                );
                 self.stop_stream();
             }
         }

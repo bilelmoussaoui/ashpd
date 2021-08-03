@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{desktop::proxy_resolver::ProxyResolverProxy, zbus};
 use gtk::glib::{self, clone};
@@ -23,11 +24,11 @@ mod imp {
     impl ObjectSubclass for ProxyResolverPage {
         const NAME: &'static str = "ProxyResolverPage";
         type Type = super::ProxyResolverPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action(
                 "proxy_resolver.resolve",
                 None,
@@ -49,10 +50,11 @@ mod imp {
     impl ObjectImpl for ProxyResolverPage {}
     impl WidgetImpl for ProxyResolverPage {}
     impl BinImpl for ProxyResolverPage {}
+    impl PortalPageImpl for ProxyResolverPage {}
 }
 
 glib::wrapper! {
-    pub struct ProxyResolverPage(ObjectSubclass<imp::ProxyResolverPage>) @extends gtk::Widget, adw::Bin;
+    pub struct ProxyResolverPage(ObjectSubclass<imp::ProxyResolverPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl ProxyResolverPage {
@@ -68,14 +70,21 @@ impl ProxyResolverPage {
         let cnx = zbus::azync::Connection::session().await?;
         let proxy = ProxyResolverProxy::new(&cnx).await?;
 
-        let resolved_uris = proxy.lookup(&uri).await?;
+        match proxy.lookup(&uri).await {
+            Ok(resolved_uris) => {
+                resolved_uris.iter().for_each(|uri| {
+                    let row = adw::ActionRow::builder().title(uri).build();
+                    self_.response_group.add(&row);
+                });
 
-        resolved_uris.iter().for_each(|uri| {
-            let row = adw::ActionRow::builder().title(uri).build();
-            self_.response_group.add(&row);
-        });
+                self_.response_group.show();
+                self.send_notification("Lookup request was successful", NotificationKind::Success);
+            }
+            Err(_err) => {
+                self.send_notification("Request to lookup a URI failed", NotificationKind::Error);
+            }
+        }
 
-        self_.response_group.show();
         Ok(())
     }
 }

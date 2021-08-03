@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use ashpd::{
     desktop::device::{Device, DeviceProxy},
     zbus,
@@ -27,16 +28,22 @@ mod imp {
     impl ObjectSubclass for DevicePage {
         const NAME: &'static str = "DevicePage";
         type Type = super::DevicePage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("device.request", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
-                    if let Err(err) = page.request().await {
-                        tracing::error!("Failed to request device access {}", err);
+                    match page.request().await {
+                        Ok(_) => {
+                            page.send_notification("Device access request was successful", NotificationKind::Success);
+                        }
+                        Err(err) => {
+                            tracing::error!("Failed to request device access {}", err);
+                            page.send_notification("Request to access a device failed", NotificationKind::Error);
+                        }
                     }
                 }));
             });
@@ -53,10 +60,11 @@ mod imp {
     }
     impl WidgetImpl for DevicePage {}
     impl BinImpl for DevicePage {}
+    impl PortalPageImpl for DevicePage {}
 }
 
 glib::wrapper! {
-    pub struct DevicePage(ObjectSubclass<imp::DevicePage>) @extends gtk::Widget, adw::Bin;
+    pub struct DevicePage(ObjectSubclass<imp::DevicePage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl DevicePage {

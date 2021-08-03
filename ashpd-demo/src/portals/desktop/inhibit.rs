@@ -1,3 +1,4 @@
+use crate::widgets::{PortalPage, PortalPageImpl};
 use ashpd::{
     desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState},
     desktop::SessionProxy,
@@ -38,19 +39,23 @@ mod imp {
     impl ObjectSubclass for InhibitPage {
         const NAME: &'static str = "InhibitPage";
         type Type = super::InhibitPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
-            klass.install_action("inhibit.request", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
-                    if let Err(err) = page.inhibit().await {
-                        tracing::error!("Failed to inhibit {}", err);
-                    }
-                }));
-            });
+
+            klass.install_action(
+                "inhibit.start_session",
+                None,
+                move |page, _action, _target| {
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        if let Err(err) = page.start_session().await {
+                            tracing::error!("Failed to inhibit {}", err);
+                        }
+                    }));
+                },
+            );
             klass.install_action("inhibit.stop", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -71,6 +76,7 @@ mod imp {
     }
     impl WidgetImpl for InhibitPage {}
     impl BinImpl for InhibitPage {}
+    impl PortalPageImpl for InhibitPage {}
 }
 
 glib::wrapper! {
@@ -103,7 +109,7 @@ impl InhibitPage {
         flags
     }
 
-    async fn inhibit(&self) -> ashpd::Result<()> {
+    async fn start_session(&self) -> ashpd::Result<()> {
         let root = self.native().unwrap();
         let self_ = imp::InhibitPage::from_instance(self);
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -116,7 +122,7 @@ impl InhibitPage {
 
         self_.session.lock().await.replace(monitor);
         self.action_set_enabled("inhibit.stop", true);
-        self.action_set_enabled("inhibit.request", false);
+        self.action_set_enabled("inhibit.start_session", false);
 
         let state = proxy.receive_state_changed().await?;
         match state.session_state() {
@@ -138,7 +144,7 @@ impl InhibitPage {
     async fn stop(&self) {
         let self_ = imp::InhibitPage::from_instance(self);
         self.action_set_enabled("inhibit.stop", false);
-        self.action_set_enabled("inhibit.request", true);
+        self.action_set_enabled("inhibit.start_session", true);
         if let Some(session) = self_.session.lock().await.take() {
             let _ = session.close().await;
         }

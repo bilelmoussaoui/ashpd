@@ -1,3 +1,4 @@
+use crate::widgets::{PortalPage, PortalPageImpl};
 use ashpd::{documents::DocumentsProxy, zbus};
 use gtk::glib::{self, clone};
 use gtk::prelude::*;
@@ -20,11 +21,10 @@ mod imp {
     impl ObjectSubclass for DocumentsPage {
         const NAME: &'static str = "DocumentsPage";
         type Type = super::DocumentsPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -45,10 +45,11 @@ mod imp {
         }
     }
     impl BinImpl for DocumentsPage {}
+    impl PortalPageImpl for DocumentsPage {}
 }
 
 glib::wrapper! {
-    pub struct DocumentsPage(ObjectSubclass<imp::DocumentsPage>) @extends gtk::Widget, adw::Bin;
+    pub struct DocumentsPage(ObjectSubclass<imp::DocumentsPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl DocumentsPage {

@@ -1,6 +1,7 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{
-    desktop::notification::{Action, Button, Notification, NotificationProxy, Priority},
+    desktop::notification::{Button, Notification, NotificationProxy, Priority},
     zbus,
     zvariant::Value,
 };
@@ -40,15 +41,17 @@ mod imp {
     impl ObjectSubclass for NotificationPage {
         const NAME: &'static str = "NotificationPage";
         type Type = super::NotificationPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("notification.send", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
-                    page.send_notification().await;
+                    if let Err(err) = page.send().await {
+                        tracing::error!("Failed to send a notification {}", err);
+                    }
                 }));
             });
         }
@@ -60,10 +63,11 @@ mod imp {
     impl ObjectImpl for NotificationPage {}
     impl WidgetImpl for NotificationPage {}
     impl BinImpl for NotificationPage {}
+    impl PortalPageImpl for NotificationPage {}
 }
 
 glib::wrapper! {
-    pub struct NotificationPage(ObjectSubclass<imp::NotificationPage>) @extends gtk::Widget, adw::Bin;
+    pub struct NotificationPage(ObjectSubclass<imp::NotificationPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl NotificationPage {
@@ -72,7 +76,7 @@ impl NotificationPage {
         glib::Object::new(&[]).expect("Failed to create a NotificationPage")
     }
 
-    async fn send_notification(&self) {
+    async fn send(&self) -> ashpd::Result<()> {
         let self_ = imp::NotificationPage::from_instance(self);
 
         let notification_id = self_.id_entry.text();
@@ -86,32 +90,36 @@ impl NotificationPage {
             _ => unimplemented!(),
         };
 
-        if let Ok(action) = notify(
-            &notification_id,
-            Notification::new(&title)
-                .default_action("open")
-                .default_action_target(Value::U32(100).into())
-                .body(&body)
-                .priority(priority)
-                .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-                .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
-        )
-        .await
-        {
-            self_.response_group.show();
-            self_.id_label.set_text(action.id());
-            self_.action_name_label.set_text(action.name());
-            self_
-                .parameters_label
-                .set_text(&format!("{:#?}", action.parameter()));
-        }
-    }
-}
+        let notification = Notification::new(&title)
+            .default_action("open")
+            .default_action_target(Value::U32(100).into())
+            .body(&body)
+            .priority(priority)
+            .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
+            .button(Button::new("Delete", "delete").target(Value::U32(40).into()));
 
-async fn notify(id: &str, notification: Notification) -> ashpd::Result<Action> {
-    let cnx = zbus::azync::Connection::session().await?;
-    let proxy = NotificationProxy::new(&cnx).await?;
-    proxy.add_notification(id, notification).await?;
-    let action = proxy.receive_action_invoked().await?;
-    Ok(action)
+        let cnx = zbus::azync::Connection::session().await?;
+        let proxy = NotificationProxy::new(&cnx).await?;
+        match proxy.add_notification(&notification_id, notification).await {
+            Ok(_) => {
+                self.send_notification("Notification sent", NotificationKind::Success);
+                let action = proxy.receive_action_invoked().await?;
+                self.send_notification(
+                    &format!("User interacted with notification \"{}\"", notification_id),
+                    NotificationKind::Info,
+                );
+
+                self_.response_group.show();
+                self_.id_label.set_text(action.id());
+                self_.action_name_label.set_text(action.name());
+                self_
+                    .parameters_label
+                    .set_text(&format!("{:#?}", action.parameter()));
+            }
+            Err(_) => {
+                self.send_notification("Failed to send a notification", NotificationKind::Error);
+            }
+        }
+        Ok(())
+    }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="PortalPage" parent="AdwBin">
+    <child>
+      <object class="GtkBox" id="container">
+        <property name="hexpand">True</property>
+        <property name="spacing">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="Notification" id="notification" />
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

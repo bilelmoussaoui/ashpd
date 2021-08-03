@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use ashpd::{
     desktop::email::{self, Email},
     WindowIdentifier,
@@ -33,11 +34,11 @@ mod imp {
     impl ObjectSubclass for EmailPage {
         const NAME: &'static str = "EmailPage";
         type Type = super::EmailPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("email.compose", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -53,10 +54,11 @@ mod imp {
     impl ObjectImpl for EmailPage {}
     impl WidgetImpl for EmailPage {}
     impl BinImpl for EmailPage {}
+    impl PortalPageImpl for EmailPage {}
 }
 
 glib::wrapper! {
-    pub struct EmailPage(ObjectSubclass<imp::EmailPage>) @extends gtk::Widget, adw::Bin;
+    pub struct EmailPage(ObjectSubclass<imp::EmailPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl EmailPage {
@@ -92,6 +94,17 @@ impl EmailPage {
         }
 
         let identifier = WindowIdentifier::from_native(&root).await;
-        let _ = email::compose(&identifier, email).await;
+        match email::compose(&identifier, email).await {
+            Ok(_) => {
+                self.send_notification(
+                    "Compose an email request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => self.send_notification(
+                "Request to compose an email failed",
+                NotificationKind::Error,
+            ),
+        }
     }
 }

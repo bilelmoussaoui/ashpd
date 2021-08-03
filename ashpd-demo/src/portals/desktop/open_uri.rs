@@ -1,3 +1,4 @@
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use ashpd::{desktop::open_uri, WindowIdentifier};
 use gtk::glib::{self, clone};
 use gtk::prelude::*;
@@ -22,11 +23,11 @@ mod imp {
     impl ObjectSubclass for OpenUriPage {
         const NAME: &'static str = "OpenUriPage";
         type Type = super::OpenUriPage;
-        type ParentType = adw::Bin;
+        type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
-            klass.set_layout_manager_type::<adw::ClampLayout>();
+
             klass.install_action("open_uri.uri", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
@@ -42,10 +43,11 @@ mod imp {
     impl ObjectImpl for OpenUriPage {}
     impl WidgetImpl for OpenUriPage {}
     impl BinImpl for OpenUriPage {}
+    impl PortalPageImpl for OpenUriPage {}
 }
 
 glib::wrapper! {
-    pub struct OpenUriPage(ObjectSubclass<imp::OpenUriPage>) @extends gtk::Widget, adw::Bin;
+    pub struct OpenUriPage(ObjectSubclass<imp::OpenUriPage>) @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl OpenUriPage {
@@ -60,12 +62,23 @@ impl OpenUriPage {
         let ask = self_.ask_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let _ = open_uri::open_uri(
+        match open_uri::open_uri(
             &identifier,
             "https://github.com/bilelmoussaoui/ashpd",
             writable,
             ask,
         )
-        .await;
+        .await
+        {
+            Ok(_) => {
+                self.send_notification(
+                    "Open URI request was successful",
+                    NotificationKind::Success,
+                );
+            }
+            Err(_err) => {
+                self.send_notification("Request to open URI failed", NotificationKind::Error);
+            }
+        }
     }
 }

@@ -1,30 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="DocumentsPage" parent="AdwBin">
+  <template class="DocumentsPage" parent="PortalPage">
     <child>
-      <object class="GtkBox">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
-        <property name="orientation">vertical</property>
+      <object class="AdwClamp">
         <child>
-          <object class="AdwPreferencesGroup">
-            <property name="title">Information</property>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title">Mount point</property>
+              <object class="AdwPreferencesGroup">
+                <property name="title">Information</property>
                 <child>
-                  <object class="GtkLabel" id="mount_point">
-                    <property name="label">Undefined</property>
-                    <property name="halign">start</property>
-                    <style>
-                      <class name="dim-label" />
-                    </style>
+                  <object class="AdwActionRow">
+                    <property name="title">Mount point</property>
+                    <child>
+                      <object class="GtkLabel" id="mount_point">
+                        <property name="label">Undefined</property>
+                        <property name="halign">start</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
           </object>
         </child>
+        <style>
+          <class name="page-content" />
+        </style>
       </object>
     </child>
   </template>
