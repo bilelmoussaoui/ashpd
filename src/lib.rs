@@ -81,4 +81,4 @@ pub fn is_sandboxed() -> bool {
     std::path::Path::new("/.flatpak-info").exists()
 }
 
-pub use self::error::Error;
+pub use self::error::{Error, PortalError};
