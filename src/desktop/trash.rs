@@ -89,7 +89,7 @@ impl<'a> TrashProxy<'a> {
     {
         let status = call_method(&self.0, "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
         match status {
-            TrashStatus::Failed => Err(PortalError::Failed),
+            TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
             TrashStatus::Succeeded => Ok(()),
         }
     }

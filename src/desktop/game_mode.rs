@@ -175,7 +175,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "RegisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(PortalError::Failed),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
         }
     }
 
@@ -207,7 +207,7 @@ impl<'a> GameModeProxy<'a> {
         .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(PortalError::Failed),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
         }
     }
 
@@ -226,7 +226,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "RegisterGameByPid", &(target, requester)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(PortalError::Failed),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
         }
     }
 
@@ -248,7 +248,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "UnregisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(PortalError::Failed),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
         }
     }
 
@@ -284,7 +284,7 @@ impl<'a> GameModeProxy<'a> {
         .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(PortalError::Failed),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
         }
     }
 
@@ -304,7 +304,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(PortalError::Failed),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
         }
     }
 }
