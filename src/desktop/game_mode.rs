@@ -23,7 +23,7 @@ use zvariant::Fd;
 use zvariant_derive::Type;
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
+use crate::{error::PortalError, helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[repr(i32)]
@@ -161,8 +161,7 @@ impl<'a> GameModeProxy<'a> {
     /// If the caller is running inside a sandbox with pid namespace isolation,
     /// the pid will be translated to the respective host pid. See the general
     /// introduction for details. If the GameMode has already been requested
-    /// for pid before, this call will fail, i.e. result will be
-    /// [`Error::RegisterGameRejected`]
+    /// for pid before, this call will fail.
     ///
     /// # Arguments
     ///
@@ -176,7 +175,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "RegisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+            RegisterStatus::Rejected => Err(PortalError::Failed),
         }
     }
 
@@ -208,7 +207,7 @@ impl<'a> GameModeProxy<'a> {
         .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+            RegisterStatus::Rejected => Err(PortalError::Failed),
         }
     }
 
@@ -227,7 +226,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "RegisterGameByPid", &(target, requester)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+            RegisterStatus::Rejected => Err(PortalError::Failed),
         }
     }
 
@@ -249,7 +248,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "UnregisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+            RegisterStatus::Rejected => Err(PortalError::Failed),
         }
     }
 
@@ -285,7 +284,7 @@ impl<'a> GameModeProxy<'a> {
         .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+            RegisterStatus::Rejected => Err(PortalError::Failed),
         }
     }
 
@@ -305,7 +304,7 @@ impl<'a> GameModeProxy<'a> {
         let status = call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::RegisterGameRejected),
+            RegisterStatus::Rejected => Err(PortalError::Failed),
         }
     }
 }

@@ -35,7 +35,7 @@ use zvariant::Fd;
 use zvariant_derive::Type;
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
+use crate::{error::PortalError, helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 #[repr(u32)]
@@ -89,7 +89,7 @@ impl<'a> TrashProxy<'a> {
     {
         let status = call_method(&self.0, "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
         match status {
-            TrashStatus::Failed => Err(Error::TrashFailed),
+            TrashStatus::Failed => Err(PortalError::Failed),
             TrashStatus::Succeeded => Ok(()),
         }
     }
