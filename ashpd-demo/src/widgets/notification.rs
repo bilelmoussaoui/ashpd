@@ -1,4 +1,4 @@
-use gtk::glib;
+use gtk::glib::{self, clone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
@@ -81,6 +81,13 @@ impl Notification {
         }
         self_.info_bar.set_revealed(true);
         self_.message_label.set_label(text);
+
+        glib::timeout_add_seconds_local_once(
+            3,
+            clone!(@weak self as widget => move || {
+                widget.close();
+            }),
+        );
     }
 
     pub fn close(&self) {
