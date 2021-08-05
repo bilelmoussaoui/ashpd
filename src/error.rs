@@ -1,20 +1,29 @@
 use crate::desktop::request::ResponseError;
 use zbus_macros::DBusError;
 
-#[derive(DBusError, Debug)]
-#[dbus_error(prefix = "org.freedesktop.portal.Error")]
 /// An error type that describes the various DBus errors.
 ///
-/// See https://github.com/flatpak/xdg-desktop-portal/blob/master/src/xdp-utils.h#L119-L127.
+/// See <https://github.com/flatpak/xdg-desktop-portal/blob/master/src/xdp-utils.h#L119-L127>.
+#[allow(missing_docs)]
+#[derive(DBusError, Debug)]
+#[dbus_error(prefix = "org.freedesktop.portal.Error")]
 pub enum PortalError {
+    /// ZBus specific error.
     ZBus(zbus::Error),
+    /// Request failed.
     Failed,
-    InvalidArgument,
-    NotFound,
-    Exists,
-    NotAllowed,
-    Cancelled,
-    WindowDestroyed,
+    /// Invalid arguments passed.
+    InvalidArgument(String),
+    /// Not found.
+    NotFound(String),
+    /// Exists already.
+    Exist(String),
+    /// Method not allowed to be called.
+    NotAllowed(String),
+    /// Request cancelled.
+    Cancelled(String),
+    /// Window destroyed.
+    WindowDestroyed(String),
 }
 
 #[derive(Debug)]
