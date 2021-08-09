@@ -154,8 +154,7 @@ fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(callback: F) -> Resu
         .add_listener_local()
         .global(move |global| {
             if let Some(props) = &global.props {
-                if props.get("media.class") == Some("Video/Source")
-                    && props.get("media.role") == Some("Camera")
+                if props.get("media.role") == Some("Camera")
                 {
                     callback.clone()(global.id);
                     loop_clone.quit();
