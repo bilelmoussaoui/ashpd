@@ -111,7 +111,7 @@ impl<'a> CameraProxy<'a> {
 /// [`CameraProxy::open_pipe_wire_remote`].
 ///
 /// Currently, the camera portal only gives us a file descriptor except such fd can be re-used by other
-/// portals such like the screen cast one. Not passing a node id makes the `pipewiresrc` for example confused
+/// portals like the screen cast one. Not passing a node id makes the `pipewiresrc` for example confused
 /// about which node to use.
 ///
 /// The method looks for the available output streams of a `media.role` type of `Camera`
