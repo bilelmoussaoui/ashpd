@@ -117,6 +117,9 @@ impl<'a> CameraProxy<'a> {
 /// The method looks for the available output streams of a `media.role` type of `Camera`
 /// and return their Node ID. This is necessary until the camera portal is capable of handling multiple camera streams
 /// and so giving the user the Node ID information.
+///
+/// *Note* using this method requires access to `xdg-run/pipewire-0` which sandboxed applications don't have access to.
+/// In the case of Flatpak, make sure to add `--filesystem=xdg-run/pipewire-0` to your `finish-args`.
 #[cfg(feature = "feature_pipewire")]
 pub async fn pipewire_node_id() -> Result<u32, pw::Error> {
     let (sender, receiver) = futures::channel::oneshot::channel();
