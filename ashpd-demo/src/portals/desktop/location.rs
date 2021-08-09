@@ -7,7 +7,6 @@ use ashpd::{
 use futures::TryFutureExt;
 use glib::clone;
 use gtk::glib;
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {

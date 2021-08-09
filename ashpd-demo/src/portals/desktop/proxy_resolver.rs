@@ -2,7 +2,6 @@ use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl
 use adw::prelude::*;
 use ashpd::{desktop::proxy_resolver::ProxyResolverProxy, zbus};
 use gtk::glib::{self, clone};
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {

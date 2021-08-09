@@ -9,7 +9,6 @@ use ashpd::{
 };
 use glib::clone;
 use gtk::glib;
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {

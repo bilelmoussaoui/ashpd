@@ -202,9 +202,11 @@ impl ApplicationWindow {
         let page_name = sidebar_row.name();
         if self_.stack.child_by_name(&page_name).is_some() {
             self_.stack.set_visible_child_name(&page_name);
-            self_.window_title.set_title(sidebar_row.title().as_deref());
+            self_
+                .window_title
+                .set_title(&sidebar_row.title().unwrap_or_default());
         } else {
-            self_.window_title.set_title(None);
+            self_.window_title.set_title("");
             self_.stack.set_visible_child_name("welcome");
         }
     }

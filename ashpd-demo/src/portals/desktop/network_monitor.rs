@@ -2,7 +2,6 @@ use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl
 use adw::prelude::*;
 use ashpd::{desktop::network_monitor::NetworkMonitorProxy, zbus};
 use gtk::glib::{self, clone};
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {
@@ -65,7 +64,6 @@ mod imp {
                     tracing::error!("Failed to call can refresh on NetworkMonitor {}", err);
                 }
             }));
-
             self.parent_map(widget);
         }
     }
@@ -109,7 +107,7 @@ impl NetworkMonitorPage {
         let port = self_.port_entry.text().parse().unwrap_or(80);
         match proxy.can_reach(&hostname, port).await {
             Ok(response) => {
-                self_.can_reach_row.set_title(Some(&response.to_string()));
+                self_.can_reach_row.set_title(&response.to_string());
                 self_.response_group.show();
                 self.send_notification(
                     "Can reach request was successful",

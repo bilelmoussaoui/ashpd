@@ -5,7 +5,6 @@ use adw::prelude::*;
 use ashpd::{desktop::wallpaper, WindowIdentifier};
 use glib::clone;
 use gtk::glib;
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {
