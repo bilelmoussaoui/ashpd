@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel libclang-devel
+        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
