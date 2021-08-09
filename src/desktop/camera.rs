@@ -131,7 +131,7 @@ pub async fn pipewire_node_id() -> Result<u32, pw::Error> {
                 }
             }
         }) {
-            tracing::error!("Failed to get pipewire node id");
+            tracing::error!("Failed to get pipewire node id {:#?}", err);
             let mut guard = sender.lock().unwrap();
             if let Some(sender) = guard.take() {
                 let _ = sender.send(Err(err));
@@ -154,8 +154,8 @@ fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(callback: F) -> Resu
         .add_listener_local()
         .global(move |global| {
             if let Some(props) = &global.props {
-                if props.get("media.role") == Some("Camera")
-                {
+                tracing::info!("found properties: {:#?}", props);
+                if props.get("media.role") == Some("Camera") {
                     callback.clone()(global.id);
                     loop_clone.quit();
                 }
