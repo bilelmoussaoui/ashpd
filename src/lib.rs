@@ -52,6 +52,7 @@
 //! |  | Provides `WindowIdentifier::from_window` that takes a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) |
 //! | feature_gtk4 | Implement From<[Color](desktop::screenshot::Color)> for [`gdk4::RGBA`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gdk4/struct.RGBA.html) |
 //! |  | Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) |
+//! | feature_pipewire  | Provides `ashpd::desktop::camera::pipewire_node_id` that helps you retrieve the PipeWire Node ID to use with the file descriptor returned by the camera portal |
 #[cfg(all(all(feature = "feature_gtk3", feature = "feature_gtk4"), not(doc)))]
 compile_error!("You can't enable both GTK 3 & GTK 4 features at once");
 

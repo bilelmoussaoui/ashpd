@@ -80,7 +80,7 @@ impl CameraPage {
         self.action_set_enabled("camera.start", false);
         match stream().await {
             Ok(Some(stream_fd)) => {
-                let node_id = pipewire_node_id().await.unwrap();
+                let node_id = camera::pipewire_node_id().await.unwrap();
                 self_.paintable.set_pipewire_node_id(stream_fd, node_id);
                 self_.revealer.set_reveal_child(true);
                 self_.camera_available.set_text("Yes");
@@ -127,52 +127,4 @@ async fn stream() -> ashpd::Result<Option<RawFd>> {
     } else {
         Ok(None)
     }
-}
-
-pub async fn pipewire_node_id() -> Option<u32> {
-    let (sender, receiver) = futures::channel::oneshot::channel();
-
-    let sender = Arc::new(Mutex::new(Some(sender)));
-    std::thread::spawn(move || {
-        let inner_sender = sender.clone();
-        if let Err(err) = pipewire_node_id_inner(move |node_id| {
-            if let Ok(mut guard) = inner_sender.lock() {
-                if let Some(inner_sender) = guard.take() {
-                    let _result = inner_sender.send(Some(node_id));
-                }
-            }
-        }) {
-            tracing::error!("Failed to get pipewire node id");
-            let mut guard = sender.lock().unwrap();
-            if let Some(sender) = guard.take() {
-                let _ = sender.send(None);
-            }
-        }
-    });
-    receiver.await.ok().flatten()
-}
-
-fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(callback: F) -> Result<(), pw::Error> {
-    use pw::prelude::*;
-    let mainloop = pw::MainLoop::new()?;
-    let context = pw::Context::new(&mainloop)?;
-    let core = context.connect(None)?;
-    let registry = core.get_registry()?;
-
-    let loop_clone = mainloop.clone();
-    let _listener_reg = registry
-        .add_listener_local()
-        .global(move |global| {
-            if let Some(props) = &global.props {
-                if props.get("media.class") == Some("Video/Source")
-                    && props.get("media.role") == Some("Camera")
-                {
-                    callback.clone()(global.id);
-                    loop_clone.quit();
-                }
-            }
-        })
-        .register();
-    mainloop.run();
-    Ok(())
 }
