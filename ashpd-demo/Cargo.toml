@@ -17,8 +17,7 @@ gst = {package="gstreamer", version = "0.17"}
 gtk = {package = "gtk4", version = "0.2"}
 adw = {version = "0.1.0-alpha-3", package = "libadwaita"}
 serde = {version = "1.0", features = ["derive"]}
-pw = {package = "pipewire", version= "0.4"}
 
 [dependencies.ashpd]
 git = "https://github.com/bilelmoussaoui/ashpd"
-features = ["feature_gtk4"]
+features = ["feature_gtk4", "feature_pipewire"]
