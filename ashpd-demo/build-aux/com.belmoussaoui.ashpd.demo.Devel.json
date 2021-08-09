@@ -13,7 +13,7 @@
         "--talk-name=org.a11y.Bus",
         "--env=RUST_LOG=ashpd_demo=debug,ashpd=debug",
         "--env=G_MESSAGES_DEBUG=none",
-        "--share=network"
+        "--filesystem=xdg-run/pipewire-0"
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
