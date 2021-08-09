@@ -13,6 +13,7 @@
         "--talk-name=org.a11y.Bus",
         "--env=RUST_LOG=ashpd_demo=debug,ashpd=debug",
         "--env=G_MESSAGES_DEBUG=none",
+        "--env=RUST_BACKTRACE=1",
         "--filesystem=xdg-run/pipewire-0"
     ],
     "build-options" : {
@@ -23,10 +24,7 @@
         "test-args": [
             "--socket=x11",
             "--share=network"
-        ],
-        "env" : {
-            "RUST_BACKTRACE": "1"
-        }
+        ]
     },
     "modules": [
         {
