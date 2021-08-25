@@ -163,13 +163,22 @@ impl Default for WindowIdentifier {
 
 impl WindowIdentifier {
     #[cfg(feature = "feature_gtk4")]
-    /// Creates a [`WindowIdentifier`] from a [`gtk4::Native`](https://docs.gtk.org/gtk4/class.Native.html).
+    /// Creates a [`WindowIdentifier`] from a [`gtk4::Native`][Native].
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
     ///
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
-    pub async fn from_native<W: glib::IsA<gtk4::Native>>(native: &W) -> Self {
+    ///
+    /// # Errors
+    ///
+    /// You may only have one [`WindowIdentifier`] for any given [`gtk4::Native`][Native]
+    /// at a time _on Wayland_. If you try to call this method again for the same [`gtk4::Native`][Native]
+    /// before dropping the previous [`WindowIdentifier`], an error will be returned. As mentioned previously,
+    /// this error can only happen on Wayland due to how the XDG foreign portal works.
+    ///
+    /// [Native]: https://docs.gtk.org/gtk4/iface.Native.html
+    pub async fn from_native<W: glib::IsA<gtk4::Native>>(native: &W) -> crate::Result<Self> {
         let surface = native.surface().unwrap();
         let handle = match surface
             .display()
@@ -185,7 +194,7 @@ impl WindowIdentifier {
                     .downcast_ref::<gdk4wayland::WaylandToplevel>()
                     .unwrap();
 
-                top_level.export_handle(clone!(@strong sender => move |_level, handle| {
+                let has_error = top_level.export_handle(clone!(@strong sender => move |_level, handle| {
                     let wayland_handle = format!("wayland:{}", handle);
                     let ctx = glib::MainContext::default();
                     ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
@@ -194,6 +203,11 @@ impl WindowIdentifier {
                         }
                     }));
                 }));
+
+                if has_error {
+                    return Err(crate::Error::WindowHandle);
+                }
+
                 receiver.await.ok()
             }
             "GdkX11Display" => surface
@@ -203,11 +217,11 @@ impl WindowIdentifier {
         };
 
         match handle {
-            Some(h) => WindowIdentifier::Gtk4 {
+            Some(h) => Ok(WindowIdentifier::Gtk4 {
                 native: Arc::new(Mutex::new(native.clone().upcast())),
                 handle: h,
-            },
-            None => WindowIdentifier::default(),
+            }),
+            None => Err(crate::Error::WindowHandle),
         }
     }
 
@@ -218,13 +232,22 @@ impl WindowIdentifier {
     ///
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
-    pub async fn from_window<W: glib::IsA<gdk3::Window>>(win: &W) -> Self {
+    ///
+    /// # Errors
+    ///
+    /// You may only have one [`WindowIdentifier`] for any given [`gtk4::Native`][Native]
+    /// at a time _on Wayland_. If you try to call this method again for the same [`gtk4::Native`][Native]
+    /// before dropping the previous [`WindowIdentifier`], an error will be returned. As mentioned previously,
+    /// this error can only happen on Wayland due to how the XDG foreign portal works.
+    ///
+    /// [Native]: https://docs.gtk.org/gtk4/iface.Native.html
+    pub async fn from_window<W: glib::IsA<gdk3::Window>>(win: &W) -> crate::Result<Self> {
         let handle = match win.as_ref().display().type_().name() {
             "GdkWaylandDisplay" => {
                 let (sender, receiver) = futures::channel::oneshot::channel::<String>();
                 let sender = Arc::new(Mutex::new(Some(sender)));
 
-                export_wayland_handle(
+                let has_error = export_wayland_handle(
                     win,
                     clone!(@strong sender => move |_level, handle| {
                         let wayland_handle = format!("wayland:{}", handle);
@@ -236,6 +259,11 @@ impl WindowIdentifier {
                         }));
                     }),
                 );
+
+                if has_error {
+                    return Err(crate::Error::WindowHandle);
+                }
+
                 receiver.await.ok()
             }
             "GdkX11Display" => win

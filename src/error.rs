@@ -37,6 +37,8 @@ pub enum Error {
     Zbus(zbus::fdo::Error),
     /// A signal returned no response.
     NoResponse,
+    /// Couldn't export the window handle from a [`gtk4::Native`](https://docs.gtk.org/gtk4/class.Native.html)
+    WindowHandle,
 }
 
 impl std::error::Error for Error {}
@@ -48,6 +50,7 @@ impl std::fmt::Display for Error {
             Self::Zbus(e) => f.write_str(&format!("ZBus Error: {}", e)),
             Self::Portal(e) => f.write_str(&format!("Portal request failed: {}", e)),
             Self::NoResponse => f.write_str("Portal error: no response"),
+            Self::WindowHandle => f.write_str("Couldn't export wayland handle from a gtk4::Naive. Did you try to export it multiple times?"),
         }
     }
 }
