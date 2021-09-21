@@ -8,7 +8,7 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
-version = "0.2.0-alpha-3"
+version = "0.2.0-alpha-4"
 
 [features]
 default_features = []
