@@ -11,7 +11,7 @@
             <property name="orientation">vertical</property>
             <child>
               <object class="AdwPreferencesGroup">
-                <property name="title" translatable="yes">Prepare &amp; print a document</property>
+                <property name="title" translatable="yes">Prepare &amp;amp; print a document</property>
                 <property name="description" translatable="yes">Calls Inhibit on org.freedesktop.portal.Print</property>
                 <child>
                   <object class="AdwActionRow">
