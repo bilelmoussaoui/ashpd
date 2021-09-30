@@ -20,6 +20,7 @@ use crate::window::ApplicationWindow;
 
 mod imp {
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug)]
     pub struct Application {
@@ -40,7 +41,7 @@ mod imp {
     impl ObjectSubclass for Application {
         const NAME: &'static str = "Application";
         type Type = super::Application;
-        type ParentType = gtk::Application;
+        type ParentType = adw::Application;
     }
 
     impl ObjectImpl for Application {
@@ -96,20 +97,26 @@ mod imp {
                 );
             }
 
-            let settings = gtk::Settings::default().unwrap();
             self.settings
-                .bind("dark-mode", &settings, "gtk-application-prefer-dark-theme")
-                .build();
+                .connect_changed(Some("dark-mode"), |_settings, _key| {
+                    let style_manager = adw::StyleManager::default().unwrap();
+                    if style_manager.is_dark() {
+                        style_manager.set_color_scheme(adw::ColorScheme::ForceLight);
+                    } else {
+                        style_manager.set_color_scheme(adw::ColorScheme::ForceDark);
+                    }
+                });
             self.parent_startup(app);
         }
     }
 
     impl GtkApplicationImpl for Application {}
+    impl AdwApplicationImpl for Application {}
 }
 
 glib::wrapper! {
     pub struct Application(ObjectSubclass<imp::Application>)
-        @extends gio::Application, gtk::Application, @implements gio::ActionMap, gio::ActionGroup;
+        @extends gio::Application, gtk::Application, adw::Application, @implements gio::ActionMap, gio::ActionGroup;
 }
 
 impl Application {

@@ -65,6 +65,8 @@ mod imp {
         pub remote_desktop: TemplateChild<RemoteDesktopPage>,
         #[template_child]
         pub print: TemplateChild<PrintPage>,
+        #[template_child]
+        pub color_scheme_btn: TemplateChild<gtk::Button>,
         pub settings: gio::Settings,
     }
 
@@ -95,6 +97,7 @@ mod imp {
                 secret: TemplateChild::default(),
                 remote_desktop: TemplateChild::default(),
                 print: TemplateChild::default(),
+                color_scheme_btn: TemplateChild::default(),
                 settings: gio::Settings::new(APP_ID),
             }
         }
@@ -153,6 +156,16 @@ mod imp {
                 }));
             self.stack.set_visible_child_name("welcome");
             // load latest window state
+            let button = self.color_scheme_btn.get();
+            let style_manager = adw::StyleManager::default().unwrap();
+            style_manager.connect_color_scheme_notify(move |style_manager| {
+                let supported = style_manager.system_supports_color_schemes();
+
+                button.set_visible(!supported);
+                if supported {
+                    style_manager.set_color_scheme(adw::ColorScheme::PreferLight);
+                }
+            });
             obj.load_window_size();
         }
     }
