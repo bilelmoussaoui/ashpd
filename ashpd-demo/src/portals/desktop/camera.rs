@@ -7,8 +7,7 @@ use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use std::os::unix::prelude::RawFd;
-use std::sync::Arc;
-use std::sync::Mutex;
+
 mod imp {
     use adw::subclass::prelude::*;
     use gtk::CompositeTemplate;
@@ -58,7 +57,26 @@ mod imp {
             self.parent_constructed(obj);
         }
     }
-    impl WidgetImpl for CameraPage {}
+    impl WidgetImpl for CameraPage {
+        fn map(&self, widget: &Self::Type) {
+            let ctx = glib::MainContext::default();
+            ctx.spawn_local(clone!(@weak widget as page => async move {
+                let self_ = imp::CameraPage::from_instance(&page);
+                let is_available = camera_available().await.unwrap_or(false);
+                if is_available {
+                    self_.camera_available.set_text("Yes");
+                    page.action_set_enabled("camera.start", true);
+
+                } else {
+                    self_.camera_available.set_text("No");
+
+                    page.action_set_enabled("camera.start", false);
+                    page.action_set_enabled("camera.stop", false);
+                }
+            }));
+            self.parent_map(widget);
+        }
+    }
     impl BinImpl for CameraPage {}
     impl PortalPageImpl for CameraPage {}
 }
@@ -79,7 +97,7 @@ impl CameraPage {
         self.action_set_enabled("camera.stop", true);
         self.action_set_enabled("camera.start", false);
         match stream().await {
-            Ok(Some(stream_fd)) => {
+            Ok(stream_fd) => {
                 let node_id = camera::pipewire_node_id().await.unwrap();
                 self_.paintable.set_pipewire_node_id(stream_fd, node_id);
                 self_.revealer.set_reveal_child(true);
@@ -89,12 +107,6 @@ impl CameraPage {
                     "Camera stream started successfully",
                     NotificationKind::Success,
                 );
-            }
-            Ok(None) => {
-                self_.camera_available.set_text("No");
-                self.send_notification("No camera seems to be available", NotificationKind::Info);
-                self.action_set_enabled("camera.start", false);
-                self.action_set_enabled("camera.stop", false);
             }
             Err(err) => {
                 tracing::error!("Failed to start a camera stream {:#?}", err);
@@ -117,14 +129,15 @@ impl CameraPage {
     }
 }
 
-async fn stream() -> ashpd::Result<Option<RawFd>> {
+async fn stream() -> ashpd::Result<RawFd> {
     let connection = zbus::azync::Connection::session().await?;
     let proxy = camera::CameraProxy::new(&connection).await?;
-    if proxy.is_camera_present().await? {
-        proxy.access_camera().await?;
+    proxy.access_camera().await?;
+    Ok(proxy.open_pipe_wire_remote().await?)
+}
 
-        Ok(Some(proxy.open_pipe_wire_remote().await?))
-    } else {
-        Ok(None)
-    }
+async fn camera_available() -> ashpd::Result<bool> {
+    let connection = zbus::azync::Connection::session().await?;
+    let proxy = camera::CameraProxy::new(&connection).await?;
+    Ok(proxy.is_camera_present().await?)
 }
