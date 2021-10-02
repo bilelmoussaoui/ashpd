@@ -98,7 +98,7 @@ impl CameraPage {
         self.action_set_enabled("camera.start", false);
         match stream().await {
             Ok(stream_fd) => {
-                let node_id = camera::pipewire_node_id().await.unwrap();
+                let node_id = camera::pipewire_node_id(stream_fd).await.unwrap();
                 self_.paintable.set_pipewire_node_id(stream_fd, node_id);
                 self_.revealer.set_reveal_child(true);
                 self_.camera_available.set_text("Yes");

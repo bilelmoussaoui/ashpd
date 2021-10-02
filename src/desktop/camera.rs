@@ -110,24 +110,27 @@ impl<'a> CameraProxy<'a> {
 /// A helper to get the PipeWire Node ID to use with the camera file descriptor returned by
 /// [`CameraProxy::open_pipe_wire_remote`].
 ///
-/// Currently, the camera portal only gives us a file descriptor except such fd can be re-used by other
-/// portals like the screen cast one. Not passing a node id makes the `pipewiresrc` for example confused
-/// about which node to use.
+/// Currently, the camera portal only gives us a file descriptor. Not passing a node id
+/// may cause the media session controller to auto-connect the client to an incorrect node.
 ///
 /// The method looks for the available output streams of a `media.role` type of `Camera`
-/// and return their Node ID. This is necessary until the camera portal is capable of handling multiple camera streams
-/// and so giving the user the Node ID information.
+/// and return their Node ID.
 ///
-/// *Note* using this method requires access to `xdg-run/pipewire-0` which sandboxed applications don't have access to.
-/// In the case of Flatpak, make sure to add `--filesystem=xdg-run/pipewire-0` to your `finish-args`.
+/// *Note* The socket referenced by `fd` must not be used while this function is running.
 #[cfg(feature = "feature_pipewire")]
-pub async fn pipewire_node_id() -> Result<u32, pw::Error> {
+pub async fn pipewire_node_id(fd: RawFd) -> Result<u32, pw::Error> {
+    let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
+
+    if fd == -1 {
+        return Err(pw::Error::CreationFailed);
+    }
+
     let (sender, receiver) = futures::channel::oneshot::channel();
 
     let sender = std::sync::Arc::new(std::sync::Mutex::new(Some(sender)));
     std::thread::spawn(move || {
         let inner_sender = sender.clone();
-        if let Err(err) = pipewire_node_id_inner(move |node_id| {
+        if let Err(err) = pipewire_node_id_inner(fd, move |node_id| {
             if let Ok(mut guard) = inner_sender.lock() {
                 if let Some(inner_sender) = guard.take() {
                     let _result = inner_sender.send(Ok(node_id));
@@ -145,11 +148,11 @@ pub async fn pipewire_node_id() -> Result<u32, pw::Error> {
 }
 
 #[cfg(feature = "feature_pipewire")]
-fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(callback: F) -> Result<(), pw::Error> {
+fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(fd: RawFd, callback: F) -> Result<(), pw::Error> {
     use pw::prelude::*;
     let mainloop = pw::MainLoop::new()?;
     let context = pw::Context::new(&mainloop)?;
-    let core = context.connect(None)?;
+    let core = context.connect_fd(fd, None)?;
     let registry = core.get_registry()?;
 
     let loop_clone = mainloop.clone();
