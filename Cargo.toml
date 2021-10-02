@@ -14,7 +14,7 @@ version = "0.2.0-alpha-4"
 default_features = []
 feature_gtk3 = ["gdk3x11", "gtk3"]
 feature_gtk4 = ["gdk4x11", "gdk4wayland", "gtk4"]
-feature_pipewire = ["pw"]
+feature_pipewire = ["pw", "libc"]
 
 [dependencies]
 enumflags2 = "0.6"
@@ -39,4 +39,4 @@ zvariant = {version = "2.7", features = ["enumflags2"], default-features = false
 zvariant_derive = "2.7"
 futures = "0.3"
 tracing = "0.1"
-libc = "0.2.94"
+libc = {version = "0.2.94", optional = true}
