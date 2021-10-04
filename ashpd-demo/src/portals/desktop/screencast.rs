@@ -220,7 +220,7 @@ impl ScreenCastPage {
 
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        let connection = zbus::azync::Connection::session().await?;
+        let connection = zbus::Connection::session().await?;
         let proxy = ScreenCastProxy::new(&connection).await?;
         let session = proxy.create_session().await?;
 
@@ -236,7 +236,7 @@ impl ScreenCastPage {
 }
 
 pub async fn available_types() -> ashpd::Result<(BitFlags<CursorMode>, BitFlags<SourceType>)> {
-    let cnx = zbus::azync::Connection::session().await?;
+    let cnx = zbus::Connection::session().await?;
     let proxy = ScreenCastProxy::new(&cnx).await?;
 
     let cursor_modes = proxy.available_cursor_modes().await?;

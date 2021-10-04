@@ -230,7 +230,7 @@ impl RemoteDesktopPage {
         let sources = self.selected_sources();
         let devices = self.selected_devices();
 
-        let connection = zbus::azync::Connection::session().await?;
+        let connection = zbus::Connection::session().await?;
         let proxy = RemoteDesktopProxy::new(&connection).await?;
         let session = proxy.create_session().await?;
         if is_screencast {
@@ -248,7 +248,7 @@ impl RemoteDesktopPage {
 }
 
 pub async fn available_devices() -> ashpd::Result<BitFlags<DeviceType>> {
-    let cnx = zbus::azync::Connection::session().await?;
+    let cnx = zbus::Connection::session().await?;
     let proxy = RemoteDesktopProxy::new(&cnx).await?;
     proxy.available_device_types().await
 }

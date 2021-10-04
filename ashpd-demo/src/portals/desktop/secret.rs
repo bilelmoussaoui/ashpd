@@ -73,7 +73,7 @@ impl SecretPage {
 
 async fn retrieve_secret(old_token: Option<&str>) -> ashpd::Result<String> {
     use glib::translate::*;
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = secret::SecretProxy::new(&connection).await?;
 
     let path: std::path::PathBuf =

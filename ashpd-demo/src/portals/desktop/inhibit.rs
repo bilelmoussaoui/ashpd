@@ -116,7 +116,7 @@ impl InhibitPage {
         let reason = self_.reason.text();
         let flags = self.inhibit_flags();
 
-        let connection = zbus::azync::Connection::session().await?;
+        let connection = zbus::Connection::session().await?;
         let proxy = InhibitProxy::new(&connection).await?;
         let monitor = proxy.create_monitor(&identifier).await?;
 

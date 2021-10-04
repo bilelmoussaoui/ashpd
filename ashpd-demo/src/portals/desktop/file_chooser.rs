@@ -252,7 +252,7 @@ async fn portal_open_file(
     modal: bool,
     multiple: bool,
 ) -> ashpd::Result<SelectedFiles> {
-    let cnx = zbus::azync::Connection::session().await?;
+    let cnx = zbus::Connection::session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
     let options = OpenFileOptions::default()
         .directory(directory)
@@ -277,7 +277,7 @@ async fn portal_save_file(
     current_folder: Option<&str>,
     current_file: Option<&str>,
 ) -> ashpd::Result<SelectedFiles> {
-    let cnx = zbus::azync::Connection::session().await?;
+    let cnx = zbus::Connection::session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
     let options = SaveFileOptions::default().modal(modal);
     let options = if let Some(accept_label) = accept_label {
@@ -312,7 +312,7 @@ async fn portal_save_files<S: AsRef<str>>(
     current_folder: Option<&str>,
     files: Option<&[S]>,
 ) -> ashpd::Result<SelectedFiles> {
-    let cnx = zbus::azync::Connection::session().await?;
+    let cnx = zbus::Connection::session().await?;
     let proxy = FileChooserProxy::new(&cnx).await?;
     let options = SaveFilesOptions::default().modal(modal);
     let options = if let Some(accept_label) = accept_label {

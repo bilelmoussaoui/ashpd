@@ -74,7 +74,7 @@ impl DevicePage {
     }
 
     async fn request(&self) -> ashpd::Result<()> {
-        let cnx = zbus::azync::Connection::session().await?;
+        let cnx = zbus::Connection::session().await?;
         let proxy = DeviceProxy::new(&cnx).await?;
 
         proxy

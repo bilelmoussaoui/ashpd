@@ -255,7 +255,7 @@ impl Application {
     }
 
     async fn restart(&self) -> ashpd::Result<()> {
-        let cnx = zbus::azync::Connection::session().await?;
+        let cnx = zbus::Connection::session().await?;
         let proxy = FlatpakProxy::new(&cnx).await?;
         proxy
             .spawn(

@@ -107,7 +107,7 @@ async fn print<F: AsRawFd>(
     file: F,
     modal: bool,
 ) -> ashpd::Result<()> {
-    let cnx = zbus::azync::Connection::session().await?;
+    let cnx = zbus::Connection::session().await?;
     let proxy = PrintProxy::new(&cnx).await?;
 
     let out = proxy

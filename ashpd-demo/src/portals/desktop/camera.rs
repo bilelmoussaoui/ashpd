@@ -130,14 +130,14 @@ impl CameraPage {
 }
 
 async fn stream() -> ashpd::Result<RawFd> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = camera::CameraProxy::new(&connection).await?;
     proxy.access_camera().await?;
     Ok(proxy.open_pipe_wire_remote().await?)
 }
 
 async fn camera_available() -> ashpd::Result<bool> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = camera::CameraProxy::new(&connection).await?;
     Ok(proxy.is_camera_present().await?)
 }
