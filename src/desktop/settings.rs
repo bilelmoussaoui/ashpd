@@ -2,7 +2,7 @@
 //! use ashpd::desktop::settings::SettingsProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = SettingsProxy::new(&connection).await?;
 //!
 //!     println!(
@@ -77,12 +77,12 @@ impl std::fmt::Debug for Setting {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Settings).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Settings")]
-pub struct SettingsProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct SettingsProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> SettingsProxy<'a> {
     /// Create a new instance of [`SettingsProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<SettingsProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<SettingsProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Settings")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -92,7 +92,7 @@ impl<'a> SettingsProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

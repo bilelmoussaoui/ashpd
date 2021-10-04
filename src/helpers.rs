@@ -15,7 +15,7 @@ use crate::desktop::{
 use crate::Error;
 
 pub(crate) async fn call_request_method<R, B>(
-    proxy: &zbus::azync::Proxy<'_>,
+    proxy: &zbus::Proxy<'_>,
     handle_token: &HandleToken,
     method_name: &str,
     body: &B,
@@ -66,7 +66,7 @@ where
 }
 
 pub(crate) async fn call_basic_response_method<B>(
-    proxy: &zbus::azync::Proxy<'_>,
+    proxy: &zbus::Proxy<'_>,
     handle_token: &HandleToken,
     method_name: &str,
     body: &B,
@@ -79,7 +79,7 @@ where
 }
 
 pub(crate) async fn receive_signal<R>(
-    proxy: &zbus::azync::Proxy<'_>,
+    proxy: &zbus::Proxy<'_>,
     signal_name: &'static str,
 ) -> Result<R, Error>
 where
@@ -103,7 +103,7 @@ where
 }
 
 pub(crate) async fn call_method<R, B>(
-    proxy: &zbus::azync::Proxy<'_>,
+    proxy: &zbus::Proxy<'_>,
     method_name: &str,
     body: &B,
 ) -> Result<R, Error>

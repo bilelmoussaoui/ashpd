@@ -4,7 +4,7 @@
 //! use ashpd::documents::{DocumentsProxy, Permission};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = DocumentsProxy::new(&connection).await?;
 //!
 //!     println!("{:#?}", proxy.mount_point().await?);
@@ -135,12 +135,12 @@ impl<'de> Deserialize<'de> for Permission {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Documents).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
-pub struct DocumentsProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct DocumentsProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> DocumentsProxy<'a> {
     /// Create a new instance of [`DocumentsProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<DocumentsProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<DocumentsProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Documents")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -150,7 +150,7 @@ impl<'a> DocumentsProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

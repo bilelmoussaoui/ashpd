@@ -6,7 +6,7 @@
 //! use zvariant::Value;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = NotificationProxy::new(&connection).await?;
 //!
 //!     let notification_id = "org.gnome.design.Contrast";
@@ -240,12 +240,12 @@ impl Action {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Notification).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Notification")]
-pub struct NotificationProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct NotificationProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> NotificationProxy<'a> {
     /// Create a new instance of [`NotificationProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<NotificationProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<NotificationProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Notification")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -255,7 +255,7 @@ impl<'a> NotificationProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

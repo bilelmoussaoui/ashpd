@@ -20,7 +20,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = TrashProxy::new(&connection).await?;
 //!
 //!     proxy.trash_file(&file).await?;
@@ -52,12 +52,12 @@ enum TrashStatus {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Trash`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Trash).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Trash")]
-pub struct TrashProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct TrashProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> TrashProxy<'a> {
     /// Create a new instance of [`TrashProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<TrashProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<TrashProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Trash")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -67,7 +67,7 @@ impl<'a> TrashProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
@@ -98,7 +98,7 @@ impl<'a> TrashProxy<'a> {
 #[doc(alias = "xdp_portal_trash_file")]
 /// A handy wrapper around [`TrashProxy::trash_file`].
 pub async fn trash_file<F: AsRawFd>(fd: &F) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = TrashProxy::new(&connection).await?;
     proxy.trash_file(fd).await
 }

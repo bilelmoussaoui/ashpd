@@ -4,7 +4,7 @@
 //! use ashpd::desktop::game_mode::GameModeProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = GameModeProxy::new(&connection).await?;
 //!
 //!     println!("{:#?}", proxy.register_game(246612).await?);
@@ -75,12 +75,12 @@ enum RegisterStatus {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.GameMode`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.GameMode).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.GameMode")]
-pub struct GameModeProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct GameModeProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> GameModeProxy<'a> {
     /// Create a new instance of [`GameModeProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<GameModeProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<GameModeProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.GameMode")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -90,7 +90,7 @@ impl<'a> GameModeProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

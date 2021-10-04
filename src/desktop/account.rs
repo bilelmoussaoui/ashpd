@@ -24,7 +24,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!
 //!     let proxy = AccountProxy::new(&connection).await?;
 //!     let user_info = proxy
@@ -100,12 +100,12 @@ impl UserInfo {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Account).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Account")]
-pub struct AccountProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct AccountProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> AccountProxy<'a> {
     /// Create a new instance of [`AccountProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<AccountProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<AccountProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Account")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -115,7 +115,7 @@ impl<'a> AccountProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
@@ -149,7 +149,7 @@ pub async fn user_information(
     identifier: &WindowIdentifier,
     reason: &str,
 ) -> Result<UserInfo, Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = AccountProxy::new(&connection).await?;
     proxy.user_information(identifier, reason).await
 }

@@ -131,12 +131,12 @@ impl Background {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Background).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Background")]
-pub struct BackgroundProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct BackgroundProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
     /// Create a new instance of [`BackgroundProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<BackgroundProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<BackgroundProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Background")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -146,7 +146,7 @@ impl<'a> BackgroundProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
@@ -199,7 +199,7 @@ pub async fn request<S: AsRef<str> + zvariant::Type + Serialize>(
     command_line: Option<&[S]>,
     dbus_activatable: bool,
 ) -> Result<Background, Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = BackgroundProxy::new(&connection).await?;
     proxy
         .request_background(

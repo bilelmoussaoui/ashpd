@@ -23,17 +23,17 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Session).
 #[doc(alias = "org.freedesktop.portal.Session")]
-pub struct SessionProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct SessionProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> SessionProxy<'a> {
     /// Create a new instance of [`SessionProxy`].
     ///
     /// **Note** A [`SessionProxy`] is not supposed to be created manually.
     pub(crate) async fn new(
-        connection: &zbus::azync::Connection,
+        connection: &zbus::Connection,
         path: ObjectPath<'a>,
     ) -> Result<SessionProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Session")?
             .path(path)?
             .destination(DESTINATION)?
@@ -43,7 +43,7 @@ impl<'a> SessionProxy<'a> {
     }
 
     pub(crate) async fn from_unique_name(
-        connection: &zbus::azync::Connection,
+        connection: &zbus::Connection,
         handle_token: &HandleToken,
     ) -> Result<SessionProxy<'a>, crate::Error> {
         let unique_name = connection.unique_name().unwrap();
@@ -58,7 +58,7 @@ impl<'a> SessionProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

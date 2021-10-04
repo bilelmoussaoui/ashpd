@@ -20,7 +20,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!
 //!     let uri = proxy.screenshot(&WindowIdentifier::default(), true, true).await?;
@@ -50,7 +50,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = ScreenshotProxy::new(&connection).await?;
 //!
 //!     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
@@ -188,12 +188,12 @@ impl std::fmt::Display for Color {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Screenshot).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
-pub struct ScreenshotProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct ScreenshotProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> ScreenshotProxy<'a> {
     /// Create a new instance of [`ScreenshotProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenshotProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<ScreenshotProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Screenshot")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -203,7 +203,7 @@ impl<'a> ScreenshotProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
@@ -268,7 +268,7 @@ impl<'a> ScreenshotProxy<'a> {
 #[doc(alias = "xdp_portal_pick_color")]
 /// A handy wrapper around [`ScreenshotProxy::pick_color`].
 pub async fn pick_color(identifier: &WindowIdentifier) -> Result<Color, Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
     proxy.pick_color(identifier).await
 }
@@ -280,7 +280,7 @@ pub async fn take(
     interactive: bool,
     modal: bool,
 ) -> Result<String, Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = ScreenshotProxy::new(&connection).await?;
     proxy.screenshot(identifier, interactive, modal).await
 }

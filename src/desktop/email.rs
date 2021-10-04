@@ -30,7 +30,7 @@
 //! use std::fs::File;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = EmailProxy::new(&connection).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
@@ -171,12 +171,12 @@ impl Email {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Email).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Email")]
-pub struct EmailProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct EmailProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> EmailProxy<'a> {
     /// Create a new instance of [`EmailProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<EmailProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<EmailProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Email")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -186,7 +186,7 @@ impl<'a> EmailProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
@@ -222,7 +222,7 @@ impl<'a> EmailProxy<'a> {
 /// A handy wrapper around [`EmailProxy::compose_email`]
 #[doc(alias = "xdp_portal_compose_email")]
 pub async fn compose(identifier: &WindowIdentifier, email: Email) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = EmailProxy::new(&connection).await?;
     proxy.compose_email(identifier, email).await?;
 

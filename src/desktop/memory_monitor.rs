@@ -4,7 +4,7 @@
 //! use ashpd::desktop::memory_monitor::MemoryMonitorProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = MemoryMonitorProxy::new(&connection).await?;
 //!
 //!     let level = proxy.receive_low_memory_warning().await?;
@@ -24,14 +24,12 @@ use crate::{helpers::receive_signal, Error};
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.MemoryMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.MemoryMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.MemoryMonitor")]
-pub struct MemoryMonitorProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct MemoryMonitorProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> MemoryMonitorProxy<'a> {
     /// Create a new instance of [`MemoryMonitorProxy`].
-    pub async fn new(
-        connection: &zbus::azync::Connection,
-    ) -> Result<MemoryMonitorProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<MemoryMonitorProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.MemoryMonitor")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -41,7 +39,7 @@ impl<'a> MemoryMonitorProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

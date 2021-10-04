@@ -4,7 +4,7 @@
 //! use ashpd::desktop::camera::CameraProxy;
 //!
 //! pub async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = CameraProxy::new(&connection).await?;
 //!     if proxy.is_camera_present().await? {
 //!         proxy.access_camera().await?;
@@ -43,12 +43,12 @@ struct CameraAccessOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Camera`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Camera).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Camera")]
-pub struct CameraProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct CameraProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> CameraProxy<'a> {
     /// Create a new instance of [`CameraProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<CameraProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<CameraProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Camera")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -58,7 +58,7 @@ impl<'a> CameraProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

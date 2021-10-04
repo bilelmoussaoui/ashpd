@@ -9,7 +9,7 @@
 //! use enumflags2::BitFlags;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = ScreenCastProxy::new(&connection).await?;
 //!
 //!     let session = proxy.create_session().await?;
@@ -199,12 +199,12 @@ struct StreamProperties {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.ScreenCast).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ScreenCast")]
-pub struct ScreenCastProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct ScreenCastProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> ScreenCastProxy<'a> {
     /// Create a new instance of [`ScreenCastProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<ScreenCastProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<ScreenCastProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.ScreenCast")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -214,7 +214,7 @@ impl<'a> ScreenCastProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

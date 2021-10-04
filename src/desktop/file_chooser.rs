@@ -7,7 +7,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
@@ -42,7 +42,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
 //!         .save_file(
@@ -69,7 +69,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!
 //!     let proxy = FileChooserProxy::new(&connection).await?;
 //!     let files = proxy
@@ -428,12 +428,12 @@ impl SelectedFiles {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileChooser).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
-pub struct FileChooserProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct FileChooserProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> FileChooserProxy<'a> {
     /// Create a new instance of [`FileChooserProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<FileChooserProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<FileChooserProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.FileChooser")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -443,7 +443,7 @@ impl<'a> FileChooserProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

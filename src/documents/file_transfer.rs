@@ -5,7 +5,7 @@
 //! use std::fs::File;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = FileTransferProxy::new(&connection).await?;
 //!
 //!     let key = proxy.start_transfer(true, true).await?;
@@ -78,12 +78,12 @@ impl TransferOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.FileTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileTransfer).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileTransfer")]
-pub struct FileTransferProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct FileTransferProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> FileTransferProxy<'a> {
     /// Create a new instance of [`FileTransferProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<FileTransferProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<FileTransferProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.FileTransfer")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -93,7 +93,7 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

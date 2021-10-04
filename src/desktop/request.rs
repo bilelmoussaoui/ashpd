@@ -172,14 +172,14 @@ impl From<ResponseError> for ResponseType {
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Request).
 #[doc(alias = "org.freedesktop.portal.Request")]
-pub(crate) struct RequestProxy<'a>(zbus::azync::Proxy<'a>);
+pub(crate) struct RequestProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> RequestProxy<'a> {
     pub async fn new(
-        connection: &zbus::azync::Connection,
+        connection: &zbus::Connection,
         path: zvariant::ObjectPath<'a>,
     ) -> Result<RequestProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Request")?
             .path(path)?
             .destination(DESTINATION)?
@@ -189,7 +189,7 @@ impl<'a> RequestProxy<'a> {
     }
 
     pub async fn from_unique_name(
-        connection: &zbus::azync::Connection,
+        connection: &zbus::Connection,
         handle_token: &HandleToken,
     ) -> Result<RequestProxy<'a>, Error> {
         let unique_name = connection.unique_name().unwrap();
@@ -204,7 +204,7 @@ impl<'a> RequestProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

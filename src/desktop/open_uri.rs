@@ -24,7 +24,7 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
 //!     proxy.open_file(&WindowIdentifier::default(), &file, false, true).await?;
@@ -56,7 +56,7 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
 //!
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
 //!     proxy.open_directory(&WindowIdentifier::default(), &directory).await?;
@@ -85,7 +85,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
 //!
@@ -146,12 +146,12 @@ impl OpenFileOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.OpenURI).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
-pub struct OpenURIProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct OpenURIProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {
     /// Create a new instance of [`OpenURIProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<OpenURIProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<OpenURIProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.OpenURI")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -161,7 +161,7 @@ impl<'a> OpenURIProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
@@ -268,7 +268,7 @@ pub async fn open_uri(
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
     proxy.open_uri(identifier, uri, writeable, ask).await?;
     Ok(())
@@ -281,7 +281,7 @@ pub async fn open_file<F: AsRawFd>(
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
     proxy.open_file(identifier, file, writeable, ask).await?;
     Ok(())
@@ -293,7 +293,7 @@ pub async fn open_directory<F: AsRawFd>(
     identifier: &WindowIdentifier,
     directory: &F,
 ) -> Result<(), Error> {
-    let connection = zbus::azync::Connection::session().await?;
+    let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
     proxy.open_directory(identifier, directory).await?;
     Ok(())

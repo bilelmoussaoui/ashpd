@@ -5,7 +5,7 @@
 //! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = NetworkMonitorProxy::new(&connection).await?;
 //!
 //!     println!("{}", proxy.can_reach("www.google.com", 80).await?);
@@ -74,14 +74,12 @@ impl fmt::Display for Connectivity {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.NetworkMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.NetworkMonitor")]
-pub struct NetworkMonitorProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct NetworkMonitorProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> NetworkMonitorProxy<'a> {
     /// Create a new instance of [`NetworkMonitorProxy`].
-    pub async fn new(
-        connection: &zbus::azync::Connection,
-    ) -> Result<NetworkMonitorProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<NetworkMonitorProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.NetworkMonitor")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -91,7 +89,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

@@ -6,7 +6,7 @@
 //! use futures::TryFutureExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = LocationProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
 //!
@@ -186,12 +186,12 @@ struct LocationInner {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Location`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Location).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Location")]
-pub struct LocationProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct LocationProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> LocationProxy<'a> {
     /// Create a new instance of [`LocationProxy`].
-    pub async fn new(connection: &zbus::azync::Connection) -> Result<LocationProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<LocationProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Location")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -201,7 +201,7 @@ impl<'a> LocationProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

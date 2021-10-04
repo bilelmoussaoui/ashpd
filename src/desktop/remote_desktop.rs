@@ -5,7 +5,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!
 //!     let session = proxy.create_session().await?;
@@ -32,7 +32,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = RemoteDesktopProxy::new(&connection).await?;
 //!     let screencast = ScreenCastProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
@@ -163,14 +163,12 @@ struct SelectedDevices {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.RemoteDesktop).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.RemoteDesktop")]
-pub struct RemoteDesktopProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct RemoteDesktopProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> RemoteDesktopProxy<'a> {
     /// Create a new instance of [`RemoteDesktopProxy`].
-    pub async fn new(
-        connection: &zbus::azync::Connection,
-    ) -> Result<RemoteDesktopProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+    pub async fn new(connection: &zbus::Connection) -> Result<RemoteDesktopProxy<'a>, Error> {
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.RemoteDesktop")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -180,7 +178,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 

@@ -8,7 +8,7 @@
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::azync::Connection::session().await?;
+//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = FlatpakProxy::new(&connection).await?;
 //!
 //!     let monitor = proxy.create_update_monitor().await?;
@@ -91,7 +91,7 @@ pub struct UpdateProgress {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak.UpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Flatpak.UpdateMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak.UpdateMonitor")]
-pub struct UpdateMonitorProxy<'a>(zbus::azync::Proxy<'a>);
+pub struct UpdateMonitorProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> UpdateMonitorProxy<'a> {
     /// Create a new instance of [`UpdateMonitorProxy`].
@@ -99,10 +99,10 @@ impl<'a> UpdateMonitorProxy<'a> {
     /// **Note** A [`UpdateMonitorProxy`] is not supposed to be created
     /// manually.
     pub(crate) async fn new(
-        connection: &zbus::azync::Connection,
+        connection: &zbus::Connection,
         path: ObjectPath<'a>,
     ) -> Result<UpdateMonitorProxy<'a>, Error> {
-        let proxy = zbus::azync::ProxyBuilder::new_bare(connection)
+        let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Flatpak.UpdateMonitor")?
             .path(path)?
             .destination(DESTINATION)?
@@ -112,7 +112,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     }
 
     /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::azync::Proxy<'_> {
+    pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
