@@ -202,8 +202,8 @@ impl Application {
             move |_bus, _| tracing::info!("Name unowned"),
         );
 
-        let cnx = zbus::Connection::session()?;
-        let proxy: zbus::Proxy = zbus::ProxyBuilder::new_bare(&cnx)
+        let cnx = zbus::blocking::Connection::session()?;
+        let proxy: zbus::Proxy = zbus::blocking::ProxyBuilder::new_bare(&cnx)
             .path(format!(
                 "/{}",
                 config::APP_ID.split('.').collect::<Vec<_>>().join("/")
