@@ -203,7 +203,7 @@ impl Application {
         );
 
         let cnx = zbus::blocking::Connection::session()?;
-        let proxy: zbus::Proxy = zbus::blocking::ProxyBuilder::new_bare(&cnx)
+        let proxy: zbus::blocking::Proxy = zbus::blocking::ProxyBuilder::new_bare(&cnx)
             .path(format!(
                 "/{}",
                 config::APP_ID.split('.').collect::<Vec<_>>().join("/")

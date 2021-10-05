@@ -14,6 +14,19 @@
                 <property name="description">Calls OpenURI on org.freedesktop.portal.OpenURI</property>
                 <child>
                   <object class="AdwActionRow">
+                    <property name="title" translatable="yes">URI</property>
+                    <property name="subtitle" translatable="yes">file:// uris are explicitly not supported</property>
+                    <property name="activatable-widget">uri_entry</property>
+                    <child>
+                      <object class="GtkEntry" id="uri_entry">
+                        <property name="valign">center</property>
+                        <property name="text">https://github.com/bilelmoussaoui/ashpd</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow">
                     <property name="title" translatable="yes">Writeable</property>
                     <property name="subtitle" translatable="yes">Whether the file should be writeable or not</property>
                     <property name="activatable-widget">writeable_switch</property>

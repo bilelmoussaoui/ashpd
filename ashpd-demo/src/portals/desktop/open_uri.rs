@@ -17,6 +17,8 @@ mod imp {
         pub writeable_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub ask_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub uri_entry: TemplateChild<gtk::Entry>,
     }
 
     #[glib::object_subclass]
@@ -62,14 +64,8 @@ impl OpenUriPage {
         let ask = self_.ask_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        match open_uri::open_uri(
-            &identifier,
-            "https://github.com/bilelmoussaoui/ashpd",
-            writable,
-            ask,
-        )
-        .await
-        {
+        let uri = self_.uri_entry.text();
+        match open_uri::open_uri(&identifier, &uri, writable, ask).await {
             Ok(_) => {
                 self.send_notification(
                     "Open URI request was successful",

@@ -87,7 +87,7 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
-//!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
+//!     let uri = "https://github.com/bilelmoussaoui/ashpd";
 //!
 //!     proxy.open_uri(&WindowIdentifier::default(), uri, false, true).await?;
 //!     Ok(())
@@ -237,6 +237,9 @@ impl<'a> OpenURIProxy<'a> {
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or
     ///   not.
+    ///
+    /// *Note* that `file` uris are explicitly not supported by this method.
+    /// Use [`Self::open_file`] or [`Self::open_directory`] instead.
     ///
     /// # Specifications
     ///
