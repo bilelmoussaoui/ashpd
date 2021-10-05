@@ -148,7 +148,10 @@ pub async fn pipewire_node_id(fd: RawFd) -> Result<u32, pw::Error> {
 }
 
 #[cfg(feature = "feature_pipewire")]
-fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(fd: RawFd, callback: F) -> Result<(), pw::Error> {
+fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(
+    fd: RawFd,
+    callback: F,
+) -> Result<(), pw::Error> {
     use pw::prelude::*;
     let mainloop = pw::MainLoop::new()?;
     let context = pw::Context::new(&mainloop)?;
