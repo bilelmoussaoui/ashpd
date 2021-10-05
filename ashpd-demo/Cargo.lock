@@ -44,7 +44,7 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 [[package]]
 name = "ashpd"
 version = "0.2.0-alpha-4"
-source = "git+https://github.com/bilelmoussaoui/ashpd#9cdbdd2efe9b524aebbdd8ba644a9ff97857866a"
+source = "git+https://github.com/bilelmoussaoui/ashpd#944a6def91ca767e084525ab2a9b4f245347c6a9"
 dependencies = [
  "enumflags2",
  "futures",
