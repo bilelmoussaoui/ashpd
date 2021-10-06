@@ -138,12 +138,14 @@
                         <property name="page-name">screenshot</property>
                       </object>
                     </child>
+                    <!--
                     <child>
                       <object class="SidebarRow">
                         <property name="label" translatable="yes">Secret</property>
                         <property name="page-name">secret</property>
                       </object>
                     </child>
+                    -->
                     <child>
                       <object class="SidebarRow">
                         <property name="label" translatable="yes">Wallpaper</property>
@@ -326,6 +328,7 @@
                         </property>
                       </object>
                     </child>
+                    <!--
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">secret</property>
@@ -334,6 +337,7 @@
                         </property>
                       </object>
                     </child>
+                    -->
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">wallpaper</property>

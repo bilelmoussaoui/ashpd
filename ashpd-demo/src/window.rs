@@ -14,7 +14,7 @@ use crate::config::APP_ID;
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
     LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage,
-    RemoteDesktopPage, ScreenCastPage, ScreenshotPage, SecretPage, WallpaperPage,
+    RemoteDesktopPage, ScreenCastPage, ScreenshotPage, WallpaperPage,
 };
 use crate::portals::DocumentsPage;
 use crate::widgets::SidebarRow;
@@ -59,8 +59,10 @@ mod imp {
         pub open_uri: TemplateChild<OpenUriPage>,
         #[template_child]
         pub inhibit: TemplateChild<InhibitPage>,
+        /*
         #[template_child]
         pub secret: TemplateChild<SecretPage>,
+        */
         #[template_child]
         pub remote_desktop: TemplateChild<RemoteDesktopPage>,
         #[template_child]
@@ -94,7 +96,7 @@ mod imp {
                 file_chooser: TemplateChild::default(),
                 open_uri: TemplateChild::default(),
                 inhibit: TemplateChild::default(),
-                secret: TemplateChild::default(),
+                //secret: TemplateChild::default(),
                 remote_desktop: TemplateChild::default(),
                 print: TemplateChild::default(),
                 color_scheme_btn: TemplateChild::default(),
