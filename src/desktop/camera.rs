@@ -18,10 +18,10 @@
 
 use std::{
     collections::HashMap,
-    os::unix::prelude::{AsRawFd, RawFd},
+    os::unix::prelude::{IntoRawFd, RawFd},
 };
 
-use zvariant::{Fd, Value};
+use zvariant::{OwnedFd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -89,8 +89,8 @@ impl<'a> CameraProxy<'a> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/camera.c#L178
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let fd: Fd = call_method(&self.0, "OpenPipeWireRemote", &(options)).await?;
-        Ok(fd.as_raw_fd())
+        let fd: OwnedFd = call_method(&self.0, "OpenPipeWireRemote", &(options)).await?;
+        Ok(fd.into_raw_fd())
     }
 
     /// A boolean stating whether there is any cameras available.
