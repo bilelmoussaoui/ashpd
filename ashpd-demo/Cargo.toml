@@ -18,6 +18,10 @@ gtk = {package = "gtk4", version = "0.3"}
 adw = {version = "0.1.0-alpha-6", package = "libadwaita"}
 serde = {version = "1.0", features = ["derive"]}
 
+[dependencies.shumate]
+package = "libshumate"
+git = "https://gitlab.gnome.org/World/Rust/libshumate-rs"
+
 [dependencies.ashpd]
 git = "https://github.com/bilelmoussaoui/ashpd"
 features = ["feature_gtk4", "feature_pipewire"]

@@ -77,6 +77,23 @@
               </object>
             </child>
             <child>
+              <object class="GtkOverlay" id="overlay">
+                <property name="vexpand">True</property>
+                <child>
+                  <object class="ShumateMap" id="map">
+                    <property name="height-request">450</property>
+                  </object>
+                </child>
+                <child type="overlay">
+                  <object class="ShumateLicense" id="license">
+                    <property name="halign">end</property>
+                    <property name="valign">end</property>
+                    <property name="vexpand">True</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="AdwPreferencesGroup" id="response_group">
                 <property name="title" translatable="yes">Response</property>
                 <property name="visible">False</property>

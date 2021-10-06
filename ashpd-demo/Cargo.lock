@@ -44,7 +44,7 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 [[package]]
 name = "ashpd"
 version = "0.2.0-alpha-4"
-source = "git+https://github.com/bilelmoussaoui/ashpd#3796c61c783f42274148c1002d52b50163146f1d"
+source = "git+https://github.com/bilelmoussaoui/ashpd#7d207e9fad21af4860a2484d0aec76e7b1e9ee6c"
 dependencies = [
  "enumflags2",
  "futures",
@@ -79,6 +79,7 @@ dependencies = [
  "gtk-macros",
  "gtk4",
  "libadwaita",
+ "libshumate",
  "once_cell",
  "serde",
  "tracing",
@@ -1182,6 +1183,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "libshumate"
+version = "0.1.0"
+source = "git+https://gitlab.gnome.org/World/Rust/libshumate-rs#973216fd9136f9459bb06ee9783cf2e159d1297f"
+dependencies = [
+ "gdk4",
+ "gio",
+ "glib",
+ "gtk4",
+ "libc",
+ "libshumate-sys",
+ "once_cell",
+]
+
+[[package]]
+name = "libshumate-sys"
+version = "0.1.0"
+source = "git+https://gitlab.gnome.org/World/Rust/libshumate-rs#973216fd9136f9459bb06ee9783cf2e159d1297f"
+dependencies = [
+ "gdk4-sys",
+ "gio-sys",
+ "glib-sys",
+ "gobject-sys",
+ "gtk4-sys",
+ "libc",
+ "system-deps 4.0.0",
+]
+
+[[package]]
 name = "libspa"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1826,9 +1855,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.78"
+version = "1.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4eac2e6c19f5c3abc0c229bea31ff0b9b091c7b14990e8924b92902a303a0c0"
+checksum = "d010a1623fbd906d51d650a9916aaefc05ffa0e4053ff7fe601167f3e715d194"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1936,9 +1965,9 @@ dependencies = [
 
 [[package]]
 name = "tracing"
-version = "0.1.28"
+version = "0.1.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84f96e095c0c82419687c20ddf5cb3eadb61f4e1405923c9dc8e53a1adacbda8"
+checksum = "375a639232caf30edfc78e8d89b2d4c375515393e7af7e16f01cd96917fb2105"
 dependencies = [
  "cfg-if 1.0.0",
  "pin-project-lite",
@@ -1948,9 +1977,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-attributes"
-version = "0.1.16"
+version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98863d0dd09fa59a1b79c6750ad80dbda6b75f4e71c437a6a1a8cb91a8bcbd77"
+checksum = "f4f480b8f81512e825f337ad51e94c1eb5d3bbdf2b363dcd01e2b19a9ffe3f8e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1989,9 +2018,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.2.24"
+version = "0.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdd0568dbfe3baf7048b7908d2b32bca0d81cd56bec6d2a8f894b01d74f86be3"
+checksum = "0e0d2eaa99c3c2e41547cfa109e910a68ea03823cccad4a0525dcbc9b01e8c71"
 dependencies = [
  "ansi_term 0.12.1",
  "chrono",

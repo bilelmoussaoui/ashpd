@@ -8,6 +8,7 @@ use futures::TryFutureExt;
 use glib::clone;
 use gtk::glib;
 use gtk::subclass::prelude::*;
+use shumate::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -42,6 +43,11 @@ mod imp {
         pub longitude_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub timestamp_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub map: TemplateChild<shumate::Map>,
+        #[template_child(id = "license")]
+        pub map_license: TemplateChild<shumate::License>,
+        pub marker: shumate::Marker,
     }
 
     #[glib::object_subclass]
@@ -49,6 +55,17 @@ mod imp {
         const NAME: &'static str = "LocationPage";
         type Type = super::LocationPage;
         type ParentType = PortalPage;
+
+        fn new() -> Self {
+            let marker = shumate::Marker::new();
+            let marker_img = gtk::Image::from_icon_name(Some("map-marker-symbolic"));
+            marker.set_child(Some(&marker_img));
+
+            Self {
+                marker,
+                ..Default::default()
+            }
+        }
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -65,7 +82,28 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for LocationPage {}
+    impl ObjectImpl for LocationPage {
+        fn constructed(&self, obj: &Self::Type) {
+            let registry = shumate::MapSourceRegistry::with_defaults();
+            let source = registry.by_id(&shumate::MAP_SOURCE_OSM_MAPNIK).unwrap();
+
+            let viewport = self.map.viewport().unwrap();
+
+            let layer = shumate::MapLayer::new(&source, &viewport);
+            self.map.add_layer(&layer);
+
+            let marker_layer = shumate::MarkerLayer::new(&viewport);
+            marker_layer.add_marker(&self.marker);
+            self.map.add_layer(&marker_layer);
+
+            self.map.set_map_source(&source);
+            viewport.set_reference_map_source(Some(&source));
+            viewport.set_zoom_level(6.0);
+
+            self.map_license.append_map_source(&source);
+            self.parent_constructed(obj);
+        }
+    }
     impl WidgetImpl for LocationPage {}
     impl BinImpl for LocationPage {}
     impl PortalPageImpl for LocationPage {}
@@ -120,6 +158,12 @@ impl LocationPage {
                 self_
                     .timestamp_label
                     .set_label(&location.timestamp().to_string());
+                self_
+                    .map
+                    .center_on(location.latitude(), location.longitude());
+                self_
+                    .marker
+                    .set_location(location.latitude(), location.longitude());
                 self.send_notification("Position updated", NotificationKind::Success);
             }
             Err(_err) => {
