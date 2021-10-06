@@ -37,14 +37,14 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    os::unix::prelude::{AsRawFd, RawFd},
+    os::unix::prelude::{IntoRawFd, RawFd},
 };
 
 use enumflags2::BitFlags;
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::{Fd, Value};
+use zvariant::{OwnedFd, Value};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
@@ -261,8 +261,8 @@ impl<'a> ScreenCastProxy<'a> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let fd: Fd = call_method(&self.0, "OpenPipeWireRemote", &(session, options)).await?;
-        Ok(fd.as_raw_fd())
+        let fd: OwnedFd = call_method(&self.0, "OpenPipeWireRemote", &(session, options)).await?;
+        Ok(fd.into_raw_fd())
     }
 
     /// Configure what the screen cast session should record.
