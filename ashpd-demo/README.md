@@ -10,6 +10,6 @@
 ## Screenshots
 
 <div align="center">
-![screenshot](ashpd-demo/data/resources/screenshots/screenshot1.png)
+<img src="https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/ashpd-demo/data/resources/screenshots/screenshot1.png" />
 </div>
 
