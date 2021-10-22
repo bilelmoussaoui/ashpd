@@ -40,21 +40,19 @@
 //! }
 //! ```
 
+use std::{fmt, str::FromStr};
+
 use serde::{self, Deserialize, Serialize, Serializer};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{OwnedValue, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
-    Error,
+    Error, ParseError,
 };
 
-#[derive(
-    Debug, Clone, Deserialize, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq,
-)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 /// The notification priority
 pub enum Priority {
     /// Low.
@@ -67,18 +65,67 @@ pub enum Priority {
     Urgent,
 }
 
-impl zvariant::Type for Priority {
-    fn signature() -> Signature<'static> {
-        String::signature()
+impl fmt::Display for Priority {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Low => write!(f, "Low"),
+            Self::Normal => write!(f, "Normal"),
+            Self::High => write!(f, "High"),
+            Self::Urgent => write!(f, "Urgent"),
+        }
+    }
+}
+
+impl AsRef<str> for Priority {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Low => "Low",
+            Self::Normal => "Normal",
+            Self::High => "High",
+            Self::Urgent => "Urgent",
+        }
+    }
+}
+
+impl From<Priority> for &'static str {
+    fn from(d: Priority) -> Self {
+        match d {
+            Priority::Low => "Low",
+            Priority::Normal => "Normal",
+            Priority::High => "High",
+            Priority::Urgent => "Urgent",
+        }
+    }
+}
+
+impl FromStr for Priority {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Low" | "low" => Ok(Priority::Low),
+            "Normal" | "normal" => Ok(Priority::Normal),
+            "High" | "high" => Ok(Priority::High),
+            "Urgent" | "urgent" => Ok(Priority::Urgent),
+            _ => Err(ParseError(
+                "Failed to parse priority, invalid value".to_string(),
+            )),
+        }
     }
 }
 
 impl Serialize for Priority {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        String::serialize(&self.to_string(), serializer)
+        serializer.serialize_str(&self.to_string().to_lowercase())
+    }
+}
+
+impl zvariant::Type for Priority {
+    fn signature() -> Signature<'static> {
+        String::signature()
     }
 }
 

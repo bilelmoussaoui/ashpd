@@ -15,12 +15,12 @@
 //! ```
 
 use serde::{Deserialize, Serialize, Serializer};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
+use std::{fmt, str::FromStr};
 use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error};
+use crate::{helpers::call_basic_response_method, Error, ParseError};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -29,10 +29,7 @@ struct AccessDeviceOptions {
     handle_token: HandleToken,
 }
 
-#[derive(
-    Debug, Clone, Copy, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
-)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 /// The possible device to request access to.
 pub enum Device {
     /// A microphone.
@@ -43,18 +40,63 @@ pub enum Device {
     Camera,
 }
 
-impl zvariant::Type for Device {
-    fn signature() -> Signature<'static> {
-        String::signature()
+impl fmt::Display for Device {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Microphone => write!(f, "Microphone"),
+            Self::Speakers => write!(f, "Speakers"),
+            Self::Camera => write!(f, "Camera"),
+        }
+    }
+}
+
+impl AsRef<str> for Device {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Microphone => "Microphone",
+            Self::Speakers => "Speakers",
+            Self::Camera => "Camera",
+        }
+    }
+}
+
+impl From<Device> for &'static str {
+    fn from(d: Device) -> Self {
+        match d {
+            Device::Microphone => "Microphone",
+            Device::Speakers => "Speakers",
+            Device::Camera => "Camera",
+        }
+    }
+}
+
+impl FromStr for Device {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Microphone" | "microphone" => Ok(Device::Microphone),
+            "Speakers" | "speakers" => Ok(Device::Speakers),
+            "Camera" | "camera" => Ok(Device::Camera),
+            _ => Err(ParseError(
+                "Failed to parse device, invalid value".to_string(),
+            )),
+        }
     }
 }
 
 impl Serialize for Device {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        String::serialize(&self.to_string(), serializer)
+        serializer.serialize_str(&self.to_string().to_lowercase())
+    }
+}
+
+impl zvariant::Type for Device {
+    fn signature() -> Signature<'static> {
+        String::signature()
     }
 }
 

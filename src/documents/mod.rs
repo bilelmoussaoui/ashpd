@@ -40,7 +40,7 @@ use std::{
     collections::HashMap, ffi::CString, os::unix::ffi::OsStrExt, os::unix::prelude::AsRawFd,
 };
 use std::{
-    fmt::Debug,
+    fmt,
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -48,13 +48,12 @@ use std::{
 use enumflags2::BitFlags;
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{Fd, Signature};
 use zvariant_derive::Type;
 
 use crate::{
     helpers::{call_method, path_from_null_terminated},
-    Error,
+    Error, ParseError,
 };
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -75,8 +74,7 @@ pub enum Flags {
 /// application
 pub type Permissions = HashMap<String, Vec<Permission>>;
 
-#[derive(Debug, Clone, AsRefStr, EnumString, IntoStaticStr, ToString, PartialEq, Eq)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// The possible permissions to grant to a specific application for a specific
 /// document.
 pub enum Permission {
@@ -84,25 +82,72 @@ pub enum Permission {
     Read,
     /// Write access.
     Write,
-    #[strum(serialize = "grant-permissions")]
     /// The possibility to grant new permissions to the file.
     GrantPermissions,
     /// Delete access.
     Delete,
 }
 
-impl zvariant::Type for Permission {
-    fn signature() -> Signature<'static> {
-        String::signature()
+impl fmt::Display for Permission {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Read => write!(f, "Read"),
+            Self::Write => write!(f, "Write"),
+            Self::GrantPermissions => write!(f, "Grant Permissions"),
+            Self::Delete => write!(f, "Delete"),
+        }
+    }
+}
+
+impl AsRef<str> for Permission {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Read => "Read",
+            Self::Write => "Write",
+            Self::GrantPermissions => "Grant Permissions",
+            Self::Delete => "Delete",
+        }
+    }
+}
+
+impl From<Permission> for &'static str {
+    fn from(p: Permission) -> Self {
+        match p {
+            Permission::Read => "Read",
+            Permission::Write => "Write",
+            Permission::GrantPermissions => "Grant Permissions",
+            Permission::Delete => "Delete",
+        }
+    }
+}
+
+impl FromStr for Permission {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Read" | "read" => Ok(Permission::Read),
+            "Write" | "write" => Ok(Permission::Write),
+            "GrantPermissions" | "grant-permissions" => Ok(Permission::GrantPermissions),
+            "Delete" | "delete" => Ok(Permission::Delete),
+            _ => Err(ParseError(
+                "Failed to parse priority, invalid value".to_string(),
+            )),
+        }
     }
 }
 
 impl Serialize for Permission {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        String::serialize(&self.to_string(), serializer)
+        match self {
+            Self::Read => serializer.serialize_str("read"),
+            Self::Write => serializer.serialize_str("write"),
+            Self::GrantPermissions => serializer.serialize_str("grant-permissions"),
+            Self::Delete => serializer.serialize_str("delete"),
+        }
     }
 }
 
@@ -112,6 +157,12 @@ impl<'de> Deserialize<'de> for Permission {
         D: Deserializer<'de>,
     {
         Ok(Permission::from_str(&String::deserialize(deserializer)?).expect("invalid permission"))
+    }
+}
+
+impl zvariant::Type for Permission {
+    fn signature() -> Signature<'static> {
+        String::signature()
     }
 }
 
@@ -181,7 +232,7 @@ impl<'a> DocumentsProxy<'a> {
         persistent: bool,
     ) -> Result<String, Error>
     where
-        F: AsRawFd + Debug,
+        F: AsRawFd + fmt::Debug,
     {
         call_method(
             &self.0,
@@ -248,8 +299,8 @@ impl<'a> DocumentsProxy<'a> {
         persistent: bool,
     ) -> Result<String, Error>
     where
-        F: AsRawFd + Debug,
-        P: AsRef<Path> + Serialize + zvariant::Type + Debug,
+        F: AsRawFd + fmt::Debug,
+        P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug,
     {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
@@ -295,8 +346,8 @@ impl<'a> DocumentsProxy<'a> {
         permissions: &[Permission],
     ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error>
     where
-        F: AsRawFd + Debug,
-        P: AsRef<Path> + Serialize + zvariant::Type + Debug,
+        F: AsRawFd + fmt::Debug,
+        P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug,
     {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
@@ -440,7 +491,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup<P: AsRef<Path> + Serialize + zvariant::Type + Debug>(
+    pub async fn lookup<P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug>(
         &self,
         filename: P,
     ) -> Result<Option<String>, Error> {

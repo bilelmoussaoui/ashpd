@@ -37,34 +37,92 @@
 //! ```
 
 use std::os::unix::prelude::AsRawFd;
+use std::{fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize, Serializer};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{Fd, Signature};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_request_method},
-    Error, WindowIdentifier,
+    Error, ParseError, WindowIdentifier,
 };
 
-#[derive(
-    Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
-)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 /// The page orientation.
 pub enum Orientation {
     /// Landscape.
     Landscape,
     /// Portrait.
     Portrait,
-    #[strum(serialize = "reverse_landscape")]
     /// Reverse landscape.
     ReverseLandscape,
-    #[strum(serialize = "reverse_portrait")]
     /// Reverse portrait.
     ReversePortrait,
+}
+
+impl fmt::Display for Orientation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Landscape => write!(f, "Landscape"),
+            Self::Portrait => write!(f, "Portrait"),
+            Self::ReverseLandscape => write!(f, "Reverse Landscape"),
+            Self::ReversePortrait => write!(f, "Reverse Portrait"),
+        }
+    }
+}
+
+impl AsRef<str> for Orientation {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Landscape => "Landscape",
+            Self::Portrait => "Portrait",
+            Self::ReverseLandscape => "Reverse Landscape",
+            Self::ReversePortrait => "Reverse Portrait",
+        }
+    }
+}
+
+impl From<Orientation> for &'static str {
+    fn from(o: Orientation) -> Self {
+        match o {
+            Orientation::Landscape => "Landscape",
+            Orientation::Portrait => "Portrait",
+            Orientation::ReverseLandscape => "Reverse Landscape",
+            Orientation::ReversePortrait => "Reverse Portrait",
+        }
+    }
+}
+
+impl FromStr for Orientation {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Landscape" | "landscape" => Ok(Orientation::Landscape),
+            "Portrait" | "portrait" => Ok(Orientation::Portrait),
+            "ReverseLandscape" | "reverse_landscape" => Ok(Orientation::ReverseLandscape),
+            "ReversePortrait" | "reverse_portrait" => Ok(Orientation::ReversePortrait),
+            _ => Err(ParseError(
+                "Failed to parse orientation, invalid value".to_string(),
+            )),
+        }
+    }
+}
+
+impl Serialize for Orientation {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::Landscape => serializer.serialize_str("landscape"),
+            Self::Portrait => serializer.serialize_str("portrait"),
+            Self::ReverseLandscape => serializer.serialize_str("reverse_landscape"),
+            Self::ReversePortrait => serializer.serialize_str("reverse_portrait"),
+        }
+    }
 }
 
 impl zvariant::Type for Orientation {
@@ -73,19 +131,7 @@ impl zvariant::Type for Orientation {
     }
 }
 
-impl Serialize for Orientation {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        String::serialize(&self.to_string(), serializer)
-    }
-}
-
-#[derive(
-    Debug, Clone, Deserialize, EnumString, AsRefStr, IntoStaticStr, ToString, PartialEq, Eq,
-)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 /// The print quality.
 pub enum Quality {
     /// Draft quality.
@@ -98,18 +144,67 @@ pub enum Quality {
     High,
 }
 
-impl zvariant::Type for Quality {
-    fn signature() -> Signature<'static> {
-        String::signature()
+impl fmt::Display for Quality {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Draft => write!(f, "Draft"),
+            Self::Low => write!(f, "Low"),
+            Self::Normal => write!(f, "Normal"),
+            Self::High => write!(f, "High"),
+        }
+    }
+}
+
+impl AsRef<str> for Quality {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Draft => "Draft",
+            Self::Low => "Low",
+            Self::Normal => "Normal",
+            Self::High => "High",
+        }
+    }
+}
+
+impl From<Quality> for &'static str {
+    fn from(q: Quality) -> Self {
+        match q {
+            Quality::Draft => "Draft",
+            Quality::Low => "Low",
+            Quality::Normal => "Normal",
+            Quality::High => "High",
+        }
+    }
+}
+
+impl FromStr for Quality {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Draft" | "draft" => Ok(Quality::Draft),
+            "Low" | "low" => Ok(Quality::Low),
+            "Normal" | "normal" => Ok(Quality::Normal),
+            "High" | "high" => Ok(Quality::High),
+            _ => Err(ParseError(
+                "Failed to parse quality, invalid value".to_string(),
+            )),
+        }
     }
 }
 
 impl Serialize for Quality {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        String::serialize(&self.to_string(), serializer)
+        serializer.serialize_str(&self.to_string().to_lowercase())
+    }
+}
+
+impl zvariant::Type for Quality {
+    fn signature() -> Signature<'static> {
+        String::signature()
     }
 }
 

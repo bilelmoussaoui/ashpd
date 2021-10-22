@@ -37,6 +37,8 @@ pub enum Error {
     Zbus(zbus::fdo::Error),
     /// A signal returned no response.
     NoResponse,
+    /// Failed to parse a string into an enum variant
+    ParseError(ParseError),
 }
 
 impl std::error::Error for Error {}
@@ -48,9 +50,11 @@ impl std::fmt::Display for Error {
             Self::Zbus(e) => f.write_str(&format!("ZBus Error: {}", e)),
             Self::Portal(e) => f.write_str(&format!("Portal request failed: {}", e)),
             Self::NoResponse => f.write_str("Portal error: no response"),
+            Self::ParseError(e) => f.write_str(&format!("{}", e)),
         }
     }
 }
+
 impl From<ResponseError> for Error {
     fn from(e: ResponseError) -> Self {
         Self::Response(e)
@@ -72,5 +76,14 @@ impl From<zbus::Error> for Error {
 impl From<zbus::fdo::Error> for Error {
     fn from(e: zbus::fdo::Error) -> Self {
         Self::Zbus(e)
+    }
+}
+
+#[derive(Debug)]
+pub struct ParseError(pub(super) String);
+
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
     }
 }

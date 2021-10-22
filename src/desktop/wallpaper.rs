@@ -68,22 +68,19 @@
 //! ```
 
 use std::os::unix::prelude::AsRawFd;
+use std::{fmt, str::FromStr};
 
 use serde::{self, Deserialize, Serialize, Serializer};
-use strum_macros::{AsRefStr, EnumString, IntoStaticStr, ToString};
 use zvariant::{Fd, Signature, Type};
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
     helpers::call_basic_response_method,
-    Error, WindowIdentifier,
+    Error, ParseError, WindowIdentifier,
 };
 
-#[derive(
-    Deserialize, Debug, Clone, Copy, PartialEq, Hash, AsRefStr, EnumString, IntoStaticStr, ToString,
-)]
-#[serde(rename = "lowercase")]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Hash)]
 /// Where to set the wallpaper on.
 pub enum SetOn {
     /// Set the wallpaper only on the lock-screen.
@@ -94,18 +91,63 @@ pub enum SetOn {
     Both,
 }
 
-impl Type for SetOn {
-    fn signature() -> Signature<'static> {
-        String::signature()
+impl fmt::Display for SetOn {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Lockscreen => write!(f, "Lockscreen"),
+            Self::Background => write!(f, "Background"),
+            Self::Both => write!(f, "Both"),
+        }
+    }
+}
+
+impl AsRef<str> for SetOn {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Lockscreen => "Lockscreen",
+            Self::Background => "Background",
+            Self::Both => "Both",
+        }
+    }
+}
+
+impl From<SetOn> for &'static str {
+    fn from(s: SetOn) -> Self {
+        match s {
+            SetOn::Lockscreen => "Lockscreen",
+            SetOn::Background => "Background",
+            SetOn::Both => "Both",
+        }
+    }
+}
+
+impl FromStr for SetOn {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Lockscreen" => Ok(SetOn::Lockscreen),
+            "Background" => Ok(SetOn::Background),
+            "Both" => Ok(SetOn::Both),
+            _ => Err(ParseError(
+                "Failed to parse SetOn, invalid value".to_string(),
+            )),
+        }
     }
 }
 
 impl Serialize for SetOn {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        String::serialize(&self.to_string(), serializer)
+        serializer.serialize_str(&self.to_string().to_lowercase())
+    }
+}
+
+impl Type for SetOn {
+    fn signature() -> Signature<'static> {
+        String::signature()
     }
 }
 
