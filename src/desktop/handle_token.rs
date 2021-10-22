@@ -4,6 +4,7 @@ use std::{convert::TryFrom, fmt::Display};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
+use zbus_names::OwnedMemberName;
 use zvariant_derive::Type;
 
 /// A handle token is a DBus Object Path element, specified in the
@@ -14,7 +15,7 @@ use zvariant_derive::Type;
 /// A valid object path element must only contain the ASCII characters
 /// `[A-Z][a-z][0-9]_`
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
-pub struct HandleToken(String);
+pub struct HandleToken(OwnedMemberName);
 
 impl Display for HandleToken {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -52,7 +53,9 @@ impl TryFrom<&str> for HandleToken {
                 return Err(HandleInvalidCharacter(char));
             }
         }
-        Ok(Self(value.to_string()))
+        Ok(Self(
+            OwnedMemberName::try_from(value).expect("Invalid handle token"),
+        ))
     }
 }
 
