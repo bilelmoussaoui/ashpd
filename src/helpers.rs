@@ -24,14 +24,17 @@ where
     R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
     B: serde::ser::Serialize + zvariant::Type + Debug,
 {
+    #[cfg(feature = "log")]
     tracing::info!(
         "Calling a request method '{}:{}'",
         proxy.interface(),
         method_name
     );
+    #[cfg(feature = "log")]
     tracing::debug!("The body is: {:#?}", body);
     let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
     // We don't use receive_response because we want to create the stream in advance
+    #[cfg(feature = "log")]
     tracing::info!(
         "Listening to signal 'Response' on '{}'",
         request.inner().interface()
@@ -41,6 +44,7 @@ where
     let (response, path) = futures::try_join!(
         async {
             let message = stream.next().await.ok_or(Error::NoResponse)?;
+            #[cfg(feature = "log")]
             tracing::info!(
                 "Received signal 'Response' on '{}'",
                 request.inner().interface()
@@ -49,7 +53,7 @@ where
                 Response::Err(e) => Err(e.into()),
                 Response::Ok(r) => Ok(r),
             };
-
+            #[cfg(feature = "log")]
             tracing::debug!("Received response {:#?}", response);
             response as Result<_, Error>
         },
@@ -57,6 +61,7 @@ where
             let msg = proxy.call_method(method_name, body).await?;
             let path = msg.body::<zvariant::OwnedObjectPath>()?.into_inner();
 
+            #[cfg(feature = "log")]
             tracing::debug!("Received request path {}", path.as_str());
             Ok(path) as Result<zvariant::ObjectPath<'_>, Error>
         },
@@ -85,6 +90,7 @@ pub(crate) async fn receive_signal<R>(
 where
     R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
 {
+    #[cfg(feature = "log")]
     tracing::info!(
         "Listening to signal '{}' on '{}'",
         signal_name,
@@ -92,12 +98,14 @@ where
     );
     let mut stream = proxy.receive_signal(signal_name).await?;
     let message = stream.next().await.ok_or(Error::NoResponse)?;
+    #[cfg(feature = "log")]
     tracing::info!(
         "Received signal '{}' on '{}'",
         signal_name,
         proxy.interface()
     );
     let content = message.body::<R>()?;
+    #[cfg(feature = "log")]
     tracing::debug!("With body {:#?}", content);
     Ok(content)
 }
@@ -111,8 +119,11 @@ where
     R: for<'de> Deserialize<'de> + zvariant::Type,
     B: serde::ser::Serialize + zvariant::Type + Debug,
 {
-    tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
-    tracing::debug!("With body {:#?}", body);
+    #[cfg(feature = "log")]
+    {
+        tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
+        tracing::debug!("With body {:#?}", body);
+    }
     let msg = proxy.call_method(method_name, body).await?;
     let reply = msg.body::<R>()?;
     msg.disown_fds();
