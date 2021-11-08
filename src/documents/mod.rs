@@ -53,7 +53,7 @@ use zvariant_derive::Type;
 
 use crate::{
     helpers::{call_method, path_from_null_terminated},
-    Error, ParseError,
+    Error,
 };
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
@@ -122,7 +122,7 @@ impl From<Permission> for &'static str {
 }
 
 impl FromStr for Permission {
-    type Err = ParseError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -130,7 +130,7 @@ impl FromStr for Permission {
             "Write" | "write" => Ok(Permission::Write),
             "GrantPermissions" | "grant-permissions" => Ok(Permission::GrantPermissions),
             "Delete" | "delete" => Ok(Permission::Delete),
-            _ => Err(ParseError(
+            _ => Err(Error::ParseError(
                 "Failed to parse priority, invalid value".to_string(),
             )),
         }

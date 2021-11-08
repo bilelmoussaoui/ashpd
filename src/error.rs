@@ -38,7 +38,7 @@ pub enum Error {
     /// A signal returned no response.
     NoResponse,
     /// Failed to parse a string into an enum variant
-    ParseError(ParseError),
+    ParseError(String),
 }
 
 impl std::error::Error for Error {}
@@ -76,14 +76,5 @@ impl From<zbus::Error> for Error {
 impl From<zbus::fdo::Error> for Error {
     fn from(e: zbus::fdo::Error) -> Self {
         Self::Zbus(e)
-    }
-}
-
-#[derive(Debug)]
-pub struct ParseError(pub(super) String);
-
-impl std::fmt::Display for ParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.0)
     }
 }

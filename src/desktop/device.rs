@@ -20,7 +20,7 @@ use zvariant::Signature;
 use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error, ParseError};
+use crate::{helpers::call_basic_response_method, Error};
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -71,14 +71,14 @@ impl From<Device> for &'static str {
 }
 
 impl FromStr for Device {
-    type Err = ParseError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "Microphone" | "microphone" => Ok(Device::Microphone),
             "Speakers" | "speakers" => Ok(Device::Speakers),
             "Camera" | "camera" => Ok(Device::Camera),
-            _ => Err(ParseError(
+            _ => Err(Error::ParseError(
                 "Failed to parse device, invalid value".to_string(),
             )),
         }

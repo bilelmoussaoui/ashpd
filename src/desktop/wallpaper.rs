@@ -77,7 +77,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
     helpers::call_basic_response_method,
-    Error, ParseError, WindowIdentifier,
+    Error, WindowIdentifier,
 };
 
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Hash)]
@@ -122,14 +122,14 @@ impl From<SetOn> for &'static str {
 }
 
 impl FromStr for SetOn {
-    type Err = ParseError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "Lockscreen" => Ok(SetOn::Lockscreen),
             "Background" => Ok(SetOn::Background),
             "Both" => Ok(SetOn::Both),
-            _ => Err(ParseError(
+            _ => Err(Error::ParseError(
                 "Failed to parse SetOn, invalid value".to_string(),
             )),
         }

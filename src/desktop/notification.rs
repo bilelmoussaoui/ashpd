@@ -49,7 +49,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 use super::{DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
-    Error, ParseError,
+    Error,
 };
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
@@ -99,7 +99,7 @@ impl From<Priority> for &'static str {
 }
 
 impl FromStr for Priority {
-    type Err = ParseError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -107,7 +107,7 @@ impl FromStr for Priority {
             "Normal" | "normal" => Ok(Priority::Normal),
             "High" | "high" => Ok(Priority::High),
             "Urgent" | "urgent" => Ok(Priority::Urgent),
-            _ => Err(ParseError(
+            _ => Err(Error::ParseError(
                 "Failed to parse priority, invalid value".to_string(),
             )),
         }

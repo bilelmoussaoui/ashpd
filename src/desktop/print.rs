@@ -46,7 +46,7 @@ use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_request_method},
-    Error, ParseError, WindowIdentifier,
+    Error, WindowIdentifier,
 };
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
@@ -96,7 +96,7 @@ impl From<Orientation> for &'static str {
 }
 
 impl FromStr for Orientation {
-    type Err = ParseError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -104,7 +104,7 @@ impl FromStr for Orientation {
             "Portrait" | "portrait" => Ok(Orientation::Portrait),
             "ReverseLandscape" | "reverse_landscape" => Ok(Orientation::ReverseLandscape),
             "ReversePortrait" | "reverse_portrait" => Ok(Orientation::ReversePortrait),
-            _ => Err(ParseError(
+            _ => Err(Error::ParseError(
                 "Failed to parse orientation, invalid value".to_string(),
             )),
         }
@@ -178,7 +178,7 @@ impl From<Quality> for &'static str {
 }
 
 impl FromStr for Quality {
-    type Err = ParseError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -186,7 +186,7 @@ impl FromStr for Quality {
             "Low" | "low" => Ok(Quality::Low),
             "Normal" | "normal" => Ok(Quality::Normal),
             "High" | "high" => Ok(Quality::High),
-            _ => Err(ParseError(
+            _ => Err(Error::ParseError(
                 "Failed to parse quality, invalid value".to_string(),
             )),
         }
