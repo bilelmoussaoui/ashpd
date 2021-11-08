@@ -13,13 +13,9 @@ use gtk4::prelude::*;
 
 #[cfg(feature = "feature_gtk3")]
 use gtk3::{
-    gdk as gdk3,
-    glib::{self, clone, translate::*},
+    glib::{self, clone},
     prelude::*,
 };
-#[cfg(feature = "feature_gtk3")]
-use std::{ffi::c_void, os::raw::c_char};
-
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
@@ -171,35 +167,34 @@ impl WindowIdentifier {
     /// API is async as well.
     pub async fn from_native<W: glib::IsA<gtk4::Native>>(native: &W) -> Self {
         let surface = native.surface().unwrap();
-        let handle = match surface
+        let backend = surface
             .display()
             .expect("Surface has to be attached to a display")
-            .type_()
-            .name()
-        {
-            "GdkWaylandDisplay" => {
-                let (sender, receiver) = futures::channel::oneshot::channel::<String>();
-                let sender = Arc::new(Mutex::new(Some(sender)));
+            .backend();
+        let handle = if backend.is_wayland() {
+            let (sender, receiver) = futures::channel::oneshot::channel::<String>();
+            let sender = Arc::new(Mutex::new(Some(sender)));
 
-                let top_level = surface
-                    .downcast_ref::<gdk4wayland::WaylandToplevel>()
-                    .unwrap();
+            let top_level = surface
+                .downcast_ref::<gdk4wayland::WaylandToplevel>()
+                .unwrap();
 
-                top_level.export_handle(clone!(@strong sender => move |_level, handle| {
-                    let wayland_handle = format!("wayland:{}", handle);
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
-                        if let Some(m) = sender.lock().await.take() {
-                            let _ = m.send(wayland_handle);
-                        }
-                    }));
+            top_level.export_handle(clone!(@strong sender => move |_, handle| {
+                let wayland_handle = format!("wayland:{}", handle);
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
+                    if let Some(m) = sender.lock().await.take() {
+                        let _ = m.send(wayland_handle);
+                    }
                 }));
-                receiver.await.ok()
-            }
-            "GdkX11Display" => surface
+            }));
+            receiver.await.ok()
+        } else if backend.is_x11() {
+            surface
                 .downcast_ref::<gdk4x11::X11Surface>()
-                .map(|w| format!("x11:{}", w.xid())),
-            _ => None,
+                .map(|w| format!("x11:{}", w.xid()))
+        } else {
+            None
         };
 
         match handle {
@@ -219,30 +214,30 @@ impl WindowIdentifier {
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     pub async fn from_window<W: glib::IsA<gdk3::Window>>(win: &W) -> Self {
-        let handle = match win.as_ref().display().type_().name() {
-            "GdkWaylandDisplay" => {
-                let (sender, receiver) = futures::channel::oneshot::channel::<String>();
-                let sender = Arc::new(Mutex::new(Some(sender)));
-
-                export_wayland_handle(
-                    win,
-                    clone!(@strong sender => move |_level, handle| {
-                        let wayland_handle = format!("wayland:{}", handle);
-                        let ctx = glib::MainContext::default();
-                        ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
-                            if let Some(m) = sender.lock().await.take() {
-                                let _ = m.send(wayland_handle);
-                            }
-                        }));
-                    }),
-                );
-                receiver.await.ok()
-            }
-            "GdkX11Display" => win
+        let backend = win.as_ref().display().backend();
+        let handle = if backend.is_wayland() {
+            let (sender, receiver) = futures::channel::oneshot::channel::<String>();
+            let sender = Arc::new(Mutex::new(Some(sender)));
+            let wayland_win = win
                 .as_ref()
+                .downcast_ref::<gdk3::wayland::WaylandWindow>()
+                .unwrap();
+            wayland_win.export_handle(clone!(@strong sender => move |_, handle| {
+                let wayland_handle = format!("wayland:{}", handle);
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
+                    if let Some(m) = sender.lock().await.take() {
+                        let _ = m.send(wayland_handle);
+                    }
+                }));
+            }));
+            receiver.await.ok()
+        } else if backend.is_x11() {
+            win.as_ref()
                 .downcast_ref::<gdk3x11::X11Window>()
-                .map(|w| format!("x11:{}", w.xid())),
-            _ => None,
+                .map(|w| format!("x11:{}", w.xid()))
+        } else {
+            None
         };
 
         match handle {
@@ -263,15 +258,11 @@ impl Drop for WindowIdentifier {
             ctx.spawn_local(clone!(@strong native => async move {
                 let native = native.lock().await;
                 let surface = native.surface().unwrap();
-                let name = surface.display()
-                .unwrap()
-                .type_()
-                .name();
-                if name == "GdkWaylandDisplay"
-            {
-                let top_level = surface.downcast_ref::<gdk4wayland::WaylandToplevel>().unwrap();
-                top_level.unexport_handle();
-            }
+                if surface.display().unwrap().backend().is_wayland()
+                {
+                    let top_level = surface.downcast_ref::<gdk4wayland::WaylandToplevel>().unwrap();
+                    top_level.unexport_handle();
+                }
             }));
         }
         #[cfg(feature = "feature_gtk3")]
@@ -279,62 +270,11 @@ impl Drop for WindowIdentifier {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@strong window => async move {
                 let window = window.lock().await;
-                let name = window.display().type_().name();
-                if name == "GdkWaylandDisplay" {
-                    unexport_wayland_handle(&*window);
+                if window.display().backend().is_wayland() {
+                    let wayland_win = window.downcast_ref::<gdk3::wayland::WaylandWindow>().unwrap();
+                    wayland_win.unexport_handle();
                 }
             }));
         }
-    }
-}
-
-#[cfg(feature = "feature_gtk3")]
-pub(crate) fn unexport_wayland_handle<W: glib::IsA<gdk3::Window>>(win: &W) {
-    extern "C" {
-        pub fn gdk_wayland_window_unexport_handle(window: *mut gdk3::ffi::GdkWindow);
-    }
-    unsafe {
-        gdk_wayland_window_unexport_handle(win.as_ptr() as *mut _);
-    }
-}
-
-#[cfg(feature = "feature_gtk3")]
-pub(crate) fn export_wayland_handle<
-    W: glib::IsA<gdk3::Window>,
-    P: Fn(&gdk3::Window, &str) + 'static,
->(
-    win: &W,
-    callback: P,
-) -> bool {
-    extern "C" {
-        pub fn gdk_wayland_window_export_handle(
-            window: *mut gdk3::ffi::GdkWindow,
-            cb: Option<unsafe extern "C" fn(*mut gdk3::ffi::GdkWindow, *const c_char, *mut c_void)>,
-            user_data: *mut c_void,
-            destroy_notify: Option<unsafe extern "C" fn(*mut c_void)>,
-        ) -> bool;
-    }
-    unsafe extern "C" fn callback_trampoline<P: Fn(&gdk3::Window, &str) + 'static>(
-        window: *mut gdk3::ffi::GdkWindow,
-        handle: *const c_char,
-        user_data: glib::ffi::gpointer,
-    ) {
-        let window = from_glib_borrow(window);
-        let handle: Borrowed<glib::GString> = from_glib_borrow(handle);
-        let callback: &P = &*(user_data as *mut _);
-        (*callback)(&window, handle.as_str());
-    }
-    unsafe extern "C" fn destroy_notify<P: Fn(&gdk3::Window, &str) + 'static>(
-        data: glib::ffi::gpointer,
-    ) {
-        Box::from_raw(data as *mut _);
-    }
-    unsafe {
-        gdk_wayland_window_export_handle(
-            win.as_ref().to_glib_none().0,
-            Some(callback_trampoline::<P> as _),
-            Box::into_raw(Box::new(callback)) as *mut _,
-            Some(destroy_notify::<P> as _),
-        )
     }
 }

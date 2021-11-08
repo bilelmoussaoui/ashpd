@@ -139,26 +139,20 @@ impl Color {
 }
 
 #[cfg(feature = "feature_gtk3")]
-impl From<Color> for gtk3::gdk::RGBA {
-    fn from(color: Color) -> gtk3::gdk::RGBA {
-        gtk3::gdk::RGBA {
-            red: color.red(),
-            green: color.green(),
-            blue: color.blue(),
-            alpha: 1.0,
-        }
+impl From<Color> for gdk3::RGBA {
+    fn from(color: Color) -> Self {
+        gdk3::RGBA::new(color.red(), color.green(), color.blue(), 1.0)
     }
 }
 
 #[cfg(feature = "feature_gtk4")]
 impl From<Color> for gtk4::gdk::RGBA {
-    fn from(color: Color) -> gtk4::gdk::RGBA {
-        gtk4::gdk::RGBA {
-            red: color.red() as f32,
-            green: color.green() as f32,
-            blue: color.blue() as f32,
-            alpha: 1_f32,
-        }
+    fn from(color: Color) -> Self {
+        gtk4::gdk::RGBABuilder::new()
+            .red(color.red() as f32)
+            .green(color.green() as f32)
+            .blue(color.blue() as f32)
+            .build()
     }
 }
 
