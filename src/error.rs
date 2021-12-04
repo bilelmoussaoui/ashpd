@@ -50,7 +50,7 @@ impl std::fmt::Display for Error {
             Self::Zbus(e) => f.write_str(&format!("ZBus Error: {}", e)),
             Self::Portal(e) => f.write_str(&format!("Portal request failed: {}", e)),
             Self::NoResponse => f.write_str("Portal error: no response"),
-            Self::ParseError(e) => f.write_str(&format!("{}", e)),
+            Self::ParseError(e) => f.write_str(&e.to_string()),
         }
     }
 }
