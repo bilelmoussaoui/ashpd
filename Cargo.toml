@@ -12,7 +12,7 @@ version = "0.2.0-alpha-5"
 
 [features]
 default_features = []
-feature_gtk3 = ["gdk3x11", "gtk3", "gdk3"]
+feature_gtk3 = ["gdk3x11", "gdk3wayland", "gtk3"]
 feature_gtk4 = ["gdk4x11", "gdk4wayland", "gtk4"]
 feature_pipewire = ["pw", "libc"]
 log = ["tracing"]
@@ -20,7 +20,7 @@ log = ["tracing"]
 [dependencies]
 enumflags2 = "0.6"
 gdk3x11 = {package = "gdkx11", git = "https://github.com/gtk-rs/gtk3-rs", optional = true}
-gdk3 = {package = "gdk", git = "https://github.com/gtk-rs/gtk3-rs", optional = true, features = ["wayland", "v3_22"]}
+gdk3wayland = {package = "gdkwayland", git = "https://github.com/gtk-rs/gtk3-rs", optional = true, features = ["v3_22"]}
 gtk3 = {package = "gtk", git = "https://github.com/gtk-rs/gtk3-rs", optional = true}
 
 gdk4wayland = {package = "gdk4-wayland", git = "https://github.com/gtk-rs/gtk4-rs", optional = true}

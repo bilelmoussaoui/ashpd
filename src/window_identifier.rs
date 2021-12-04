@@ -95,7 +95,7 @@ pub enum WindowIdentifier {
         /// The exported window handle
         handle: String,
         // the top level window
-        window: Arc<Mutex<gdk3::Window>>,
+        window: Arc<Mutex<gtk3::gdk::Window>>,
     },
     /// For Other Toolkits
     #[doc(hidden)]
@@ -213,14 +213,14 @@ impl WindowIdentifier {
     ///
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
-    pub async fn from_window<W: glib::IsA<gdk3::Window>>(win: &W) -> Self {
+    pub async fn from_window<W: glib::IsA<gtk3::gdk::Window>>(win: &W) -> Self {
         let backend = win.as_ref().display().backend();
         let handle = if backend.is_wayland() {
             let (sender, receiver) = futures::channel::oneshot::channel::<String>();
             let sender = Arc::new(Mutex::new(Some(sender)));
             let wayland_win = win
                 .as_ref()
-                .downcast_ref::<gdk3::wayland::WaylandWindow>()
+                .downcast_ref::<gdk3wayland::WaylandWindow>()
                 .unwrap();
             wayland_win.export_handle(clone!(@strong sender => move |_, handle| {
                 let wayland_handle = format!("wayland:{}", handle);
@@ -271,7 +271,7 @@ impl Drop for WindowIdentifier {
             ctx.spawn_local(clone!(@strong window => async move {
                 let window = window.lock().await;
                 if window.display().backend().is_wayland() {
-                    let wayland_win = window.downcast_ref::<gdk3::wayland::WaylandWindow>().unwrap();
+                    let wayland_win = window.downcast_ref::<gdk3wayland::WaylandWindow>().unwrap();
                     wayland_win.unexport_handle();
                 }
             }));
