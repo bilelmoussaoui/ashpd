@@ -55,6 +55,9 @@ pub mod print;
 /// Proxy information.
 pub mod proxy_resolver;
 
+/// Power profile monitoring.
+pub mod power_profile_monitor;
+
 /// Start a remote desktop session and interact with it.
 pub mod remote_desktop;
 
