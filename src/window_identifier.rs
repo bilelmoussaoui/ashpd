@@ -23,7 +23,7 @@ use gtk3::{
 /// this reason.
 ///
 /// Under X11, the [`WindowIdentifier`] should have the form `x11:XID`, where
-/// XID is the XID of the application window. Under Wayland, it should have the
+/// XID is the XID of the application window in hexadecimal. Under Wayland, it should have the
 /// form `wayland:HANDLE`, where HANDLE is a surface handle obtained with the
 /// [xdg-foreign](https://github.com/wayland-project/wayland-protocols/blob/master/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
 ///
@@ -192,7 +192,7 @@ impl WindowIdentifier {
         } else if backend.is_x11() {
             surface
                 .downcast_ref::<gdk4x11::X11Surface>()
-                .map(|w| format!("x11:{}", w.xid()))
+                .map(|w| format!("x11:0x{:x}", w.xid()))
         } else {
             None
         };
@@ -235,7 +235,7 @@ impl WindowIdentifier {
         } else if backend.is_x11() {
             win.as_ref()
                 .downcast_ref::<gdk3x11::X11Window>()
-                .map(|w| format!("x11:{}", w.xid()))
+                .map(|w| format!("x11:0x{:x}", w.xid()))
         } else {
             None
         };
