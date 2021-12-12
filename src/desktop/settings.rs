@@ -70,7 +70,7 @@ impl std::fmt::Debug for Setting {
     }
 }
 
-/// The system's prefered color scheme
+/// The system's preferred color scheme
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ColorScheme {
     /// No preference
@@ -156,7 +156,10 @@ impl<'a> SettingsProxy<'a> {
 
     /// Reads the value of namespace: `org.freedesktop.appearance` and `color-scheme` key.
     pub async fn color_scheme(&self) -> Result<ColorScheme, Error> {
-        let scheme = match self.read::<u32>("org.freedesktop.appearance", "color-scheme").await? {
+        let scheme = match self
+            .read::<u32>("org.freedesktop.appearance", "color-scheme")
+            .await?
+        {
             1 => ColorScheme::PreferDark,
             2 => ColorScheme::PreferLight,
             _ => ColorScheme::NoPreference,
