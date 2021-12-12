@@ -11,10 +11,16 @@ color {
     margin-left: 12px;
     margin-right: 12px;
 }
+
 notification .success {
-    background-color: mix(@success_color, @theme_base_color, 0.3);
+    background-color: @success_bg_color;
+    color: @success_fg_color;
 }
 
 notification infobar label {
     padding: 6px;
+}
+
+.map-marker {
+    color: #e01b24;
 }

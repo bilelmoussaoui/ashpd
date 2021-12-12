@@ -59,6 +59,7 @@ mod imp {
         fn new() -> Self {
             let marker = shumate::Marker::new();
             let marker_img = gtk::Image::from_icon_name(Some("map-marker-symbolic"));
+            marker_img.add_css_class("map-marker");
             marker.set_child(Some(&marker_img));
 
             Self {
