@@ -58,6 +58,9 @@ pub mod proxy_resolver;
 /// Start a remote desktop session and interact with it.
 pub mod remote_desktop;
 
+/// Set threads to realtime.
+pub mod realtime;
+
 /// Start a screencast session and get the PipeWire remote of it.
 pub mod screencast;
 
