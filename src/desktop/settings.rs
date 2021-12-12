@@ -70,6 +70,17 @@ impl std::fmt::Debug for Setting {
     }
 }
 
+/// The system's prefered color scheme
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ColorScheme {
+    /// No preference
+    NoPreference,
+    /// Prefers dark appearance
+    PreferDark,
+    /// Prefers light appearance
+    PreferLight,
+}
+
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
 /// settings.
@@ -141,6 +152,16 @@ impl<'a> SettingsProxy<'a> {
         T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type,
     {
         call_method(&self.0, "Read", &(namespace, key)).await
+    }
+
+    /// Reads the value of namespace: `org.freedesktop.appearance` and `color-scheme` key.
+    pub async fn color_scheme(&self) -> Result<ColorScheme, Error> {
+        let scheme = match self.read::<u32>("org.freedesktop.appearance", "color-scheme").await? {
+            1 => ColorScheme::PreferDark,
+            2 => ColorScheme::PreferLight,
+            _ => ColorScheme::NoPreference,
+        };
+        Ok(scheme)
     }
 
     /// Signal emitted when a setting changes.
