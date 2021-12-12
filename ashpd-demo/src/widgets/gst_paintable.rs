@@ -91,6 +91,7 @@ mod camera_sink {
         }
 
         impl ObjectImpl for CameraSink {}
+        impl GstObjectImpl for CameraSink {}
         impl ElementImpl for CameraSink {
             fn metadata() -> Option<&'static gst::subclass::ElementMetadata> {
                 static ELEMENT_METADATA: Lazy<gst::subclass::ElementMetadata> = Lazy::new(|| {
@@ -260,7 +261,7 @@ mod imp {
             } else {
                 let snapshot = snapshot.downcast_ref::<gtk::Snapshot>().unwrap();
                 snapshot.append_color(
-                    &gdk::RGBA::black(),
+                    &gdk::RGBA::BLACK,
                     &graphene::Rect::new(0f32, 0f32, width as f32, height as f32),
                 );
             }
@@ -281,7 +282,7 @@ impl CameraPaintable {
         let raw_fd = fd.as_raw_fd();
         tracing::debug!("Loading PipeWire FD: {}", raw_fd);
         let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
-        pipewire_element.set_property("fd", &raw_fd).unwrap();
+        pipewire_element.set_property("fd", &raw_fd);
         self.init_pipeline(pipewire_element);
     }
 
@@ -289,10 +290,8 @@ impl CameraPaintable {
         let raw_fd = fd.as_raw_fd();
         tracing::debug!("Loading PipeWire Node ID: {} with FD: {}", node_id, raw_fd);
         let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
-        pipewire_element.set_property("fd", &raw_fd).unwrap();
-        pipewire_element
-            .set_property("path", &node_id.to_string())
-            .unwrap();
+        pipewire_element.set_property("fd", &raw_fd);
+        pipewire_element.set_property("path", &node_id.to_string());
         self.init_pipeline(pipewire_element);
     }
 

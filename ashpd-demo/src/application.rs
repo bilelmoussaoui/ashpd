@@ -83,20 +83,8 @@ mod imp {
 
         fn startup(&self, app: &Self::Type) {
             debug!("Application::startup");
-            adw::init();
-            let provider = gtk::CssProvider::new();
-            provider.load_from_resource("/com/belmoussaoui/ashpd/demo/style.css");
             // Set icons for shell
             gtk::Window::set_default_icon_name(config::APP_ID);
-
-            if let Some(ref display) = gtk::gdk::Display::default() {
-                gtk::StyleContext::add_provider_for_display(
-                    display,
-                    &provider,
-                    gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-                );
-            }
-
             self.settings
                 .connect_changed(Some("dark-mode"), |_settings, _key| {
                     let style_manager = adw::StyleManager::default().unwrap();
@@ -193,7 +181,7 @@ impl Application {
     }
 
     pub fn stop_current_instance() -> ashpd::Result<()> {
-        let bus = gio::bus_get_sync(gio::BusType::Session, gio::NONE_CANCELLABLE).unwrap();
+        let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE).unwrap();
         gio::bus_watch_name_on_connection(
             &bus,
             config::APP_ID,
@@ -241,7 +229,7 @@ impl Application {
     }
 
     fn show_about_dialog(&self) {
-        let dialog = gtk::AboutDialogBuilder::new()
+        let dialog = gtk::AboutDialog::builder()
             .logo_icon_name(config::APP_ID)
             .license_type(gtk::License::MitX11)
             .website("https://github.com/bilelmoussaoui/ashpd/")

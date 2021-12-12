@@ -68,7 +68,7 @@ impl PrintPage {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        let file_chooser = gtk::FileChooserNativeBuilder::new()
+        let file_chooser = gtk::FileChooserNative::builder()
             .accept_label("Select")
             .action(gtk::FileChooserAction::Open)
             .modal(true)

@@ -4,7 +4,7 @@ use gtk::prelude::*;
 mod imp {
     use std::cell::RefCell;
 
-    use glib::{ParamFlags, ParamSpec, Value};
+    use glib::{ParamFlags, ParamSpec, ParamSpecString, Value};
     use gtk::subclass::prelude::*;
     use gtk::CompositeTemplate;
     use once_cell::sync::Lazy;
@@ -37,14 +37,14 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpec::new_string(
+                    ParamSpecString::new(
                         "label",
                         "Label",
                         "Row Label",
                         Some(""),
                         ParamFlags::READWRITE | ParamFlags::CONSTRUCT,
                     ),
-                    ParamSpec::new_string(
+                    ParamSpecString::new(
                         "page-name",
                         "Page Name",
                         "Page Name",
@@ -93,16 +93,10 @@ impl SidebarRow {
 
     pub fn title(&self) -> Option<String> {
         self.property("label")
-            .unwrap()
-            .get::<Option<String>>()
-            .unwrap()
     }
 
     pub fn name(&self) -> String {
-        self.property("page-name")
-            .unwrap()
-            .get::<Option<String>>()
-            .unwrap()
+        self.property::<Option<String>>("page-name")
             .unwrap_or_else(|| "welcome".to_string())
     }
 }

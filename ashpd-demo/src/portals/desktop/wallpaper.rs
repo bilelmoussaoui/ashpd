@@ -64,7 +64,7 @@ impl WallpaperPage {
         let self_ = imp::WallpaperPage::from_instance(self);
         let root = self.native().unwrap();
 
-        let file_chooser = gtk::FileChooserNativeBuilder::new()
+        let file_chooser = gtk::FileChooserNative::builder()
             .accept_label("Select")
             .action(gtk::FileChooserAction::Open)
             .modal(true)

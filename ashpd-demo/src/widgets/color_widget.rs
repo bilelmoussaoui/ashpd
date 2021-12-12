@@ -5,7 +5,7 @@ use gtk::{gdk, glib, graphene};
 mod imp {
     use std::cell::RefCell;
 
-    use glib::ParamSpec;
+    use glib::{ParamSpec, ParamSpecBoxed};
 
     use super::*;
 
@@ -29,7 +29,7 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             use once_cell::sync::Lazy;
             static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
-                vec![ParamSpec::new_boxed(
+                vec![ParamSpecBoxed::new(
                     "rgba",
                     "RGBA",
                     "Color RGBA",
@@ -69,11 +69,12 @@ mod imp {
     }
     impl WidgetImpl for ColorWidget {
         fn snapshot(&self, widget: &Self::Type, snapshot: &gtk::Snapshot) {
-            let color = self.rgba.borrow().unwrap_or_else(|| gdk::RGBA {
-                red: 53.0 / 255.0,
-                green: 132.0 / 255.0,
-                blue: 228.0 / 255.0,
-                alpha: 1.0,
+            let color = self.rgba.borrow().unwrap_or_else(|| {
+                gdk::RGBA::builder()
+                    .red(53.0 / 255.0)
+                    .green(132.0 / 255.0)
+                    .blue(228.0 / 255.0)
+                    .build()
             });
             let width = widget.width() as f32;
             let height = widget.height() as f32;
@@ -93,7 +94,7 @@ impl ColorWidget {
     }
 
     pub fn set_rgba(&self, rgba: gdk::RGBA) {
-        self.set_property("rgba", &rgba).unwrap();
+        self.set_property("rgba", &rgba);
         self.queue_draw();
     }
 }

@@ -100,7 +100,7 @@ mod imp {
             viewport.set_reference_map_source(Some(&source));
             viewport.set_zoom_level(6.0);
 
-            self.map_license.append_map_source(&source);
+            //self.map_license.append_map_source(&source);
             self.parent_constructed(obj);
         }
     }

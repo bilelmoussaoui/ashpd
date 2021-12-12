@@ -1,7 +1,7 @@
 {
     "app-id": "com.belmoussaoui.ashpd.demo.Devel",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "41",
+    "runtime-version": "master",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": ["org.freedesktop.Sdk.Extension.rust-stable", "org.freedesktop.Sdk.Extension.llvm12"],
     "command": "ashpd-demo",
@@ -10,7 +10,6 @@
         "--share=ipc",
         "--socket=wayland",
         "--device=dri",
-        "--talk-name=org.a11y.Bus",
         "--share=network",
         "--env=RUST_LOG=ashpd_demo=debug,ashpd=debug",
         "--env=G_MESSAGES_DEBUG=none",
@@ -29,48 +28,6 @@
         ]
     },
     "modules": [
-        {
-            "name" : "libadwaita",
-            "buildsystem" : "meson",
-            "config-opts": [
-                "-Dintrospection=disabled",
-                "-Dgtk_doc=false",
-                "-Dtests=false",
-                "-Dexamples=false",
-                "-Dvapi=false"
-            ],
-            "cleanup": [
-                "/include",
-                "/lib/pkgconfig"
-            ],
-            "sources" : [{
-                "type": "git",
-                "url": "https://gitlab.gnome.org/GNOME/libadwaita.git",
-                "tag": "1.0.0.alpha.3"
-            }],
-            "modules": [
-                {
-                    "name" : "libsass",
-                    "buildsystem" : "meson",
-                    "cleanup": ["*"],
-                    "sources" : [{
-                        "type" : "git",
-                        "url" : "https://github.com/lazka/libsass.git",
-                        "branch" : "meson"
-                    }]
-                },
-                {
-                    "name" : "sassc",
-                    "buildsystem" : "meson",
-                    "cleanup": ["*"],
-                    "sources" : [{
-                        "type" : "git",
-                        "url" : "https://github.com/lazka/sassc.git",
-                        "branch" : "meson"
-                    }]
-                }
-            ]
-        },
         {
             "name": "libshumate",
             "buildsystem": "meson",
