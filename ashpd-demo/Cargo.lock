@@ -62,9 +62,8 @@ dependencies = [
  "ashpd",
  "futures",
  "gettext-rs",
+ "gst-plugin-gtk4",
  "gstreamer",
- "gstreamer-base",
- "gstreamer-video",
  "gtk-macros",
  "gtk4",
  "libadwaita",
@@ -846,6 +845,28 @@ dependencies = [
  "libc",
  "pango-sys",
  "system-deps 6.0.0",
+]
+
+[[package]]
+name = "gst-plugin-gtk4"
+version = "0.1.0"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs/#9ae8f0d330c63174a13f9f17c9f776fca9ff3453"
+dependencies = [
+ "fragile",
+ "gst-plugin-version-helper",
+ "gstreamer",
+ "gstreamer-base",
+ "gstreamer-video",
+ "gtk4",
+ "once_cell",
+]
+
+[[package]]
+name = "gst-plugin-version-helper"
+version = "0.8.0"
+source = "git+https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs/#9ae8f0d330c63174a13f9f17c9f776fca9ff3453"
+dependencies = [
+ "chrono",
 ]
 
 [[package]]
