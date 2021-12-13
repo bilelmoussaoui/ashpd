@@ -65,20 +65,24 @@ pub enum SpawnFlags {
     /// Clear the environment.
     ClearEnv = 1,
     /// Spawn the latest version of the app.
-    Latest = 2,
+    LatestVersion = 2,
     /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
     Sandbox = 4,
     /// Spawn without network (equivalent of the `unshare=network` option of
     /// `flatpak run`).
     NoNetwork = 8,
     /// Kill the sandbox when the caller disappears from the session bus.
-    Kill = 16,
+    WatchBus = 16,
     /// Expose the sandbox pids in the callers sandbox, only supported if using
     /// user namespaces for containers (not setuid), see the support property.
-    Expose = 32,
+    ExposePids = 32,
     /// Emit a SpawnStarted signal once the sandboxed process has been fully
     /// started.
-    Emit = 64,
+    NotifyStart = 64,
+    /// Expose the sandbox process IDs in the caller's sandbox and the caller's process IDs in the new sandbox.
+    SharePids = 128,
+    /// Don't provide app files at `/app` in the new sandbox.
+    EmptyApp = 256,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
