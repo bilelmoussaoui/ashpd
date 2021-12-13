@@ -107,6 +107,14 @@ use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
+    // Token to activate the choosen application.
+    activation_token: Option<String>,
+}
+
+impl OpenDirOptions {
+    pub fn set_activation_token(&mut self, activation_token: &str) {
+        self.activation_token = Some(activation_token.to_string());
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -123,6 +131,8 @@ struct OpenFileOptions {
     /// Whether to ask the user to choose an app. If this is not passed, or
     /// false, the portal may use a default or pick the last choice.
     ask: Option<bool>,
+    // Token to activate the choosen application.
+    activation_token: Option<String>,
 }
 
 impl OpenFileOptions {
@@ -136,6 +146,10 @@ impl OpenFileOptions {
     pub fn ask(mut self, ask: bool) -> Self {
         self.ask = Some(ask);
         self
+    }
+
+    pub fn set_activation_token(&mut self, activation_token: &str) {
+        self.activation_token = Some(activation_token.to_string());
     }
 }
 
@@ -171,6 +185,8 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `identifier` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
+    /// * `activation_token` - Token used to activate the choosen application.
+    ///     Available with the version 4 of the interface.
     ///
     /// # Specifications
     ///
@@ -180,11 +196,15 @@ impl<'a> OpenURIProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         directory: &F,
+        activation_token: Option<&str>,
     ) -> Result<(), Error>
     where
         F: AsRawFd,
     {
-        let options = OpenDirOptions::default();
+        let mut options = OpenDirOptions::default();
+        if let Some(token) = activation_token {
+            options.set_activation_token(token);
+        }
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -203,6 +223,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or
     ///   not.
+    /// * `activation_token` - Token used to activate the choosen application.
+    ///     Available with the version 4 of the interface.
     ///
     /// # Specifications
     ///
@@ -214,11 +236,15 @@ impl<'a> OpenURIProxy<'a> {
         file: &F,
         writeable: bool,
         ask: bool,
+        activation_token: Option<&str>,
     ) -> Result<(), Error>
     where
         F: AsRawFd,
     {
-        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
+        let mut options = OpenFileOptions::default().ask(ask).writeable(writeable);
+        if let Some(token) = activation_token {
+            options.set_activation_token(token);
+        }
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -237,6 +263,8 @@ impl<'a> OpenURIProxy<'a> {
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or
     ///   not.
+    /// * `activation_token` - Token used to activate the choosen application.
+    ///     Available with the version 4 of the interface.
     ///
     /// *Note* that `file` uris are explicitly not supported by this method.
     /// Use [`Self::open_file`] or [`Self::open_directory`] instead.
@@ -251,8 +279,12 @@ impl<'a> OpenURIProxy<'a> {
         uri: &str,
         writeable: bool,
         ask: bool,
+        activation_token: Option<&str>,
     ) -> Result<(), Error> {
-        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
+        let mut options = OpenFileOptions::default().ask(ask).writeable(writeable);
+        if let Some(token) = activation_token {
+            options.set_activation_token(token);
+        }
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -270,10 +302,13 @@ pub async fn open_uri(
     uri: &str,
     writeable: bool,
     ask: bool,
+    activation_token: Option<&str>,
 ) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_uri(identifier, uri, writeable, ask).await?;
+    proxy
+        .open_uri(identifier, uri, writeable, ask, activation_token)
+        .await?;
     Ok(())
 }
 
@@ -283,10 +318,13 @@ pub async fn open_file<F: AsRawFd>(
     file: &F,
     writeable: bool,
     ask: bool,
+    activation_token: Option<&str>,
 ) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_file(identifier, file, writeable, ask).await?;
+    proxy
+        .open_file(identifier, file, writeable, ask, activation_token)
+        .await?;
     Ok(())
 }
 
@@ -295,9 +333,12 @@ pub async fn open_file<F: AsRawFd>(
 pub async fn open_directory<F: AsRawFd>(
     identifier: &WindowIdentifier,
     directory: &F,
+    activation_token: Option<&str>,
 ) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy.open_directory(identifier, directory).await?;
+    proxy
+        .open_directory(identifier, directory, activation_token)
+        .await?;
     Ok(())
 }
