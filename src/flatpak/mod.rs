@@ -33,6 +33,7 @@ use enumflags2::BitFlags;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::ffi::OsStrExt;
+use std::os::unix::prelude::RawFd;
 use std::{collections::HashMap, ffi::CString, fmt::Debug, os::unix::prelude::AsRawFd, path::Path};
 use zvariant::Fd;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -98,18 +99,32 @@ pub enum SupportsFlags {
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
+    #[zvariant(rename = "sandbox-expose")]
     sandbox_expose: Option<Vec<String>>,
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, read-only.
+    #[zvariant(rename = "sandbox-expose-ro")]
     sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
+    #[zvariant(rename = "sandbox-expose-fd")]
     sandbox_expose_fd: Option<Vec<Fd>>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, read-only.
+    #[zvariant(rename = "sandbox-expose-fd-ro")]
     sandbox_expose_fd_ro: Option<Vec<Fd>>,
     /// Flags affecting the created sandbox.
+    #[zvariant(rename = "sandbox-flags")]
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
+    /// A list of environment variables to remove.
+    #[zvariant(rename = "unset-env")]
+    unset_env: Option<Vec<String>>,
+    /// A file descriptor of the directory that  will be used as `/usr` in the new sandbox.
+    #[zvariant(rename = "usr-fd")]
+    usr_fd: Option<RawFd>,
+    /// A file descriptor of the directory that  will be used as `/app` in the new sandbox.
+    #[zvariant(rename = "app-fd")]
+    app_fd: Option<RawFd>,
 }
 
 impl SpawnOptions {
@@ -172,6 +187,24 @@ impl SpawnOptions {
         self.sandbox_flags = Some(sandbox_flags);
         self
     }
+
+    /// Env variables to unset.
+    pub fn unset_env(mut self, env: &[&str]) -> Self {
+        self.unset_env = Some(env.iter().map(|e| e.to_string()).collect());
+        self
+    }
+
+    /// Set a file descriptor of the directory that  will be used as `/usr` in the new sandbox.
+    pub fn usr_fd<F: AsRawFd>(mut self, fd: F) -> Self {
+        self.usr_fd = Some(fd.as_raw_fd());
+        self
+    }
+
+    /// Set a file descriptor of the directory that  will be used as `/app` in the new sandbox.
+    pub fn app_fd<F: AsRawFd>(mut self, fd: F) -> Self {
+        self.app_fd = Some(fd.as_raw_fd());
+        self
+    }
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
@@ -223,6 +256,7 @@ impl<'a> FlatpakProxy<'a> {
     }
 
     /// Emitted when a process starts by [`spawn()`][`FlatpakProxy::spawn`].
+    #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
         receive_signal(&self.0, "SpawnStarted").await
     }
