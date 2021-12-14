@@ -105,7 +105,7 @@ impl zvariant::Type for Device {
 /// sense, since the API is not directly accessible to applications inside the
 /// sandbox.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Device).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Device).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Device")]
 pub struct DeviceProxy<'a>(zbus::Proxy<'a>);
@@ -139,7 +139,7 @@ impl<'a> DeviceProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Device.AccessDevice).
+    /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Device.AccessDevice).
     #[doc(alias = "AccessDevice")]
     pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<(), Error> {
         let options = AccessDeviceOptions::default();

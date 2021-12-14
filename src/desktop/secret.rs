@@ -45,7 +45,7 @@ impl RetrieveOptions {
 /// The secret can then be used for encrypting confidential data inside the
 /// sandbox.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Secret).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Secret).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Secret")]
 pub struct SecretProxy<'a>(zbus::Proxy<'a>);

@@ -97,7 +97,7 @@ impl UserInfo {
 /// The portal backend will present the user with a dialog to confirm which (if
 /// any) information to share.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Account).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Account).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Account")]
 pub struct AccountProxy<'a>(zbus::Proxy<'a>);

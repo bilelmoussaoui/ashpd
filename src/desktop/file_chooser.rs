@@ -425,7 +425,7 @@ impl SelectedFiles {
 /// outside the sandbox. The portal backend will present the user with a file
 /// chooser dialog.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileChooser).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileChooser).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
 pub struct FileChooserProxy<'a>(zbus::Proxy<'a>);
@@ -457,7 +457,7 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileChooser.OpenFile).
+    /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.OpenFile).
     #[doc(alias = "OpenFile")]
     pub async fn open_file(
         &self,
@@ -484,7 +484,7 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SaveFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFile).
+    /// See also [`SaveFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFile).
     #[doc(alias = "SaveFile")]
     pub async fn save_file(
         &self,
@@ -516,7 +516,7 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SaveFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFiles).
+    /// See also [`SaveFiles`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFiles).
     #[doc(alias = "SaveFiles")]
     pub async fn save_files(
         &self,

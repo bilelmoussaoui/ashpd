@@ -22,7 +22,7 @@ use crate::{helpers::call_method, Error};
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib [`gio::ProxyResolver`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.ProxyResolver.html) interface.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.ProxyResolver`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.ProxyResolver).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.ProxyResolver`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.ProxyResolver).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ProxyResolver")]
 pub struct ProxyResolverProxy<'a>(zbus::Proxy<'a>);
@@ -54,7 +54,7 @@ impl<'a> ProxyResolverProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-ProxyResolver.Lookup).
+    /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ProxyResolver.Lookup).
     #[doc(alias = "Lookup")]
     pub async fn lookup(&self, uri: &str) -> Result<Vec<String>, Error> {
         call_method(&self.0, "Lookup", &(uri)).await

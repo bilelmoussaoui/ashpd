@@ -168,7 +168,7 @@ impl Email {
 
 /// The interface lets sandboxed applications request sending an email.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Email).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Email).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Email")]
 pub struct EmailProxy<'a>(zbus::Proxy<'a>);
@@ -202,7 +202,7 @@ impl<'a> EmailProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
+    /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
     #[doc(alias = "ComposeEmail")]
     pub async fn compose_email(
         &self,

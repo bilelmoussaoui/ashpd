@@ -88,7 +88,7 @@ pub struct UpdateProgress {
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak.UpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Flatpak.UpdateMonitor).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak.UpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Flatpak.UpdateMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak.UpdateMonitor")]
 pub struct UpdateMonitorProxy<'a>(zbus::Proxy<'a>);
@@ -120,7 +120,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Progress`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.Progress).
+    /// See also [`Progress`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.Progress).
     #[doc(alias = "Progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
         receive_signal(&self.0, "Progress").await
@@ -130,7 +130,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`UpdateAvailable`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.UpdateAvailable).
+    /// See also [`UpdateAvailable`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.UpdateAvailable).
     #[doc(alias = "UpdateAvailable")]
     pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
         receive_signal(&self.0, "UpdateAvailable").await
@@ -143,7 +143,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Update`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Update).
+    /// See also [`Update`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Update).
     #[doc(alias = "Update")]
     pub async fn update(&self, identifier: &WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
@@ -154,7 +154,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Close).
+    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await

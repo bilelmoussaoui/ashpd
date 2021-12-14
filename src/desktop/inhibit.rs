@@ -137,7 +137,7 @@ pub enum SessionState {
 /// The interface lets sandboxed applications inhibit the user session from
 /// ending, suspending, idling or getting switched away.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Inhibit`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Inhibit).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Inhibit`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Inhibit).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Inhibit")]
 pub struct InhibitProxy<'a>(zbus::Proxy<'a>);
@@ -169,7 +169,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Inhibit.CreateMonitor).
+    /// See also [`CreateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Inhibit.CreateMonitor).
     #[doc(alias = "CreateMonitor")]
     pub async fn create_monitor(
         &self,
@@ -197,7 +197,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Inhibit`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Inhibit.Inhibit).
+    /// See also [`Inhibit`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Inhibit.Inhibit).
     #[doc(alias = "Inhibit")]
     pub async fn inhibit(
         &self,
@@ -219,7 +219,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Inhibit.StateChanged).
+    /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.StateChanged).
     #[doc(alias = "StateChanged")]
     pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
         receive_signal(&self.0, "StateChanged").await
@@ -237,7 +237,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Inhibit.QueryEndResponse).
+    /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.QueryEndResponse).
     #[doc(alias = "QueryEndResponse")]
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
         call_method(&self.0, "QueryEndResponse", &(session)).await

@@ -40,7 +40,7 @@ struct CameraAccessOptions {
 /// The interface lets sandboxed applications access camera devices, such as web
 /// cams.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Camera`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Camera).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Camera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Camera).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Camera")]
 pub struct CameraProxy<'a>(zbus::Proxy<'a>);
@@ -66,7 +66,7 @@ impl<'a> CameraProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Camera.AccessCamera).
+    /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.AccessCamera).
     #[doc(alias = "AccessCamera")]
     pub async fn access_camera(&self) -> Result<(), Error> {
         let options = CameraAccessOptions::default();
@@ -83,7 +83,7 @@ impl<'a> CameraProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Camera.OpenPipeWireRemote).
+    /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(&self) -> Result<RawFd, Error> {
         // `options` parameter doesn't seems to be used yet
@@ -97,7 +97,7 @@ impl<'a> CameraProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`IsCameraPresent`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-property-org-freedesktop-portal-Camera.IsCameraPresent).
+    /// See also [`IsCameraPresent`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-Camera.IsCameraPresent).
     #[doc(alias = "IsCameraPresent")]
     pub async fn is_camera_present(&self) -> Result<bool, Error> {
         self.0

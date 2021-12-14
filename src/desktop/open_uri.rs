@@ -157,7 +157,7 @@ impl OpenFileOptions {
 /// (e.g. a http: link to the applications homepage) under the control of the
 /// user.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.OpenURI).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.OpenURI).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
 pub struct OpenURIProxy<'a>(zbus::Proxy<'a>);
@@ -190,7 +190,7 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`OpenDirectory`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenDirectory).
+    /// See also [`OpenDirectory`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenDirectory).
     #[doc(alias = "OpenDirectory")]
     pub async fn open_directory<F>(
         &self,
@@ -228,7 +228,7 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenFile).
+    /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenFile).
     #[doc(alias = "OpenFile")]
     pub async fn open_file<F>(
         &self,
@@ -271,7 +271,7 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`OpenURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenURI).
+    /// See also [`OpenURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenURI).
     #[doc(alias = "OpenURI")]
     pub async fn open_uri(
         &self,

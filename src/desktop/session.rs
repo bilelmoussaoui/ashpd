@@ -21,7 +21,7 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// and a signal [`SessionProxy::receive_closed`]. Whether it is allowed to
 /// directly call [`SessionProxy::close`] depends on the interface.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Session).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Session).
 #[doc(alias = "org.freedesktop.portal.Session")]
 pub struct SessionProxy<'a>(zbus::Proxy<'a>);
 
@@ -67,7 +67,7 @@ impl<'a> SessionProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Session.Closed).
+    /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Session.Closed).
     #[doc(alias = "Closed")]
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
         receive_signal(&self.0, "Closed").await
@@ -78,7 +78,7 @@ impl<'a> SessionProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Session.Close).
+    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Session.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         call_method(&self.0, "Close", &()).await

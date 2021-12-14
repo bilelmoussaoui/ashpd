@@ -3,7 +3,7 @@ use crate::{helpers::call_method, Error};
 
 /// Interface for setting a thread to realtime from within the sandbox.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Realtime).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Realtime).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Realtime")]
 pub struct RealtimeProxy<'a>(zbus::Proxy<'a>);

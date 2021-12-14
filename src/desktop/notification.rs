@@ -284,7 +284,7 @@ impl Action {
 ///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the
 /// application.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Notification).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Notification).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Notification")]
 pub struct NotificationProxy<'a>(zbus::Proxy<'a>);
@@ -310,7 +310,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Notification.ActionInvoked).
+    /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Notification.ActionInvoked).
     #[doc(alias = "ActionInvoked")]
     pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
         receive_signal(&self.0, "ActionInvoked").await
@@ -329,7 +329,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AddNotification`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Notification.AddNotification).
+    /// See also [`AddNotification`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Notification.AddNotification).
     #[doc(alias = "AddNotification")]
     pub async fn add_notification(
         &self,
@@ -347,7 +347,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`RemoveNotification`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Notification.RemoveNotification).
+    /// See also [`RemoveNotification`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Notification.RemoveNotification).
     #[doc(alias = "RemoveNotification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
         call_method(&self.0, "RemoveNotification", &(id)).await

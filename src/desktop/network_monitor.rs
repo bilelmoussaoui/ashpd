@@ -71,7 +71,7 @@ impl fmt::Display for Connectivity {
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib [`gio::NetworkMonitor`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.NetworkMonitor.html) interface.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.NetworkMonitor).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.NetworkMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.NetworkMonitor")]
 pub struct NetworkMonitorProxy<'a>(zbus::Proxy<'a>);
@@ -102,7 +102,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CanReach`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.CanReach).
+    /// See also [`CanReach`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.CanReach).
     #[doc(alias = "CanReach")]
     pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
         call_method(&self.0, "CanReach", &(hostname, port)).await
@@ -114,7 +114,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`GetAvailable`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetAvailable).
+    /// See also [`GetAvailable`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetAvailable).
     #[doc(alias = "GetAvailable")]
     #[doc(alias = "get_available")]
     pub async fn is_available(&self) -> Result<bool, Error> {
@@ -125,7 +125,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`GetConnectivity`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetConnectivity).
+    /// See also [`GetConnectivity`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetConnectivity).
     #[doc(alias = "GetConnectivity")]
     #[doc(alias = "get_connectivity")]
     pub async fn connectivity(&self) -> Result<Connectivity, Error> {
@@ -138,7 +138,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`GetMetered`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetMetered).
+    /// See also [`GetMetered`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetMetered).
     #[doc(alias = "GetMetered")]
     #[doc(alias = "get_metered")]
     pub async fn is_metered(&self) -> Result<bool, Error> {
@@ -149,7 +149,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`GetStatus`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetStatus).
+    /// See also [`GetStatus`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetStatus).
     #[doc(alias = "GetStatus")]
     #[doc(alias = "get_status")]
     pub async fn status(&self) -> Result<NetworkStatus, Error> {
@@ -160,7 +160,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`changed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-NetworkMonitor.changed).
+    /// See also [`changed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-NetworkMonitor.changed).
     pub async fn receive_changed(&self) -> Result<(), Error> {
         receive_signal(&self.0, "changed").await
     }

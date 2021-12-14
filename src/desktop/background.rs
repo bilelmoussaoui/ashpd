@@ -128,7 +128,7 @@ impl Background {
 /// is allowed to run in the background or started automatically when the user
 /// logs in.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Background).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Background")]
 pub struct BackgroundProxy<'a>(zbus::Proxy<'a>);
@@ -165,7 +165,7 @@ impl<'a> BackgroundProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
+    /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
     #[doc(alias = "RequestBackground")]
     pub async fn request_background<S: AsRef<str> + zvariant::Type + Serialize>(
         &self,

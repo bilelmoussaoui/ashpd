@@ -183,7 +183,7 @@ impl WallpaperOptions {
 /// The interface lets sandboxed applications set the user's desktop background
 /// picture.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Wallpaper).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Wallpaper).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Wallpaper")]
 pub struct WallpaperProxy<'a>(zbus::Proxy<'a>);
@@ -217,7 +217,7 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SetWallpaperFile`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperFile).
+    /// See also [`SetWallpaperFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperFile).
     #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file<F>(
         &self,
@@ -252,7 +252,7 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SetWallpaperURI`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperURI).
+    /// See also [`SetWallpaperURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperURI).
     #[doc(alias = "SetWallpaperURI")]
     pub async fn set_wallpaper_uri(
         &self,

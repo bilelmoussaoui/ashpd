@@ -6,7 +6,7 @@ use crate::Error;
 ///
 /// via a library API such as the GLib [`gio::PowerProfileMonitor`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.PowerProfileMonitor.html) interface.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.PowerProfileMonitor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.PowerProfileMonitor).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.PowerProfileMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.PowerProfileMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.PowerProfileMonitor")]
 pub struct PowerProfileMonitorProxy<'a>(zbus::Proxy<'a>);

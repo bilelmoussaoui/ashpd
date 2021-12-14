@@ -75,7 +75,7 @@ impl TransferOptions {
 /// will take care of exporting files in the document store as necessary to make
 /// them accessible to the target.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileTransfer).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileTransfer).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileTransfer")]
 pub struct FileTransferProxy<'a>(zbus::Proxy<'a>);
@@ -109,7 +109,7 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.AddFiles).
+    /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.AddFiles).
     #[doc(alias = "AddFiles")]
     pub async fn add_files<F: AsRawFd>(&self, key: &str, fds: &[&F]) -> Result<(), Error> {
         // `options` parameter doesn't seems to be used yet
@@ -135,7 +135,7 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`RetrieveFiles`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.RetrieveFiles).
+    /// See also [`RetrieveFiles`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.RetrieveFiles).
     #[doc(alias = "RetrieveFiles")]
     pub async fn retrieve_files(&self, key: &str) -> Result<Vec<String>, Error> {
         // `options` parameter doesn't seems to be used yet
@@ -164,7 +164,7 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`StartTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.StartTransfer).
+    /// See also [`StartTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.StartTransfer).
     pub async fn start_transfer(&self, writeable: bool, auto_stop: bool) -> Result<String, Error> {
         let options = TransferOptions::default()
             .writeable(writeable)
@@ -184,7 +184,7 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`StopTransfer`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-FileTransfer.StopTransfer).
+    /// See also [`StopTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.StopTransfer).
     #[doc(alias = "StopTransfer")]
     pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
         call_method(&self.0, "StopTransfer", &(key)).await
@@ -199,7 +199,7 @@ impl<'a> FileTransferProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`TransferClosed`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-FileTransfer.TransferClosed).
+    /// See also [`TransferClosed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-FileTransfer.TransferClosed).
     #[doc(alias = "TransferClosed")]
     pub async fn transfer_closed(&self) -> Result<String, Error> {
         receive_signal(&self.0, "TransferClosed").await

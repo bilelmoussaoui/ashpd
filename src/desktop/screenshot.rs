@@ -179,7 +179,7 @@ impl std::fmt::Display for Color {
 
 /// The interface lets sandboxed applications request a screenshot.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Screenshot).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Screenshot).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
 pub struct ScreenshotProxy<'a>(zbus::Proxy<'a>);
@@ -209,7 +209,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
+    /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
     #[doc(alias = "PickColor")]
     pub async fn pick_color(&self, identifier: &WindowIdentifier) -> Result<Color, Error> {
         let options = PickColorOptions::default();
@@ -237,7 +237,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Screenshot`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Screenshot.Screenshot).
+    /// See also [`Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.Screenshot).
     #[doc(alias = "Screenshot")]
     pub async fn screenshot(
         &self,

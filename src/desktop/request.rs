@@ -170,7 +170,7 @@ impl From<ResponseError> for ResponseType {
 /// The application can abort the interaction calling
 /// [`close()`][`RequestProxy::close`] on the Request object.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.Request).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Request).
 #[doc(alias = "org.freedesktop.portal.Request")]
 pub(crate) struct RequestProxy<'a>(zbus::Proxy<'a>);
 
@@ -209,7 +209,7 @@ impl<'a> RequestProxy<'a> {
         &self.0
     }
 
-    /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-signal-org-freedesktop-portal-Request.Response).
+    /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Request.Response).
     #[doc(alias = "Response")]
     #[allow(dead_code)]
     pub async fn receive_response<R>(&self) -> Result<R, Error>
@@ -229,7 +229,7 @@ impl<'a> RequestProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-method-org-freedesktop-portal-Request.Close).
+    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Request.Close).
     #[allow(dead_code)]
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
