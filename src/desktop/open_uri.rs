@@ -73,7 +73,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
-//!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true).await?;
+//!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true, None).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -89,7 +89,7 @@
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!     let uri = "https://github.com/bilelmoussaoui/ashpd";
 //!
-//!     proxy.open_uri(&WindowIdentifier::default(), uri, false, true).await?;
+//!     proxy.open_uri(&WindowIdentifier::default(), uri, false, true, None).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -107,7 +107,7 @@ use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-    // Token to activate the choosen application.
+    // Token to activate the chosen application.
     activation_token: Option<String>,
 }
 
@@ -131,7 +131,7 @@ struct OpenFileOptions {
     /// Whether to ask the user to choose an app. If this is not passed, or
     /// false, the portal may use a default or pick the last choice.
     ask: Option<bool>,
-    // Token to activate the choosen application.
+    // Token to activate the chosen application.
     activation_token: Option<String>,
 }
 
@@ -185,7 +185,7 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `identifier` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
-    /// * `activation_token` - Token used to activate the choosen application.
+    /// * `activation_token` - Token used to activate the chosen application.
     ///     Available with the version 4 of the interface.
     ///
     /// # Specifications
@@ -223,7 +223,7 @@ impl<'a> OpenURIProxy<'a> {
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or
     ///   not.
-    /// * `activation_token` - Token used to activate the choosen application.
+    /// * `activation_token` - Token used to activate the chosen application.
     ///     Available with the version 4 of the interface.
     ///
     /// # Specifications
@@ -263,7 +263,7 @@ impl<'a> OpenURIProxy<'a> {
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or
     ///   not.
-    /// * `activation_token` - Token used to activate the choosen application.
+    /// * `activation_token` - Token used to activate the chosen application.
     ///     Available with the version 4 of the interface.
     ///
     /// *Note* that `file` uris are explicitly not supported by this method.
