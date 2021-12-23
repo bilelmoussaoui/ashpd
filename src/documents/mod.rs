@@ -71,9 +71,14 @@ pub enum Flags {
     ExportDirectory,
 }
 
+pub type DocumentID<'a> = &'a str;
+pub type OwnedDocumentID = String;
+pub type ApplicationID<'a> = &'a str;
+pub type OwnedApplicationID = String;
+
 /// A [`HashMap`] mapping application IDs to the permissions for that
 /// application
-pub type Permissions = HashMap<String, Vec<Permission>>;
+pub type Permissions = HashMap<OwnedApplicationID, Vec<Permission>>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// The possible permissions to grant to a specific application for a specific
@@ -231,7 +236,7 @@ impl<'a> DocumentsProxy<'a> {
         o_path_fd: &F,
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<String, Error>
+    ) -> Result<OwnedDocumentID, Error>
     where
         F: AsRawFd + fmt::Debug,
     {
@@ -266,9 +271,9 @@ impl<'a> DocumentsProxy<'a> {
         &self,
         o_path_fds: &[&F],
         flags: BitFlags<Flags>,
-        app_id: &str,
+        app_id: ApplicationID<'_>,
         permissions: &[Permission],
-    ) -> Result<(Vec<String>, HashMap<String, zvariant::OwnedValue>), Error> {
+    ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, zvariant::OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
         call_method(&self.0, "AddFull", &(o_path, flags, app_id, permissions)).await
     }
@@ -298,7 +303,7 @@ impl<'a> DocumentsProxy<'a> {
         filename: P,
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<String, Error>
+    ) -> Result<OwnedDocumentID, Error>
     where
         F: AsRawFd + fmt::Debug,
         P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug,
@@ -343,9 +348,9 @@ impl<'a> DocumentsProxy<'a> {
         o_path_fd: &F,
         filename: P,
         flags: BitFlags<Flags>,
-        app_id: &str,
+        app_id: ApplicationID<'_>,
         permissions: &[Permission],
-    ) -> Result<(String, HashMap<String, zvariant::OwnedValue>), Error>
+    ) -> Result<(OwnedDocumentID, HashMap<String, zvariant::OwnedValue>), Error>
     where
         F: AsRawFd + fmt::Debug,
         P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug,
@@ -380,7 +385,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
     #[doc(alias = "Delete")]
-    pub async fn delete(&self, doc_id: &str) -> Result<(), Error> {
+    pub async fn delete(&self, doc_id: DocumentID<'_>) -> Result<(), Error> {
         call_method(&self.0, "Delete", &(doc_id)).await
     }
 
@@ -415,8 +420,8 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "GrantPermissions")]
     pub async fn grant_permissions(
         &self,
-        doc_id: &str,
-        app_id: &str,
+        doc_id: DocumentID<'_>,
+        app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         call_method(&self.0, "GrantPermissions", &(doc_id, app_id, permissions)).await
@@ -440,7 +445,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Info`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Info).
     #[doc(alias = "Info")]
-    pub async fn info(&self, doc_id: &str) -> Result<(PathBuf, Permissions), Error> {
+    pub async fn info(&self, doc_id: DocumentID<'_>) -> Result<(PathBuf, Permissions), Error> {
         let (bytes, permissions): (Vec<u8>, Permissions) =
             call_method(&self.0, "Info", &(doc_id)).await?;
         Ok((path_from_null_terminated(bytes), permissions))
@@ -464,7 +469,10 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`List`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.List).
     #[doc(alias = "List")]
-    pub async fn list(&self, app_id: &str) -> Result<HashMap<String, PathBuf>, Error> {
+    pub async fn list(
+        &self,
+        app_id: ApplicationID<'_>,
+    ) -> Result<HashMap<OwnedDocumentID, PathBuf>, Error> {
         let response: HashMap<String, Vec<u8>> = call_method(&self.0, "List", &(app_id)).await?;
 
         let mut new_response: HashMap<String, PathBuf> = HashMap::new();
@@ -495,7 +503,7 @@ impl<'a> DocumentsProxy<'a> {
     pub async fn lookup<P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug>(
         &self,
         filename: P,
-    ) -> Result<Option<String>, Error> {
+    ) -> Result<Option<OwnedDocumentID>, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         let doc_id: String = call_method(&self.0, "Lookup", &(cstr.as_bytes_with_nul())).await?;
@@ -525,8 +533,8 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "RevokePermissions")]
     pub async fn revoke_permissions(
         &self,
-        doc_id: &str,
-        app_id: &str,
+        doc_id: DocumentID<'_>,
+        app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         call_method(&self.0, "RevokePermissions", &(doc_id, app_id, permissions)).await
