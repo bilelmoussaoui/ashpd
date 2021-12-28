@@ -66,6 +66,7 @@ use std::collections::HashMap;
 
 use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Value;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
@@ -77,15 +78,13 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Debug, Type)]
-#[repr(u32)]
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq, Debug, Type)]
 /// The keyboard key state.
 pub enum KeyState {
     /// The key is pressed.
-    Pressed,
+    Pressed = 0,
     /// The key is released..
-    Released,
+    Released = 1,
 }
 
 #[bitflags]
@@ -101,8 +100,7 @@ pub enum DeviceType {
     Touchscreen,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(u32)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
 /// The available axis.
 pub enum Axis {
     /// Vertical axis.
@@ -598,7 +596,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ) -> Result<(), Error> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L911
         let mut options: HashMap<&str, Value<'_>> = HashMap::new();
-        options.insert("finish", finish.to_value());
+        options.insert("finish", Value::Bool(finish));
         call_method(&self.0, "NotifyPointerAxis", &(session, options, dx, dy)).await
     }
 
