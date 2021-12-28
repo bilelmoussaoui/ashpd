@@ -29,7 +29,7 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
-use enumflags2::BitFlags;
+use enumflags2::{bitflags, BitFlags};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::ffi::OsStrExt;
@@ -43,55 +43,58 @@ use crate::{
     Error,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// A bitmask representing the "permissions" of a newly created sandbox.
 pub enum SandboxFlags {
     /// Share the display access (X11, Wayland) with the caller.
-    DisplayAccess = 1,
+    DisplayAccess,
     /// Share the sound access (PulseAudio) with the caller.
-    SoundAccess = 2,
+    SoundAccess,
     /// Share the gpu access with the caller.
-    GpuAccess = 4,
+    GpuAccess,
     /// Allow sandbox access to (filtered) session bus.
-    SessionBusAccess = 8,
+    SessionBusAccess,
     /// Allow sandbox access to accessibility bus.
-    AccessibilityBusAccess = 16,
+    AccessibilityBusAccess,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// Flags affecting the created sandbox.
 pub enum SpawnFlags {
     /// Clear the environment.
-    ClearEnv = 1,
+    ClearEnv,
     /// Spawn the latest version of the app.
-    LatestVersion = 2,
+    LatestVersion,
     /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
-    Sandbox = 4,
+    Sandbox,
     /// Spawn without network (equivalent of the `unshare=network` option of
     /// `flatpak run`).
-    NoNetwork = 8,
+    NoNetwork,
     /// Kill the sandbox when the caller disappears from the session bus.
-    WatchBus = 16,
+    WatchBus,
     /// Expose the sandbox pids in the callers sandbox, only supported if using
     /// user namespaces for containers (not setuid), see the support property.
-    ExposePids = 32,
+    ExposePids,
     /// Emit a SpawnStarted signal once the sandboxed process has been fully
     /// started.
-    NotifyStart = 64,
+    NotifyStart,
     /// Expose the sandbox process IDs in the caller's sandbox and the caller's process IDs in the new sandbox.
-    SharePids = 128,
+    SharePids,
     /// Don't provide app files at `/app` in the new sandbox.
-    EmptyApp = 256,
+    EmptyApp,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// Flags marking what optional features are available.
 pub enum SupportsFlags {
     /// Supports the expose sandbox pids flag of Spawn.
-    ExposePids = 1,
+    ExposePids,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]

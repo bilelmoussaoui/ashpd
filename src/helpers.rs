@@ -126,7 +126,7 @@ where
     }
     let msg = proxy.call_method(method_name, body).await?;
     let reply = msg.body::<R>()?;
-    msg.disown_fds();
+    msg.take_fds();
 
     Ok(reply)
 }

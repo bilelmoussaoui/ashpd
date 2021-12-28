@@ -18,7 +18,7 @@ feature_pipewire = ["pw", "libc"]
 log = ["tracing"]
 
 [dependencies]
-enumflags2 = "0.6"
+enumflags2 = "0.7"
 gdk3x11 = {package = "gdkx11", git = "https://github.com/gtk-rs/gtk3-rs", optional = true}
 gdk3wayland = {package = "gdkwayland", git = "https://github.com/gtk-rs/gtk3-rs", optional = true, features = ["v3_22"]}
 gtk3 = {package = "gtk", git = "https://github.com/gtk-rs/gtk3-rs", optional = true}
@@ -32,11 +32,11 @@ pw = {package= "pipewire", version = "0.4", optional = true}
 serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 rand = {version = "0.8", default-features = false}
-zbus = "2.0.0-beta.7"
-zbus_macros = "2.0.0-beta.7"
-zbus_names = "1.0"
-zvariant = {version = "2.9", features = ["enumflags2"], default-features = false}
-zvariant_derive = "2.9"
+zbus = "2.0.0-beta.8"
+zbus_macros = "2.0.0-beta.8"
+zbus_names = "2.0"
+zvariant = {version = "3", features = ["enumflags2"], default-features = false}
+zvariant_derive = "3"
 futures = "0.3"
 tracing = {version = "0.1", optional = true}
 libc = {version = "0.2.94", optional = true}

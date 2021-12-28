@@ -40,7 +40,7 @@ use std::{
     os::unix::prelude::{IntoRawFd, RawFd},
 };
 
-use enumflags2::BitFlags;
+use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -53,29 +53,31 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type, BitFlags)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// A bit flag for the available sources to record.
 pub enum SourceType {
     /// A monitor.
-    Monitor = 1,
+    Monitor,
     /// A specific window
-    Window = 2,
+    Window,
     /// Virtual
-    Virtual = 4,
+    Virtual,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type, BitFlags)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type)]
 #[repr(u32)]
 /// A bit flag for the possible cursor modes.
 pub enum CursorMode {
     /// The cursor is not part of the screen cast stream.
-    Hidden = 1,
+    Hidden,
     /// The cursor is embedded as part of the stream buffers.
-    Embedded = 2,
+    Embedded,
     /// The cursor is not part of the screen cast stream, but sent as PipeWire
     /// stream metadata.
-    Metadata = 4,
+    Metadata,
 }
 
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]

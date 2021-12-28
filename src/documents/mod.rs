@@ -45,7 +45,7 @@ use std::{
     str::FromStr,
 };
 
-use enumflags2::BitFlags;
+use enumflags2::{bitflags, BitFlags};
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::{Fd, Signature};
@@ -56,18 +56,19 @@ use crate::{
     Error,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, BitFlags, Debug, Type)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 ///
 pub enum Flags {
     /// Reuse the existing document store entry for the file.
-    ReuseExisting = 1,
+    ReuseExisting,
     /// Persistent file.
-    Persistent = 2,
+    Persistent,
     /// Depends on the application needs.
-    AsNeededByApp = 4,
+    AsNeededByApp,
     /// Export a directory.
-    ExportDirectory = 8,
+    ExportDirectory,
 }
 
 /// A [`HashMap`] mapping application IDs to the permissions for that
