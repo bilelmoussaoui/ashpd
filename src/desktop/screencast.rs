@@ -4,7 +4,7 @@
 //! The portal is currently useless without PipeWire & Rust support.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screencast::{CursorMode, ScreenCastProxy, SourceType};
+//! use ashpd::desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType};
 //! use ashpd::WindowIdentifier;
 //! use enumflags2::BitFlags;
 //!
@@ -20,10 +20,12 @@
 //!             BitFlags::from(CursorMode::Metadata),
 //!             SourceType::Monitor | SourceType::Window,
 //!             true,
+//!             None,
+//!             PersistMode::DoNot,
 //!         )
 //!         .await?;
 //!
-//!     let streams = proxy.start(&session, &WindowIdentifier::default()).await?;
+//!     let (streams, token) = proxy.start(&session, &WindowIdentifier::default()).await?;
 //!
 //!     streams.iter().for_each(|stream| {
 //!         println!("node id: {}", stream.pipe_wire_node_id());
@@ -80,6 +82,22 @@ pub enum CursorMode {
     Metadata,
 }
 
+#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone, Type)]
+pub enum PersistMode {
+    /// Do not persist.
+    DoNot = 0,
+    /// Persist while the application is running.
+    Application = 1,
+    /// Persist until explicitly revoked.
+    ExplicitlyRevoked = 2,
+}
+
+impl Default for PersistMode {
+    fn default() -> Self {
+        Self::DoNot
+    }
+}
+
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::create_session`] request.
 struct CreateSessionOptions {
@@ -100,6 +118,8 @@ struct SelectSourcesOptions {
     multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
     cursor_mode: Option<BitFlags<CursorMode>>,
+    restore_token: Option<String>,
+    persist_mode: Option<PersistMode>,
 }
 
 impl SelectSourcesOptions {
@@ -119,6 +139,15 @@ impl SelectSourcesOptions {
     pub fn types(mut self, types: BitFlags<SourceType>) -> Self {
         self.types = Some(types);
         self
+    }
+
+    pub fn persist_mode(mut self, persist_mode: PersistMode) -> Self {
+        self.persist_mode = Some(persist_mode);
+        self
+    }
+
+    pub fn set_restore_token(&mut self, token: &str) {
+        self.restore_token = Some(token.to_string());
     }
 }
 
@@ -141,7 +170,8 @@ struct CreateSession {
 #[derive(SerializeDict, DeserializeDict, TypeDict)]
 /// A response to a [`ScreenCastProxy::start`] request.
 struct Streams {
-    pub streams: Vec<Stream>,
+    streams: Vec<Stream>,
+    restore_token: Option<String>,
 }
 
 impl Debug for Streams {
@@ -178,6 +208,14 @@ impl Stream {
     pub fn size(&self) -> Option<(i32, i32)> {
         self.1.size
     }
+
+    pub fn source_type(&self) -> SourceType {
+        self.1.source_type
+    }
+
+    pub fn id(&self) -> Option<&str> {
+        self.1.id.as_deref()
+    }
 }
 
 impl Debug for Stream {
@@ -192,8 +230,10 @@ impl Debug for Stream {
 #[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone)]
 /// The stream properties.
 struct StreamProperties {
+    id: Option<String>,
     position: Option<(i32, i32)>,
     size: Option<(i32, i32)>,
+    source_type: SourceType,
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.
@@ -293,11 +333,17 @@ impl<'a> ScreenCastProxy<'a> {
         cursor_mode: BitFlags<CursorMode>,
         types: BitFlags<SourceType>,
         multiple: bool,
+        restore_token: Option<&str>,
+        persist_mode: PersistMode,
     ) -> Result<(), Error> {
-        let options = SelectSourcesOptions::default()
+        let mut options = SelectSourcesOptions::default()
             .cursor_mode(cursor_mode)
             .multiple(multiple)
-            .types(types);
+            .types(types)
+            .persist_mode(persist_mode);
+        if let Some(token) = restore_token {
+            options.set_restore_token(token);
+        }
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -320,6 +366,10 @@ impl<'a> ScreenCastProxy<'a> {
     ///   [`create_session()`][`ScreenCastProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
+    /// # Return
+    ///
+    /// A list of [`Stream`] and an optional restore token.
+    ///
     /// # Specifications
     ///
     /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.Start).
@@ -328,7 +378,7 @@ impl<'a> ScreenCastProxy<'a> {
         &self,
         session: &SessionProxy<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<Vec<Stream>, Error> {
+    ) -> Result<(Vec<Stream>, Option<String>), Error> {
         let options = StartCastOptions::default();
         let streams: Streams = call_request_method(
             &self.0,
@@ -337,7 +387,7 @@ impl<'a> ScreenCastProxy<'a> {
             &(session, &identifier, &options),
         )
         .await?;
-        Ok(streams.streams.to_vec())
+        Ok((streams.streams.to_vec(), streams.restore_token))
     }
 
     /// Available cursor mode.
