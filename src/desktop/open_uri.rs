@@ -73,7 +73,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
-//!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true, None).await?;
+//!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -89,7 +89,7 @@
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!     let uri = "https://github.com/bilelmoussaoui/ashpd";
 //!
-//!     proxy.open_uri(&WindowIdentifier::default(), uri, false, true, None).await?;
+//!     proxy.open_uri(&WindowIdentifier::default(), uri, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -112,6 +112,7 @@ struct OpenDirOptions {
 }
 
 impl OpenDirOptions {
+    #[allow(dead_code)]
     pub fn set_activation_token(&mut self, activation_token: &str) {
         self.activation_token = Some(activation_token.to_string());
     }
@@ -148,6 +149,7 @@ impl OpenFileOptions {
         self
     }
 
+    #[allow(dead_code)]
     pub fn set_activation_token(&mut self, activation_token: &str) {
         self.activation_token = Some(activation_token.to_string());
     }
@@ -185,8 +187,6 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// * `identifier` - Identifier for the application window.
     /// * `directory` - File descriptor for a file.
-    /// * `activation_token` - Token used to activate the chosen application.
-    ///     Available with the version 4 of the interface.
     ///
     /// # Specifications
     ///
@@ -196,15 +196,11 @@ impl<'a> OpenURIProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         directory: &F,
-        activation_token: Option<&str>,
     ) -> Result<(), Error>
     where
         F: AsRawFd,
     {
-        let mut options = OpenDirOptions::default();
-        if let Some(token) = activation_token {
-            options.set_activation_token(token);
-        }
+        let options = OpenDirOptions::default();
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -223,8 +219,6 @@ impl<'a> OpenURIProxy<'a> {
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or
     ///   not.
-    /// * `activation_token` - Token used to activate the chosen application.
-    ///     Available with the version 4 of the interface.
     ///
     /// # Specifications
     ///
@@ -236,15 +230,11 @@ impl<'a> OpenURIProxy<'a> {
         file: &F,
         writeable: bool,
         ask: bool,
-        activation_token: Option<&str>,
     ) -> Result<(), Error>
     where
         F: AsRawFd,
     {
-        let mut options = OpenFileOptions::default().ask(ask).writeable(writeable);
-        if let Some(token) = activation_token {
-            options.set_activation_token(token);
-        }
+        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -263,8 +253,6 @@ impl<'a> OpenURIProxy<'a> {
     /// * `writeable` - Whether the file should be writeable or not.
     /// * `ask` - Whether to always ask the user which application to use or
     ///   not.
-    /// * `activation_token` - Token used to activate the chosen application.
-    ///     Available with the version 4 of the interface.
     ///
     /// *Note* that `file` uris are explicitly not supported by this method.
     /// Use [`Self::open_file`] or [`Self::open_directory`] instead.
@@ -279,12 +267,8 @@ impl<'a> OpenURIProxy<'a> {
         uri: &str,
         writeable: bool,
         ask: bool,
-        activation_token: Option<&str>,
     ) -> Result<(), Error> {
-        let mut options = OpenFileOptions::default().ask(ask).writeable(writeable);
-        if let Some(token) = activation_token {
-            options.set_activation_token(token);
-        }
+        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             &self.0,
             &options.handle_token,
@@ -302,13 +286,10 @@ pub async fn open_uri(
     uri: &str,
     writeable: bool,
     ask: bool,
-    activation_token: Option<&str>,
 ) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy
-        .open_uri(identifier, uri, writeable, ask, activation_token)
-        .await?;
+    proxy.open_uri(identifier, uri, writeable, ask).await?;
     Ok(())
 }
 
@@ -318,13 +299,10 @@ pub async fn open_file<F: AsRawFd>(
     file: &F,
     writeable: bool,
     ask: bool,
-    activation_token: Option<&str>,
 ) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy
-        .open_file(identifier, file, writeable, ask, activation_token)
-        .await?;
+    proxy.open_file(identifier, file, writeable, ask).await?;
     Ok(())
 }
 
@@ -333,12 +311,9 @@ pub async fn open_file<F: AsRawFd>(
 pub async fn open_directory<F: AsRawFd>(
     identifier: &WindowIdentifier,
     directory: &F,
-    activation_token: Option<&str>,
 ) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;
-    proxy
-        .open_directory(identifier, directory, activation_token)
-        .await?;
+    proxy.open_directory(identifier, directory).await?;
     Ok(())
 }
