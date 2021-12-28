@@ -62,7 +62,7 @@
 
 use std::collections::HashMap;
 
-use enumflags2::BitFlags;
+use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::Value;
@@ -75,26 +75,28 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Debug, Type)]
 #[repr(u32)]
 /// The keyboard key state.
 pub enum KeyState {
     /// The key is pressed.
-    Pressed = 0,
+    Pressed,
     /// The key is released..
-    Released = 1,
+    Released,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, BitFlags, Clone, Copy, Type)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 /// A bit flag for the available devices.
 pub enum DeviceType {
     /// A keyboard.
-    Keyboard = 1,
+    Keyboard,
     /// A mouse pointer.
-    Pointer = 2,
+    Pointer,
     /// A touchscreen
-    Touchscreen = 4,
+    Touchscreen,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]

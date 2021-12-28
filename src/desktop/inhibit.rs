@@ -36,7 +36,7 @@
 //! }
 //! ```
 
-use enumflags2::BitFlags;
+use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -75,18 +75,19 @@ impl InhibitOptions {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, BitFlags, Type)]
+#[bitflags]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 /// The actions to inhibit that can end the user's session
 pub enum InhibitFlags {
     /// Logout.
-    Logout = 1,
+    Logout,
     /// User switch.
-    UserSwitch = 2,
+    UserSwitch,
     /// Suspend.
-    Suspend = 4,
+    Suspend,
     /// Idle.
-    Idle = 8,
+    Idle,
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]

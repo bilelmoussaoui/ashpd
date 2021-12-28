@@ -8,6 +8,7 @@ use zbus_macros::DBusError;
 #[derive(DBusError, Debug)]
 #[dbus_error(prefix = "org.freedesktop.portal.Error")]
 pub enum PortalError {
+    #[dbus_error(zbus_error)]
     /// ZBus specific error.
     ZBus(zbus::Error),
     /// Request failed.
