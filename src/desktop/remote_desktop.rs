@@ -28,7 +28,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
-//! use ashpd::desktop::screencast::{CursorMode, ScreenCastProxy, SourceType};
+//! use ashpd::desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType};
 //! use ashpd::WindowIdentifier;
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -46,6 +46,8 @@
 //!             CursorMode::Metadata.into(),
 //!             SourceType::Monitor | SourceType::Window,
 //!             true,
+//!             None,
+//!             PersistMode::DoNot,
 //!         )
 //!         .await?;
 //!
