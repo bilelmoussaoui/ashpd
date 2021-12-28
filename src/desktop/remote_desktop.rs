@@ -583,6 +583,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
+    /// * `finish` - Whether it is the last axis event.
     ///
     /// # Specifications
     ///
@@ -593,10 +594,11 @@ impl<'a> RemoteDesktopProxy<'a> {
         session: &SessionProxy<'_>,
         dx: f64,
         dy: f64,
+        finish: bool,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L911
+        let mut options: HashMap<&str, Value<'_>> = HashMap::new();
+        options.insert("finish", finish.to_value());
         call_method(&self.0, "NotifyPointerAxis", &(session, options, dx, dy)).await
     }
 
