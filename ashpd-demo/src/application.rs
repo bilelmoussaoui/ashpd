@@ -251,7 +251,7 @@ impl Application {
                 &["ashpd-demo", "--replace"],
                 HashMap::new(),
                 HashMap::new(),
-                SpawnFlags::Latest.into(),
+                SpawnFlags::LatestVersion.into(),
                 SpawnOptions::default(),
             )
             .await?;

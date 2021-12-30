@@ -86,12 +86,4 @@ impl<O: IsA<PortalPage>> PortalPageExt for O {
     }
 }
 
-unsafe impl<T: PortalPageImpl> IsSubclassable<T> for PortalPage {
-    fn class_init(class: &mut glib::Class<Self>) {
-        <adw::Bin as IsSubclassable<T>>::class_init(class.upcast_ref_mut());
-    }
-
-    fn instance_init(instance: &mut glib::subclass::InitializingObject<T>) {
-        <adw::Bin as IsSubclassable<T>>::instance_init(instance);
-    }
-}
+unsafe impl<T: PortalPageImpl> IsSubclassable<T> for PortalPage {}

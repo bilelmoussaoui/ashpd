@@ -3,7 +3,7 @@ use crate::widgets::{
 };
 use ashpd::{
     desktop::{
-        screencast::{CursorMode, ScreenCastProxy, SourceType, Stream},
+        screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType, Stream},
         SessionProxy,
     },
     enumflags2::BitFlags,
@@ -45,6 +45,7 @@ mod imp {
         pub embedded_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub metadata_check: TemplateChild<gtk::CheckButton>,
+        pub session_token: Arc<Mutex<Option<String>>>,
     }
 
     #[glib::object_subclass]
@@ -223,13 +224,22 @@ impl ScreenCastPage {
         let connection = zbus::Connection::session().await?;
         let proxy = ScreenCastProxy::new(&connection).await?;
         let session = proxy.create_session().await?;
-
+        let token = self_.session_token.lock().await;
         proxy
-            .select_sources(&session, cursor_mode, sources, multiple)
+            .select_sources(
+                &session,
+                cursor_mode,
+                sources,
+                multiple,
+                token.as_deref(),
+                PersistMode::ExplicitlyRevoked,
+            )
             .await?;
         self.send_notification("Starting a screen cast session", NotificationKind::Info);
-        let streams = proxy.start(&session, &identifier).await?.to_vec();
-
+        let (streams, token) = proxy.start(&session, &identifier).await?;
+        if let Some(t) = token {
+            self_.session_token.lock().await.replace(t);
+        }
         let fd = proxy.open_pipe_wire_remote(&session).await?;
         Ok((streams, fd, session))
     }

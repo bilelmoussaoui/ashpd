@@ -2,7 +2,7 @@ use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktopProxy},
-        screencast::{CursorMode, ScreenCastProxy, SourceType, Stream},
+        screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType, Stream},
         SessionProxy,
     },
     enumflags2::BitFlags,
@@ -236,7 +236,14 @@ impl RemoteDesktopPage {
         if is_screencast {
             let screencast_proxy = ScreenCastProxy::new(&connection).await?;
             screencast_proxy
-                .select_sources(&session, cursor_mode, sources, multiple_sources)
+                .select_sources(
+                    &session,
+                    cursor_mode,
+                    sources,
+                    multiple_sources,
+                    None,
+                    PersistMode::ExplicitlyRevoked,
+                )
                 .await?;
         }
         proxy.select_devices(&session, devices).await?;
