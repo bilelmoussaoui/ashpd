@@ -11,11 +11,9 @@ use gtk::subclass::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/print.ui")]
     pub struct PrintPage {
         #[template_child]
@@ -62,9 +60,9 @@ impl PrintPage {
     }
 
     async fn select_file(&self) {
-        let self_ = imp::PrintPage::from_instance(self);
-        let title = self_.title.text();
-        let modal = self_.modal_switch.is_active();
+        let imp = self.imp();
+        let title = imp.title.text();
+        let modal = imp.modal_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 

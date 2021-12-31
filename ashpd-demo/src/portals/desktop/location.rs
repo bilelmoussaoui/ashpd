@@ -12,11 +12,9 @@ use shumate::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/location.ui")]
     pub struct LocationPage {
         #[template_child]
@@ -121,10 +119,10 @@ impl LocationPage {
     }
 
     async fn locate(&self) {
-        let self_ = imp::LocationPage::from_instance(self);
-        let distance_threshold = self_.distance_spin.value() as u32;
-        let time_threshold = self_.time_spin.value() as u32;
-        let accuracy = match self_.accuracy_combo.selected() {
+        let imp = self.imp();
+        let distance_threshold = imp.distance_spin.value() as u32;
+        let time_threshold = imp.time_spin.value() as u32;
+        let accuracy = match imp.accuracy_combo.selected() {
             0 => Accuracy::None,
             1 => Accuracy::Country,
             2 => Accuracy::City,
@@ -138,32 +136,22 @@ impl LocationPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         match locate(&identifier, distance_threshold, time_threshold, accuracy).await {
             Ok(location) => {
-                self_.response_group.show();
-                self_
-                    .accuracy_label
+                imp.response_group.show();
+                imp.accuracy_label
                     .set_label(&location.accuracy().to_string());
-                self_
-                    .altitude_label
+                imp.altitude_label
                     .set_label(&location.altitude().to_string());
-                self_.speed_label.set_label(&location.speed().to_string());
-                self_
-                    .heading_label
-                    .set_label(&location.heading().to_string());
-                self_.description_label.set_label(location.description());
-                self_
-                    .latitude_label
+                imp.speed_label.set_label(&location.speed().to_string());
+                imp.heading_label.set_label(&location.heading().to_string());
+                imp.description_label.set_label(location.description());
+                imp.latitude_label
                     .set_label(&location.latitude().to_string());
-                self_
-                    .longitude_label
+                imp.longitude_label
                     .set_label(&location.longitude().to_string());
-                self_
-                    .timestamp_label
+                imp.timestamp_label
                     .set_label(&location.timestamp().to_string());
-                self_
-                    .map
-                    .center_on(location.latitude(), location.longitude());
-                self_
-                    .marker
+                imp.map.center_on(location.latitude(), location.longitude());
+                imp.marker
                     .set_location(location.latitude(), location.longitude());
                 self.send_notification("Position updated", NotificationKind::Success);
             }

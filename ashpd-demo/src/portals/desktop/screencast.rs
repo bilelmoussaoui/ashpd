@@ -19,11 +19,9 @@ use std::sync::Arc;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screencast.ui")]
     pub struct ScreenCastPage {
         #[template_child]
@@ -87,14 +85,14 @@ mod imp {
         fn map(&self, widget: &Self::Type) {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak widget as page => async move {
-                let self_ = imp::ScreenCastPage::from_instance(&page);
+                let imp = page.imp();
                 if let Ok((cursor_modes, source_types)) = available_types().await {
-                    self_.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
-                    self_.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
-                    self_.window_check.set_sensitive(source_types.contains(SourceType::Window));
-                    self_.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
-                    self_.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
-                    self_.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
+                    imp.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
+                    imp.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
+                    imp.window_check.set_sensitive(source_types.contains(SourceType::Window));
+                    imp.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
+                    imp.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
+                    imp.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
                 }
             }));
             self.parent_map(widget);
@@ -116,12 +114,12 @@ impl ScreenCastPage {
 
     /// Returns the selected SourceType
     fn selected_sources(&self) -> BitFlags<SourceType> {
-        let self_ = imp::ScreenCastPage::from_instance(self);
+        let imp = self.imp();
         let mut sources: BitFlags<SourceType> = BitFlags::empty();
-        if self_.monitor_check.is_active() {
+        if imp.monitor_check.is_active() {
             sources.insert(SourceType::Monitor);
         }
-        if self_.window_check.is_active() {
+        if imp.window_check.is_active() {
             sources.insert(SourceType::Window);
         }
         sources
@@ -129,23 +127,23 @@ impl ScreenCastPage {
 
     /// Returns the selected CursorMode
     fn selected_cursor_mode(&self) -> BitFlags<CursorMode> {
-        let self_ = imp::ScreenCastPage::from_instance(self);
+        let imp = self.imp();
 
         let mut cursor_mode: BitFlags<CursorMode> = BitFlags::empty();
-        if self_.hidden_check.is_active() {
+        if imp.hidden_check.is_active() {
             cursor_mode.insert(CursorMode::Hidden);
         }
-        if self_.embedded_check.is_active() {
+        if imp.embedded_check.is_active() {
             cursor_mode.insert(CursorMode::Embedded);
         }
-        if self_.metadata_check.is_active() {
+        if imp.metadata_check.is_active() {
             cursor_mode.insert(CursorMode::Metadata);
         }
         cursor_mode
     }
 
     async fn start_session(&self) {
-        let self_ = imp::ScreenCastPage::from_instance(self);
+        let imp = self.imp();
         self.action_set_enabled("screencast.start", false);
         self.action_set_enabled("screencast.stop", true);
 
@@ -163,11 +161,11 @@ impl ScreenCastPage {
                         .vexpand(true)
                         .build();
                     paintable.set_pipewire_node_id(fd, stream.pipe_wire_node_id());
-                    self_.streams_carousel.append(&picture);
+                    imp.streams_carousel.append(&picture);
                 });
 
-                self_.response_group.show();
-                self_.session.lock().await.replace(session);
+                imp.response_group.show();
+                imp.session.lock().await.replace(session);
             }
             Err(err) => {
                 tracing::error!("{:#?}", err);
@@ -181,15 +179,15 @@ impl ScreenCastPage {
     }
 
     async fn stop_session(&self) {
-        let self_ = imp::ScreenCastPage::from_instance(self);
+        let imp = self.imp();
 
         self.action_set_enabled("screencast.start", true);
         self.action_set_enabled("screencast.stop", false);
 
-        if let Some(session) = self_.session.lock().await.take() {
+        if let Some(session) = imp.session.lock().await.take() {
             let _ = session.close().await;
         }
-        if let Some(mut child) = self_.streams_carousel.first_child() {
+        if let Some(mut child) = imp.streams_carousel.first_child() {
             loop {
                 let picture = child.downcast_ref::<gtk::Picture>().unwrap();
                 let paintable = picture
@@ -198,7 +196,7 @@ impl ScreenCastPage {
                     .downcast::<CameraPaintable>()
                     .unwrap();
                 paintable.close_pipeline();
-                self_.streams_carousel.remove(picture);
+                imp.streams_carousel.remove(picture);
 
                 if let Some(next_child) = child.next_sibling() {
                     child = next_child;
@@ -208,14 +206,14 @@ impl ScreenCastPage {
             }
         }
 
-        self_.response_group.hide();
+        imp.response_group.hide();
     }
 
     async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, RawFd, SessionProxy<'static>)> {
-        let self_ = imp::ScreenCastPage::from_instance(self);
+        let imp = self.imp();
         let sources = self.selected_sources();
         let cursor_mode = self.selected_cursor_mode();
-        let multiple = self_.multiple_switch.is_active();
+        let multiple = imp.multiple_switch.is_active();
 
         let root = self.native().unwrap();
 
@@ -224,7 +222,7 @@ impl ScreenCastPage {
         let connection = zbus::Connection::session().await?;
         let proxy = ScreenCastProxy::new(&connection).await?;
         let session = proxy.create_session().await?;
-        let token = self_.session_token.lock().await;
+        let token = imp.session_token.lock().await;
         proxy
             .select_sources(
                 &session,
@@ -238,7 +236,7 @@ impl ScreenCastPage {
         self.send_notification("Starting a screen cast session", NotificationKind::Info);
         let (streams, token) = proxy.start(&session, &identifier).await?;
         if let Some(t) = token {
-            self_.session_token.lock().await.replace(t);
+            imp.session_token.lock().await.replace(t);
         }
         let fd = proxy.open_pipe_wire_remote(&session).await?;
         Ok((streams, fd, session))

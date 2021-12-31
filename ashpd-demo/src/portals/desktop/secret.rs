@@ -8,12 +8,10 @@ use std::sync::{Arc, Mutex};
 use std::{fs::File, io::Read};
 
 mod imp {
-    use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
+    use adw::subclass::prelude::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/secret.ui")]
     pub struct SecretPage {
         #[template_child]
@@ -61,12 +59,12 @@ impl SecretPage {
     }
 
     async fn retrieve_secret(&self) {
-        let self_ = imp::SecretPage::from_instance(self);
+        let imp = self.imp();
 
         if let Ok(token) = retrieve_secret(None).await {
             tracing::debug!("Received token: {:#?}", token);
-            self_.token_label.set_text(&token);
-            self_.response_group.show();
+            imp.token_label.set_text(&token);
+            imp.response_group.show();
         }
     }
 }

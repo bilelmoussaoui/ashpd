@@ -13,11 +13,9 @@ use gtk::subclass::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/file_chooser.ui")]
     pub struct FileChooserPage {
         #[template_child]
@@ -126,12 +124,12 @@ impl FileChooserPage {
     async fn open_file(&self) {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let self_ = imp::FileChooserPage::from_instance(self);
-        let title = self_.open_title_entry.text();
-        let accept_label = is_empty(self_.open_accept_label_entry.text());
-        let directory = self_.open_directory_switch.is_active();
-        let modal = self_.open_modal_switch.is_active();
-        let multiple = self_.open_multiple_switch.is_active();
+        let imp = self.imp();
+        let title = imp.open_title_entry.text();
+        let accept_label = is_empty(imp.open_accept_label_entry.text());
+        let directory = imp.open_directory_switch.is_active();
+        let modal = imp.open_modal_switch.is_active();
+        let multiple = imp.open_multiple_switch.is_active();
 
         match portal_open_file(
             &identifier,
@@ -144,11 +142,10 @@ impl FileChooserPage {
         .await
         {
             Ok(files) => {
-                self_.open_response_group.show();
+                imp.open_response_group.show();
 
                 for uri in files.uris() {
-                    self_
-                        .open_response_group
+                    imp.open_response_group
                         .add(&adw::ActionRow::builder().title(uri).build());
                 }
                 self.send_notification(
@@ -165,13 +162,13 @@ impl FileChooserPage {
     async fn save_file(&self) {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let self_ = imp::FileChooserPage::from_instance(self);
-        let title = self_.save_file_title_entry.text();
-        let accept_label = is_empty(self_.save_file_accept_label_entry.text());
-        let modal = self_.save_file_modal_switch.is_active();
-        let current_name = is_empty(self_.save_file_current_name_entry.text());
-        let current_folder = is_empty(self_.save_file_current_folder_entry.text());
-        let current_file = is_empty(self_.save_file_current_file_entry.text());
+        let imp = self.imp();
+        let title = imp.save_file_title_entry.text();
+        let accept_label = is_empty(imp.save_file_accept_label_entry.text());
+        let modal = imp.save_file_modal_switch.is_active();
+        let current_name = is_empty(imp.save_file_current_name_entry.text());
+        let current_folder = is_empty(imp.save_file_current_folder_entry.text());
+        let current_file = is_empty(imp.save_file_current_file_entry.text());
 
         match portal_save_file(
             &identifier,
@@ -185,11 +182,10 @@ impl FileChooserPage {
         .await
         {
             Ok(files) => {
-                self_.save_file_response_group.show();
+                imp.save_file_response_group.show();
 
                 for uri in files.uris() {
-                    self_
-                        .save_file_response_group
+                    imp.save_file_response_group
                         .add(&adw::ActionRow::builder().title(uri).build());
                 }
 
@@ -207,12 +203,12 @@ impl FileChooserPage {
     async fn save_files(&self) {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let self_ = imp::FileChooserPage::from_instance(self);
-        let title = self_.save_files_title_entry.text();
-        let accept_label = is_empty(self_.save_files_accept_label_entry.text());
-        let current_folder = is_empty(self_.save_files_current_folder_entry.text());
-        let modal = self_.save_files_modal_switch.is_active();
-        let files = is_empty(self_.save_files_files_entry.text()).map(split_comma);
+        let imp = self.imp();
+        let title = imp.save_files_title_entry.text();
+        let accept_label = is_empty(imp.save_files_accept_label_entry.text());
+        let current_folder = is_empty(imp.save_files_current_folder_entry.text());
+        let modal = imp.save_files_modal_switch.is_active();
+        let files = is_empty(imp.save_files_files_entry.text()).map(split_comma);
 
         match portal_save_files(
             &identifier,
@@ -225,11 +221,10 @@ impl FileChooserPage {
         .await
         {
             Ok(files) => {
-                self_.save_files_response_group.show();
+                imp.save_files_response_group.show();
 
                 for uri in files.uris() {
-                    self_
-                        .save_files_response_group
+                    imp.save_files_response_group
                         .add(&adw::ActionRow::builder().title(uri).build());
                 }
                 self.send_notification(

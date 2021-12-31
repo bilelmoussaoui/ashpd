@@ -5,7 +5,6 @@ use gtk::{self, prelude::*};
 use gtk::{
     gio,
     glib::{self, clone},
-    CompositeTemplate,
 };
 use tracing::warn;
 
@@ -24,7 +23,7 @@ mod imp {
 
     use super::*;
 
-    #[derive(Debug, CompositeTemplate)]
+    #[derive(Debug, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/window.ui")]
     pub struct ApplicationWindow {
         #[template_child]
@@ -109,8 +108,7 @@ mod imp {
             SidebarRow::static_type();
 
             klass.install_action("win.back", None, |win, _, _| {
-                let self_ = imp::ApplicationWindow::from_instance(win);
-                self_.leaflet.navigate(adw::NavigationDirection::Back);
+                win.imp().leaflet.navigate(adw::NavigationDirection::Back);
             });
         }
 
@@ -204,7 +202,7 @@ impl ApplicationWindow {
     }
 
     fn save_window_size(&self) -> Result<(), glib::BoolError> {
-        let settings = &imp::ApplicationWindow::from_instance(self).settings;
+        let settings = &self.imp().settings;
 
         let size = self.default_size();
 
@@ -217,23 +215,23 @@ impl ApplicationWindow {
     }
 
     fn sidebar_row_selected(&self, row: &gtk::ListBoxRow) {
-        let self_ = imp::ApplicationWindow::from_instance(self);
+        let imp = self.imp();
+
         let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
-        self_.leaflet.navigate(adw::NavigationDirection::Forward);
+        imp.leaflet.navigate(adw::NavigationDirection::Forward);
         let page_name = sidebar_row.name();
-        if self_.stack.child_by_name(&page_name).is_some() {
-            self_.stack.set_visible_child_name(&page_name);
-            self_
-                .window_title
+        if imp.stack.child_by_name(&page_name).is_some() {
+            imp.stack.set_visible_child_name(&page_name);
+            imp.window_title
                 .set_title(&sidebar_row.title().unwrap_or_default());
         } else {
-            self_.window_title.set_title("");
-            self_.stack.set_visible_child_name("welcome");
+            imp.window_title.set_title("");
+            imp.stack.set_visible_child_name("welcome");
         }
     }
 
     fn load_window_state(&self) {
-        let settings = &imp::ApplicationWindow::from_instance(self).settings;
+        let settings = &self.imp().settings;
 
         let width = settings.int("window-width");
         let height = settings.int("window-height");

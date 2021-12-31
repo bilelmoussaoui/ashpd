@@ -6,11 +6,9 @@ use gtk::subclass::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/network_monitor.ui")]
     pub struct NetworkMonitorPage {
         #[template_child]
@@ -82,33 +80,30 @@ impl NetworkMonitorPage {
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {
-        let self_ = imp::NetworkMonitorPage::from_instance(self);
+        let imp = self.imp();
         let cnx = zbus::Connection::session().await?;
         let proxy = NetworkMonitorProxy::new(&cnx).await?;
         let status = proxy.status().await?;
 
-        self_
-            .connectivity
-            .set_label(&status.connectivity.to_string());
-        self_
-            .network_available
+        imp.connectivity.set_label(&status.connectivity.to_string());
+        imp.network_available
             .set_label(&status.available.to_string());
-        self_.metered.set_label(&status.metered.to_string());
+        imp.metered.set_label(&status.metered.to_string());
 
         Ok(())
     }
 
     async fn can_reach(&self) -> ashpd::Result<()> {
-        let self_ = imp::NetworkMonitorPage::from_instance(self);
+        let imp = self.imp();
         let cnx = zbus::Connection::session().await?;
         let proxy = NetworkMonitorProxy::new(&cnx).await?;
 
-        let hostname = self_.host_entry.text();
-        let port = self_.port_entry.text().parse().unwrap_or(80);
+        let hostname = imp.host_entry.text();
+        let port = imp.port_entry.text().parse().unwrap_or(80);
         match proxy.can_reach(&hostname, port).await {
             Ok(response) => {
-                self_.can_reach_row.set_title(&response.to_string());
-                self_.response_group.show();
+                imp.can_reach_row.set_title(&response.to_string());
+                imp.response_group.show();
                 self.send_notification(
                     "Can reach request was successful",
                     NotificationKind::Success,

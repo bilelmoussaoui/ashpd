@@ -11,11 +11,9 @@ use crate::portals::{is_empty, split_comma};
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/email.ui")]
     pub struct EmailPage {
         #[template_child]
@@ -68,12 +66,13 @@ impl EmailPage {
     }
 
     async fn compose_mail(&self) {
-        let self_ = imp::EmailPage::from_instance(self);
-        let subject = is_empty(self_.subject.text());
-        let body = is_empty(self_.body.text());
-        let addresses = is_empty(self_.addresses.text()).map(split_comma);
-        let bcc = is_empty(self_.bcc_entry.text()).map(split_comma);
-        let cc = is_empty(self_.cc_entry.text()).map(split_comma);
+        let imp = self.imp();
+
+        let subject = is_empty(imp.subject.text());
+        let body = is_empty(imp.body.text());
+        let addresses = is_empty(imp.addresses.text()).map(split_comma);
+        let bcc = is_empty(imp.bcc_entry.text()).map(split_comma);
+        let cc = is_empty(imp.cc_entry.text()).map(split_comma);
         let root = self.native().unwrap();
 
         let mut email = Email::new();

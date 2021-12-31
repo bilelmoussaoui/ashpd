@@ -6,11 +6,9 @@ use gtk::subclass::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/proxy_resolver.ui")]
     pub struct ProxyResolverPage {
         #[template_child]
@@ -63,8 +61,8 @@ impl ProxyResolverPage {
     }
 
     async fn resolve(&self) -> ashpd::Result<()> {
-        let self_ = imp::ProxyResolverPage::from_instance(self);
-        let uri = self_.uri.text();
+        let imp = self.imp();
+        let uri = imp.uri.text();
 
         let cnx = zbus::Connection::session().await?;
         let proxy = ProxyResolverProxy::new(&cnx).await?;
@@ -73,10 +71,10 @@ impl ProxyResolverPage {
             Ok(resolved_uris) => {
                 resolved_uris.iter().for_each(|uri| {
                     let row = adw::ActionRow::builder().title(uri).build();
-                    self_.response_group.add(&row);
+                    imp.response_group.add(&row);
                 });
 
-                self_.response_group.show();
+                imp.response_group.show();
                 self.send_notification("Lookup request was successful", NotificationKind::Success);
             }
             Err(_err) => {

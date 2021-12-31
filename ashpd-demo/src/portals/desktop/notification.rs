@@ -11,11 +11,9 @@ use gtk::subclass::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/notification.ui")]
     pub struct NotificationPage {
         #[template_child]
@@ -76,12 +74,12 @@ impl NotificationPage {
     }
 
     async fn send(&self) -> ashpd::Result<()> {
-        let self_ = imp::NotificationPage::from_instance(self);
+        let imp = self.imp();
 
-        let notification_id = self_.id_entry.text();
-        let title = self_.title_entry.text();
-        let body = self_.body_entry.text();
-        let priority = match self_.priority_combo.selected() {
+        let notification_id = imp.id_entry.text();
+        let title = imp.title_entry.text();
+        let body = imp.body_entry.text();
+        let priority = match imp.priority_combo.selected() {
             0 => Priority::Low,
             1 => Priority::Normal,
             2 => Priority::High,
@@ -108,11 +106,10 @@ impl NotificationPage {
                     NotificationKind::Info,
                 );
 
-                self_.response_group.show();
-                self_.id_label.set_text(action.id());
-                self_.action_name_label.set_text(action.name());
-                self_
-                    .parameters_label
+                imp.response_group.show();
+                imp.id_label.set_text(action.id());
+                imp.action_name_label.set_text(action.name());
+                imp.parameters_label
                     .set_text(&format!("{:#?}", action.parameter()));
             }
             Err(_) => {

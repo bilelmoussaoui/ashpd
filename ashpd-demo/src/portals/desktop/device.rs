@@ -8,12 +8,10 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {
-    use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
+    use adw::subclass::prelude::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/device.ui")]
     pub struct DevicePage {
         #[template_child]
@@ -86,16 +84,16 @@ impl DevicePage {
 
     /// Returns the selected Devices
     fn selected_devices(&self) -> Vec<Device> {
-        let self_ = imp::DevicePage::from_instance(self);
+        let imp = self.imp();
 
         let mut devices = Vec::new();
-        if self_.speakers_switch.is_active() {
+        if imp.speakers_switch.is_active() {
             devices.push(Device::Speakers);
         }
-        if self_.camera_switch.is_active() {
+        if imp.camera_switch.is_active() {
             devices.push(Device::Camera);
         }
-        if self_.microphone_switch.is_active() {
+        if imp.microphone_switch.is_active() {
             devices.push(Device::Microphone);
         }
         devices

@@ -5,12 +5,10 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {
-    use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
+    use adw::subclass::prelude::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/documents.ui")]
     pub struct DocumentsPage {
         #[template_child]
@@ -59,13 +57,13 @@ impl DocumentsPage {
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {
-        let self_ = imp::DocumentsPage::from_instance(self);
-
         let cnx = zbus::Connection::session().await?;
         let proxy = DocumentsProxy::new(&cnx).await?;
 
         let mount_point = proxy.mount_point().await?;
-        self_.mount_point.set_label(mount_point.to_str().unwrap());
+        self.imp()
+            .mount_point
+            .set_label(mount_point.to_str().unwrap());
 
         Ok(())
     }

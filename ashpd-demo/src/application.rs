@@ -1,5 +1,6 @@
 use std::{collections::HashMap, convert::TryFrom};
 
+use adw::prelude::*;
 use ashpd::{
     flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions},
     zbus, zvariant,
@@ -7,7 +8,6 @@ use ashpd::{
 use gio::ApplicationFlags;
 use glib::clone;
 use glib::WeakRef;
-use adw::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 use gtk_macros::action;
@@ -116,12 +116,10 @@ impl Application {
     }
 
     fn main_window(&self) -> ApplicationWindow {
-        let priv_ = imp::Application::from_instance(self);
-        priv_.window.get().unwrap().upgrade().unwrap()
+        self.imp().window.get().unwrap().upgrade().unwrap()
     }
 
     fn setup_gactions(&self) {
-        let self_ = imp::Application::from_instance(self);
         // Quit
         action!(
             self,
@@ -151,7 +149,7 @@ impl Application {
         // The restart app requires the Flatpak portal
         gtk_macros::get_action!(self, @restart).set_enabled(ashpd::is_sandboxed());
 
-        let action = self_.settings.create_action("dark-mode");
+        let action = self.imp().settings.create_action("dark-mode");
         self.add_action(&action);
         // About
         action!(
@@ -242,11 +240,9 @@ impl Application {
     }
 
     fn update_color_scheme(&self) {
-        let self_ = imp::Application::from_instance(self);
         let manager = self.style_manager();
-
         if !manager.system_supports_color_schemes() {
-            let color_scheme = if self_.settings.boolean("dark-mode") {
+            let color_scheme = if self.imp().settings.boolean("dark-mode") {
                 adw::ColorScheme::PreferDark
             } else {
                 adw::ColorScheme::PreferLight

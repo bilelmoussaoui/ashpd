@@ -5,11 +5,9 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/portal_page.ui")]
     pub struct PortalPage {
         #[template_child]
@@ -79,8 +77,7 @@ pub trait PortalPageExt {
 
 impl<O: IsA<PortalPage>> PortalPageExt for O {
     fn send_notification(&self, message: &str, kind: NotificationKind) {
-        let self_ = imp::PortalPage::from_instance(self.as_ref());
-        self_.notification.send(message, kind);
+        self.as_ref().imp().notification.send(message, kind);
     }
 }
 

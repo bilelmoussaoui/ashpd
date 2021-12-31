@@ -13,11 +13,9 @@ use std::sync::Arc;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/inhibit.ui")]
     pub struct InhibitPage {
         #[template_child]
@@ -90,19 +88,19 @@ impl InhibitPage {
     }
 
     fn inhibit_flags(&self) -> BitFlags<InhibitFlags> {
-        let self_ = imp::InhibitPage::from_instance(self);
+        let imp = self.imp();
         let mut flags = BitFlags::empty();
 
-        if self_.user_switch_check.is_active() {
+        if imp.user_switch_check.is_active() {
             flags.insert(InhibitFlags::UserSwitch);
         }
-        if self_.suspend_check.is_active() {
+        if imp.suspend_check.is_active() {
             flags.insert(InhibitFlags::Suspend);
         }
-        if self_.idle_check.is_active() {
+        if imp.idle_check.is_active() {
             flags.insert(InhibitFlags::Idle);
         }
-        if self_.logout_check.is_active() {
+        if imp.logout_check.is_active() {
             flags.insert(InhibitFlags::Logout);
         }
 
@@ -111,16 +109,16 @@ impl InhibitPage {
 
     async fn start_session(&self) -> ashpd::Result<()> {
         let root = self.native().unwrap();
-        let self_ = imp::InhibitPage::from_instance(self);
+        let imp = self.imp();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let reason = self_.reason.text();
+        let reason = imp.reason.text();
         let flags = self.inhibit_flags();
 
         let connection = zbus::Connection::session().await?;
         let proxy = InhibitProxy::new(&connection).await?;
         let monitor = proxy.create_monitor(&identifier).await?;
 
-        self_.session.lock().await.replace(monitor);
+        imp.session.lock().await.replace(monitor);
         self.action_set_enabled("inhibit.stop", true);
         self.action_set_enabled("inhibit.start_session", false);
 
@@ -130,7 +128,7 @@ impl InhibitPage {
             SessionState::QueryEnd => {
                 tracing::info!("Session: query end");
                 proxy.inhibit(&identifier, flags, &reason).await?;
-                if let Some(session) = self_.session.lock().await.as_ref() {
+                if let Some(session) = imp.session.lock().await.as_ref() {
                     proxy.query_end_response(session).await?;
                 }
             }
@@ -142,10 +140,10 @@ impl InhibitPage {
     }
 
     async fn stop(&self) {
-        let self_ = imp::InhibitPage::from_instance(self);
+        let imp = self.imp();
         self.action_set_enabled("inhibit.stop", false);
         self.action_set_enabled("inhibit.start_session", true);
-        if let Some(session) = self_.session.lock().await.take() {
+        if let Some(session) = imp.session.lock().await.take() {
             let _ = session.close().await;
         }
     }

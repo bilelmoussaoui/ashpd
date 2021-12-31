@@ -2,16 +2,13 @@ use gtk::glib;
 use gtk::prelude::*;
 
 mod imp {
-    use std::cell::RefCell;
-
+    use super::*;
     use glib::{ParamFlags, ParamSpec, ParamSpecString, Value};
     use gtk::subclass::prelude::*;
-    use gtk::CompositeTemplate;
     use once_cell::sync::Lazy;
+    use std::cell::RefCell;
 
-    use super::*;
-
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/sidebar_row.ui")]
     pub struct SidebarRow {
         #[template_child]

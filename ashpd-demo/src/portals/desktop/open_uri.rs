@@ -6,11 +6,9 @@ use gtk::subclass::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/open_uri.ui")]
     pub struct OpenUriPage {
         #[template_child]
@@ -59,12 +57,12 @@ impl OpenUriPage {
     }
 
     async fn open_uri(&self) {
-        let self_ = imp::OpenUriPage::from_instance(self);
-        let writable = self_.writeable_switch.is_active();
-        let ask = self_.ask_switch.is_active();
+        let imp = self.imp();
+        let writable = imp.writeable_switch.is_active();
+        let ask = imp.ask_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let uri = self_.uri_entry.text();
+        let uri = imp.uri_entry.text();
         match open_uri::open_uri(&identifier, &uri, writable, ask).await {
             Ok(_) => {
                 self.send_notification(

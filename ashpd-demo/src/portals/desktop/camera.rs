@@ -10,11 +10,9 @@ use std::os::unix::prelude::RawFd;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/camera.ui")]
     pub struct CameraPage {
         #[template_child]
@@ -61,14 +59,14 @@ mod imp {
         fn map(&self, widget: &Self::Type) {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak widget as page => async move {
-                let self_ = imp::CameraPage::from_instance(&page);
+                let imp = page.imp();
                 let is_available = camera_available().await.unwrap_or(false);
                 if is_available {
-                    self_.camera_available.set_text("Yes");
+                    imp.camera_available.set_text("Yes");
                     page.action_set_enabled("camera.start", true);
 
                 } else {
-                    self_.camera_available.set_text("No");
+                    imp.camera_available.set_text("No");
 
                     page.action_set_enabled("camera.start", false);
                     page.action_set_enabled("camera.stop", false);
@@ -92,16 +90,16 @@ impl CameraPage {
     }
 
     async fn start_stream(&self) {
-        let self_ = imp::CameraPage::from_instance(self);
+        let imp = self.imp();
 
         self.action_set_enabled("camera.stop", true);
         self.action_set_enabled("camera.start", false);
         match stream().await {
             Ok(stream_fd) => {
                 let node_id = camera::pipewire_node_id(stream_fd).await.unwrap();
-                self_.paintable.set_pipewire_node_id(stream_fd, node_id);
-                self_.revealer.set_reveal_child(true);
-                self_.camera_available.set_text("Yes");
+                imp.paintable.set_pipewire_node_id(stream_fd, node_id);
+                imp.revealer.set_reveal_child(true);
+                imp.camera_available.set_text("Yes");
 
                 self.send_notification(
                     "Camera stream started successfully",
@@ -120,12 +118,12 @@ impl CameraPage {
     }
 
     fn stop_stream(&self) {
-        let self_ = imp::CameraPage::from_instance(self);
+        let imp = self.imp();
         self.action_set_enabled("camera.stop", false);
         self.action_set_enabled("camera.start", true);
 
-        self_.paintable.close_pipeline();
-        self_.revealer.set_reveal_child(false);
+        imp.paintable.close_pipeline();
+        imp.revealer.set_reveal_child(false);
     }
 }
 

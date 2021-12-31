@@ -9,11 +9,9 @@ use gtk::subclass::prelude::*;
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/wallpaper.ui")]
     pub struct WallpaperPage {
         pub dialog: RefCell<Option<gtk::FileChooserNative>>,
@@ -61,7 +59,7 @@ impl WallpaperPage {
     }
 
     async fn pick_wallpaper(&self) {
-        let self_ = imp::WallpaperPage::from_instance(self);
+        let imp = self.imp();
         let root = self.native().unwrap();
 
         let file_chooser = gtk::FileChooserNative::builder()
@@ -75,8 +73,8 @@ impl WallpaperPage {
         filter.set_name(Some("images"));
         file_chooser.add_filter(&filter);
 
-        let show_preview = self_.preview_switch.is_active();
-        let set_on = match self_.set_on_combo.selected() {
+        let show_preview = imp.preview_switch.is_active();
+        let set_on = match imp.set_on_combo.selected() {
             0 => wallpaper::SetOn::Background,
             1 => wallpaper::SetOn::Lockscreen,
             2 => wallpaper::SetOn::Both,
@@ -101,6 +99,6 @@ impl WallpaperPage {
             }
         };
         file_chooser.destroy();
-        self_.dialog.replace(Some(file_chooser));
+        imp.dialog.replace(Some(file_chooser));
     }
 }

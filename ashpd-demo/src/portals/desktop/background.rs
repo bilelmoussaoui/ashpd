@@ -7,11 +7,9 @@ use gtk::subclass::prelude::*;
 use crate::portals::is_empty;
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/background.ui")]
     pub struct BackgroundPage {
         #[template_child]
@@ -67,11 +65,11 @@ impl BackgroundPage {
     }
 
     async fn request_background(&self) {
-        let self_ = imp::BackgroundPage::from_instance(self);
-        let reason = self_.reason_entry.text();
-        let auto_start = self_.auto_start_switch.is_active();
-        let dbus_activatable = self_.dbus_activatable_switch.is_active();
-        let command = is_empty(self_.command_entry.text()).map(|txt| {
+        let imp = self.imp();
+        let reason = imp.reason_entry.text();
+        let auto_start = imp.auto_start_switch.is_active();
+        let dbus_activatable = imp.dbus_activatable_switch.is_active();
+        let command = is_empty(imp.command_entry.text()).map(|txt| {
             txt.split_whitespace()
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>()
@@ -91,12 +89,10 @@ impl BackgroundPage {
         .await
         {
             Ok(response) => {
-                self_.response_group.show();
-                self_
-                    .auto_start_label
+                imp.response_group.show();
+                imp.auto_start_label
                     .set_label(&response.auto_start().to_string());
-                self_
-                    .run_bg_label
+                imp.run_bg_label
                     .set_label(&response.run_in_background().to_string());
                 self.send_notification(
                     "Background request was successful",

@@ -8,11 +8,9 @@ use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, P
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screenshot.ui")]
     pub struct ScreenshotPage {
         #[template_child]
@@ -85,11 +83,10 @@ impl ScreenshotPage {
     async fn pick_color(&self) {
         // used for retrieving a window identifier
         let root = self.native().unwrap();
-        let self_ = imp::ScreenshotPage::from_instance(self);
         let identifier = WindowIdentifier::from_native(&root).await;
         match screenshot::pick_color(&identifier).await {
             Ok(color) => {
-                self_.color_widget.set_rgba(color.into());
+                self.imp().color_widget.set_rgba(color.into());
                 self.send_notification(
                     "Color pick request was successful",
                     NotificationKind::Success,
@@ -102,22 +99,22 @@ impl ScreenshotPage {
     }
 
     async fn screenshot(&self) {
-        let self_ = imp::ScreenshotPage::from_instance(self);
+        let imp = self.imp();
         // used for retrieving a window identifier
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        let interactive = self_.interactive_switch.is_active();
-        let modal = self_.modal_switch.is_active();
+        let interactive = imp.interactive_switch.is_active();
+        let modal = imp.modal_switch.is_active();
 
         match screenshot::take(&identifier, interactive, modal).await {
             Ok(uri) => {
                 let file = gio::File::for_uri(&uri);
-                self_.screenshot_photo.set_file(Some(&file));
-                self_.revealer.show(); // Revealer has a weird issue where it still
-                                       // takes space even if it's child is hidden
+                imp.screenshot_photo.set_file(Some(&file));
+                imp.revealer.show(); // Revealer has a weird issue where it still
+                                     // takes space even if it's child is hidden
 
-                self_.revealer.set_reveal_child(true);
+                imp.revealer.set_reveal_child(true);
                 self.send_notification(
                     "Screenshot request was successful",
                     NotificationKind::Success,

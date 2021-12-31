@@ -10,11 +10,9 @@ pub enum NotificationKind {
 
 mod imp {
     use adw::subclass::prelude::*;
-    use gtk::CompositeTemplate;
-
     use super::*;
 
-    #[derive(Debug, CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/notification_widget.ui")]
     pub struct Notification {
         #[template_child]
@@ -54,27 +52,27 @@ impl Notification {
     }
 
     pub fn send(&self, text: &str, kind: NotificationKind) {
-        let self_ = imp::Notification::from_instance(self);
-        self_.info_bar.remove_css_class("error");
-        self_.info_bar.remove_css_class("info");
-        self_.info_bar.remove_css_class("success");
+        let imp = self.imp();
+        imp.info_bar.remove_css_class("error");
+        imp.info_bar.remove_css_class("info");
+        imp.info_bar.remove_css_class("success");
 
         match kind {
             NotificationKind::Error => {
-                self_.info_bar.set_message_type(gtk::MessageType::Error);
-                self_.info_bar.add_css_class("error");
+                imp.info_bar.set_message_type(gtk::MessageType::Error);
+                imp.info_bar.add_css_class("error");
             }
             NotificationKind::Info => {
-                self_.info_bar.set_message_type(gtk::MessageType::Info);
-                self_.info_bar.add_css_class("info");
+                imp.info_bar.set_message_type(gtk::MessageType::Info);
+                imp.info_bar.add_css_class("info");
             }
             NotificationKind::Success => {
-                self_.info_bar.set_message_type(gtk::MessageType::Other);
-                self_.info_bar.add_css_class("success");
+                imp.info_bar.set_message_type(gtk::MessageType::Other);
+                imp.info_bar.add_css_class("success");
             }
         }
-        self_.info_bar.set_revealed(true);
-        self_.message_label.set_label(text);
+        imp.info_bar.set_revealed(true);
+        imp.message_label.set_label(text);
 
         glib::timeout_add_seconds_local_once(
             3,
@@ -85,7 +83,6 @@ impl Notification {
     }
 
     pub fn close(&self) {
-        let self_ = imp::Notification::from_instance(self);
-        self_.info_bar.set_revealed(false);
+        self.imp().info_bar.set_revealed(false);
     }
 }

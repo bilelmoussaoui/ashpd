@@ -98,7 +98,7 @@ impl CameraPaintable {
 
     fn init_pipeline(&self, pipewire_src: gst::Element) {
         tracing::debug!("Init pipeline");
-        let self_ = imp::CameraPaintable::from_instance(self);
+        let imp = self.imp();
         let pipeline = gst::Pipeline::new(None);
 
         let sink = gst::ElementFactory::make("gtk4paintablesink", None).unwrap();
@@ -111,7 +111,7 @@ impl CameraPaintable {
         paintable.connect_invalidate_size(clone!(@weak self as pt => move |_| {
             pt.invalidate_size  ();
         }));
-        self_.sink_paintable.replace(Some(paintable));
+        imp.sink_paintable.replace(Some(paintable));
 
         let convert = gst::ElementFactory::make("videoconvert", None).unwrap();
         let queue1 = gst::ElementFactory::make("queue", None).unwrap();
@@ -139,13 +139,12 @@ impl CameraPaintable {
         })
         .expect("Failed to add bus watch");
         pipeline.set_state(gst::State::Playing).unwrap();
-        self_.pipeline.replace(Some(pipeline));
+        imp.pipeline.replace(Some(pipeline));
     }
 
     pub fn close_pipeline(&self) {
         tracing::debug!("Closing pipeline");
-        let self_ = imp::CameraPaintable::from_instance(self);
-        if let Some(pipeline) = self_.pipeline.borrow_mut().take() {
+        if let Some(pipeline) = self.imp().pipeline.borrow_mut().take() {
             pipeline.set_state(gst::State::Null).unwrap();
         }
     }
