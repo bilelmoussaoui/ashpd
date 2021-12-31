@@ -161,17 +161,19 @@ mod imp {
             let button = self.color_scheme_btn.get();
             let style_manager = adw::StyleManager::default().unwrap();
 
-            style_manager.connect_color_scheme_notify(move |style_manager| {
-                let supported = style_manager.system_supports_color_schemes();
-                button.set_visible(!supported);
-                if supported {
-                    style_manager.set_color_scheme(adw::ColorScheme::Default);
-                } else if style_manager.is_dark() {
-                    button.set_icon_name("light-mode-symbolic");
-                } else {
-                    button.set_icon_name("dark-mode-symbolic");
-                }
-            });
+            if !style_manager.system_supports_color_schemes() {
+                button.show();
+
+                style_manager.connect_dark_notify(
+                    clone!(@weak obj as window, @weak button => move |manager| {
+                        if manager.is_dark() {
+                            button.set_icon_name("light-mode-symbolic");
+                        } else {
+                            button.set_icon_name("dark-mode-symbolic");
+                        }
+                    }),
+                );
+            }
             obj.load_window_state();
         }
     }

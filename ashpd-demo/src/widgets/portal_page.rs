@@ -1,10 +1,8 @@
 use super::{Notification, NotificationKind};
 use adw::subclass::prelude::*;
-use gtk::glib::{self};
+use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-
-pub trait PortalPageImpl: BinImpl {}
 
 mod imp {
     use gtk::CompositeTemplate;
@@ -86,4 +84,5 @@ impl<O: IsA<PortalPage>> PortalPageExt for O {
     }
 }
 
+pub trait PortalPageImpl: BinImpl {}
 unsafe impl<T: PortalPageImpl> IsSubclassable<T> for PortalPage {}

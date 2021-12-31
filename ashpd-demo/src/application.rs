@@ -7,10 +7,10 @@ use ashpd::{
 use gio::ApplicationFlags;
 use glib::clone;
 use glib::WeakRef;
-use gtk::prelude::*;
+use adw::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
-use gtk_macros::{action, stateful_action};
+use gtk_macros::action;
 use once_cell::sync::OnceCell;
 use serde::Serialize;
 use tracing::{debug, info};
@@ -62,8 +62,7 @@ mod imp {
         fn activate(&self, app: &Self::Type) {
             debug!("Application::activate");
 
-            let priv_ = Application::from_instance(app);
-            if let Some(window) = priv_.window.get() {
+            if let Some(window) = self.window.get() {
                 let window = window.upgrade().unwrap();
                 window.show();
                 window.present();
@@ -85,15 +84,13 @@ mod imp {
             debug!("Application::startup");
             // Set icons for shell
             gtk::Window::set_default_icon_name(config::APP_ID);
-            self.settings
-                .connect_changed(Some("dark-mode"), |_settings, _key| {
-                    let style_manager = adw::StyleManager::default().unwrap();
-                    if style_manager.is_dark() {
-                        style_manager.set_color_scheme(adw::ColorScheme::ForceLight);
-                    } else {
-                        style_manager.set_color_scheme(adw::ColorScheme::ForceDark);
-                    }
-                });
+            self.settings.connect_changed(
+                Some("dark-mode"),
+                clone!(@weak app => move |_, _| {
+                    app.update_color_scheme();
+                }),
+            );
+            app.update_color_scheme();
             self.parent_startup(app);
         }
     }
@@ -154,22 +151,8 @@ impl Application {
         // The restart app requires the Flatpak portal
         gtk_macros::get_action!(self, @restart).set_enabled(ashpd::is_sandboxed());
 
-        let is_dark_mode = self_.settings.boolean("dark-mode");
-        stateful_action!(
-            self,
-            "dark-mode",
-            is_dark_mode,
-            clone!(@weak self_.settings as settings =>  move |action, _| {
-                let state = action.state().unwrap();
-                let action_state: bool = state.get().unwrap();
-                let is_dark_mode = !action_state;
-                action.set_state(&is_dark_mode.to_variant());
-                if let Err(err) = settings.set_boolean("dark-mode", is_dark_mode) {
-                    tracing::error!("Failed to switch dark mode: {} ", err);
-                }
-            })
-        );
-
+        let action = self_.settings.create_action("dark-mode");
+        self.add_action(&action);
         // About
         action!(
             self,
@@ -256,6 +239,20 @@ impl Application {
             )
             .await?;
         Ok(())
+    }
+
+    fn update_color_scheme(&self) {
+        let self_ = imp::Application::from_instance(self);
+        let manager = self.style_manager();
+
+        if !manager.system_supports_color_schemes() {
+            let color_scheme = if self_.settings.boolean("dark-mode") {
+                adw::ColorScheme::PreferDark
+            } else {
+                adw::ColorScheme::PreferLight
+            };
+            manager.set_color_scheme(color_scheme);
+        }
     }
 
     pub fn run(&self) {
