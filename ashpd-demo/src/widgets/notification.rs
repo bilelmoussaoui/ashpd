@@ -63,20 +63,14 @@ impl Notification {
             NotificationKind::Error => {
                 self_.info_bar.set_message_type(gtk::MessageType::Error);
                 self_.info_bar.add_css_class("error");
-                self_.info_bar.remove_css_class("info");
-                self_.info_bar.remove_css_class("success");
             }
             NotificationKind::Info => {
                 self_.info_bar.set_message_type(gtk::MessageType::Info);
                 self_.info_bar.add_css_class("info");
-                self_.info_bar.remove_css_class("error");
-                self_.info_bar.remove_css_class("success");
             }
             NotificationKind::Success => {
                 self_.info_bar.set_message_type(gtk::MessageType::Other);
                 self_.info_bar.add_css_class("success");
-                self_.info_bar.remove_css_class("error");
-                self_.info_bar.remove_css_class("info");
             }
         }
         self_.info_bar.set_revealed(true);
