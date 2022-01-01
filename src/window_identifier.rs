@@ -166,11 +166,8 @@ impl WindowIdentifier {
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     pub async fn from_native<W: glib::IsA<gtk4::Native>>(native: &W) -> Self {
-        let surface = native.surface().unwrap();
-        let backend = surface
-            .display()
-            .expect("Surface has to be attached to a display")
-            .backend();
+        let surface = native.surface();
+        let backend = surface.display().backend();
         let handle = if backend.is_wayland() {
             let (sender, receiver) = futures::channel::oneshot::channel::<String>();
             let sender = Arc::new(Mutex::new(Some(sender)));
@@ -257,8 +254,8 @@ impl Drop for WindowIdentifier {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@strong native => async move {
                 let native = native.lock().await;
-                let surface = native.surface().unwrap();
-                if surface.display().unwrap().backend().is_wayland()
+                let surface = native.surface();
+                if surface.display().backend().is_wayland()
                 {
                     let top_level = surface.downcast_ref::<gdk4wayland::WaylandToplevel>().unwrap();
                     top_level.unexport_handle();
