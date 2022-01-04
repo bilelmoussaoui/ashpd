@@ -20,7 +20,7 @@
 
 use std::fmt;
 
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize};
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
 use super::{DESTINATION, PATH};
@@ -40,8 +40,7 @@ pub struct NetworkStatus {
     pub connectivity: Connectivity,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(u32)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
 /// Host's network activity
 pub enum Connectivity {
     /// The host is not configured with a route to the internet.
