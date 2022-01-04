@@ -107,7 +107,7 @@ impl<'a> GameModeProxy<'a> {
     /// See also [`QueryStatus`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.QueryStatus).
     #[doc(alias = "QueryStatus")]
     pub async fn query_status(&self, pid: u32) -> Result<Status, Error> {
-        call_method(&self.0, "QueryStatus", &(pid)).await
+        call_method(self.inner(), "QueryStatus", &(pid)).await
     }
 
     /// Query the GameMode status for a process.
@@ -132,7 +132,7 @@ impl<'a> GameModeProxy<'a> {
         R: AsRawFd,
     {
         call_method(
-            &self.0,
+            self.inner(),
             "QueryStatusByPIDFd",
             &(
                 Fd::from(target.as_raw_fd()),
@@ -154,7 +154,7 @@ impl<'a> GameModeProxy<'a> {
     /// See also [`QueryStatusByPid`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.QueryStatusByPid).
     #[doc(alias = "QueryStatusByPid")]
     pub async fn query_status_by_pid(&self, target: u32, requester: u32) -> Result<Status, Error> {
-        call_method(&self.0, "QueryStatusByPid", &(target, requester)).await
+        call_method(self.inner(), "QueryStatusByPid", &(target, requester)).await
     }
 
     /// Register a game with GameMode and thus request GameMode to be activated.
@@ -172,7 +172,7 @@ impl<'a> GameModeProxy<'a> {
     /// See also [`RegisterGame`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.RegisterGame).
     #[doc(alias = "RegisterGame")]
     pub async fn register_game(&self, pid: u32) -> Result<(), Error> {
-        let status = call_method(&self.0, "RegisterGame", &(pid)).await?;
+        let status = call_method(self.inner(), "RegisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
@@ -197,7 +197,7 @@ impl<'a> GameModeProxy<'a> {
         R: AsRawFd,
     {
         let status = call_method(
-            &self.0,
+            self.inner(),
             "RegisterGameByPIDFd",
             &(
                 Fd::from(target.as_raw_fd()),
@@ -223,7 +223,7 @@ impl<'a> GameModeProxy<'a> {
     /// See also [`RegisterGameByPid`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.RegisterGameByPid).
     #[doc(alias = "RegisterGameByPid")]
     pub async fn register_game_by_pid(&self, target: u32, requester: u32) -> Result<(), Error> {
-        let status = call_method(&self.0, "RegisterGameByPid", &(target, requester)).await?;
+        let status = call_method(self.inner(), "RegisterGameByPid", &(target, requester)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
@@ -245,7 +245,7 @@ impl<'a> GameModeProxy<'a> {
     /// See also [`UnregisterGame`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.UnregisterGame).
     #[doc(alias = "UnregisterGame")]
     pub async fn unregister_game(&self, pid: u32) -> Result<(), Error> {
-        let status = call_method(&self.0, "UnregisterGame", &(pid)).await?;
+        let status = call_method(self.inner(), "UnregisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
@@ -274,7 +274,7 @@ impl<'a> GameModeProxy<'a> {
         R: AsRawFd,
     {
         let status = call_method(
-            &self.0,
+            self.inner(),
             "UnregisterGameByPIDFd",
             &(
                 Fd::from(target.as_raw_fd()),
@@ -301,7 +301,7 @@ impl<'a> GameModeProxy<'a> {
     /// See also [`UnregisterGameByPid`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.UnregisterGameByPid).
     #[doc(alias = "UnregisterGameByPid")]
     pub async fn unregister_game_by_pid(&self, target: u32, requester: u32) -> Result<(), Error> {
-        let status = call_method(&self.0, "UnregisterGameByPid", &(target, requester)).await?;
+        let status = call_method(self.inner(), "UnregisterGameByPid", &(target, requester)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),

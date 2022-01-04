@@ -216,7 +216,7 @@ impl<'a> RequestProxy<'a> {
     where
         R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
     {
-        let response = receive_signal::<Response<R>>(&self.0, "Response").await?;
+        let response = receive_signal::<Response<R>>(self.inner(), "Response").await?;
         match response {
             Response::Err(e) => Err(e.into()),
             Response::Ok(r) => Ok(r),
@@ -233,7 +233,7 @@ impl<'a> RequestProxy<'a> {
     #[allow(dead_code)]
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        call_method(&self.0, "Close", &()).await
+        call_method(self.inner(), "Close", &()).await
     }
 }
 

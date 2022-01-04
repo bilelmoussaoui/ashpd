@@ -241,7 +241,7 @@ impl<'a> DocumentsProxy<'a> {
         F: AsRawFd + fmt::Debug,
     {
         call_method(
-            &self.0,
+            self.inner(),
             "Add",
             &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
         )
@@ -275,7 +275,12 @@ impl<'a> DocumentsProxy<'a> {
         permissions: &[Permission],
     ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, zvariant::OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
-        call_method(&self.0, "AddFull", &(o_path, flags, app_id, permissions)).await
+        call_method(
+            self.inner(),
+            "AddFull",
+            &(o_path, flags, app_id, permissions),
+        )
+        .await
     }
 
     /// Creates an entry in the document store for writing a new file.
@@ -311,7 +316,7 @@ impl<'a> DocumentsProxy<'a> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         call_method(
-            &self.0,
+            self.inner(),
             "AddNamed",
             &(
                 Fd::from(o_path_parent_fd.as_raw_fd()),
@@ -358,7 +363,7 @@ impl<'a> DocumentsProxy<'a> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         call_method(
-            &self.0,
+            self.inner(),
             "AddNamedFull",
             &(
                 Fd::from(o_path_fd.as_raw_fd()),
@@ -386,7 +391,7 @@ impl<'a> DocumentsProxy<'a> {
     /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
     #[doc(alias = "Delete")]
     pub async fn delete(&self, doc_id: DocumentID<'_>) -> Result<(), Error> {
-        call_method(&self.0, "Delete", &(doc_id)).await
+        call_method(self.inner(), "Delete", &(doc_id)).await
     }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
@@ -398,7 +403,7 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "GetMountPoint")]
     #[doc(alias = "get_mount_point")]
     pub async fn mount_point(&self) -> Result<PathBuf, Error> {
-        let bytes: Vec<u8> = call_method(&self.0, "GetMountPoint", &()).await?;
+        let bytes: Vec<u8> = call_method(self.inner(), "GetMountPoint", &()).await?;
         Ok(path_from_null_terminated(bytes))
     }
 
@@ -424,7 +429,12 @@ impl<'a> DocumentsProxy<'a> {
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
-        call_method(&self.0, "GrantPermissions", &(doc_id, app_id, permissions)).await
+        call_method(
+            self.inner(),
+            "GrantPermissions",
+            &(doc_id, app_id, permissions),
+        )
+        .await
     }
 
     /// Gets the filesystem path and application permissions for a document
@@ -447,7 +457,7 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "Info")]
     pub async fn info(&self, doc_id: DocumentID<'_>) -> Result<(PathBuf, Permissions), Error> {
         let (bytes, permissions): (Vec<u8>, Permissions) =
-            call_method(&self.0, "Info", &(doc_id)).await?;
+            call_method(self.inner(), "Info", &(doc_id)).await?;
         Ok((path_from_null_terminated(bytes), permissions))
     }
 
@@ -473,7 +483,8 @@ impl<'a> DocumentsProxy<'a> {
         &self,
         app_id: ApplicationID<'_>,
     ) -> Result<HashMap<OwnedDocumentID, PathBuf>, Error> {
-        let response: HashMap<String, Vec<u8>> = call_method(&self.0, "List", &(app_id)).await?;
+        let response: HashMap<String, Vec<u8>> =
+            call_method(self.inner(), "List", &(app_id)).await?;
 
         let mut new_response: HashMap<String, PathBuf> = HashMap::new();
         for (key, bytes) in response {
@@ -506,7 +517,8 @@ impl<'a> DocumentsProxy<'a> {
     ) -> Result<Option<OwnedDocumentID>, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
-        let doc_id: String = call_method(&self.0, "Lookup", &(cstr.as_bytes_with_nul())).await?;
+        let doc_id: String =
+            call_method(self.inner(), "Lookup", &(cstr.as_bytes_with_nul())).await?;
         if doc_id.is_empty() {
             Ok(None)
         } else {
@@ -537,7 +549,12 @@ impl<'a> DocumentsProxy<'a> {
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
-        call_method(&self.0, "RevokePermissions", &(doc_id, app_id, permissions)).await
+        call_method(
+            self.inner(),
+            "RevokePermissions",
+            &(doc_id, app_id, permissions),
+        )
+        .await
     }
 }
 

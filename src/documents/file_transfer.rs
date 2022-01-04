@@ -116,7 +116,7 @@ impl<'a> FileTransferProxy<'a> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
 
-        call_method(&self.0, "AddFiles", &(key, files, options)).await
+        call_method(self.inner(), "AddFiles", &(key, files, options)).await
     }
 
     /// Retrieves files that were previously added to the session with
@@ -142,7 +142,7 @@ impl<'a> FileTransferProxy<'a> {
         // see https://github.com/GNOME/gtk/blob/master/gdk/filetransferportal.c#L284
         let options: HashMap<&str, Value<'_>> = HashMap::new();
 
-        call_method(&self.0, "RetrieveFiles", &(key, options)).await
+        call_method(self.inner(), "RetrieveFiles", &(key, options)).await
     }
 
     /// Starts a session for a file transfer.
@@ -169,7 +169,7 @@ impl<'a> FileTransferProxy<'a> {
         let options = TransferOptions::default()
             .writeable(writeable)
             .auto_stop(auto_stop);
-        call_method(&self.0, "StartTransfer", &(options)).await
+        call_method(self.inner(), "StartTransfer", &(options)).await
     }
 
     /// Ends the transfer.
@@ -187,7 +187,7 @@ impl<'a> FileTransferProxy<'a> {
     /// See also [`StopTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.StopTransfer).
     #[doc(alias = "StopTransfer")]
     pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
-        call_method(&self.0, "StopTransfer", &(key)).await
+        call_method(self.inner(), "StopTransfer", &(key)).await
     }
 
     /// Emitted when the transfer is closed.
@@ -202,6 +202,6 @@ impl<'a> FileTransferProxy<'a> {
     /// See also [`TransferClosed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-FileTransfer.TransferClosed).
     #[doc(alias = "TransferClosed")]
     pub async fn transfer_closed(&self) -> Result<String, Error> {
-        receive_signal(&self.0, "TransferClosed").await
+        receive_signal(self.inner(), "TransferClosed").await
     }
 }

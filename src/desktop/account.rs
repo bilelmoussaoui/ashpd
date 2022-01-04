@@ -133,7 +133,7 @@ impl<'a> AccountProxy<'a> {
     ) -> Result<UserInfo, Error> {
         let options = UserInfoOptions::default().reason(reason);
         call_request_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "GetUserInformation",
             &(&identifier, &options),

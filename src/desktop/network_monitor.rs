@@ -104,7 +104,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     /// See also [`CanReach`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.CanReach).
     #[doc(alias = "CanReach")]
     pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
-        call_method(&self.0, "CanReach", &(hostname, port)).await
+        call_method(self.inner(), "CanReach", &(hostname, port)).await
     }
 
     /// Returns whether the network is considered available.
@@ -117,7 +117,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     #[doc(alias = "GetAvailable")]
     #[doc(alias = "get_available")]
     pub async fn is_available(&self) -> Result<bool, Error> {
-        call_method(&self.0, "GetAvailable", &()).await
+        call_method(self.inner(), "GetAvailable", &()).await
     }
 
     /// Returns more detailed information about the host's network connectivity
@@ -128,7 +128,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     #[doc(alias = "GetConnectivity")]
     #[doc(alias = "get_connectivity")]
     pub async fn connectivity(&self) -> Result<Connectivity, Error> {
-        call_method(&self.0, "GetConnectivity", &()).await
+        call_method(self.inner(), "GetConnectivity", &()).await
     }
 
     /// Returns whether the network is considered metered.
@@ -141,7 +141,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     #[doc(alias = "GetMetered")]
     #[doc(alias = "get_metered")]
     pub async fn is_metered(&self) -> Result<bool, Error> {
-        call_method(&self.0, "GetMetered", &()).await
+        call_method(self.inner(), "GetMetered", &()).await
     }
 
     /// Returns the three values all at once.
@@ -152,7 +152,7 @@ impl<'a> NetworkMonitorProxy<'a> {
     #[doc(alias = "GetStatus")]
     #[doc(alias = "get_status")]
     pub async fn status(&self) -> Result<NetworkStatus, Error> {
-        call_method(&self.0, "GetStatus", &()).await
+        call_method(self.inner(), "GetStatus", &()).await
     }
 
     /// Emitted when the network configuration changes.
@@ -161,6 +161,6 @@ impl<'a> NetworkMonitorProxy<'a> {
     ///
     /// See also [`changed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-NetworkMonitor.changed).
     pub async fn receive_changed(&self) -> Result<(), Error> {
-        receive_signal(&self.0, "changed").await
+        receive_signal(self.inner(), "changed").await
     }
 }

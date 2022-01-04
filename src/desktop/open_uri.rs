@@ -202,7 +202,7 @@ impl<'a> OpenURIProxy<'a> {
     {
         let options = OpenDirOptions::default();
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "OpenDirectory",
             &(&identifier, Fd::from(directory.as_raw_fd()), &options),
@@ -236,7 +236,7 @@ impl<'a> OpenURIProxy<'a> {
     {
         let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "OpenFile",
             &(&identifier, Fd::from(file.as_raw_fd()), &options),
@@ -270,7 +270,7 @@ impl<'a> OpenURIProxy<'a> {
     ) -> Result<(), Error> {
         let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "OpenURI",
             &(&identifier, uri, &options),

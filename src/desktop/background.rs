@@ -181,7 +181,7 @@ impl<'a> BackgroundProxy<'a> {
             .dbus_activatable(dbus_activatable)
             .command(command_line);
         call_request_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "RequestBackground",
             &(&identifier, &options),

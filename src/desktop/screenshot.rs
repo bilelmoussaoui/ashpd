@@ -214,7 +214,7 @@ impl<'a> ScreenshotProxy<'a> {
     pub async fn pick_color(&self, identifier: &WindowIdentifier) -> Result<Color, Error> {
         let options = PickColorOptions::default();
         call_request_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "PickColor",
             &(&identifier, &options),
@@ -249,7 +249,7 @@ impl<'a> ScreenshotProxy<'a> {
             .interactive(interactive)
             .modal(modal);
         let response: Screenshot = call_request_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "Screenshot",
             &(&identifier, &options),

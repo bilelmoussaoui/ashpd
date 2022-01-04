@@ -253,15 +253,15 @@ impl<'a> FlatpakProxy<'a> {
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let path: zvariant::OwnedObjectPath =
-            call_method(&self.0, "CreateUpdateMonitor", &(options)).await?;
+            call_method(self.inner(), "CreateUpdateMonitor", &(options)).await?;
 
-        UpdateMonitorProxy::new(self.0.connection(), path.into_inner()).await
+        UpdateMonitorProxy::new(self.inner().connection(), path.into_inner()).await
     }
 
     /// Emitted when a process starts by [`spawn()`][`FlatpakProxy::spawn`].
     #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
-        receive_signal(&self.0, "SpawnStarted").await
+        receive_signal(self.inner(), "SpawnStarted").await
     }
 
     /// Emitted when a process started by [`spawn()`][`FlatpakProxy::spawn`]
@@ -272,7 +272,7 @@ impl<'a> FlatpakProxy<'a> {
     /// See also [`SpawnExited`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak.SpawnExited).
     #[doc(alias = "SpawnExited")]
     pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
-        receive_signal(&self.0, "SpawnExited").await
+        receive_signal(self.inner(), "SpawnExited").await
     }
 
     /// This methods let you start a new instance of your application,
@@ -319,7 +319,7 @@ impl<'a> FlatpakProxy<'a> {
             })
             .collect::<Vec<_>>();
         call_method(
-            &self.0,
+            self.inner(),
             "Spawn",
             &(
                 cwd_path.as_bytes_with_nul(),
@@ -354,7 +354,12 @@ impl<'a> FlatpakProxy<'a> {
         signal: u32,
         to_process_group: bool,
     ) -> Result<(), Error> {
-        call_method(&self.0, "SpawnSignal", &(pid, signal, to_process_group)).await
+        call_method(
+            self.inner(),
+            "SpawnSignal",
+            &(pid, signal, to_process_group),
+        )
+        .await
     }
 
     /// Flags marking what optional features are available.

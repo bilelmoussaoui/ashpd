@@ -123,7 +123,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     /// See also [`Progress`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.Progress).
     #[doc(alias = "Progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
-        receive_signal(&self.0, "Progress").await
+        receive_signal(self.inner(), "Progress").await
     }
 
     /// A signal received when there's an application update.
@@ -133,7 +133,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     /// See also [`UpdateAvailable`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.UpdateAvailable).
     #[doc(alias = "UpdateAvailable")]
     pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
-        receive_signal(&self.0, "UpdateAvailable").await
+        receive_signal(self.inner(), "UpdateAvailable").await
     }
 
     /// Asks to install an update of the calling app.
@@ -147,7 +147,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     #[doc(alias = "Update")]
     pub async fn update(&self, identifier: &WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
-        call_method(&self.0, "Update", &(&identifier, options)).await
+        call_method(self.inner(), "Update", &(&identifier, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.
@@ -157,6 +157,6 @@ impl<'a> UpdateMonitorProxy<'a> {
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        call_method(&self.0, "Close", &()).await
+        call_method(self.inner(), "Close", &()).await
     }
 }

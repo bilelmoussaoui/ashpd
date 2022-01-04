@@ -144,7 +144,7 @@ impl<'a> DeviceProxy<'a> {
     pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<(), Error> {
         let options = AccessDeviceOptions::default();
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "AccessDevice",
             &(pid, devices, &options),

@@ -87,7 +87,7 @@ impl<'a> TrashProxy<'a> {
     where
         T: AsRawFd,
     {
-        let status = call_method(&self.0, "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
+        let status = call_method(self.inner(), "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
             TrashStatus::Succeeded => Ok(()),

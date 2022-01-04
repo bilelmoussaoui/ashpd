@@ -70,7 +70,7 @@ impl<'a> SessionProxy<'a> {
     /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Session.Closed).
     #[doc(alias = "Closed")]
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
-        receive_signal(&self.0, "Closed").await
+        receive_signal(self.inner(), "Closed").await
     }
 
     /// Closes the portal session to which this object refers and ends all
@@ -81,7 +81,7 @@ impl<'a> SessionProxy<'a> {
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Session.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        call_method(&self.0, "Close", &()).await
+        call_method(self.inner(), "Close", &()).await
     }
 }
 
@@ -90,7 +90,7 @@ impl<'a> Serialize for SessionProxy<'a> {
     where
         S: Serializer,
     {
-        zvariant::ObjectPath::serialize(self.0.path(), serializer)
+        zvariant::ObjectPath::serialize(self.inner().path(), serializer)
     }
 }
 

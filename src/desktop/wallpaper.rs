@@ -233,7 +233,7 @@ impl<'a> WallpaperProxy<'a> {
             .show_preview(show_preview)
             .set_on(set_on);
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "SetWallpaperFile",
             &(&identifier, Fd::from(file.as_raw_fd()), &options),
@@ -265,7 +265,7 @@ impl<'a> WallpaperProxy<'a> {
             .show_preview(show_preview)
             .set_on(set_on);
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "SetWallpaperURI",
             &(&identifier, uri, &options),

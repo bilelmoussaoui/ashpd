@@ -52,6 +52,6 @@ impl<'a> MemoryMonitorProxy<'a> {
     /// See also [`LowMemoryWarning`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-MemoryMonitor.LowMemoryWarning).
     #[doc(alias = "LowMemoryWarning")]
     pub async fn receive_low_memory_warning(&self) -> Result<i32, Error> {
-        receive_signal(&self.0, "LowMemoryWarning").await
+        receive_signal(self.inner(), "LowMemoryWarning").await
     }
 }

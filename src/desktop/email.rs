@@ -210,7 +210,7 @@ impl<'a> EmailProxy<'a> {
         email: Email,
     ) -> Result<(), Error> {
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &email.handle_token,
             "ComposeEmail",
             &(&identifier, &email),

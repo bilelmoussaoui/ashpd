@@ -129,7 +129,7 @@ impl<'a> SettingsProxy<'a> {
         &self,
         namespaces: &[S],
     ) -> Result<HashMap<String, Namespace>, Error> {
-        call_method(&self.0, "ReadAll", &(namespaces)).await
+        call_method(self.inner(), "ReadAll", &(namespaces)).await
     }
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
@@ -151,7 +151,7 @@ impl<'a> SettingsProxy<'a> {
     where
         T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type,
     {
-        call_method(&self.0, "Read", &(namespace, key)).await
+        call_method(self.inner(), "Read", &(namespace, key)).await
     }
 
     /// Reads the value of namespace: `org.freedesktop.appearance` and `color-scheme` key.
@@ -174,6 +174,6 @@ impl<'a> SettingsProxy<'a> {
     /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
     #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<Setting, Error> {
-        receive_signal(&self.0, "SettingChanged").await
+        receive_signal(self.inner(), "SettingChanged").await
     }
 }

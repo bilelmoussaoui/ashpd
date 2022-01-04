@@ -270,14 +270,17 @@ impl<'a> ScreenCastProxy<'a> {
         let options = CreateSessionOptions::default();
         let (session, proxy) = futures::try_join!(
             call_request_method::<CreateSession, CreateSessionOptions>(
-                &self.0,
+                self.inner(),
                 &options.handle_token,
                 "CreateSession",
                 &options
             )
             .into_future(),
-            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
-                .into_future(),
+            SessionProxy::from_unique_name(
+                self.inner().connection(),
+                &options.session_handle_token
+            )
+            .into_future(),
         )?;
         assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)
@@ -303,7 +306,8 @@ impl<'a> ScreenCastProxy<'a> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let fd: OwnedFd = call_method(&self.0, "OpenPipeWireRemote", &(session, options)).await?;
+        let fd: OwnedFd =
+            call_method(self.inner(), "OpenPipeWireRemote", &(session, options)).await?;
         Ok(fd.into_raw_fd())
     }
 
@@ -345,7 +349,7 @@ impl<'a> ScreenCastProxy<'a> {
             options.set_restore_token(token);
         }
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "SelectSources",
             &(session, &options),
@@ -381,7 +385,7 @@ impl<'a> ScreenCastProxy<'a> {
     ) -> Result<(Vec<Stream>, Option<String>), Error> {
         let options = StartCastOptions::default();
         let streams: Streams = call_request_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "Start",
             &(session, &identifier, &options),

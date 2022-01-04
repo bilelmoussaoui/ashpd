@@ -86,7 +86,7 @@ impl<'a> SecretProxy<'a> {
             RetrieveOptions::default()
         };
         call_method(
-            &self.0,
+            self.inner(),
             "RetrieveSecret",
             &(Fd::from(fd.as_raw_fd()), options),
         )

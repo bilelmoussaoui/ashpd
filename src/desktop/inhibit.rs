@@ -179,10 +179,13 @@ impl<'a> InhibitProxy<'a> {
         let options = CreateMonitorOptions::default();
         let body = &(&identifier, &options);
         let (monitor, proxy): (CreateMonitor, SessionProxy) = futures::try_join!(
-            call_request_method(&self.0, &options.handle_token, "CreateMonitor", body)
+            call_request_method(self.inner(), &options.handle_token, "CreateMonitor", body)
                 .into_future(),
-            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
-                .into_future(),
+            SessionProxy::from_unique_name(
+                self.inner().connection(),
+                &options.session_handle_token
+            )
+            .into_future(),
         )?;
         assert_eq!(proxy.inner().path().as_str(), &monitor.session_handle);
         Ok(proxy)
@@ -208,7 +211,7 @@ impl<'a> InhibitProxy<'a> {
     ) -> Result<(), Error> {
         let options = InhibitOptions::default().reason(reason);
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "Inhibit",
             &(&identifier, flags, &options),
@@ -223,7 +226,7 @@ impl<'a> InhibitProxy<'a> {
     /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.StateChanged).
     #[doc(alias = "StateChanged")]
     pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
-        receive_signal(&self.0, "StateChanged").await
+        receive_signal(self.inner(), "StateChanged").await
     }
 
     /// Acknowledges that the caller received the "state_changed" signal.
@@ -241,6 +244,6 @@ impl<'a> InhibitProxy<'a> {
     /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.QueryEndResponse).
     #[doc(alias = "QueryEndResponse")]
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
-        call_method(&self.0, "QueryEndResponse", &(session)).await
+        call_method(self.inner(), "QueryEndResponse", &(session)).await
     }
 }

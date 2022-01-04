@@ -196,14 +196,17 @@ impl<'a> RemoteDesktopProxy<'a> {
         let options = CreateRemoteOptions::default();
         let (session, proxy) = futures::try_join!(
             call_request_method::<CreateSession, CreateRemoteOptions>(
-                &self.0,
+                self.inner(),
                 &options.handle_token,
                 "CreateSession",
                 &options
             )
             .into_future(),
-            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
-                .into_future()
+            SessionProxy::from_unique_name(
+                self.inner().connection(),
+                &options.session_handle_token
+            )
+            .into_future()
         )?;
         assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)
@@ -228,7 +231,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ) -> Result<(), Error> {
         let options = SelectDevicesOptions::default().types(types);
         call_basic_response_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "SelectDevices",
             &(session, &options),
@@ -259,7 +262,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ) -> Result<(BitFlags<DeviceType>, Vec<Stream>), Error> {
         let options = StartRemoteOptions::default();
         let response: SelectedDevices = call_request_method(
-            &self.0,
+            self.inner(),
             &options.handle_token,
             "Start",
             &(session, &identifier, &options),
@@ -294,7 +297,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
-            &self.0,
+            self.inner(),
             "NotifyKeyboardKeycode",
             &(session, options, keycode, state),
         )
@@ -327,7 +330,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
-            &self.0,
+            self.inner(),
             "NotifyKeyboardKeysym",
             &(session, options, keysym, state),
         )
@@ -357,7 +360,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(&self.0, "NotifyTouchUp", &(session, options, slot)).await
+        call_method(self.inner(), "NotifyTouchUp", &(session, options, slot)).await
     }
 
     /// Notify about a new touch down event.
@@ -392,7 +395,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
-            &self.0,
+            self.inner(),
             "NotifyTouchDown",
             &(session, options, stream, slot, x, y),
         )
@@ -431,7 +434,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
-            &self.0,
+            self.inner(),
             "NotifyTouchMotion",
             &(session, options, stream, slot, x, y),
         )
@@ -465,7 +468,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
-            &self.0,
+            self.inner(),
             "NotifyPointerMotionAbsolute",
             &(session, options, stream, x, y),
         )
@@ -496,7 +499,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(&self.0, "NotifyPointerMotion", &(session, options, dx, dy)).await
+        call_method(
+            self.inner(),
+            "NotifyPointerMotion",
+            &(session, options, dx, dy),
+        )
+        .await
     }
 
     /// Notify pointer button.
@@ -527,7 +535,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
-            &self.0,
+            self.inner(),
             "NotifyPointerButton",
             &(session, options, button, state),
         )
@@ -559,7 +567,7 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         call_method(
-            &self.0,
+            self.inner(),
             "NotifyPointerAxisDiscrete",
             &(session, options, axis, steps),
         )
@@ -597,7 +605,12 @@ impl<'a> RemoteDesktopProxy<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L911
         let mut options: HashMap<&str, Value<'_>> = HashMap::new();
         options.insert("finish", Value::Bool(finish));
-        call_method(&self.0, "NotifyPointerAxis", &(session, options, dx, dy)).await
+        call_method(
+            self.inner(),
+            "NotifyPointerAxis",
+            &(session, options, dx, dy),
+        )
+        .await
     }
 
     /// Available source types.
