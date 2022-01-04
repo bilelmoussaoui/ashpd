@@ -2,7 +2,7 @@
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
 categories = ["gui", "os::linux-apis", "api-bindings"]
 description = "XDG portals wrapper in Rust using zbus"
-edition = "2018"
+edition = "2021"
 exclude = ["interfaces/*.xml", "ashpd-demo/"]
 keywords = ["portal", "flatpak", "xdg", "desktop", "documents"]
 license = "MIT"
