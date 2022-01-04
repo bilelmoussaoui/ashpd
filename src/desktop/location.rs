@@ -30,7 +30,6 @@ use std::fmt::Debug;
 
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::OwnedObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -40,8 +39,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(u32)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Debug, Type)]
 /// The accuracy of the location.
 pub enum Accuracy {
     /// None.

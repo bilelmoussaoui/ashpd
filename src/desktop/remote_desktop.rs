@@ -155,9 +155,9 @@ struct StartRemoteOptions {
 /// A response to a [`RemoteDesktopProxy::select_devices`] request.
 struct SelectedDevices {
     /// The selected devices.
-    pub devices: BitFlags<DeviceType>,
+    devices: BitFlags<DeviceType>,
     /// The selected streams if a ScreenCast portal is used on the same session
-    pub streams: Option<Vec<Stream>>,
+    streams: Option<Vec<Stream>>,
 }
 
 /// The interface lets sandboxed applications create remote desktop sessions.

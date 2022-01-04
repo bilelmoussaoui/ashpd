@@ -33,14 +33,28 @@ use crate::{
 /// The network status, composed of the availability, metered & connectivity
 pub struct NetworkStatus {
     /// Whether the network is considered available.
-    pub available: bool,
+    available: bool,
     /// Whether the network is considered metered.
-    pub metered: bool,
+    metered: bool,
     /// More detailed information about the host's network connectivity
-    pub connectivity: Connectivity,
+    connectivity: Connectivity,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
+impl NetworkStatus {
+    pub fn is_available(&self) -> bool {
+        self.available
+    }
+
+    pub fn is_metered(&self) -> bool {
+        self.metered
+    }
+
+    pub fn connectivity(&self) -> Connectivity {
+        self.connectivity
+    }
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy, Type)]
 /// Host's network activity
 pub enum Connectivity {
     /// The host is not configured with a route to the internet.

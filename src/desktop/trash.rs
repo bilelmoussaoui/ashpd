@@ -30,15 +30,14 @@
 
 use std::os::unix::io::AsRawFd;
 
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize};
 use zvariant::Fd;
 use zvariant_derive::Type;
 
 use super::{DESTINATION, PATH};
 use crate::{error::PortalError, helpers::call_method, Error};
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
-#[repr(u32)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Hash, Debug, Type)]
 /// The status of moving a file to the trash.
 enum TrashStatus {
     /// Moving the file to the trash failed.

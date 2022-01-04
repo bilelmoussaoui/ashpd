@@ -18,15 +18,14 @@
 
 use std::{fmt::Debug, os::unix::io::AsRawFd};
 
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize};
 use zvariant::Fd;
 use zvariant_derive::Type;
 
 use super::{DESTINATION, PATH};
 use crate::{error::PortalError, helpers::call_method, Error};
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(i32)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
 /// The status of the game mode.
 pub enum Status {
     /// GameMode is inactive.
@@ -39,8 +38,7 @@ pub enum Status {
     Rejected = -1,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(i32)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
 /// The status of a (un-)register game mode request.
 enum RegisterStatus {
     /// If the game was successfully (un-)registered.

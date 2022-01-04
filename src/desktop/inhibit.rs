@@ -123,8 +123,7 @@ impl InhibitState {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
-#[repr(u32)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy, Type)]
 /// The current state of the user's session.
 pub enum SessionState {
     /// Running.

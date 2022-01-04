@@ -224,6 +224,8 @@ impl Debug for Stream {
             .field("pipewire_node_id", &self.pipe_wire_node_id())
             .field("position", &self.position())
             .field("size", &self.size())
+            .field("source_type", &self.source_type())
+            .field("id", &self.id())
             .finish()
     }
 }

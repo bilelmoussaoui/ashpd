@@ -9,7 +9,6 @@ use serde::{
     de::{self, Error as SeError, Visitor},
     Deserialize, Deserializer, Serialize,
 };
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use zvariant::OwnedValue;
 use zvariant_derive::Type;
 
@@ -137,8 +136,7 @@ impl std::fmt::Display for ResponseError {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(u32)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
 #[doc(hidden)]
 enum ResponseType {
     /// Success, the request is carried out.

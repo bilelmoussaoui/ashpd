@@ -22,7 +22,7 @@
 //! }
 //! ```
 
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize};
 use zvariant::ObjectPath;
 use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
 
@@ -43,17 +43,30 @@ struct UpdateOptions {}
 pub struct UpdateInfo {
     #[zvariant(rename = "running-commit")]
     /// The currently running OSTree commit.
-    pub running_commit: String,
+    running_commit: String,
     #[zvariant(rename = "local-commit")]
     /// The locally installed OSTree commit.
-    pub local_commit: String,
+    local_commit: String,
     #[zvariant(rename = "remote-commit")]
     /// The available commit to install.
-    pub remote_commit: String,
+    remote_commit: String,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
-#[repr(u32)]
+impl UpdateInfo {
+    pub fn running_commit(&self) -> &str {
+        &self.running_commit
+    }
+
+    pub fn local_commit(&self) -> &str {
+        &self.local_commit
+    }
+
+    pub fn remote_commit(&self) -> &str {
+        &self.remote_commit
+    }
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Copy, Clone, Debug, Type)]
 /// The update status.
 pub enum UpdateStatus {
     /// Running.
