@@ -157,7 +157,7 @@ mod imp {
             self.stack.set_visible_child_name("welcome");
             // load latest window state
             let button = self.color_scheme_btn.get();
-            let style_manager = adw::StyleManager::default().unwrap();
+            let style_manager = adw::StyleManager::default();
 
             if !style_manager.system_supports_color_schemes() {
                 button.show();
@@ -242,7 +242,7 @@ impl ApplicationWindow {
         if is_maximized {
             self.maximize();
         }
-        let style_manager = adw::StyleManager::default().unwrap();
+        let style_manager = adw::StyleManager::default();
         if !style_manager.system_supports_color_schemes() {
             if settings.boolean("dark-mode") {
                 style_manager.set_color_scheme(adw::ColorScheme::ForceDark);

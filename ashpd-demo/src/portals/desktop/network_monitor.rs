@@ -85,10 +85,10 @@ impl NetworkMonitorPage {
         let proxy = NetworkMonitorProxy::new(&cnx).await?;
         let status = proxy.status().await?;
 
-        imp.connectivity.set_label(&status.connectivity.to_string());
+        imp.connectivity.set_label(&status.connectivity().to_string());
         imp.network_available
-            .set_label(&status.available.to_string());
-        imp.metered.set_label(&status.metered.to_string());
+            .set_label(&status.is_available().to_string());
+        imp.metered.set_label(&status.is_metered().to_string());
 
         Ok(())
     }
