@@ -32,11 +32,10 @@ pw = {package= "pipewire", version = "0.4", optional = true}
 serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 rand = {version = "0.8", default-features = false}
-zbus = "2.0.0-beta.8"
-zbus_macros = "2.0.0-beta.8"
-zbus_names = "2.0"
-zvariant = {version = "3", features = ["enumflags2"], default-features = false}
-zvariant_derive = "3"
+zbus = "2.0.0"
+zbus_macros = "2.0.0"
+zvariant = {version = "3.0", features = ["enumflags2"], default-features = false}
+zvariant_derive = "3.0"
 futures = "0.3"
 tracing = {version = "0.1", optional = true}
 libc = {version = "0.2.94", optional = true}
