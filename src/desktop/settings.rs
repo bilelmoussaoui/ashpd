@@ -167,6 +167,22 @@ impl<'a> SettingsProxy<'a> {
         Ok(scheme)
     }
 
+    /// Listen to changes of the namespace `org.freedesktop.appearance` for `color-scheme` key.
+    pub async fn receive_color_scheme_changed(&self) -> Result<ColorScheme, Error> {
+        loop {
+            let setting = self.receive_setting_changed().await?;
+            if setting.namespace() == "org.freedesktop.appearance"
+                && setting.key() == "color-scheme"
+            {
+                return Ok(match u32::try_from(setting.value()) {
+                    Ok(1) => ColorScheme::PreferDark,
+                    Ok(2) => ColorScheme::PreferLight,
+                    _ => ColorScheme::NoPreference,
+                });
+            }
+        }
+    }
+
     /// Signal emitted when a setting changes.
     ///
     /// # Specifications
