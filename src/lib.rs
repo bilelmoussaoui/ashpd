@@ -30,7 +30,7 @@ pub use zvariant;
 /// Check whether the application is running inside a sandbox.
 ///
 /// The function checks whether the file `/.flatpak-info` exists
-/// or if the environement variable `GTK_USE_PORTAL` is set to `1`.
+/// or if the environment variable `GTK_USE_PORTAL` is set to `1`.
 // TODO: ideally this should also do some check for snap
 pub fn is_sandboxed() -> bool {
     std::path::Path::new("/.flatpak-info").exists()
