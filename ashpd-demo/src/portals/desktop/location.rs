@@ -4,6 +4,7 @@ use ashpd::{
     desktop::{location::{Accuracy, Location, LocationProxy}, SessionProxy},
     zbus, WindowIdentifier,
 };
+use futures::future::{Abortable, AbortHandle};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use glib::clone;
 use gtk::glib;
@@ -50,6 +51,7 @@ mod imp {
         pub map_license: TemplateChild<shumate::License>,
         pub marker: shumate::Marker,
         pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
+        pub abort_handle: Arc<Mutex<Option<AbortHandle>>>,
     }
 
     #[glib::object_subclass]
@@ -156,21 +158,22 @@ impl LocationPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         match locate(&identifier, distance_threshold, time_threshold, accuracy).await {
             Ok((session, location_proxy)) => {
-                imp.response_group.show();
                 imp.session.lock().await.replace(session);
                 self.action_set_enabled("location.stop", true);
                 self.action_set_enabled("location.start", false);
-
                 loop {
                     if imp.session.lock().await.is_none() {
-                        tracing::info!("no more session!");
                         break;
                     }
 
-                    if let Ok(location) = location_proxy.receive_location_updated().await {
-                        self.on_location_updated(location);
-                    }
-
+                    let (abort_handle, abort_registration) = AbortHandle::new_pair();
+                    let future = Abortable::new(async {
+                         if let Ok(location) = location_proxy.receive_location_updated().await {
+                            self.on_location_updated(location);
+                        }
+                     }, abort_registration);
+                    imp.abort_handle.lock().await.replace(abort_handle);
+                    let _ = future.await;
                 }
             }
             Err(_err) => {
@@ -185,6 +188,9 @@ impl LocationPage {
         let mut session_lock = self.imp().session.lock().await;
         self.action_set_enabled("location.stop", false);
         self.action_set_enabled("location.start", true);
+        if let Some(abort_handle) = self.imp().abort_handle.lock().await.take() {
+            abort_handle.abort();
+        }
         if let Some(session) = session_lock.take() {
             let _ = session.close().await;
         }
@@ -192,6 +198,7 @@ impl LocationPage {
 
     fn on_location_updated(&self, location: Location) {
         let imp = self.imp();
+        imp.response_group.show();
         imp.accuracy_label
             .set_label(&location.accuracy().to_string());
         if let Some(altitude) = location.altitude() {
