@@ -27,7 +27,7 @@ impl Display for HandleToken {
 
 impl Debug for HandleToken {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}", self)
+        f.debug_tuple("HandleToken").field(self).finish()
     }
 }
 
