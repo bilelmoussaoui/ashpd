@@ -69,11 +69,30 @@
               </object>
             </child>
             <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">_Locate</property>
-                <property name="use-underline">True</property>
-                <property name="halign">start</property>
-                <property name="action-name">location.locate</property>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">_Start Session</property>
+                    <property name="use-underline">True</property>
+                    <property name="halign">start</property>
+                    <property name="action-name">location.start</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">_Close Session</property>
+                    <property name="use-underline">True</property>
+                    <property name="halign">start</property>
+                    <property name="sensitive">False</property>
+                    <property name="action-name">location.stop</property>
+                    <property name="halign">end</property>
+                    <property name="hexpand">True</property>
+                    <style>
+                      <class name="destructive-action" />
+                    </style>
+                  </object>
+                </child>
               </object>
             </child>
             <child>

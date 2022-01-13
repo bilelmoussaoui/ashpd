@@ -1,15 +1,17 @@
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{
-    desktop::location::{Accuracy, Location, LocationProxy},
+    desktop::{location::{Accuracy, Location, LocationProxy}, SessionProxy},
     zbus, WindowIdentifier,
 };
 use chrono::{DateTime, NaiveDateTime, Utc};
-use futures::TryFutureExt;
 use glib::clone;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 use shumate::prelude::*;
+use futures::lock::Mutex;
+use std::sync::Arc;
+
 
 mod imp {
     use super::*;
@@ -47,6 +49,7 @@ mod imp {
         #[template_child(id = "license")]
         pub map_license: TemplateChild<shumate::License>,
         pub marker: shumate::Marker,
+        pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
     }
 
     #[glib::object_subclass]
@@ -70,10 +73,17 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
 
-            klass.install_action("location.locate", None, move |page, _action, _target| {
+            klass.install_action("location.start", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();
                 ctx.spawn_local(clone!(@weak page => async move {
                     page.locate().await;
+                }));
+            });
+
+            klass.install_action("location.stop", None, move |page, _action, _target| {
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.stop_session().await;
                 }));
             });
         }
@@ -86,6 +96,8 @@ mod imp {
         fn constructed(&self, obj: &Self::Type) {
             let registry = shumate::MapSourceRegistry::with_defaults();
             let source = registry.by_id(&shumate::MAP_SOURCE_OSM_MAPNIK).unwrap();
+            obj.action_set_enabled("location.stop", false);
+            obj.action_set_enabled("location.start", true);
 
             let viewport = self.map.viewport().unwrap();
 
@@ -102,6 +114,13 @@ mod imp {
 
             //self.map_license.append_map_source(&source);
             self.parent_constructed(obj);
+        }
+
+        fn dispose(&self, obj: &Self::Type) {
+            let ctx = glib::MainContext::default();
+            ctx.spawn_local(clone!(@weak obj as page => async move {
+                page.stop_session().await;
+            }));
         }
     }
     impl WidgetImpl for LocationPage {}
@@ -136,50 +155,80 @@ impl LocationPage {
 
         let identifier = WindowIdentifier::from_native(&root).await;
         match locate(&identifier, distance_threshold, time_threshold, accuracy).await {
-            Ok(location) => {
+            Ok((session, location_proxy)) => {
                 imp.response_group.show();
-                imp.accuracy_label
-                    .set_label(&location.accuracy().to_string());
-                if let Some(altitude) = location.altitude() {
-                    imp.altitude_label.set_label(&altitude.to_string());
-                }
-                if let Some(speed) = location.speed() {
-                    imp.speed_label.set_label(&speed.to_string());
-                }
-                if let Some(heading) = location.heading() {
-                    imp.heading_label.set_label(&heading.to_string());
-                }
-                if let Some(description) = location.description() {
-                    imp.description_label.set_label(&description.to_string());
-                }
-                imp.latitude_label
-                    .set_label(&location.latitude().to_string());
-                imp.longitude_label
-                    .set_label(&location.longitude().to_string());
+                imp.session.lock().await.replace(session);
+                self.action_set_enabled("location.stop", true);
+                self.action_set_enabled("location.start", false);
 
-                let naive = NaiveDateTime::from_timestamp(location.timestamp().as_secs() as i64, 0);
-                let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
-                let since = datetime.format("%Y-%m-%d %H:%M:%S");
-                imp.timestamp_label.set_label(&since.to_string());
+                loop {
+                    if imp.session.lock().await.is_none() {
+                        tracing::info!("no more session!");
+                        break;
+                    }
 
-                imp.map.center_on(location.latitude(), location.longitude());
-                imp.marker
-                    .set_location(location.latitude(), location.longitude());
-                self.send_notification("Position updated", NotificationKind::Success);
+                    if let Ok(location) = location_proxy.receive_location_updated().await {
+                        self.on_location_updated(location);
+                    }
+
+                }
             }
             Err(_err) => {
+                self.action_set_enabled("location.stop", false);
+                self.action_set_enabled("location.start", true);
                 self.send_notification("Failed to locate", NotificationKind::Error);
             }
         }
     }
+
+    async fn stop_session(&self) {
+        let mut session_lock = self.imp().session.lock().await;
+        self.action_set_enabled("location.stop", false);
+        self.action_set_enabled("location.start", true);
+        if let Some(session) = session_lock.take() {
+            let _ = session.close().await;
+        }
+    }
+
+    fn on_location_updated(&self, location: Location) {
+        let imp = self.imp();
+        imp.accuracy_label
+            .set_label(&location.accuracy().to_string());
+        if let Some(altitude) = location.altitude() {
+            imp.altitude_label.set_label(&altitude.to_string());
+        }
+        if let Some(speed) = location.speed() {
+            imp.speed_label.set_label(&speed.to_string());
+        }
+        if let Some(heading) = location.heading() {
+            imp.heading_label.set_label(&heading.to_string());
+        }
+        if let Some(description) = location.description() {
+            imp.description_label.set_label(&description.to_string());
+        }
+        imp.latitude_label
+            .set_label(&location.latitude().to_string());
+        imp.longitude_label
+            .set_label(&location.longitude().to_string());
+
+        let naive = NaiveDateTime::from_timestamp(location.timestamp().as_secs() as i64, 0);
+        let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+        let since = datetime.format("%Y-%m-%d %H:%M:%S");
+        imp.timestamp_label.set_label(&since.to_string());
+
+        imp.map.center_on(location.latitude(), location.longitude());
+        imp.marker
+            .set_location(location.latitude(), location.longitude());
+        self.send_notification("Position updated", NotificationKind::Success);
+    }
 }
 
-pub async fn locate(
+pub async fn locate<'a>(
     identifier: &WindowIdentifier,
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,
-) -> ashpd::Result<Location> {
+) -> ashpd::Result<(SessionProxy<'a>, LocationProxy<'a>)> {
     let connection = zbus::Connection::session().await?;
     let proxy = LocationProxy::new(&connection).await?;
     let session = proxy
@@ -189,10 +238,6 @@ pub async fn locate(
             Some(accuracy),
         )
         .await?;
-
     proxy.start(&session, identifier).await?;
-    let location = proxy.receive_location_updated().await?;
-
-    session.close().await?;
-    Ok(location)
+    Ok((session, proxy))
 }
