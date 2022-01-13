@@ -9,8 +9,8 @@ use gtk::subclass::prelude::*;
 use std::os::unix::prelude::RawFd;
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/camera.ui")]

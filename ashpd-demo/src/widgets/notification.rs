@@ -9,8 +9,8 @@ pub enum NotificationKind {
 }
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/notification_widget.ui")]

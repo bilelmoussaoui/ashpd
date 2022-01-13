@@ -10,8 +10,8 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/print.ui")]

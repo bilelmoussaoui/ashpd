@@ -10,8 +10,8 @@ use gtk::subclass::prelude::*;
 use crate::portals::{is_empty, split_comma};
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/email.ui")]

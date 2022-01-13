@@ -6,8 +6,8 @@ use gtk::subclass::prelude::*;
 use gtk::{gdk_pixbuf, glib};
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/account.ui")]

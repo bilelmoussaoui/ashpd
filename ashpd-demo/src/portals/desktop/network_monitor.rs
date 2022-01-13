@@ -5,8 +5,8 @@ use gtk::glib::{self, clone};
 use gtk::subclass::prelude::*;
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/network_monitor.ui")]
@@ -85,7 +85,8 @@ impl NetworkMonitorPage {
         let proxy = NetworkMonitorProxy::new(&cnx).await?;
         let status = proxy.status().await?;
 
-        imp.connectivity.set_label(&status.connectivity().to_string());
+        imp.connectivity
+            .set_label(&status.connectivity().to_string());
         imp.network_available
             .set_label(&status.is_available().to_string());
         imp.metered.set_label(&status.is_metered().to_string());

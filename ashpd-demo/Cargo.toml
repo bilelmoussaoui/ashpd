@@ -16,6 +16,7 @@ gst4gtk = { package = "gst-plugin-gtk4", git = "https://gitlab.freedesktop.org/g
 gtk = {package = "gtk4", git = "https://github.com/gtk-rs/gtk4-rs"}
 adw = {git = "https://gitlab.gnome.org/World/Rust/libadwaita-rs", package = "libadwaita"}
 serde = {version = "1.0", features = ["derive"]}
+chrono = {version = "0.4", default-features = false}
 
 [dependencies.shumate]
 package = "libshumate"

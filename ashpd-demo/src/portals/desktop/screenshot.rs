@@ -7,8 +7,8 @@ use gtk::{gio, glib};
 use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screenshot.ui")]

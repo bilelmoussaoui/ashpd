@@ -4,6 +4,7 @@ use ashpd::{
     desktop::location::{Accuracy, Location, LocationProxy},
     zbus, WindowIdentifier,
 };
+use chrono::{DateTime, NaiveDateTime, Utc};
 use futures::TryFutureExt;
 use glib::clone;
 use gtk::glib;
@@ -11,8 +12,8 @@ use gtk::subclass::prelude::*;
 use shumate::prelude::*;
 
 mod imp {
-    use adw::subclass::prelude::*;
     use super::*;
+    use adw::subclass::prelude::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/location.ui")]
@@ -139,17 +140,28 @@ impl LocationPage {
                 imp.response_group.show();
                 imp.accuracy_label
                     .set_label(&location.accuracy().to_string());
-                imp.altitude_label
-                    .set_label(&location.altitude().to_string());
-                imp.speed_label.set_label(&location.speed().to_string());
-                imp.heading_label.set_label(&location.heading().to_string());
-                imp.description_label.set_label(location.description());
+                if let Some(altitude) = location.altitude() {
+                    imp.altitude_label.set_label(&altitude.to_string());
+                }
+                if let Some(speed) = location.speed() {
+                    imp.speed_label.set_label(&speed.to_string());
+                }
+                if let Some(heading) = location.heading() {
+                    imp.heading_label.set_label(&heading.to_string());
+                }
+                if let Some(description) = location.description() {
+                    imp.description_label.set_label(&description.to_string());
+                }
                 imp.latitude_label
                     .set_label(&location.latitude().to_string());
                 imp.longitude_label
                     .set_label(&location.longitude().to_string());
-                imp.timestamp_label
-                    .set_label(&location.timestamp().to_string());
+
+                let naive = NaiveDateTime::from_timestamp(location.timestamp().as_secs() as i64, 0);
+                let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+                let since = datetime.format("%Y-%m-%d %H:%M:%S");
+                imp.timestamp_label.set_label(&since.to_string());
+
                 imp.map.center_on(location.latitude(), location.longitude());
                 imp.marker
                     .set_location(location.latitude(), location.longitude());
@@ -178,10 +190,8 @@ pub async fn locate(
         )
         .await?;
 
-    let (_, location) = futures::try_join!(
-        proxy.start(&session, identifier).into_future(),
-        proxy.receive_location_updated().into_future()
-    )?;
+    proxy.start(&session, identifier).await?;
+    let location = proxy.receive_location_updated().await?;
 
     session.close().await?;
     Ok(location)
