@@ -21,14 +21,14 @@ pub struct HandleToken(OwnedMemberName);
 
 impl Display for HandleToken {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str((*self.0).as_str())
+        f.write_str(&self.0)
     }
 }
 
 impl Debug for HandleToken {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("HandleToken")
-            .field(&(*self.0).as_str())
+            .field(&self.0.as_str())
             .finish()
     }
 }
@@ -86,6 +86,9 @@ mod test {
     #[test]
     fn handle_token() {
         assert_eq!(HandleToken::try_from("token").is_ok(), true);
+
+        let token = HandleToken::try_from("token2").unwrap();
+        assert_eq!(token.to_string(), "token2".to_string());
 
         assert_eq!(HandleToken::try_from("/test").is_ok(), false);
 
