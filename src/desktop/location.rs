@@ -109,24 +109,40 @@ impl Location {
     }
 
     /// The altitude, in meters.
-    pub fn altitude(&self) -> f64 {
-        self.1.altitude
+    pub fn altitude(&self) -> Option<f64> {
+        if self.1.altitude == -f64::MAX {
+            None
+        } else {
+            Some(self.1.altitude)
+        }
     }
 
     /// The speed, in meters per second.
-    pub fn speed(&self) -> f64 {
-        self.1.speed
+    pub fn speed(&self) -> Option<f64> {
+        if self.1.speed == -1f64 {
+            None
+        } else {
+            Some(self.1.speed)
+        }
     }
 
     /// The heading, in degrees, going clockwise. North 0, East 90, South 180,
     /// West 270.
-    pub fn heading(&self) -> f64 {
-        self.1.heading
+    pub fn heading(&self) -> Option<f64> {
+        if self.1.heading == -1f64 {
+            None
+        } else {
+            Some(self.1.heading)
+        }
     }
 
     /// The location description.
-    pub fn description(&self) -> &str {
-        &self.1.description
+    pub fn description(&self) -> Option<&str> {
+        if self.1.description.is_empty() {
+            None
+        } else {
+            Some(&self.1.description)
+        }
     }
 
     /// The latitude, in degrees.
@@ -139,9 +155,9 @@ impl Location {
         self.1.longitude
     }
 
-    /// The timestamp, as seconds.
-    pub fn timestamp(&self) -> u64 {
-        self.1.timestamp.0
+    /// The timestamp when the location was retrieved.
+    pub fn timestamp(&self) -> std::time::Duration {
+        std::time::Duration::from_secs(self.1.timestamp.0)
     }
 }
 
