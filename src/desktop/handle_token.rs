@@ -1,5 +1,7 @@
-use core::fmt;
-use std::{convert::TryFrom, fmt::Display};
+use std::{
+    convert::TryFrom,
+    fmt::{self, Debug, Display},
+};
 
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
@@ -14,12 +16,18 @@ use zvariant_derive::Type;
 ///
 /// A valid object path element must only contain the ASCII characters
 /// `[A-Z][a-z][0-9]_`
-#[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
+#[derive(Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
 pub struct HandleToken(OwnedMemberName);
 
 impl Display for HandleToken {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str((*self.0).as_str())
+    }
+}
+
+impl Debug for HandleToken {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", self)
     }
 }
 
@@ -43,6 +51,7 @@ impl std::fmt::Display for HandleInvalidCharacter {
         f.write_fmt(format_args!("Invalid Character {}", self.0))
     }
 }
+
 impl std::error::Error for HandleInvalidCharacter {}
 
 impl TryFrom<&str> for HandleToken {
