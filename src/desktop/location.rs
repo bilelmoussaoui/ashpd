@@ -62,8 +62,10 @@ struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
     /// Distance threshold in meters. Default is 0.
+    #[zvariant(rename = "distance-threshold")]
     distance_threshold: Option<u32>,
     /// Time threshold in seconds. Default is 0.
+    #[zvariant(rename = "time-threshold")]
     time_threshold: Option<u32>,
     /// Requested accuracy. Default is `Accuracy::Exact`.
     accuracy: Option<Accuracy>,
