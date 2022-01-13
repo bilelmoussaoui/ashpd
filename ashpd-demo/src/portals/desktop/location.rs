@@ -1,18 +1,20 @@
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{
-    desktop::{location::{Accuracy, Location, LocationProxy}, SessionProxy},
+    desktop::{
+        location::{Accuracy, Location, LocationProxy},
+        SessionProxy,
+    },
     zbus, WindowIdentifier,
 };
-use futures::future::{Abortable, AbortHandle};
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Local, TimeZone};
+use futures::future::{AbortHandle, Abortable};
+use futures::lock::Mutex;
 use glib::clone;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 use shumate::prelude::*;
-use futures::lock::Mutex;
 use std::sync::Arc;
-
 
 mod imp {
     use super::*;
@@ -167,11 +169,14 @@ impl LocationPage {
                     }
 
                     let (abort_handle, abort_registration) = AbortHandle::new_pair();
-                    let future = Abortable::new(async {
-                         if let Ok(location) = location_proxy.receive_location_updated().await {
-                            self.on_location_updated(location);
-                        }
-                     }, abort_registration);
+                    let future = Abortable::new(
+                        async {
+                            if let Ok(location) = location_proxy.receive_location_updated().await {
+                                self.on_location_updated(location);
+                            }
+                        },
+                        abort_registration,
+                    );
                     imp.abort_handle.lock().await.replace(abort_handle);
                     let _ = future.await;
                 }
@@ -218,8 +223,7 @@ impl LocationPage {
         imp.longitude_label
             .set_label(&location.longitude().to_string());
 
-        let naive = NaiveDateTime::from_timestamp(location.timestamp().as_secs() as i64, 0);
-        let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+        let datetime: DateTime<Local> = Local.timestamp(location.timestamp().as_secs() as i64, 0);
         let since = datetime.format("%Y-%m-%d %H:%M:%S");
         imp.timestamp_label.set_label(&since.to_string());
 
