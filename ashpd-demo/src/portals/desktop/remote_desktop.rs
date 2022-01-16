@@ -239,7 +239,7 @@ impl RemoteDesktopPage {
                     sources,
                     multiple_sources,
                     None,
-                    PersistMode::ExplicitlyRevoked,
+                    PersistMode::default(),
                 )
                 .await?;
         }
