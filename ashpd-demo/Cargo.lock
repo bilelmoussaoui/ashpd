@@ -57,7 +57,7 @@ dependencies = [
 
 [[package]]
 name = "ashpd-demo"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ashpd",
  "chrono",
@@ -725,9 +725,9 @@ dependencies = [
 
 [[package]]
 name = "gio"
-version = "0.15.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9fc17ca37415ec7f2cfcc23bdfcd7e3cdf420119cb23e530bcbe2186eb23ecc"
+checksum = "5e14e0166f772d6295cfda361d227a63194497641a42da81b9e531c9f5a4d77f"
 dependencies = [
  "bitflags",
  "futures-channel",
@@ -755,9 +755,9 @@ dependencies = [
 
 [[package]]
 name = "glib"
-version = "0.15.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e60e5b17476fe6cd1f0742e5b0857cc5e958b7352a017ff43d198c780df329f8"
+checksum = "30a3e6b2e5ef2ecfb10c1e083074a81160b8f6408fcc08195c872e9de37a361b"
 dependencies = [
  "bitflags",
  "futures-channel",
@@ -1429,9 +1429,9 @@ dependencies = [
 
 [[package]]
 name = "pango"
-version = "0.15.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c6dda904213c366d98da3c52b53415db6c63a2e9e7f4344f1f2d475cc4952d1"
+checksum = "79211eff430c29cc38c69e0ab54bc78fa1568121ca9737707eee7f92a8417a94"
 dependencies = [
  "bitflags",
  "glib",

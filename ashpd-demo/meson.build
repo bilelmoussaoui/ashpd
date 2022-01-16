@@ -1,6 +1,6 @@
 project('ashpd-demo',
         'rust',
-        version: '0.0.1',
+        version: '0.2.0',
         license: 'MIT',
   meson_version: '>= 0.50')
 
