@@ -40,8 +40,7 @@ use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
@@ -49,8 +48,9 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
+#[zvariant(signature = "dict")]
 struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -58,8 +58,9 @@ struct CreateMonitorOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::inhibit`] request.
+#[zvariant(signature = "dict")]
 struct InhibitOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -90,16 +91,17 @@ pub enum InhibitFlags {
     Idle,
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+#[derive(Debug, SerializeDict, DeserializeDict, Type)]
 /// A response to a [`InhibitProxy::create_monitor`] request.
+#[zvariant(signature = "dict")]
 struct CreateMonitor {
     // TODO: investigate why this doesn't return an ObjectPath
     // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
     session_handle: String,
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
-#[doc(hidden)]
+#[derive(Debug, SerializeDict, DeserializeDict, Type)]
+#[zvariant(signature = "dict")]
 struct State {
     #[zvariant(rename = "screensaver-active")]
     screensaver_active: bool,

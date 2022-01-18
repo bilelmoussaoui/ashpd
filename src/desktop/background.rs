@@ -48,13 +48,14 @@
 //! ```
 
 use serde::Serialize;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Clone, Default)]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
+#[zvariant(signature = "dict")]
 struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -94,17 +95,15 @@ impl BackgroundOptions {
     /// Specifies the command line to execute.
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    pub fn command<S: AsRef<str> + zvariant::Type + Serialize>(
-        mut self,
-        command: Option<&[S]>,
-    ) -> Self {
+    pub fn command<S: AsRef<str> + Type + Serialize>(mut self, command: Option<&[S]>) -> Self {
         self.command = command.map(|s| s.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// The response of a [`BackgroundProxy::request_background`] request.
+#[zvariant(signature = "dict")]
 pub struct Background {
     /// If the application is allowed to run in the background.
     background: bool,
@@ -167,7 +166,7 @@ impl<'a> BackgroundProxy<'a> {
     ///
     /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
     #[doc(alias = "RequestBackground")]
-    pub async fn request_background<S: AsRef<str> + zvariant::Type + Serialize>(
+    pub async fn request_background<S: AsRef<str> + Type + Serialize>(
         &self,
         identifier: &WindowIdentifier,
         reason: &str,
@@ -192,7 +191,7 @@ impl<'a> BackgroundProxy<'a> {
 
 #[doc(alias = "xdp_portal_request_background")]
 /// A handy wrapper around [`BackgroundProxy::request_background`].
-pub async fn request<S: AsRef<str> + zvariant::Type + Serialize>(
+pub async fn request<S: AsRef<str> + Type + Serialize>(
     identifier: &WindowIdentifier,
     reason: &str,
     auto_start: bool,

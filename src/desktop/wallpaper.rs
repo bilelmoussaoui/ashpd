@@ -71,8 +71,7 @@ use std::os::unix::prelude::AsRawFd;
 use std::{fmt, str::FromStr};
 
 use serde::{self, Deserialize, Serialize, Serializer};
-use zvariant::{Fd, Signature, Type};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Signature, Type};
 
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
@@ -151,9 +150,10 @@ impl Type for SetOn {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Clone, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Clone, Type, Debug, Default)]
 /// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a
 /// [`WallpaperProxy::set_wallpaper_uri`] request.
+#[zvariant(signature = "dict")]
 struct WallpaperOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,

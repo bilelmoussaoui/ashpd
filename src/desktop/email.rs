@@ -51,14 +51,14 @@
 use std::os::unix::prelude::AsRawFd;
 
 use serde::Serialize;
-use zvariant::Fd;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
+#[zvariant(signature = "dict")]
 pub struct Email {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -96,38 +96,35 @@ impl Email {
     }
 
     /// Similar to `set_addresses`.
-    pub fn addresses<S: AsRef<str> + zvariant::Type + Serialize>(
-        mut self,
-        addresses: &[S],
-    ) -> Self {
+    pub fn addresses<S: AsRef<str> + Type + Serialize>(mut self, addresses: &[S]) -> Self {
         self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to send the email to.
-    pub fn set_addresses<S: AsRef<str> + zvariant::Type + Serialize>(&mut self, addresses: &[S]) {
+    pub fn set_addresses<S: AsRef<str> + Type + Serialize>(&mut self, addresses: &[S]) {
         self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
     }
 
     /// Sets a list of email addresses to BCC.
-    pub fn bcc<S: AsRef<str> + zvariant::Type + Serialize>(mut self, bcc: &[S]) -> Self {
+    pub fn bcc<S: AsRef<str> + Type + Serialize>(mut self, bcc: &[S]) -> Self {
         self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to BCC.
-    pub fn set_bcc<S: AsRef<str> + zvariant::Type + Serialize>(&mut self, bcc: &[S]) {
+    pub fn set_bcc<S: AsRef<str> + Type + Serialize>(&mut self, bcc: &[S]) {
         self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
     }
 
     /// Sets a list of email addresses to CC.
-    pub fn cc<S: AsRef<str> + zvariant::Type + Serialize>(mut self, cc: &[S]) -> Self {
+    pub fn cc<S: AsRef<str> + Type + Serialize>(mut self, cc: &[S]) -> Self {
         self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to CC.
-    pub fn set_cc<S: AsRef<str> + zvariant::Type + Serialize>(&mut self, cc: &[S]) {
+    pub fn set_cc<S: AsRef<str> + Type + Serialize>(&mut self, cc: &[S]) {
         self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
     }
 

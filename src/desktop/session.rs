@@ -1,7 +1,7 @@
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
 use serde::{Serialize, Serializer};
-use zvariant::{ObjectPath, OwnedValue, Signature};
+use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
 
 use crate::{
     desktop::{HandleToken, DESTINATION},
@@ -48,7 +48,7 @@ impl<'a> SessionProxy<'a> {
     ) -> Result<SessionProxy<'a>, crate::Error> {
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
-        let path = zvariant::ObjectPath::try_from(format!(
+        let path = ObjectPath::try_from(format!(
             "/org/freedesktop/portal/desktop/session/{}/{}",
             unique_identifier, handle_token
         ))
@@ -90,13 +90,13 @@ impl<'a> Serialize for SessionProxy<'a> {
     where
         S: Serializer,
     {
-        zvariant::ObjectPath::serialize(self.inner().path(), serializer)
+        ObjectPath::serialize(self.inner().path(), serializer)
     }
 }
 
-impl<'a> zvariant::Type for SessionProxy<'a> {
+impl<'a> Type for SessionProxy<'a> {
     fn signature() -> Signature<'static> {
-        zvariant::ObjectPath::signature()
+        ObjectPath::signature()
     }
 }
 

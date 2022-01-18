@@ -62,13 +62,14 @@
 
 use std::fmt::Debug;
 
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::screenshot`] request.
+#[zvariant(signature = "dict")]
 struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -94,8 +95,9 @@ impl ScreenshotOptions {
     }
 }
 
-#[derive(DeserializeDict, SerializeDict, Clone, TypeDict)]
+#[derive(DeserializeDict, SerializeDict, Clone, Type)]
 /// A response to a [`ScreenshotProxy::screenshot`] request.
+#[zvariant(signature = "dict")]
 struct Screenshot {
     /// The screenshot uri.
     uri: String,
@@ -107,16 +109,18 @@ impl Debug for Screenshot {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::pick_color`] request.
+#[zvariant(signature = "dict")]
 struct PickColorOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, TypeDict)]
+#[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, Type)]
 /// A response to a [`ScreenshotProxy::pick_color`] request.
 /// **Note** the values are normalized.
+#[zvariant(signature = "dict")]
 pub struct Color {
     color: ([f64; 3]),
 }

@@ -40,8 +40,7 @@ use std::os::unix::prelude::AsRawFd;
 use std::{fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize, Serializer};
-use zvariant::{Fd, Signature};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Signature, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
@@ -125,7 +124,7 @@ impl Serialize for Orientation {
     }
 }
 
-impl zvariant::Type for Orientation {
+impl Type for Orientation {
     fn signature() -> Signature<'static> {
         String::signature()
     }
@@ -202,14 +201,15 @@ impl Serialize for Quality {
     }
 }
 
-impl zvariant::Type for Quality {
+impl Type for Quality {
     fn signature() -> Signature<'static> {
         String::signature()
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Print settings to set in the print dialog.
+#[zvariant(signature = "dict")]
 pub struct Settings {
     /// One of landscape, portrait, reverse_landscape or reverse_portrait.
     pub orientation: Option<Orientation>,
@@ -460,8 +460,9 @@ impl Settings {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Setup the printed pages.
+#[zvariant(signature = "dict")]
 pub struct PageSetup {
     /// the PPD name. It's the name to select a given driver.
     #[zvariant(rename = "PPDName")]
@@ -548,8 +549,9 @@ impl PageSetup {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::prepare_print`] request.
+#[zvariant(signature = "dict")]
 struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -565,8 +567,9 @@ impl PreparePrintOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::print`] request.
+#[zvariant(signature = "dict")]
 struct PrintOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -591,8 +594,9 @@ impl PrintOptions {
     }
 }
 
-#[derive(DeserializeDict, SerializeDict, TypeDict, Debug)]
+#[derive(DeserializeDict, SerializeDict, Type, Debug)]
 /// A response to a [`PrintProxy::prepare_print`] request.
+#[zvariant(signature = "dict")]
 pub struct PreparePrint {
     /// The printing settings.
     pub settings: Settings,

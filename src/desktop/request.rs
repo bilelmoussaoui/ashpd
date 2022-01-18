@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    convert::TryFrom,
     fmt::{self, Debug},
     marker::PhantomData,
 };
@@ -9,8 +8,7 @@ use serde::{
     de::{self, Error as SeError, Visitor},
     Deserialize, Deserializer, Serialize,
 };
-use zvariant::OwnedValue;
-use zvariant_derive::Type;
+use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
 
 use super::DESTINATION;
 use crate::{
@@ -24,7 +22,7 @@ use crate::{
 #[derive(Debug)]
 pub(crate) enum Response<T>
 where
-    T: for<'de> Deserialize<'de> + zvariant::Type,
+    T: for<'de> Deserialize<'de> + Type,
 {
     /// Success, the request is carried out.
     Ok(T),
@@ -32,18 +30,18 @@ where
     Err(ResponseError),
 }
 
-impl<T> zvariant::Type for Response<T>
+impl<T> Type for Response<T>
 where
-    T: for<'de> Deserialize<'de> + zvariant::Type,
+    T: for<'de> Deserialize<'de> + Type,
 {
-    fn signature() -> zvariant::Signature<'static> {
+    fn signature() -> Signature<'static> {
         <(ResponseType, HashMap<&str, OwnedValue>)>::signature()
     }
 }
 
 impl<'de, T> Deserialize<'de> for Response<T>
 where
-    T: for<'d> Deserialize<'d> + zvariant::Type,
+    T: for<'d> Deserialize<'d> + Type,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -91,7 +89,7 @@ where
 #[doc(hidden)]
 impl<T> From<(ResponseType, Option<T>)> for Response<T>
 where
-    T: for<'de> Deserialize<'de> + zvariant::Type,
+    T: for<'de> Deserialize<'de> + Type,
 {
     fn from(f: (ResponseType, Option<T>)) -> Self {
         match f.0 {
@@ -175,7 +173,7 @@ pub(crate) struct RequestProxy<'a>(zbus::Proxy<'a>);
 impl<'a> RequestProxy<'a> {
     pub async fn new(
         connection: &zbus::Connection,
-        path: zvariant::ObjectPath<'a>,
+        path: ObjectPath<'a>,
     ) -> Result<RequestProxy<'a>, Error> {
         let proxy = zbus::ProxyBuilder::new_bare(connection)
             .interface("org.freedesktop.portal.Request")?
@@ -192,7 +190,7 @@ impl<'a> RequestProxy<'a> {
     ) -> Result<RequestProxy<'a>, Error> {
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
-        let path = zvariant::ObjectPath::try_from(format!(
+        let path = ObjectPath::try_from(format!(
             "/org/freedesktop/portal/desktop/request/{}/{}",
             unique_identifier, handle_token
         ))
@@ -212,7 +210,7 @@ impl<'a> RequestProxy<'a> {
     #[allow(dead_code)]
     pub async fn receive_response<R>(&self) -> Result<R, Error>
     where
-        R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
+        R: for<'de> Deserialize<'de> + Type + Debug,
     {
         let response = receive_signal::<Response<R>>(self.inner(), "Response").await?;
         match response {

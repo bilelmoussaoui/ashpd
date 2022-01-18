@@ -41,13 +41,14 @@
 //! }
 //! ```
 
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
 /// Specified options for a [`AccountProxy::user_information`] request.
+#[zvariant(signature = "dict")]
 struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -63,8 +64,9 @@ impl UserInfoOptions {
     }
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, Clone, TypeDict)]
+#[derive(Debug, SerializeDict, DeserializeDict, Clone, Type)]
 /// The response of a [`AccountProxy::user_information`] request.
+#[zvariant(signature = "dict")]
 pub struct UserInfo {
     /// User identifier.
     id: String,

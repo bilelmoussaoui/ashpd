@@ -48,8 +48,7 @@ use std::{
 use enumflags2::{bitflags, BitFlags};
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::{Fd, Signature};
-use zvariant_derive::Type;
+use zbus::zvariant::{Fd, OwnedValue, Signature, Type};
 
 use crate::{
     helpers::{call_method, path_from_null_terminated},
@@ -166,7 +165,7 @@ impl<'de> Deserialize<'de> for Permission {
     }
 }
 
-impl zvariant::Type for Permission {
+impl Type for Permission {
     fn signature() -> Signature<'static> {
         String::signature()
     }
@@ -273,7 +272,7 @@ impl<'a> DocumentsProxy<'a> {
         flags: BitFlags<Flags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
-    ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, zvariant::OwnedValue>), Error> {
+    ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
         call_method(
             self.inner(),
@@ -311,7 +310,7 @@ impl<'a> DocumentsProxy<'a> {
     ) -> Result<OwnedDocumentID, Error>
     where
         F: AsRawFd + fmt::Debug,
-        P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug,
+        P: AsRef<Path> + Serialize + Type + fmt::Debug,
     {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
@@ -355,10 +354,10 @@ impl<'a> DocumentsProxy<'a> {
         flags: BitFlags<Flags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
-    ) -> Result<(OwnedDocumentID, HashMap<String, zvariant::OwnedValue>), Error>
+    ) -> Result<(OwnedDocumentID, HashMap<String, OwnedValue>), Error>
     where
         F: AsRawFd + fmt::Debug,
-        P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug,
+        P: AsRef<Path> + Serialize + Type + fmt::Debug,
     {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
@@ -511,7 +510,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup<P: AsRef<Path> + Serialize + zvariant::Type + fmt::Debug>(
+    pub async fn lookup<P: AsRef<Path> + Serialize + Type + fmt::Debug>(
         &self,
         filename: P,
     ) -> Result<Option<OwnedDocumentID>, Error> {

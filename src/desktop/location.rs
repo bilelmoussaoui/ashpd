@@ -30,8 +30,7 @@ use std::fmt::Debug;
 
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
-use zvariant::OwnedObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
@@ -56,8 +55,9 @@ pub enum Accuracy {
     Exact = 5,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::create_session`] request.
+#[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
@@ -91,8 +91,9 @@ impl CreateSessionOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::start`] request.
+#[zvariant(signature = "dict")]
 struct SessionStartOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -176,7 +177,8 @@ impl Debug for Location {
     }
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, TypeDict)]
+#[derive(Debug, SerializeDict, DeserializeDict, Type)]
+#[zvariant(signature = "dict")]
 struct LocationInner {
     #[zvariant(rename = "Accuracy")]
     accuracy: f64,
@@ -256,7 +258,7 @@ impl<'a> LocationProxy<'a> {
             .time_threshold(time_threshold.unwrap_or(0))
             .accuracy(accuracy.unwrap_or(Accuracy::Exact));
         let (path, proxy) = futures::try_join!(
-            call_method::<zvariant::OwnedObjectPath, CreateSessionOptions>(
+            call_method::<OwnedObjectPath, CreateSessionOptions>(
                 &self.0,
                 "CreateSession",
                 &(options)

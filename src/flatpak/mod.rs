@@ -35,8 +35,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::prelude::RawFd;
 use std::{collections::HashMap, ffi::CString, fmt::Debug, os::unix::prelude::AsRawFd, path::Path};
-use zvariant::Fd;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
 
 use crate::{
     helpers::{call_method, receive_signal},
@@ -97,8 +96,9 @@ pub enum SupportsFlags {
     ExposePids,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`FlatpakProxy::spawn`] request.
+#[zvariant(signature = "dict")]
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
@@ -133,7 +133,7 @@ pub struct SpawnOptions {
 impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox.
     /// **Note** absolute paths or subdirectories are not allowed.
-    pub fn sandbox_expose<S: AsRef<str> + zvariant::Type + Serialize>(
+    pub fn sandbox_expose<S: AsRef<str> + Type + Serialize>(
         mut self,
         sandbox_expose: &[S],
     ) -> Self {
@@ -149,7 +149,7 @@ impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox,
     /// read-only.
     /// **Note** absolute paths or subdirectories are not allowed.
-    pub fn sandbox_expose_ro<S: AsRef<str> + zvariant::Type + Serialize>(
+    pub fn sandbox_expose_ro<S: AsRef<str> + Type + Serialize>(
         mut self,
         sandbox_expose_ro: &[S],
     ) -> Self {
@@ -210,10 +210,11 @@ impl SpawnOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`FlatpakProxy::create_update_monitor`] request.
 ///
 /// Currently there are no possible options yet.
+#[zvariant(signature = "dict")]
 struct CreateMonitorOptions {}
 
 /// The interface exposes some interactions with Flatpak on the host to the
@@ -252,7 +253,7 @@ impl<'a> FlatpakProxy<'a> {
     #[doc(alias = "CreateUpdateMonitor")]
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
-        let path: zvariant::OwnedObjectPath =
+        let path: OwnedObjectPath =
             call_method(self.inner(), "CreateUpdateMonitor", &(options)).await?;
 
         UpdateMonitorProxy::new(self.inner().connection(), path.into_inner()).await
@@ -298,8 +299,8 @@ impl<'a> FlatpakProxy<'a> {
     /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
     pub async fn spawn<
-        C: AsRef<Path> + zvariant::Type + Serialize + Debug,
-        S: AsRef<Path> + zvariant::Type + Serialize + Debug,
+        C: AsRef<Path> + Type + Serialize + Debug,
+        S: AsRef<Path> + Type + Serialize + Debug,
     >(
         &self,
         cwd_path: C,

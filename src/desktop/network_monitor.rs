@@ -21,7 +21,7 @@
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{
@@ -29,8 +29,9 @@ use crate::{
     Error,
 };
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// The network status, composed of the availability, metered & connectivity
+#[zvariant(signature = "dict")]
 pub struct NetworkStatus {
     /// Whether the network is considered available.
     available: bool,

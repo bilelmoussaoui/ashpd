@@ -26,8 +26,7 @@
 
 use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 
-use zvariant::{Fd, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type, Value};
 
 use super::{DESTINATION, PATH};
 use crate::{
@@ -35,8 +34,9 @@ use crate::{
     Error,
 };
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Debug, Type, Default)]
 /// Specified options for a [`FileTransferProxy::start_transfer`] request.
+#[zvariant(signature = "dict")]
 struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
     writeable: Option<bool>,

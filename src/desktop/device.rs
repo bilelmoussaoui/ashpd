@@ -16,14 +16,14 @@
 
 use serde::{Deserialize, Serialize, Serializer};
 use std::{fmt, str::FromStr};
-use zvariant::Signature;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Signature, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Clone, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
+#[zvariant(signature = "dict")]
 struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -94,7 +94,7 @@ impl Serialize for Device {
     }
 }
 
-impl zvariant::Type for Device {
+impl Type for Device {
     fn signature() -> Signature<'static> {
         String::signature()
     }

@@ -46,8 +46,7 @@ use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::{OwnedFd, Value};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
@@ -98,8 +97,9 @@ impl Default for PersistMode {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::create_session`] request.
+#[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -107,8 +107,9 @@ struct CreateSessionOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::select_sources`] request.
+#[zvariant(signature = "dict")]
 struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -151,15 +152,17 @@ impl SelectSourcesOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::start`] request.
+#[zvariant(signature = "dict")]
 struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// A response to a [`ScreenCastProxy::create_session`] request.
+#[zvariant(signature = "dict")]
 struct CreateSession {
     // TODO: investigate why this doesn't return an ObjectPath
     // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
@@ -167,8 +170,9 @@ struct CreateSession {
     session_handle: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict)]
+#[derive(SerializeDict, DeserializeDict, Type)]
 /// A response to a [`ScreenCastProxy::start`] request.
+#[zvariant(signature = "dict")]
 struct Streams {
     streams: Vec<Stream>,
     restore_token: Option<String>,
@@ -229,8 +233,9 @@ impl Debug for Stream {
             .finish()
     }
 }
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Clone)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Clone)]
 /// The stream properties.
+#[zvariant(signature = "dict")]
 struct StreamProperties {
     id: Option<String>,
     position: Option<(i32, i32)>,

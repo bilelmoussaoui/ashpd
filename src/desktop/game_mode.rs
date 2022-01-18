@@ -19,8 +19,7 @@
 use std::{fmt::Debug, os::unix::io::AsRawFd};
 
 use serde::{Deserialize, Serialize};
-use zvariant::Fd;
-use zvariant_derive::Type;
+use zbus::zvariant::{Fd, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{error::PortalError, helpers::call_method, Error};

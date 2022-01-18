@@ -96,14 +96,14 @@
 
 use std::os::unix::prelude::AsRawFd;
 
-use zvariant::Fd;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
+#[zvariant(signature = "dict")]
 struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -118,9 +118,10 @@ impl OpenDirOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_file`] or
 /// [`OpenURIProxy::open_uri`] request.
+#[zvariant(signature = "dict")]
 struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,

@@ -68,8 +68,7 @@ use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zvariant::Value;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type, Value};
 
 use super::{screencast::Stream, HandleToken, SessionProxy, DESTINATION, PATH};
 
@@ -109,8 +108,9 @@ pub enum Axis {
     Horizontal = 1,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::create_session`] request.
+#[zvariant(signature = "dict")]
 struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -118,8 +118,9 @@ struct CreateRemoteOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// A response to a [`RemoteDesktopProxy::create_session`] request.
+#[zvariant(signature = "dict")]
 struct CreateSession {
     // TODO: investigate why this doesn't return an ObjectPath
     // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
@@ -127,8 +128,9 @@ struct CreateSession {
     session_handle: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::select_devices`] request.
+#[zvariant(signature = "dict")]
 struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
@@ -144,15 +146,17 @@ impl SelectDevicesOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::start`] request.
+#[zvariant(signature = "dict")]
 struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// A response to a [`RemoteDesktopProxy::select_devices`] request.
+#[zvariant(signature = "dict")]
 struct SelectedDevices {
     /// The selected devices.
     devices: BitFlags<DeviceType>,

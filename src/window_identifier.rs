@@ -1,4 +1,5 @@
 use serde::{ser::Serializer, Serialize};
+use zbus::zvariant::{Signature, Type};
 
 #[cfg(any(feature = "feature_gtk4", feature = "feature_gtk3"))]
 use futures::lock::Mutex;
@@ -105,8 +106,8 @@ pub enum WindowIdentifier {
 unsafe impl Send for WindowIdentifier {}
 unsafe impl Sync for WindowIdentifier {}
 
-impl zvariant::Type for WindowIdentifier {
-    fn signature() -> zvariant::Signature<'static> {
+impl Type for WindowIdentifier {
+    fn signature() -> Signature<'static> {
         String::signature()
     }
 }

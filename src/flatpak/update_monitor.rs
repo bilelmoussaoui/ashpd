@@ -23,8 +23,7 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use zvariant::ObjectPath;
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
 use super::DESTINATION;
 use crate::{
@@ -32,14 +31,16 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitorProxy::update`] request.
 ///
 /// Currently there are no possible options yet.
+#[zvariant(signature = "dict")]
 struct UpdateOptions {}
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// A response containing the update information when an update is available.
+#[zvariant(signature = "dict")]
 pub struct UpdateInfo {
     #[zvariant(rename = "running-commit")]
     /// The currently running OSTree commit.
@@ -79,8 +80,9 @@ pub enum UpdateStatus {
     Failed = 3,
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// A response of the update progress signal.
+#[zvariant(signature = "dict")]
 pub struct UpdateProgress {
     /// The number of operations that the update consists of.
     pub n_ops: Option<u32>,

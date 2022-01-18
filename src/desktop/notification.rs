@@ -43,8 +43,7 @@
 use std::{fmt, str::FromStr};
 
 use serde::{self, Deserialize, Serialize, Serializer};
-use zvariant::{OwnedValue, Signature};
-use zvariant_derive::{DeserializeDict, SerializeDict, Type, TypeDict};
+use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Signature, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{
@@ -123,14 +122,15 @@ impl Serialize for Priority {
     }
 }
 
-impl zvariant::Type for Priority {
+impl Type for Priority {
     fn signature() -> Signature<'static> {
         String::signature()
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// A notification
+#[zvariant(signature = "dict")]
 pub struct Notification {
     /// User-visible string to display as the title.
     title: String,
@@ -211,8 +211,9 @@ impl Notification {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug)]
 /// A notification button
+#[zvariant(signature = "dict")]
 pub struct Button {
     /// User-visible label for the button. Mandatory.
     label: String,

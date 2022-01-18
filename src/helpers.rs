@@ -4,6 +4,7 @@ use std::{
     os::unix::prelude::OsStrExt,
     path::{Path, PathBuf},
 };
+use zbus::zvariant::{ObjectPath, OwnedObjectPath, Type};
 
 use futures::StreamExt;
 use serde::Deserialize;
@@ -21,8 +22,8 @@ pub(crate) async fn call_request_method<R, B>(
     body: &B,
 ) -> Result<R, Error>
 where
-    R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
-    B: serde::ser::Serialize + zvariant::Type + Debug,
+    R: for<'de> Deserialize<'de> + Type + Debug,
+    B: serde::ser::Serialize + Type + Debug,
 {
     #[cfg(feature = "log")]
     tracing::info!(
@@ -59,11 +60,11 @@ where
         },
         async {
             let msg = proxy.call_method(method_name, body).await?;
-            let path = msg.body::<zvariant::OwnedObjectPath>()?.into_inner();
+            let path = msg.body::<OwnedObjectPath>()?.into_inner();
 
             #[cfg(feature = "log")]
             tracing::debug!("Received request path {}", path.as_str());
-            Ok(path) as Result<zvariant::ObjectPath<'_>, Error>
+            Ok(path) as Result<ObjectPath<'_>, Error>
         },
     )?;
     assert_eq!(&path, request.inner().path());
@@ -77,7 +78,7 @@ pub(crate) async fn call_basic_response_method<B>(
     body: &B,
 ) -> Result<(), Error>
 where
-    B: serde::ser::Serialize + zvariant::Type + Debug,
+    B: serde::ser::Serialize + Type + Debug,
 {
     call_request_method::<BasicResponse, B>(proxy, handle_token, method_name, body).await?;
     Ok(())
@@ -88,7 +89,7 @@ pub(crate) async fn receive_signal<R>(
     signal_name: &'static str,
 ) -> Result<R, Error>
 where
-    R: for<'de> Deserialize<'de> + zvariant::Type + Debug,
+    R: for<'de> Deserialize<'de> + Type + Debug,
 {
     #[cfg(feature = "log")]
     tracing::info!(
@@ -116,8 +117,8 @@ pub(crate) async fn call_method<R, B>(
     body: &B,
 ) -> Result<R, Error>
 where
-    R: for<'de> Deserialize<'de> + zvariant::Type,
-    B: serde::ser::Serialize + zvariant::Type + Debug,
+    R: for<'de> Deserialize<'de> + Type,
+    B: serde::ser::Serialize + Type + Debug,
 {
     #[cfg(feature = "log")]
     {

@@ -27,8 +27,7 @@
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use zvariant::OwnedValue;
-use zvariant_derive::Type;
+use zbus::zvariant::{OwnedValue, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{
@@ -125,7 +124,7 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Settings.ReadAll).
     #[doc(alias = "ReadAll")]
-    pub async fn read_all<S: AsRef<str> + zvariant::Type + Serialize + Debug>(
+    pub async fn read_all<S: AsRef<str> + Type + Serialize + Debug>(
         &self,
         namespaces: &[S],
     ) -> Result<HashMap<String, Namespace>, Error> {
@@ -149,7 +148,7 @@ impl<'a> SettingsProxy<'a> {
     #[doc(alias = "Read")]
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
-        T: TryFrom<OwnedValue> + DeserializeOwned + zvariant::Type,
+        T: TryFrom<OwnedValue> + DeserializeOwned + Type,
     {
         call_method(self.inner(), "Read", &(namespace, key)).await
     }

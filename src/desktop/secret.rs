@@ -19,14 +19,14 @@
 
 use std::os::unix::prelude::AsRawFd;
 
-use zvariant::Fd;
-use zvariant_derive::{DeserializeDict, SerializeDict, TypeDict};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 
-#[derive(SerializeDict, DeserializeDict, TypeDict, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
+#[zvariant(signature = "dict")]
 struct RetrieveOptions {
     /// A string returned by a previous call to `retrieve_secret`.
     token: Option<String>,
