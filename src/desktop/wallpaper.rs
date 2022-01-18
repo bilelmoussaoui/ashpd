@@ -169,12 +169,14 @@ impl WallpaperOptions {
     /// Whether to show a preview of the picture.
     /// **Note** the portal may decide to show a preview even if this option is
     /// not set.
+    #[must_use]
     pub fn show_preview(mut self, show_preview: bool) -> Self {
         self.show_preview = Some(show_preview);
         self
     }
 
     /// Sets where to set the wallpaper on.
+    #[must_use]
     pub fn set_on(mut self, set_on: SetOn) -> Self {
         self.set_on = Some(set_on);
         self

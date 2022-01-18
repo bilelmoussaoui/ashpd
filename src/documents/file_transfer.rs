@@ -48,6 +48,7 @@ struct TransferOptions {
 
 impl TransferOptions {
     /// Sets whether the chosen application can write to the files or not.
+    #[must_use]
     pub fn writeable(mut self, writeable: bool) -> Self {
         self.writeable = Some(writeable);
         self
@@ -55,6 +56,7 @@ impl TransferOptions {
 
     /// Whether to stop the transfer automatically after the first
     /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
+    #[must_use]
     pub fn auto_stop(mut self, auto_stop: bool) -> Self {
         self.auto_stop = Some(auto_stop);
         self

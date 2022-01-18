@@ -85,6 +85,7 @@ impl Email {
     }
 
     /// Similar to `set_address`.
+    #[must_use]
     pub fn address(mut self, address: &str) -> Self {
         self.address = Some(address.to_string());
         self
@@ -96,6 +97,7 @@ impl Email {
     }
 
     /// Similar to `set_addresses`.
+    #[must_use]
     pub fn addresses<S: AsRef<str> + Type + Serialize>(mut self, addresses: &[S]) -> Self {
         self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
         self
@@ -107,6 +109,7 @@ impl Email {
     }
 
     /// Sets a list of email addresses to BCC.
+    #[must_use]
     pub fn bcc<S: AsRef<str> + Type + Serialize>(mut self, bcc: &[S]) -> Self {
         self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
         self
@@ -118,6 +121,7 @@ impl Email {
     }
 
     /// Sets a list of email addresses to CC.
+    #[must_use]
     pub fn cc<S: AsRef<str> + Type + Serialize>(mut self, cc: &[S]) -> Self {
         self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
         self
@@ -129,6 +133,7 @@ impl Email {
     }
 
     /// Similar to `set_subject`.
+    #[must_use]
     pub fn subject(mut self, subject: &str) -> Self {
         self.subject = Some(subject.to_string());
         self
@@ -140,6 +145,7 @@ impl Email {
     }
 
     /// Similar to `set_body`.
+    #[must_use]
     pub fn body(mut self, body: &str) -> Self {
         self.body = Some(body.to_string());
         self
@@ -151,6 +157,7 @@ impl Email {
     }
 
     /// Attaches a file to the email.
+    #[must_use]
     pub fn attach<F: AsRawFd>(mut self, attachment: &F) -> Self {
         let attachment = Fd::from(attachment.as_raw_fd());
         match self.attachment_fds {

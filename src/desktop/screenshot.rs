@@ -82,6 +82,7 @@ struct ScreenshotOptions {
 
 impl ScreenshotOptions {
     /// Sets whether the dialog should be a modal.
+    #[must_use]
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
@@ -89,6 +90,7 @@ impl ScreenshotOptions {
 
     /// Sets whether the dialog should offer customization before a screenshot
     /// or not.
+    #[must_use]
     pub fn interactive(mut self, interactive: bool) -> Self {
         self.interactive = Some(interactive);
         self

@@ -170,36 +170,42 @@ impl Notification {
     }
 
     /// Sets the notification body.
+    #[must_use]
     pub fn body(mut self, body: &str) -> Self {
         self.body = Some(body.to_string());
         self
     }
 
     /// Sets an icon to the notification.
+    #[must_use]
     pub fn icon(mut self, icon: OwnedValue) -> Self {
         self.icon = Some(icon);
         self
     }
 
     /// Sets the notification priority.
+    #[must_use]
     pub fn priority(mut self, priority: Priority) -> Self {
         self.priority = Some(priority);
         self
     }
 
     /// Sets the default action when the user clicks on the notification.
+    #[must_use]
     pub fn default_action(mut self, default_action: &str) -> Self {
         self.default_action = Some(default_action.to_string());
         self
     }
 
     /// Sets a value to be sent in the `action_invoked` signal.
+    #[must_use]
     pub fn default_action_target(mut self, default_action_target: OwnedValue) -> Self {
         self.default_action_target = Some(default_action_target);
         self
     }
 
     /// Adds a new button to the notification.
+    #[must_use]
     pub fn button(mut self, button: Button) -> Self {
         match self.buttons {
             Some(ref mut buttons) => buttons.push(button),
@@ -241,6 +247,7 @@ impl Button {
     }
 
     /// The value to send with the action name when the button is clicked.
+    #[must_use]
     pub fn target(mut self, target: OwnedValue) -> Self {
         self.target = Some(target);
         self

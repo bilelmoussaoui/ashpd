@@ -291,120 +291,140 @@ pub struct Settings {
 
 impl Settings {
     /// Sets the orientation.
+    #[must_use]
     pub fn orientation(mut self, orientation: Orientation) -> Self {
         self.orientation = Some(orientation);
         self
     }
 
     /// Sets the paper name.
+    #[must_use]
     pub fn paper_format(mut self, paper_format: &str) -> Self {
         self.paper_format = Some(paper_format.to_string());
         self
     }
 
     /// Sets the paper width.
+    #[must_use]
     pub fn paper_width(mut self, paper_width: &str) -> Self {
         self.paper_width = Some(paper_width.to_string());
         self
     }
 
     /// Sets the paper height.
+    #[must_use]
     pub fn paper_height(mut self, paper_height: &str) -> Self {
         self.paper_height = Some(paper_height.to_string());
         self
     }
 
     /// Sets the number of copies to print.
+    #[must_use]
     pub fn n_copies(mut self, n_copies: &str) -> Self {
         self.n_copies = Some(n_copies.to_string());
         self
     }
 
     /// Sets the default paper source.
+    #[must_use]
     pub fn default_source(mut self, default_source: &str) -> Self {
         self.default_source = Some(default_source.to_string());
         self
     }
 
     /// Sets the print quality.
+    #[must_use]
     pub fn quality(mut self, quality: Quality) -> Self {
         self.quality = Some(quality);
         self
     }
 
     /// Sets the resolution, both resolution-x & resolution-y.
+    #[must_use]
     pub fn resolution(mut self, resolution: &str) -> Self {
         self.resolution = Some(resolution.to_string());
         self
     }
 
     /// Sets whether to use color.
+    #[must_use]
     pub fn use_color(mut self, use_color: bool) -> Self {
         self.use_color = Some(use_color);
         self
     }
 
     /// Sets the duplex printing mode.
+    #[must_use]
     pub fn duplex(mut self, duplex: &str) -> Self {
         self.duplex = Some(duplex.to_string());
         self
     }
 
     /// Whether to collate copies.
+    #[must_use]
     pub fn collate(mut self, collate: &str) -> Self {
         self.collate = Some(collate.to_string());
         self
     }
 
     /// Sets whether to reverse the order of the printed pages.
+    #[must_use]
     pub fn reverse(mut self, reverse: &str) -> Self {
         self.reverse = Some(reverse.to_string());
         self
     }
 
     /// Sets the media type.
+    #[must_use]
     pub fn media_type(mut self, media_type: &str) -> Self {
         self.media_type = Some(media_type.to_string());
         self
     }
 
     /// Sets the dithering to use.
+    #[must_use]
     pub fn dither(mut self, dither: &str) -> Self {
         self.dither = Some(dither.to_string());
         self
     }
 
     /// Sets the page scale in percent.
+    #[must_use]
     pub fn scale(mut self, scale: &str) -> Self {
         self.scale = Some(scale.to_string());
         self
     }
 
     /// Sets what pages to print, one of all, selection, current or ranges.
+    #[must_use]
     pub fn print_pages(mut self, print_pages: &str) -> Self {
         self.print_pages = Some(print_pages.to_string());
         self
     }
 
     /// Sets a list of page ranges, formatted like this: 0-2,4,9-11.
+    #[must_use]
     pub fn page_ranges(mut self, page_ranges: &str) -> Self {
         self.page_ranges = Some(page_ranges.to_string());
         self
     }
 
     /// Sets what pages to print, one of all, even or odd.
+    #[must_use]
     pub fn page_set(mut self, page_set: &str) -> Self {
         self.page_set = Some(page_set.to_string());
         self
     }
 
     /// Sets the finishings.
+    #[must_use]
     pub fn finishings(mut self, finishings: &str) -> Self {
         self.finishings = Some(finishings.to_string());
         self
     }
 
     /// Sets the number of pages per sheet.
+    #[must_use]
     pub fn number_up(mut self, number_up: &str) -> Self {
         self.number_up = Some(number_up.to_string());
         self
@@ -412,48 +432,56 @@ impl Settings {
 
     /// Sets the number up layout, one of lrtb, lrbt, rltb, rlbt, tblr, tbrl,
     /// btlr, btrl.
+    #[must_use]
     pub fn number_up_layout(mut self, number_up_layout: &str) -> Self {
         self.number_up_layout = Some(number_up_layout.to_string());
         self
     }
 
     /// Sets the output bin
+    #[must_use]
     pub fn output_bin(mut self, output_bin: &str) -> Self {
         self.output_bin = Some(output_bin.to_string());
         self
     }
 
     /// Sets the horizontal resolution in dpi.
+    #[must_use]
     pub fn resolution_x(mut self, resolution_x: &str) -> Self {
         self.resolution_x = Some(resolution_x.to_string());
         self
     }
 
     /// Sets the vertical resolution in dpi.
+    #[must_use]
     pub fn resolution_y(mut self, resolution_y: &str) -> Self {
         self.resolution_y = Some(resolution_y.to_string());
         self
     }
 
     /// Sets the resolution in lines per inch.
+    #[must_use]
     pub fn print_lpi(mut self, print_lpi: &str) -> Self {
         self.print_lpi = Some(print_lpi.to_string());
         self
     }
 
     /// Sets the print-to-file base name.
+    #[must_use]
     pub fn output_basename(mut self, output_basename: &str) -> Self {
         self.output_basename = Some(output_basename.to_string());
         self
     }
 
     /// Sets the print-to-file format, one of PS, PDF, SVG.
+    #[must_use]
     pub fn output_file_format(mut self, output_file_format: &str) -> Self {
         self.output_file_format = Some(output_file_format.to_string());
         self
     }
 
     /// Sets the print-to-file output uri.
+    #[must_use]
     pub fn output_uri(mut self, output_uri: &str) -> Self {
         self.output_uri = Some(output_uri.to_string());
         self
@@ -489,60 +517,70 @@ pub struct PageSetup {
 
 impl PageSetup {
     /// Sets the ppdname.
+    #[must_use]
     pub fn ppdname(mut self, ppdname: &str) -> Self {
         self.ppdname = Some(ppdname.to_string());
         self
     }
 
     /// Sets the name of the page setup.
+    #[must_use]
     pub fn name(mut self, name: &str) -> Self {
         self.name = Some(name.to_string());
         self
     }
 
     /// Sets the user visible name of the page setup.
+    #[must_use]
     pub fn display_name(mut self, display_name: &str) -> Self {
         self.display_name = Some(display_name.to_string());
         self
     }
 
     /// Sets the orientation.
+    #[must_use]
     pub fn orientation(mut self, orientation: Orientation) -> Self {
         self.orientation = Some(orientation);
         self
     }
 
     /// Sets the page width.
+    #[must_use]
     pub fn width(mut self, width: f64) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Sets the page height.
+    #[must_use]
     pub fn height(mut self, height: f64) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Sets the page top margin.
+    #[must_use]
     pub fn margin_top(mut self, margin_top: f64) -> Self {
         self.margin_top = Some(margin_top);
         self
     }
 
     /// Sets the page bottom margin.
+    #[must_use]
     pub fn margin_bottom(mut self, margin_bottom: f64) -> Self {
         self.margin_bottom = Some(margin_bottom);
         self
     }
 
     /// Sets the page right margin.
+    #[must_use]
     pub fn margin_right(mut self, margin_right: f64) -> Self {
         self.margin_right = Some(margin_right);
         self
     }
 
     /// Sets the page margin left.
+    #[must_use]
     pub fn margin_left(mut self, margin_left: f64) -> Self {
         self.margin_left = Some(margin_left);
         self

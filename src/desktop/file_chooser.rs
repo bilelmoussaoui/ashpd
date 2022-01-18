@@ -120,12 +120,14 @@ impl FileFilter {
     }
 
     /// Adds a mime type to the file filter.
+    #[must_use]
     pub fn mimetype(mut self, mimetype: &str) -> Self {
         self.1.push((FilterType::MimeType, mimetype.to_string()));
         self
     }
 
     /// Adds a glob pattern to the file filter.
+    #[must_use]
     pub fn glob(mut self, pattern: &str) -> Self {
         self.1.push((FilterType::GlobPattern, pattern.to_string()));
         self
@@ -165,6 +167,7 @@ impl Choice {
     }
 
     /// Adds a (key, value) as a choice.
+    #[must_use]
     pub fn insert(mut self, key: &str, value: &str) -> Self {
         self.2.push((key.to_string(), value.to_string()));
         self
@@ -210,42 +213,49 @@ pub struct OpenFileOptions {
 
 impl OpenFileOptions {
     /// Sets a user-visible string to the "accept" button.
+    #[must_use]
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
         self
     }
 
     /// Sets whether the dialog should be a modal.
+    #[must_use]
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
     /// Sets whether to allow multiple files selection.
+    #[must_use]
     pub fn multiple(mut self, multiple: bool) -> Self {
         self.multiple = Some(multiple);
         self
     }
 
     /// Sets whether to select directories or not.
+    #[must_use]
     pub fn directory(mut self, directory: bool) -> Self {
         self.directory = Some(directory);
         self
     }
 
     /// Adds a files filter.
+    #[must_use]
     pub fn add_filter(mut self, filter: FileFilter) -> Self {
         self.filters.push(filter);
         self
     }
 
     /// Specifies the default filter.
+    #[must_use]
     pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
         self.current_filter = Some(current_filter);
         self
     }
 
     /// Adds a choice.
+    #[must_use]
     pub fn add_choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
@@ -278,18 +288,21 @@ pub struct SaveFileOptions {
 
 impl SaveFileOptions {
     /// Sets a user-visible string to the "accept" button.
+    #[must_use]
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
         self
     }
 
     /// Sets the current file name.
+    #[must_use]
     pub fn current_name(mut self, current_name: &str) -> Self {
         self.current_name = Some(current_name.to_string());
         self
     }
 
     /// Sets the current folder.
+    #[must_use]
     pub fn current_folder<S: AsRef<Path> + Type + Serialize>(mut self, current_folder: S) -> Self {
         let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
             .expect("`current_folder` should not be null terminated");
@@ -298,6 +311,7 @@ impl SaveFileOptions {
     }
 
     /// Sets the absolute path of the file.
+    #[must_use]
     pub fn current_file<S: AsRef<Path> + Type + Serialize>(mut self, current_file: S) -> Self {
         let cstr = CString::new(current_file.as_ref().as_os_str().as_bytes())
             .expect("`current_file` should not be null terminated");
@@ -306,24 +320,28 @@ impl SaveFileOptions {
     }
 
     /// Sets whether the dialog should be a modal.
+    #[must_use]
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
     /// Adds a files filter.
+    #[must_use]
     pub fn add_filter(mut self, filter: FileFilter) -> Self {
         self.filters.push(filter);
         self
     }
 
     /// Sets the default filter.
+    #[must_use]
     pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
         self.current_filter = Some(current_filter);
         self
     }
 
     /// Adds a choice.
+    #[must_use]
     pub fn add_choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
@@ -350,24 +368,28 @@ pub struct SaveFilesOptions {
 
 impl SaveFilesOptions {
     /// Sets a user-visible string to the "accept" button.
+    #[must_use]
     pub fn accept_label(mut self, accept_label: &str) -> Self {
         self.accept_label = Some(accept_label.to_string());
         self
     }
 
     /// Sets whether the dialog should be a modal.
+    #[must_use]
     pub fn modal(mut self, modal: bool) -> Self {
         self.modal = Some(modal);
         self
     }
 
     /// Adds a choice.
+    #[must_use]
     pub fn add_choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
         self
     }
 
     /// Specifies the current folder path.
+    #[must_use]
     pub fn current_folder<S: AsRef<Path> + Type + Serialize>(mut self, current_folder: S) -> Self {
         let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
             .expect("`current_folder` should not be null terminated");
@@ -376,6 +398,7 @@ impl SaveFilesOptions {
     }
 
     /// Sets a list of files to save.
+    #[must_use]
     pub fn files<S: AsRef<Path> + Type + Serialize>(mut self, files: &[S]) -> Self {
         self.files = Some(
             files

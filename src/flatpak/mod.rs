@@ -133,6 +133,7 @@ pub struct SpawnOptions {
 impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox.
     /// **Note** absolute paths or subdirectories are not allowed.
+    #[must_use]
     pub fn sandbox_expose<S: AsRef<str> + Type + Serialize>(
         mut self,
         sandbox_expose: &[S],
@@ -149,6 +150,7 @@ impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox,
     /// read-only.
     /// **Note** absolute paths or subdirectories are not allowed.
+    #[must_use]
     pub fn sandbox_expose_ro<S: AsRef<str> + Type + Serialize>(
         mut self,
         sandbox_expose_ro: &[S],
@@ -163,6 +165,7 @@ impl SpawnOptions {
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox.
+    #[must_use]
     pub fn sandbox_expose_fd<F: AsRawFd>(mut self, sandbox_expose_fd: &[&F]) -> Self {
         self.sandbox_expose_fd = Some(
             sandbox_expose_fd
@@ -175,6 +178,7 @@ impl SpawnOptions {
 
     /// Sets the list of file descriptors of files to expose the new sandbox,
     /// read-only.
+    #[must_use]
     pub fn sandbox_expose_fd_ro<F: AsRawFd>(mut self, sandbox_expose_fd_ro: &[&F]) -> Self {
         self.sandbox_expose_fd_ro = Some(
             sandbox_expose_fd_ro
@@ -186,24 +190,28 @@ impl SpawnOptions {
     }
 
     /// Sets the created sandbox flags.
+    #[must_use]
     pub fn sandbox_flags(mut self, sandbox_flags: BitFlags<SandboxFlags>) -> Self {
         self.sandbox_flags = Some(sandbox_flags);
         self
     }
 
     /// Env variables to unset.
+    #[must_use]
     pub fn unset_env(mut self, env: &[&str]) -> Self {
         self.unset_env = Some(env.iter().map(|e| e.to_string()).collect());
         self
     }
 
     /// Set a file descriptor of the directory that  will be used as `/usr` in the new sandbox.
+    #[must_use]
     pub fn usr_fd<F: AsRawFd>(mut self, fd: F) -> Self {
         self.usr_fd = Some(fd.as_raw_fd());
         self
     }
 
     /// Set a file descriptor of the directory that  will be used as `/app` in the new sandbox.
+    #[must_use]
     pub fn app_fd<F: AsRawFd>(mut self, fd: F) -> Self {
         self.app_fd = Some(fd.as_raw_fd());
         self

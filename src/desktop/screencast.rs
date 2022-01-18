@@ -125,23 +125,27 @@ struct SelectSourcesOptions {
 
 impl SelectSourcesOptions {
     /// Sets whether to allow selecting multiple sources.
+    #[must_use]
     pub fn multiple(mut self, multiple: bool) -> Self {
         self.multiple = Some(multiple);
         self
     }
 
     /// Sets how the cursor will be drawn on the screen cast stream.
+    #[must_use]
     pub fn cursor_mode(mut self, cursor_mode: BitFlags<CursorMode>) -> Self {
         self.cursor_mode = Some(cursor_mode);
         self
     }
 
     /// Sets the types of content to record.
+    #[must_use]
     pub fn types(mut self, types: BitFlags<SourceType>) -> Self {
         self.types = Some(types);
         self
     }
 
+    #[must_use]
     pub fn persist_mode(mut self, persist_mode: PersistMode) -> Self {
         self.persist_mode = Some(persist_mode);
         self
