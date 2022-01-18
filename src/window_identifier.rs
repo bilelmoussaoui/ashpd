@@ -17,6 +17,9 @@ use gtk3::{
     glib::{self, clone},
     prelude::*,
 };
+
+#[cfg(feature = "raw_handle")]
+use raw_window_handle::{RawWindowHandle, WaylandHandle, XlibHandle};
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
@@ -70,6 +73,12 @@ use gtk3::{
 ///
 /// ## Other Toolkits
 ///
+/// If you have access to `RawWindowHandle` you can convert it to a [`WindowIdentifier`] with
+/// ```rust, ignore
+///     let handle = RawWindowHandle::Xlib(XlibHandle::empty());
+///     let identifier = WindowIdentifier::from_raw_handle(handle).await;///
+/// ```
+///
 /// In case you don't have access to a WindowIdentifier:
 ///
 /// ```rust
@@ -85,7 +94,7 @@ pub enum WindowIdentifier {
     #[doc(hidden)]
     Gtk4 {
         /// The top level window
-        native: Arc<Mutex<gtk4::Native>>,
+        native: Arc<Mutex<Option<gtk4::Native>>>,
         /// The exported window handle
         handle: String,
     },
@@ -96,7 +105,7 @@ pub enum WindowIdentifier {
         /// The exported window handle
         handle: String,
         // the top level window
-        window: Arc<Mutex<gtk3::gdk::Window>>,
+        window: Arc<Mutex<Option<gtk3::gdk::Window>>>,
     },
     /// For Other Toolkits
     #[doc(hidden)]
@@ -197,7 +206,7 @@ impl WindowIdentifier {
 
         match handle {
             Some(h) => WindowIdentifier::Gtk4 {
-                native: Arc::new(Mutex::new(native.clone().upcast())),
+                native: Arc::new(Mutex::new(Some(native.clone().upcast()))),
                 handle: h,
             },
             None => WindowIdentifier::default(),
@@ -241,9 +250,159 @@ impl WindowIdentifier {
         match handle {
             Some(h) => WindowIdentifier::Gtk3 {
                 handle: h,
-                window: Arc::new(Mutex::new(win.clone().upcast())),
+                window: Arc::new(Mutex::new(Some(win.clone().upcast()))),
             },
             None => WindowIdentifier::default(),
+        }
+    }
+
+    #[cfg(feature = "raw_handle")]
+    /// Create an instance of [`WindowIdentifier`] from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
+    ///
+    /// # Panics
+    ///
+    /// If the passed RawWindowHandle is not of `WaylandHandle` or `XlibHandle` type. As other platforms handles
+    /// are not supported by the portals so far.
+    pub async fn form_raw_handle(handle: RawWindowHandle) -> Self {
+        use raw_window_handle::RawWindowHandle::{Wayland, Xlib};
+        match handle {
+            // TODO: figure out how to make use of the wl_display to export a handle with xdg-foreign protocol
+            Wayland(_wl_handle) => Self::default(),
+            Xlib(x_handle) => {
+                #[cfg(feature = "feature_gtk3")]
+                {
+                    Self::Gtk3 {
+                        handle: format!("x11:0x{:x}", x_handle.window),
+                        window: Default::default(),
+                    }
+                }
+                #[cfg(feature = "feature_gtk4")]
+                {
+                    Self::Gtk4 {
+                        handle: format!("x11:0x{:x}", x_handle.window),
+                        native: Default::default(),
+                    }
+                }
+                #[cfg(not(any(feature = "feature_gtk3", feature = "feature_gtk4")))]
+                {
+                    Self::default()
+                }
+            }
+            _ => Self::default(), // Fallback to default
+        }
+    }
+
+    #[cfg(feature = "raw_handle")]
+    /// Convert a [`WindowIdentifier`] to [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
+    ///
+    /// # Panics
+    ///
+    /// If you attempt to convert a [`WindowIdentifier`] created from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle`)
+    /// instead of the gtk3 / gtk4 constructors.
+    pub async fn as_raw_handle(&self) -> RawWindowHandle {
+        unsafe {
+            match self {
+                #[cfg(feature = "feature_gtk4")]
+                Self::Gtk4 { native, .. } => {
+                    use gtk4::gdk::Backend;
+                    use gtk4::glib::translate::ToGlibPtr;
+
+                    let native = native
+                        .lock()
+                        .await
+                        .as_ref()
+                        .expect("Can't create a RawWindowHandle without a gtk::Native")
+                        .clone();
+                    let surface = native.surface();
+                    let display = surface.display();
+                    match display.backend() {
+                        Backend::Wayland => {
+                            let mut wayland_handle = WaylandHandle::empty();
+                            wayland_handle.surface =
+                                gdk4wayland::ffi::gdk_wayland_surface_get_wl_surface(
+                                    surface
+                                        .downcast_ref::<gdk4wayland::WaylandSurface>()
+                                        .unwrap()
+                                        .to_glib_none()
+                                        .0,
+                                );
+                            wayland_handle.display =
+                                gdk4wayland::ffi::gdk_wayland_display_get_wl_display(
+                                    display
+                                        .downcast_ref::<gdk4wayland::WaylandDisplay>()
+                                        .unwrap()
+                                        .to_glib_none()
+                                        .0,
+                                );
+                            RawWindowHandle::Wayland(wayland_handle)
+                        }
+                        Backend::X11 => {
+                            let mut x11_handle = XlibHandle::empty();
+                            x11_handle.window =
+                                surface.downcast_ref::<gdk4x11::X11Surface>().unwrap().xid();
+                            x11_handle.display = gdk4x11::ffi::gdk_x11_display_get_xdisplay(
+                                display
+                                    .downcast_ref::<gdk4x11::X11Display>()
+                                    .unwrap()
+                                    .to_glib_none()
+                                    .0,
+                            );
+                            RawWindowHandle::Xlib(x11_handle)
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+                #[cfg(feature = "feature_gtk3")]
+                Self::Gtk3 { window, .. } => {
+                    use gtk3::gdk::Backend;
+                    use gtk3::glib::translate::ToGlibPtr;
+
+                    let window: gtk3::gdk::Window = window
+                        .lock()
+                        .await
+                        .as_ref()
+                        .expect("Can't create a RawWindowHandle without a GdkWindow")
+                        .clone();
+                    let display = window.display();
+                    match display.backend() {
+                        Backend::Wayland => {
+                            let mut wayland_handle = WaylandHandle::empty();
+                            wayland_handle.surface =
+                                gdk3wayland::ffi::gdk_wayland_window_get_wl_surface(
+                                    window
+                                        .downcast_ref::<gdk3wayland::WaylandWindow>()
+                                        .unwrap()
+                                        .to_glib_none()
+                                        .0,
+                                );
+                            wayland_handle.display =
+                                gdk3wayland::ffi::gdk_wayland_display_get_wl_display(
+                                    display
+                                        .downcast_ref::<gdk3wayland::WaylandDisplay>()
+                                        .unwrap()
+                                        .to_glib_none()
+                                        .0,
+                                );
+                            RawWindowHandle::Wayland(wayland_handle)
+                        }
+                        Backend::X11 => {
+                            let mut x11_handle = XlibHandle::empty();
+                            x11_handle.window =
+                                window.downcast_ref::<gdk3x11::X11Window>().unwrap().xid();
+                            x11_handle.display = gdk3x11::ffi::gdk_x11_display_get_xdisplay(
+                                display
+                                    .downcast_ref::<gdk3x11::X11Display>()
+                                    .unwrap()
+                                    .to_glib_none()
+                                    .0,
+                            ) as *mut _;
+                            RawWindowHandle::Xlib(x11_handle)
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+                _ => unreachable!(),
+            }
         }
     }
 }
@@ -254,23 +413,24 @@ impl Drop for WindowIdentifier {
         if let Self::Gtk4 { native, handle: _ } = self {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@strong native => async move {
-                let native = native.lock().await;
-                let surface = native.surface();
-                if surface.display().backend().is_wayland()
-                {
-                    let top_level = surface.downcast_ref::<gdk4wayland::WaylandToplevel>().unwrap();
-                    top_level.unexport_handle();
-                }
+                if let Some(native) = native.lock().await.as_ref() {
+                    let surface = native.surface();
+                    if surface.display().backend().is_wayland() {
+                        let top_level = surface.downcast_ref::<gdk4wayland::WaylandToplevel>().unwrap();
+                        top_level.unexport_handle();
+                    }
+                };
             }));
         }
         #[cfg(feature = "feature_gtk3")]
         if let Self::Gtk3 { window, handle: _ } = self {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@strong window => async move {
-                let window = window.lock().await;
-                if window.display().backend().is_wayland() {
-                    let wayland_win = window.downcast_ref::<gdk3wayland::WaylandWindow>().unwrap();
-                    wayland_win.unexport_handle();
+                if let Some(window) = window.lock().await.as_ref() {
+                    if window.display().backend().is_wayland() {
+                        let wayland_win = window.downcast_ref::<gdk3wayland::WaylandWindow>().unwrap();
+                        wayland_win.unexport_handle();
+                    }
                 }
             }));
         }
