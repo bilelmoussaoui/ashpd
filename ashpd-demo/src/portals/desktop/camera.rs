@@ -64,7 +64,6 @@ mod imp {
                 if is_available {
                     imp.camera_available.set_text("Yes");
                     page.action_set_enabled("camera.start", true);
-
                 } else {
                     imp.camera_available.set_text("No");
 

@@ -612,9 +612,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4"
-version = "0.4.1"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1023950739cd692fbf559507cad031bf2b0369d68466121f8a1316bc5ae29f0"
+checksum = "319c74160dbe3e29cc1bf36ae4a08b9072f352b751e9e3e5501b3aa3ca633f66"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -628,9 +628,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4-sys"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "401b6be19db1e0ad2978fde7b46989b82f7595affa09cb56fe6f1302bc4f19e3"
+checksum = "48a39e34abe35ee2cf54a1e29dd983accecd113ad30bdead5050418fa92f2a1b"
 dependencies = [
  "cairo-sys-rs",
  "gdk-pixbuf-sys",
@@ -645,9 +645,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4-wayland"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "249e2056b774769a173cf58fe0b028dc6697542fa3a0ca54fd3d790f1a8eda28"
+checksum = "12e6dcdd75e7fa114869d89c03a00081a3f54d7b5300f7d02a82bd3a97026c40"
 dependencies = [
  "gdk4",
  "gdk4-wayland-sys",
@@ -658,9 +658,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4-wayland-sys"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac7518759dfb80e28a3cea17e450e5012dc49bb9e79f0e75db5cd9e0d5ca2865"
+checksum = "22cbf7fa3fc7714c72902d82229677f9291f7cceb33855c5cef868f177356c30"
 dependencies = [
  "glib-sys",
  "libc",
@@ -669,9 +669,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4-x11"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11d4045a8841ee6fc17f14bc3f80eada5936244c2a958e7dd14f024d4601a454"
+checksum = "f2a54a4f3405461afa18ddc2b5fbeaecc2558fcd8b132ed0c9c7c4ffa2f9ae22"
 dependencies = [
  "gdk4",
  "gdk4-x11-sys",
@@ -682,9 +682,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4-x11-sys"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d24f2fc9c91675f3873caa9baaaee042edfb5fcf77f866a1cbdd99f9a334c1bd"
+checksum = "1eb40aebb4f15b270df2ac2c463bf7f6d82211d9c5df1d13b84541a63a3139d7"
 dependencies = [
  "gdk4-sys",
  "glib-sys",
@@ -840,9 +840,9 @@ dependencies = [
 
 [[package]]
 name = "gsk4"
-version = "0.4.1"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3dd7c79a864b8c4606d39fad3fd872688ea20ba8e833a9f38e905a458a29a8c"
+checksum = "0672c63e4101e19d5e9cb4a0aed8b3278e9573529bd0b6a86d9c748c71bd9882"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -856,9 +856,9 @@ dependencies = [
 
 [[package]]
 name = "gsk4-sys"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d25ee96f7d1bdb6fa9945425aea95ce60efedf60c994eceb671fd93ad11d541"
+checksum = "e31d21d7ce02ba261bb24c50c4ab238a10b41a2c97c32afffae29471b7cca69b"
 dependencies = [
  "cairo-sys-rs",
  "gdk4-sys",
@@ -896,9 +896,9 @@ dependencies = [
 
 [[package]]
 name = "gstreamer"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "939fd4f8afd09be887d05bb7ced532f215f21401837bf59f9fd2f68608e1e285"
+checksum = "8050dd478c50f1796595275eb8f21b2e1c2604f7797fcd2cc513c7af710bb4ac"
 dependencies = [
  "bitflags",
  "cfg-if 1.0.0",
@@ -960,9 +960,9 @@ dependencies = [
 
 [[package]]
 name = "gstreamer-video"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c5f4d1bdccb60be70c63001d331e4945d9b61bf77610e33584525df10633917"
+checksum = "410c72d885a67aeb7dbfa49c347e6c85d60f54e1cdaf6aadf8b5364892451261"
 dependencies = [
  "bitflags",
  "cfg-if 1.0.0",
@@ -998,9 +998,9 @@ checksum = "da5bf7748fd4cd0b2490df8debcc911809dbcbee4ece9531b96c29a9c729de5a"
 
 [[package]]
 name = "gtk4"
-version = "0.4.1"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6fda2b49a25eefc1116f15d06585d333c21fc3ce499ab0a86641fac2fbf40ac"
+checksum = "b5020aeb559e0431930d66d85b8f16fc453fc0863466b13b7e1e1b800cf1a47b"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -1021,9 +1021,9 @@ dependencies = [
 
 [[package]]
 name = "gtk4-macros"
-version = "0.4.1"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b17860e493ada8a40577f0e92bce8249a97c831e39d7811ef21de6281d67f86"
+checksum = "573db42bb64973a4d5f718b73caa7204285a1a665308a23b11723d0ee56ec305"
 dependencies = [
  "anyhow",
  "proc-macro-crate",
@@ -1035,9 +1035,9 @@ dependencies = [
 
 [[package]]
 name = "gtk4-sys"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffc1047ea7a0ff2947fbfb703eecfcca6b58912171037a4c55b1577015f079d5"
+checksum = "1544614a8d44f38719a2fdfd608d644d5f385beab33e5852688f48a983a2b583"
 dependencies = [
  "cairo-sys-rs",
  "gdk-pixbuf-sys",
@@ -1181,9 +1181,9 @@ dependencies = [
 
 [[package]]
 name = "libshumate"
-version = "0.1.0-alpha.2"
+version = "0.1.0-alpha.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47681d6e230cd92a83775e55f7318b2993ed3333adcc2a642922d1b33ec36800"
+checksum = "d5c0b7cb25a837204c7eda0879877e0716924c2f970c08e60228bd8410ddc372"
 dependencies = [
  "gdk4",
  "gio",
@@ -1196,9 +1196,9 @@ dependencies = [
 
 [[package]]
 name = "libshumate-sys"
-version = "0.1.0-alpha.2"
+version = "0.1.0-alpha.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6e996d23fc8a1858ebb32d9f789364d689f88244a5b36a1d3e4910cf1d12365"
+checksum = "9380bffe8a69af1cd5c6ae0b6dfd2942017d89d9565f64d0e3579629e3921f07"
 dependencies = [
  "gdk4-sys",
  "gio-sys",
@@ -1830,9 +1830,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.85"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a684ac3dcd8913827e18cd09a68384ee66c1de24157e3c556c9ab16d85695fb7"
+checksum = "8a65b3f4ffa0092e9887669db0eae07941f023991ab58ea44da8fe8e2d511c6b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2179,9 +2179,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant"
-version = "3.0.0"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a946c049b2eac1a253f98e9267a8ce7a3d93be274ea146e6dd7a0965232a911"
+checksum = "bbb31b009e0b0c4f2c1283c9c23129e4f76020da4b3c4dfa032abfbfe30a2c02"
 dependencies = [
  "byteorder",
  "enumflags2",
@@ -2193,9 +2193,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant_derive"
-version = "3.0.0"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28fce5afb8d639bff79b1e8cdb258a3ca22d458f4603b23d794b4cb4e878c990"
+checksum = "5295bdc2688c7239423889191d730ad071f814dc36c48edf7cda23f38dd28b2a"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
