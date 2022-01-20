@@ -149,8 +149,10 @@ impl<'a> SettingsProxy<'a> {
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
         T: TryFrom<OwnedValue> + DeserializeOwned + Type,
+        Error: From<<T as TryFrom<OwnedValue>>::Error>,
     {
-        call_method(self.inner(), "Read", &(namespace, key)).await
+        let value = call_method::<OwnedValue, _>(self.inner(), "Read", &(namespace, key)).await?;
+        T::try_from(value).map_err(From::from)
     }
 
     /// Reads the value of namespace: `org.freedesktop.appearance` and `color-scheme` key.

@@ -35,7 +35,7 @@ pub enum Error {
     /// Something Failed on the portal request.
     Portal(PortalError),
     /// A zbus::fdo specific error.
-    Zbus(zbus::fdo::Error),
+    Zbus(zbus::Error),
     /// A signal returned no response.
     NoResponse,
     /// Failed to parse a string into an enum variant
@@ -68,14 +68,20 @@ impl From<PortalError> for Error {
     }
 }
 
-impl From<zbus::Error> for Error {
-    fn from(e: zbus::Error) -> Self {
-        Self::Portal(PortalError::ZBus(e))
+impl From<zbus::fdo::Error> for Error {
+    fn from(e: zbus::fdo::Error) -> Self {
+        Self::Zbus(zbus::Error::FDO(Box::new(e)))
     }
 }
 
-impl From<zbus::fdo::Error> for Error {
-    fn from(e: zbus::fdo::Error) -> Self {
+impl From<zbus::Error> for Error {
+    fn from(e: zbus::Error) -> Self {
         Self::Zbus(e)
+    }
+}
+
+impl From<zbus::zvariant::Error> for Error {
+    fn from(e: zbus::zvariant::Error) -> Self {
+        Self::Zbus(zbus::Error::Variant(e))
     }
 }
