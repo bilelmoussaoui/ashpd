@@ -92,7 +92,7 @@ use wayland_protocols::unstable::xdg_foreign::v2::client::{
 /// If you have access to `RawWindowHandle` you can convert it to a [`WindowIdentifier`] with
 /// ```rust, ignore
 ///     let handle = RawWindowHandle::Xlib(XlibHandle::empty());
-///     let identifier = WindowIdentifier::from_raw_handle(handle).await;///
+///     let identifier = WindowIdentifier::from_raw_handle(handle);///
 /// ```
 ///
 /// In case you don't have access to a WindowIdentifier:
@@ -281,7 +281,7 @@ impl WindowIdentifier {
 
     #[cfg(feature = "raw_handle")]
     /// Create an instance of [`WindowIdentifier`] from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
-    pub async fn form_raw_handle(handle: RawWindowHandle) -> Self {
+    pub fn form_raw_handle(handle: RawWindowHandle) -> Self {
         use raw_window_handle::RawWindowHandle::{Wayland, Xlib};
         match handle {
             Wayland(wl_handle) => match wayland_handle_export(wl_handle.surface) {
