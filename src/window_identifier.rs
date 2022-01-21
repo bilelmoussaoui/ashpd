@@ -165,6 +165,12 @@ impl std::fmt::Debug for WindowIdentifier {
     }
 }
 
+impl Default for WindowIdentifier {
+    fn default() -> Self {
+        Self::new("")
+    }
+}
+
 impl WindowIdentifier {
     /// Create a new window identifier
     pub fn new(identifier: &str) -> Self {
@@ -182,15 +188,7 @@ impl WindowIdentifier {
             Self::Other(handle) => handle,
         }
     }
-}
 
-impl Default for WindowIdentifier {
-    fn default() -> Self {
-        Self::new("")
-    }
-}
-
-impl WindowIdentifier {
     #[cfg(feature = "feature_gtk4")]
     /// Creates a [`WindowIdentifier`] from a [`gtk4::Native`](https://docs.gtk.org/gtk4/class.Native.html).
     ///
@@ -281,6 +279,8 @@ impl WindowIdentifier {
 
     #[cfg(feature = "raw_handle")]
     /// Create an instance of [`WindowIdentifier`] from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
+    ///
+    /// The constructor returns a valid handle under both Wayland & x11.
     pub fn form_raw_handle(handle: RawWindowHandle) -> Self {
         use raw_window_handle::RawWindowHandle::{Wayland, Xlib};
         match handle {
@@ -437,7 +437,7 @@ impl Drop for WindowIdentifier {
         if let Self::Exported { exported, .. } = self {
             if let Err(_err) = wayland_handle_unexport(exported) {
                 #[cfg(feature = "log")]
-                tracing::error!("Failed to unexported wayland handle {}", _err);
+                tracing::error!("Failed to unexport wayland handle {}", _err);
             }
         }
         #[cfg(feature = "feature_gtk3")]
