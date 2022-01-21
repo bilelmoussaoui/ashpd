@@ -16,7 +16,7 @@ feature_gtk3 = ["gdk3x11", "gdk3wayland", "gtk3"]
 feature_gtk4 = ["gdk4x11", "gdk4wayland", "gtk4"]
 feature_pipewire = ["pw", "libc"]
 log = ["tracing"]
-raw_handle = ["raw-window-handle"]
+raw_handle = ["raw-window-handle", "wayland-client", "wayland-protocols", "wayland-backend"]
 
 [dependencies]
 enumflags2 = "0.7"
@@ -38,3 +38,6 @@ futures = "0.3"
 tracing = {version = "0.1", optional = true}
 libc = {version = "0.2.94", optional = true}
 raw-window-handle = {version = "0.4", optional = true}
+wayland-client = {version = "0.30.0-alpha2", optional = true}
+wayland-protocols = {version = "0.30.0-alpha2", optional = true, features = ["unstable_protocols", "client"]}
+wayland-backend = {version = "0.1.0-alpha2", optional = true, features = ["client_system"]}

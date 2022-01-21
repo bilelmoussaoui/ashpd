@@ -19,7 +19,23 @@ use gtk3::{
 };
 
 #[cfg(feature = "raw_handle")]
-use raw_window_handle::{RawWindowHandle, WaylandHandle, XlibHandle};
+use raw_window_handle::RawWindowHandle;
+#[cfg(all(
+    feature = "raw_handle",
+    any(feature = "feature_gtk3", feature = "feature_gtk4")
+))]
+use raw_window_handle::{WaylandHandle, XlibHandle};
+#[cfg(feature = "raw_handle")]
+use wayland_client::{
+    protocol::{__interfaces::WL_SURFACE_INTERFACE, wl_surface::WlSurface},
+    ConnectionHandle, Proxy, QueueHandle,
+};
+#[cfg(feature = "raw_handle")]
+use wayland_protocols::unstable::xdg_foreign::v2::client::{
+    zxdg_exported_v2::{Event, ZxdgExportedV2},
+    zxdg_exporter_v2::ZxdgExporterV2,
+};
+
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
@@ -107,6 +123,11 @@ pub enum WindowIdentifier {
         // the top level window
         window: Arc<Mutex<Option<gtk3::gdk::Window>>>,
     },
+    #[cfg(feature = "raw_handle")]
+    Exported {
+        handle: String,
+        exported: ZxdgExportedV2,
+    },
     /// For Other Toolkits
     #[doc(hidden)]
     Other(String),
@@ -153,9 +174,11 @@ impl WindowIdentifier {
     pub(crate) fn inner(&self) -> &str {
         match self {
             #[cfg(feature = "feature_gtk4")]
-            Self::Gtk4 { native: _, handle } => handle,
+            Self::Gtk4 { handle, .. } => handle,
             #[cfg(feature = "feature_gtk3")]
-            Self::Gtk3 { handle, window: _ } => handle,
+            Self::Gtk3 { handle, .. } => handle,
+            #[cfg(feature = "raw_handle")]
+            Self::Exported { handle, .. } => handle,
             Self::Other(handle) => handle,
         }
     }
@@ -258,41 +281,29 @@ impl WindowIdentifier {
 
     #[cfg(feature = "raw_handle")]
     /// Create an instance of [`WindowIdentifier`] from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
-    ///
-    /// # Panics
-    ///
-    /// If the passed RawWindowHandle is not of `WaylandHandle` or `XlibHandle` type. As other platforms handles
-    /// are not supported by the portals so far.
     pub async fn form_raw_handle(handle: RawWindowHandle) -> Self {
         use raw_window_handle::RawWindowHandle::{Wayland, Xlib};
         match handle {
-            // TODO: figure out how to make use of the wl_display to export a handle with xdg-foreign protocol
-            Wayland(_wl_handle) => Self::default(),
-            Xlib(x_handle) => {
-                #[cfg(feature = "feature_gtk3")]
-                {
-                    Self::Gtk3 {
-                        handle: format!("x11:0x{:x}", x_handle.window),
-                        window: Default::default(),
-                    }
-                }
-                #[cfg(feature = "feature_gtk4")]
-                {
-                    Self::Gtk4 {
-                        handle: format!("x11:0x{:x}", x_handle.window),
-                        native: Default::default(),
-                    }
-                }
-                #[cfg(not(any(feature = "feature_gtk3", feature = "feature_gtk4")))]
-                {
+            Wayland(wl_handle) => match wayland_handle_export(wl_handle.surface) {
+                Ok((exported, handle)) => Self::Exported {
+                    exported,
+                    handle: format!("wayland:{}", handle),
+                },
+                Err(_err) => {
+                    #[cfg(feature = "log")]
+                    tracing::error!("Failed to export wayland handle {}", _err);
                     Self::default()
                 }
-            }
+            },
+            Xlib(x_handle) => Self::Other(format!("x11:0x{:x}", x_handle.window)),
             _ => Self::default(), // Fallback to default
         }
     }
 
-    #[cfg(feature = "raw_handle")]
+    #[cfg(all(
+        feature = "raw_handle",
+        any(feature = "feature_gtk3", feature = "feature_gtk4")
+    ))]
     /// Convert a [`WindowIdentifier`] to [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
     ///
     /// # Panics
@@ -410,7 +421,7 @@ impl WindowIdentifier {
 impl Drop for WindowIdentifier {
     fn drop(&mut self) {
         #[cfg(feature = "feature_gtk4")]
-        if let Self::Gtk4 { native, handle: _ } = self {
+        if let Self::Gtk4 { native, .. } = self {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@strong native => async move {
                 if let Some(native) = native.lock().await.as_ref() {
@@ -422,8 +433,15 @@ impl Drop for WindowIdentifier {
                 };
             }));
         }
+        #[cfg(feature = "raw_handle")]
+        if let Self::Exported { exported, .. } = self {
+            if let Err(_err) = wayland_handle_unexport(exported) {
+                #[cfg(feature = "log")]
+                tracing::error!("Failed to unexported wayland handle {}", _err);
+            }
+        }
         #[cfg(feature = "feature_gtk3")]
-        if let Self::Gtk3 { window, handle: _ } = self {
+        if let Self::Gtk3 { window, .. } = self {
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@strong window => async move {
                 if let Some(window) = window.lock().await.as_ref() {
@@ -435,4 +453,68 @@ impl Drop for WindowIdentifier {
             }));
         }
     }
+}
+
+#[cfg(feature = "raw_handle")]
+#[derive(Default, Debug)]
+struct ExportedWaylandHandle(String);
+
+#[cfg(feature = "raw_handle")]
+impl wayland_client::Dispatch<ZxdgExportedV2> for ExportedWaylandHandle {
+    type UserData = ();
+
+    fn event(
+        &mut self,
+        _proxy: &ZxdgExportedV2,
+        event: <ZxdgExportedV2 as Proxy>::Event,
+        _data: &Self::UserData,
+        _connhandle: &mut ConnectionHandle<'_>,
+        _qhandle: &QueueHandle<Self>,
+    ) {
+        match event {
+            Event::Handle { handle } => {
+                self.0 = handle;
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[cfg(feature = "raw_handle")]
+/// A helper to export a wayland handle from a WLSurface
+///
+/// Needed for converting a RawWindowHandle to a WindowIdentifier
+fn wayland_handle_export(
+    surface_ptr: *mut std::ffi::c_void,
+) -> Result<(ZxdgExportedV2, String), Box<dyn std::error::Error>> {
+    let cnx = wayland_client::Connection::connect_to_env()?;
+    let mut handle = cnx.handle();
+    let surface_id = unsafe {
+        wayland_backend::sys::client::ObjectId::from_ptr(
+            &WL_SURFACE_INTERFACE,
+            surface_ptr as *mut _,
+        )?
+    };
+    let surface = WlSurface::from_id(&mut handle, surface_id)?;
+
+    let exporter = ZxdgExporterV2::from_id(&mut handle, surface.id())?;
+    let mut queue = cnx.new_event_queue();
+    let mut wl_handle = ExportedWaylandHandle::default();
+
+    let queue_handle = queue.handle();
+    let exported = exporter.export_toplevel(&mut handle, &surface, &queue_handle, ())?;
+    queue.blocking_dispatch(&mut wl_handle)?;
+    Ok((exported, wl_handle.0))
+}
+
+#[cfg(feature = "raw_handle")]
+/// A helper to unexport a wayland handle from a previously exported one
+///
+/// Needed for converting a RawWindowHandle to a WindowIdentifier
+fn wayland_handle_unexport(exported: &ZxdgExportedV2) -> Result<(), Box<dyn std::error::Error>> {
+    let cnx = wayland_client::Connection::connect_to_env()?;
+    let mut handle = cnx.handle();
+    exported.destroy(&mut handle);
+
+    Ok(())
 }
