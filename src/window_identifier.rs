@@ -124,6 +124,7 @@ pub enum WindowIdentifier {
         window: Arc<Mutex<Option<gtk3::gdk::Window>>>,
     },
     #[cfg(feature = "raw_handle")]
+    #[doc(hidden)]
     Exported {
         handle: String,
         exported: ZxdgExportedV2,
