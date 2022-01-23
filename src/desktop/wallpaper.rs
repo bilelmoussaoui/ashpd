@@ -221,6 +221,7 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// See also [`SetWallpaperFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperFile).
     #[doc(alias = "SetWallpaperFile")]
+    #[doc(alias = "xdp_portal_set_wallpaper")]
     pub async fn set_wallpaper_file<F>(
         &self,
         identifier: &WindowIdentifier,
@@ -256,6 +257,7 @@ impl<'a> WallpaperProxy<'a> {
     ///
     /// See also [`SetWallpaperURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperURI).
     #[doc(alias = "SetWallpaperURI")]
+    #[doc(alias = "xdp_portal_set_wallpaper")]
     pub async fn set_wallpaper_uri(
         &self,
         identifier: &WindowIdentifier,

@@ -320,6 +320,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Notification.ActionInvoked).
     #[doc(alias = "ActionInvoked")]
+    #[doc(alias = "XdpPortal::notification-action-invoked")]
     pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
         receive_signal(self.inner(), "ActionInvoked").await
     }
@@ -339,6 +340,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// See also [`AddNotification`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Notification.AddNotification).
     #[doc(alias = "AddNotification")]
+    #[doc(alias = "xdp_portal_add_notification")]
     pub async fn add_notification(
         &self,
         id: &str,
@@ -357,6 +359,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// See also [`RemoveNotification`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Notification.RemoveNotification).
     #[doc(alias = "RemoveNotification")]
+    #[doc(alias = "xdp_portal_remove_notification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
         call_method(self.inner(), "RemoveNotification", &(id)).await
     }

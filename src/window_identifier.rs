@@ -104,6 +104,7 @@ use wayland_protocols::unstable::xdg_foreign::v2::client::{
 /// ```
 /// We would love merge requests that adds other `From<T> for WindowIdentifier`
 /// implementations for other toolkits.
+#[doc(alias = "XdpParent")]
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
     #[cfg(feature = "feature_gtk4")]
@@ -197,6 +198,7 @@ impl WindowIdentifier {
     ///
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
+    #[doc(alias = "xdp_parent_new_gtk")]
     pub async fn from_native<W: glib::IsA<gtk4::Native>>(native: &W) -> Self {
         let surface = native.surface();
         let backend = surface.display().backend();
@@ -242,6 +244,7 @@ impl WindowIdentifier {
     ///
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
+    #[doc(alias = "xdp_parent_new_gtk")]
     pub async fn from_window<W: glib::IsA<gtk3::gdk::Window>>(win: &W) -> Self {
         let backend = win.as_ref().display().backend();
         let handle = if backend.is_wayland() {

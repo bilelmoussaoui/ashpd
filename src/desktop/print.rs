@@ -684,6 +684,7 @@ impl<'a> PrintProxy<'a> {
     ///
     /// See also [`PreparePrint`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Print.PreparePrint).
     #[doc(alias = "PreparePrint")]
+    #[doc(alias = "xdp_portal_prepare_print")]
     pub async fn prepare_print(
         &self,
         identifier: &WindowIdentifier,
@@ -720,6 +721,7 @@ impl<'a> PrintProxy<'a> {
     ///
     /// See also [`Print`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Print.Print).
     #[doc(alias = "Print")]
+    #[doc(alias = "xdp_portal_print_file")]
     pub async fn print<F>(
         &self,
         identifier: &WindowIdentifier,

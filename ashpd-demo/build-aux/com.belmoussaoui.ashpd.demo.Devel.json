@@ -40,7 +40,7 @@
                 {
                     "type": "git",
                     "url": "https://gitlab.gnome.org/GNOME/libshumate/",
-                    "tag": "1.0.0.alpha.1"
+                    "commit": "b614d90100ea659e9da6710c66de81c59b4e10c4"
                 }
             ]
         },

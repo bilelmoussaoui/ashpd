@@ -193,6 +193,7 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// See also [`OpenDirectory`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenDirectory).
     #[doc(alias = "OpenDirectory")]
+    #[doc(alias = "xdp_portal_open_directory")]
     pub async fn open_directory<F>(
         &self,
         identifier: &WindowIdentifier,
@@ -262,6 +263,7 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// See also [`OpenURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenURI).
     #[doc(alias = "OpenURI")]
+    #[doc(alias = "xdp_portal_open_uri")]
     pub async fn open_uri(
         &self,
         identifier: &WindowIdentifier,

@@ -62,17 +62,23 @@ pub enum SandboxFlags {
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
+#[doc(alias = "XdpSpawnFlags")]
 /// Flags affecting the created sandbox.
 pub enum SpawnFlags {
+    #[doc(alias = "XDP_SPAWN_FLAG_CLEARENV")]
     /// Clear the environment.
     ClearEnv,
+    #[doc(alias = "XDP_SPAWN_FLAG_LATEST")]
     /// Spawn the latest version of the app.
     LatestVersion,
+    #[doc(alias = "XDP_SPAWN_FLAG_SANDBOX")]
     /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
     Sandbox,
+    #[doc(alias = "XDP_SPAWN_FLAG_NO_NETWORK")]
     /// Spawn without network (equivalent of the `unshare=network` option of
     /// `flatpak run`).
     NoNetwork,
+    #[doc(alias = "XDP_SPAWN_FLAG_WATCH")]
     /// Kill the sandbox when the caller disappears from the session bus.
     WatchBus,
     /// Expose the sandbox pids in the callers sandbox, only supported if using
@@ -259,6 +265,7 @@ impl<'a> FlatpakProxy<'a> {
     ///
     /// See also [`CreateUpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).
     #[doc(alias = "CreateUpdateMonitor")]
+    #[doc(alias = "xdp_portal_update_monitor_start")]
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let path: OwnedObjectPath =
@@ -280,6 +287,7 @@ impl<'a> FlatpakProxy<'a> {
     ///
     /// See also [`SpawnExited`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak.SpawnExited).
     #[doc(alias = "SpawnExited")]
+    #[doc(alias = "XdpPortal::spawn-exited")]
     pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
         receive_signal(self.inner(), "SpawnExited").await
     }
@@ -306,6 +314,7 @@ impl<'a> FlatpakProxy<'a> {
     ///
     /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
+    #[doc(alias = "xdp_portal_spawn")]
     pub async fn spawn<
         C: AsRef<Path> + Type + Serialize + Debug,
         S: AsRef<Path> + Type + Serialize + Debug,
@@ -357,6 +366,7 @@ impl<'a> FlatpakProxy<'a> {
     ///
     /// See also [`SpawnSignal`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.SpawnSignal).
     #[doc(alias = "SpawnSignal")]
+    #[doc(alias = "xdp_portal_spawn_signal")]
     pub async fn spawn_signal(
         &self,
         pid: u32,

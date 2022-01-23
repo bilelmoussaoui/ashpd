@@ -474,6 +474,7 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.OpenFile).
     #[doc(alias = "OpenFile")]
+    #[doc(alias = "xdp_portal_open_file")]
     pub async fn open_file(
         &self,
         identifier: &WindowIdentifier,
@@ -501,6 +502,7 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// See also [`SaveFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFile).
     #[doc(alias = "SaveFile")]
+    #[doc(alias = "xdp_portal_save_file")]
     pub async fn save_file(
         &self,
         identifier: &WindowIdentifier,
@@ -533,6 +535,7 @@ impl<'a> FileChooserProxy<'a> {
     ///
     /// See also [`SaveFiles`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFiles).
     #[doc(alias = "SaveFiles")]
+    #[doc(alias = "xdp_portal_save_files")]
     pub async fn save_files(
         &self,
         identifier: &WindowIdentifier,

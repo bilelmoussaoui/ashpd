@@ -39,18 +39,25 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Debug, Type)]
+#[doc(alias = "XdpLocationAccuracy")]
 /// The accuracy of the location.
 pub enum Accuracy {
+    #[doc(alias = "XDP_LOCATION_ACCURACY_NONE")]
     /// None.
     None = 0,
+    #[doc(alias = "XDP_LOCATION_ACCURACY_COUNTRY")]
     /// Country.
     Country = 1,
+    #[doc(alias = "XDP_LOCATION_ACCURACY_CITY")]
     /// City.
     City = 2,
+    #[doc(alias = "XDP_LOCATION_ACCURACY_NEIGHBORHOOD")]
     /// Neighborhood.
     Neighborhood = 3,
+    #[doc(alias = "XDP_LOCATION_ACCURACY_STREET")]
     /// Street.
     Street = 4,
+    #[doc(alias = "XDP_LOCATION_ACCURACY_EXACT")]
     /// The exact location.
     Exact = 5,
 }
@@ -229,6 +236,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// See also [`LocationUpdated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Location.LocationUpdated).
     #[doc(alias = "LocationUpdated")]
+    #[doc(alias = "XdpPortal::location-updated")]
     pub async fn receive_location_updated(&self) -> Result<Location, Error> {
         receive_signal(&self.0, "LocationUpdated").await
     }
@@ -284,6 +292,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Location.Start).
     #[doc(alias = "Start")]
+    #[doc(alias = "xdp_portal_location_monitor_start")]
     pub async fn start(
         &self,
         session: &SessionProxy<'_>,

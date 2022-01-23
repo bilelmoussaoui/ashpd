@@ -68,6 +68,7 @@ impl<'a> CameraProxy<'a> {
     ///
     /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.AccessCamera).
     #[doc(alias = "AccessCamera")]
+    #[doc(alias = "xdp_portal_access_camera")]
     pub async fn access_camera(&self) -> Result<(), Error> {
         let options = CameraAccessOptions::default();
         call_basic_response_method(
@@ -90,6 +91,7 @@ impl<'a> CameraProxy<'a> {
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
+    #[doc(alias = "xdp_portal_open_pipewire_remote_for_camera")]
     pub async fn open_pipe_wire_remote(&self) -> Result<RawFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/camera.c#L178
@@ -104,6 +106,7 @@ impl<'a> CameraProxy<'a> {
     ///
     /// See also [`IsCameraPresent`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-Camera.IsCameraPresent).
     #[doc(alias = "IsCameraPresent")]
+    #[doc(alias = "xdp_portal_is_camera_present")]
     pub async fn is_camera_present(&self) -> Result<bool, Error> {
         self.inner()
             .get_property::<bool>("IsCameraPresent")

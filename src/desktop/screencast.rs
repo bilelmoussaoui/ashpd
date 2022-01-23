@@ -57,12 +57,16 @@ use crate::{
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
+#[doc(alias = "XdpOutputType")]
 /// A bit flag for the available sources to record.
 pub enum SourceType {
+    #[doc(alias = "XDP_OUTPUT_MONITOR")]
     /// A monitor.
     Monitor,
+    #[doc(alias = "XDP_OUTPUT_WINDOW")]
     /// A specific window
     Window,
+    #[doc(alias = "XDP_OUTPUT_VIRTUAL")]
     /// Virtual
     Virtual,
 }
@@ -70,23 +74,31 @@ pub enum SourceType {
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type)]
 #[repr(u32)]
+#[doc(alias = "XdpCursorMode")]
 /// A bit flag for the possible cursor modes.
 pub enum CursorMode {
+    #[doc(alias = "XDP_CURSOR_MODE_HIDDEN")]
     /// The cursor is not part of the screen cast stream.
     Hidden,
+    #[doc(alias = "XDP_CURSOR_MODE_EMBEDDED")]
     /// The cursor is embedded as part of the stream buffers.
     Embedded,
+    #[doc(alias = "XDP_CURSOR_MODE_METADATA")]
     /// The cursor is not part of the screen cast stream, but sent as PipeWire
     /// stream metadata.
     Metadata,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone, Type)]
+#[doc(alias = "XdpPersistMode")]
 pub enum PersistMode {
+    #[doc(alias = "XDP_PERSIST_MODE_NONE")]
     /// Do not persist.
     DoNot = 0,
+    #[doc(alias = "XDP_PERSIST_MODE_TRANSIENT")]
     /// Persist while the application is running.
     Application = 1,
+    #[doc(alias = "XDP_PERSIST_MODE_PERSISTENT")]
     /// Persist until explicitly revoked.
     ExplicitlyRevoked = 2,
 }
@@ -277,6 +289,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.CreateSession).
     #[doc(alias = "CreateSession")]
+    #[doc(alias = "xdp_portal_create_screencast_session")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateSessionOptions::default();
         let (session, proxy) = futures::try_join!(

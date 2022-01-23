@@ -70,12 +70,16 @@ impl UpdateInfo {
 #[derive(Serialize, Deserialize, PartialEq, Copy, Clone, Debug, Type)]
 /// The update status.
 pub enum UpdateStatus {
+    #[doc(alias = "XDP_UPDATE_STATUS_RUNNING")]
     /// Running.
     Running = 0,
+    #[doc(alias = "XDP_UPDATE_STATUS_EMPTY")]
     /// No update to install.
     Empty = 1,
+    #[doc(alias = "XDP_UPDATE_STATUS_DONE")]
     /// Done.
     Done = 2,
+    #[doc(alias = "XDP_UPDATE_STATUS_FAILED")]
     /// Failed.
     Failed = 3,
 }
@@ -137,6 +141,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// See also [`Progress`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.Progress).
     #[doc(alias = "Progress")]
+    #[doc(alias = "XdpPortal::update-progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
         receive_signal(self.inner(), "Progress").await
     }
@@ -147,6 +152,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// See also [`UpdateAvailable`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.UpdateAvailable).
     #[doc(alias = "UpdateAvailable")]
+    #[doc(alias = "XdpPortal::update-available")]
     pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
         receive_signal(self.inner(), "UpdateAvailable").await
     }
@@ -160,6 +166,7 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// See also [`Update`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Update).
     #[doc(alias = "Update")]
+    #[doc(alias = "xdp_portal_update_install")]
     pub async fn update(&self, identifier: &WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
         call_method(self.inner(), "Update", &(&identifier, options)).await

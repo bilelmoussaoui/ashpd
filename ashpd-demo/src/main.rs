@@ -28,7 +28,6 @@ fn main() {
     let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load gresource file");
     gio::resources_register(&res);
 
-    
     let mut args = std::env::args();
     if args.any(|x| x == "--replace") {
         if let Err(err) = Application::stop_current_instance() {

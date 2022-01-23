@@ -78,10 +78,13 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq, Debug, Type)]
+#[doc(alias = "XdpKeyState")]
 /// The keyboard key state.
 pub enum KeyState {
+    #[doc(alias = "XDP_KEY_PRESSED")]
     /// The key is pressed.
     Pressed = 0,
+    #[doc(alias = "XDP_KEY_RELEASED")]
     /// The key is released..
     Released = 1,
 }
@@ -89,21 +92,28 @@ pub enum KeyState {
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
+#[doc(alias = "XdpDeviceType")]
 /// A bit flag for the available devices.
 pub enum DeviceType {
+    #[doc(alias = "XDP_DEVICE_KEYBOARD")]
     /// A keyboard.
     Keyboard,
+    #[doc(alias = "XDP_DEVICE_POINTER")]
     /// A mouse pointer.
     Pointer,
+    #[doc(alias = "XDP_DEVICE_TOUCHSCREEN")]
     /// A touchscreen
     Touchscreen,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
+#[doc(alias = "XdpDiscreteAxis")]
 /// The available axis.
 pub enum Axis {
+    #[doc(alias = "XDP_AXIS_VERTICAL_SCROLL")]
     /// Vertical axis.
     Vertical = 0,
+    #[doc(alias = "XDP_AXIS_HORIZONTAL_SCROLL")]
     /// Horizontal axis.
     Horizontal = 1,
 }
@@ -196,6 +206,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.CreateSession).
     #[doc(alias = "CreateSession")]
+    #[doc(alias = "xdp_portal_create_remote_desktop_session")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateRemoteOptions::default();
         let (session, proxy) = futures::try_join!(

@@ -79,14 +79,19 @@ impl InhibitOptions {
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
+#[doc(alias = "XdpInhibitFlags")]
 /// The actions to inhibit that can end the user's session
 pub enum InhibitFlags {
+    #[doc(alias = "XDP_INHIBIT_FLAG_LOGOUT")]
     /// Logout.
     Logout,
+    #[doc(alias = "XDP_INHIBIT_FLAG_USER_SWITCH")]
     /// User switch.
     UserSwitch,
+    #[doc(alias = "XDP_INHIBIT_FLAG_SUSPEND")]
     /// Suspend.
     Suspend,
+    #[doc(alias = "XDP_INHIBIT_FLAG_IDLE")]
     /// Idle.
     Idle,
 }
@@ -126,12 +131,16 @@ impl InhibitState {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy, Type)]
+#[doc(alias = "XdpLoginSessionState")]
 /// The current state of the user's session.
 pub enum SessionState {
+    #[doc(alias = "XDP_LOGIN_SESSION_RUNNING")]
     /// Running.
     Running = 1,
+    #[doc(alias = "XDP_LOGIN_SESSION_QUERY_END")]
     /// The user asked to end the session e.g logout.
     QueryEnd = 2,
+    #[doc(alias = "XDP_LOGIN_SESSION_ENDING")]
     /// The session is ending.
     Ending = 3,
 }
@@ -173,6 +182,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// See also [`CreateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Inhibit.CreateMonitor).
     #[doc(alias = "CreateMonitor")]
+    #[doc(alias = "xdp_portal_session_monitor_start")]
     pub async fn create_monitor(
         &self,
         identifier: &WindowIdentifier,
@@ -204,6 +214,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// See also [`Inhibit`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Inhibit.Inhibit).
     #[doc(alias = "Inhibit")]
+    #[doc(alias = "xdp_portal_session_inhibit")]
     pub async fn inhibit(
         &self,
         identifier: &WindowIdentifier,
@@ -226,6 +237,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.StateChanged).
     #[doc(alias = "StateChanged")]
+    #[doc(alias = "XdpPortal::session-state-changed")]
     pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
         receive_signal(self.inner(), "StateChanged").await
     }
@@ -244,6 +256,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.QueryEndResponse).
     #[doc(alias = "QueryEndResponse")]
+    #[doc(alias = "xdp_portal_session_monitor_query_end_response")]
     pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
         call_method(self.inner(), "QueryEndResponse", &(session)).await
     }

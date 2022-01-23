@@ -217,6 +217,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
     #[doc(alias = "PickColor")]
+    #[doc(alias = "xdp_portal_pick_color")]
     pub async fn pick_color(&self, identifier: &WindowIdentifier) -> Result<Color, Error> {
         let options = PickColorOptions::default();
         call_request_method(
@@ -245,6 +246,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// See also [`Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.Screenshot).
     #[doc(alias = "Screenshot")]
+    #[doc(alias = "xdp_portal_take_screenshot")]
     pub async fn screenshot(
         &self,
         identifier: &WindowIdentifier,

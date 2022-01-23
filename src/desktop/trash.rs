@@ -81,6 +81,7 @@ impl<'a> TrashProxy<'a> {
     ///
     /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Trash.TrashFile).
     #[doc(alias = "TrashFile")]
+    #[doc(alias = "xdp_portal_trash_file")]
     pub async fn trash_file<T>(&self, fd: &T) -> Result<(), Error>
     where
         T: AsRawFd,
