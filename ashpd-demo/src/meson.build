@@ -18,55 +18,35 @@ run_command(
   check: true
 )
 
-sources = files(
-  'portals/desktop/account.rs',
-  'portals/desktop/background.rs',
-  'portals/desktop/camera.rs',
-  'portals/desktop/device.rs',
-  'portals/desktop/email.rs',
-  'portals/desktop/file_chooser.rs',
-  'portals/desktop/inhibit.rs',
-  'portals/desktop/location.rs',
-  'portals/desktop/mod.rs',
-  'portals/desktop/network_monitor.rs',
-  'portals/desktop/notification.rs',
-  'portals/desktop/open_uri.rs',
-  'portals/desktop/print.rs',
-  'portals/desktop/proxy_resolver.rs',
-  'portals/desktop/remote_desktop.rs',
-  'portals/desktop/screenshot.rs',
-  'portals/desktop/screencast.rs',
-  'portals/desktop/secret.rs',
-  'portals/desktop/wallpaper.rs',
-  'portals/documents.rs',
-  'portals/mod.rs',
-  'widgets/color_widget.rs',
-  'widgets/gst_paintable.rs',
-  'widgets/mod.rs',
-  'widgets/notification.rs',
-  'widgets/portal_page.rs',
-  'widgets/sidebar_row.rs',
-  'application.rs',
-  'config.rs',
-  'main.rs',
-  'window.rs',
-)
+cargo_options = [ '--manifest-path', meson.source_root() / 'Cargo.toml' ]
+cargo_options += [ '--target-dir', meson.build_root() / 'src' ]
 
-custom_target(
+if get_option('profile') == 'default'
+  cargo_options += [ '--release' ]
+  rust_target = 'release'
+  message('Building in release mode')
+else
+  rust_target = 'debug'
+  message('Building in debug mode')
+endif
+
+cargo_env = [ 'CARGO_HOME=' + meson.build_root() / 'cargo-home' ]
+
+cargo_build = custom_target(
   'cargo-build',
   build_by_default: true,
-  input: sources,
+  build_always_stale: true,
   output: meson.project_name(),
   console: true,
   install: true,
   install_dir: bindir,
   depends: resources,
   command: [
-    cargo_script,
-    meson.build_root(),
-    meson.source_root(),
-    '@OUTPUT@',
-    profile,
-    meson.project_name(),
+    'env',
+    cargo_env,
+    cargo, 'build',
+    cargo_options,
+    '&&',
+    'cp', 'src' / rust_target / meson.project_name(), '@OUTPUT@',
   ]
 )

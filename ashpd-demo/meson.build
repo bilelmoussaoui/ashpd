@@ -19,7 +19,6 @@ glib_compile_schemas = find_program('glib-compile-schemas', required: true)
 desktop_file_validate = find_program('desktop-file-validate', required: false)
 appstream_util = find_program('appstream-util', required: false)
 cargo = find_program('cargo', required: true)
-cargo_script = find_program('build-aux/cargo.sh')
 
 version = meson.project_version()
 version_array = version.split('.')
