@@ -54,3 +54,12 @@ pub async fn run() -> ashpd::Result<()> {
 |  | Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) |
 | feature_pipewire | Provides `ashpd::desktop::camera::pipewire_node_id` that helps you retrieve the PipeWire Node ID to use with the file descriptor returned by the camera portal |
 | raw_handle | Provides `WindowIdentifier::from_raw_handle` and `WindowIdentifier::as_raw_handle` for [raw-window-handle](https://lib.rs/crates/raw-window-handle) crate |
+
+
+## Demo
+
+The library comes with a [demo](./ashpd-demo) built using the [GTK 4 Rust bindings](https://gtk-rs.org/gtk4-rs) and previews most of the portals. It is meant as a test case for the portals (from a distributor perspective) and as a way for the developers to see which portals exists and how to integrate them into their application using ASHPD.
+
+<a href="https://flathub.org/apps/details/com.belmoussaoui.ashpd.demo">
+<img src="https://flathub.org/assets/badges/flathub-badge-i-en.png" width="190px" />
+</a>
