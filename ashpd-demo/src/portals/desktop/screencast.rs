@@ -160,7 +160,7 @@ impl ScreenCastPage {
                         .hexpand(true)
                         .vexpand(true)
                         .build();
-                    paintable.set_pipewire_node_id(fd, stream.pipe_wire_node_id());
+                    paintable.set_pipewire_node_id(fd, Some(stream.pipe_wire_node_id()));
                     imp.streams_carousel.append(&picture);
                 });
 
