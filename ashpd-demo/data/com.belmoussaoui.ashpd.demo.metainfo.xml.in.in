@@ -25,6 +25,7 @@
   <url type="bugtracker">https://github.com/bilelmoussaoui/ashpd/issues</url>
   <content_rating type="oars-1.0" />
   <releases>
+    <release version="0.0.2" date="2022-01-25" />
     <release version="0.0.1" date="2021-10-06" />
   </releases>
   <kudos>
