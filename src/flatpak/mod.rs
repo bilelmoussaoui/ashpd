@@ -140,10 +140,7 @@ impl SpawnOptions {
     /// Sets the list of filenames for files to expose the new sandbox.
     /// **Note** absolute paths or subdirectories are not allowed.
     #[must_use]
-    pub fn sandbox_expose<S: AsRef<str> + Type + Serialize>(
-        mut self,
-        sandbox_expose: &[S],
-    ) -> Self {
+    pub fn sandbox_expose(mut self, sandbox_expose: &[impl AsRef<str> + Type + Serialize]) -> Self {
         self.sandbox_expose = Some(
             sandbox_expose
                 .iter()
@@ -157,9 +154,9 @@ impl SpawnOptions {
     /// read-only.
     /// **Note** absolute paths or subdirectories are not allowed.
     #[must_use]
-    pub fn sandbox_expose_ro<S: AsRef<str> + Type + Serialize>(
+    pub fn sandbox_expose_ro(
         mut self,
-        sandbox_expose_ro: &[S],
+        sandbox_expose_ro: &[impl AsRef<str> + Type + Serialize],
     ) -> Self {
         self.sandbox_expose_ro = Some(
             sandbox_expose_ro
@@ -172,7 +169,7 @@ impl SpawnOptions {
 
     /// Sets the list of file descriptors of files to expose the new sandbox.
     #[must_use]
-    pub fn sandbox_expose_fd<F: AsRawFd>(mut self, sandbox_expose_fd: &[&F]) -> Self {
+    pub fn sandbox_expose_fd(mut self, sandbox_expose_fd: &[&impl AsRawFd]) -> Self {
         self.sandbox_expose_fd = Some(
             sandbox_expose_fd
                 .iter()
@@ -185,7 +182,7 @@ impl SpawnOptions {
     /// Sets the list of file descriptors of files to expose the new sandbox,
     /// read-only.
     #[must_use]
-    pub fn sandbox_expose_fd_ro<F: AsRawFd>(mut self, sandbox_expose_fd_ro: &[&F]) -> Self {
+    pub fn sandbox_expose_fd_ro(mut self, sandbox_expose_fd_ro: &[&impl AsRawFd]) -> Self {
         self.sandbox_expose_fd_ro = Some(
             sandbox_expose_fd_ro
                 .iter()
@@ -211,14 +208,14 @@ impl SpawnOptions {
 
     /// Set a file descriptor of the directory that  will be used as `/usr` in the new sandbox.
     #[must_use]
-    pub fn usr_fd<F: AsRawFd>(mut self, fd: F) -> Self {
+    pub fn usr_fd(mut self, fd: impl AsRawFd) -> Self {
         self.usr_fd = Some(fd.as_raw_fd());
         self
     }
 
     /// Set a file descriptor of the directory that  will be used as `/app` in the new sandbox.
     #[must_use]
-    pub fn app_fd<F: AsRawFd>(mut self, fd: F) -> Self {
+    pub fn app_fd(mut self, fd: impl AsRawFd) -> Self {
         self.app_fd = Some(fd.as_raw_fd());
         self
     }
@@ -315,13 +312,10 @@ impl<'a> FlatpakProxy<'a> {
     /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
     #[doc(alias = "xdp_portal_spawn")]
-    pub async fn spawn<
-        C: AsRef<Path> + Type + Serialize + Debug,
-        S: AsRef<Path> + Type + Serialize + Debug,
-    >(
+    pub async fn spawn(
         &self,
-        cwd_path: C,
-        argv: &[S],
+        cwd_path: (impl AsRef<Path> + Type + Serialize + Debug),
+        argv: &[impl AsRef<Path> + Type + Serialize + Debug],
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,

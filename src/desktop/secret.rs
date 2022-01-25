@@ -76,9 +76,9 @@ impl<'a> SecretProxy<'a> {
     /// * `token` -  A string returned by a previous call to
     ///   [`retrieve_secret()`][`SecretProxy::retrieve_secret`].
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve_secret<F: AsRawFd>(
+    pub async fn retrieve_secret(
         &self,
-        fd: &F,
+        fd: &impl AsRawFd,
         token: Option<&str>,
     ) -> Result<String, Error> {
         let options = if let Some(token) = token {

@@ -222,16 +222,13 @@ impl<'a> WallpaperProxy<'a> {
     /// See also [`SetWallpaperFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperFile).
     #[doc(alias = "SetWallpaperFile")]
     #[doc(alias = "xdp_portal_set_wallpaper")]
-    pub async fn set_wallpaper_file<F>(
+    pub async fn set_wallpaper_file(
         &self,
         identifier: &WindowIdentifier,
-        file: &F,
+        file: &impl AsRawFd,
         show_preview: bool,
         set_on: SetOn,
-    ) -> Result<(), Error>
-    where
-        F: AsRawFd,
-    {
+    ) -> Result<(), Error> {
         let options = WallpaperOptions::default()
             .show_preview(show_preview)
             .set_on(set_on);
@@ -296,9 +293,9 @@ pub async fn set_from_uri(
 
 #[doc(alias = "xdp_portal_set_wallpaper")]
 /// A handy wrapper around [`WallpaperProxy::set_wallpaper_file`].
-pub async fn set_from_file<F: AsRawFd>(
+pub async fn set_from_file(
     identifier: &WindowIdentifier,
-    file: &F,
+    file: &impl AsRawFd,
     show_preview: bool,
     set_on: SetOn,
 ) -> Result<(), Error> {

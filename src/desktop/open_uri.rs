@@ -194,14 +194,11 @@ impl<'a> OpenURIProxy<'a> {
     /// See also [`OpenDirectory`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenDirectory).
     #[doc(alias = "OpenDirectory")]
     #[doc(alias = "xdp_portal_open_directory")]
-    pub async fn open_directory<F>(
+    pub async fn open_directory(
         &self,
         identifier: &WindowIdentifier,
-        directory: &F,
-    ) -> Result<(), Error>
-    where
-        F: AsRawFd,
-    {
+        directory: &impl AsRawFd,
+    ) -> Result<(), Error> {
         let options = OpenDirOptions::default();
         call_basic_response_method(
             self.inner(),
@@ -226,16 +223,13 @@ impl<'a> OpenURIProxy<'a> {
     ///
     /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-OpenURI.OpenFile).
     #[doc(alias = "OpenFile")]
-    pub async fn open_file<F>(
+    pub async fn open_file(
         &self,
         identifier: &WindowIdentifier,
-        file: &F,
+        file: &impl AsRawFd,
         writeable: bool,
         ask: bool,
-    ) -> Result<(), Error>
-    where
-        F: AsRawFd,
-    {
+    ) -> Result<(), Error> {
         let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             self.inner(),
@@ -297,9 +291,9 @@ pub async fn open_uri(
 }
 
 /// A handy wrapper around [`OpenURIProxy::open_file`].
-pub async fn open_file<F: AsRawFd>(
+pub async fn open_file(
     identifier: &WindowIdentifier,
-    file: &F,
+    file: &impl AsRawFd,
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
@@ -311,9 +305,9 @@ pub async fn open_file<F: AsRawFd>(
 
 #[doc(alias = "xdp_portal_open_directory")]
 /// A handy wrapper around [`OpenURIProxy::open_directory`].
-pub async fn open_directory<F: AsRawFd>(
+pub async fn open_directory(
     identifier: &WindowIdentifier,
-    directory: &F,
+    directory: &impl AsRawFd,
 ) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = OpenURIProxy::new(&connection).await?;

@@ -293,7 +293,7 @@ impl<'a> ScreenCastProxy<'a> {
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateSessionOptions::default();
         let (session, proxy) = futures::try_join!(
-            call_request_method::<CreateSession, CreateSessionOptions>(
+            call_request_method::<CreateSession, _>(
                 self.inner(),
                 &options.handle_token,
                 "CreateSession",

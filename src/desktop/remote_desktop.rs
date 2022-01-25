@@ -210,7 +210,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateRemoteOptions::default();
         let (session, proxy) = futures::try_join!(
-            call_request_method::<CreateSession, CreateRemoteOptions>(
+            call_request_method::<CreateSession, _>(
                 self.inner(),
                 &options.handle_token,
                 "CreateSession",

@@ -124,9 +124,9 @@ impl<'a> SettingsProxy<'a> {
     ///
     /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Settings.ReadAll).
     #[doc(alias = "ReadAll")]
-    pub async fn read_all<S: AsRef<str> + Type + Serialize + Debug>(
+    pub async fn read_all(
         &self,
-        namespaces: &[S],
+        namespaces: &[impl AsRef<str> + Type + Serialize + Debug],
     ) -> Result<HashMap<String, Namespace>, Error> {
         call_method(self.inner(), "ReadAll", &(namespaces)).await
     }

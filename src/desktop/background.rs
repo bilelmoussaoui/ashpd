@@ -95,7 +95,7 @@ impl BackgroundOptions {
     /// Specifies the command line to execute.
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    pub fn command<S: AsRef<str> + Type + Serialize>(mut self, command: Option<&[S]>) -> Self {
+    pub fn command(mut self, command: Option<&[impl AsRef<str> + Type + Serialize]>) -> Self {
         self.command = command.map(|s| s.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
@@ -166,12 +166,12 @@ impl<'a> BackgroundProxy<'a> {
     ///
     /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
     #[doc(alias = "RequestBackground")]
-    pub async fn request_background<S: AsRef<str> + Type + Serialize>(
+    pub async fn request_background(
         &self,
         identifier: &WindowIdentifier,
         reason: &str,
         auto_start: bool,
-        command_line: Option<&[S]>,
+        command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
         dbus_activatable: bool,
     ) -> Result<Background, Error> {
         let options = BackgroundOptions::default()
@@ -191,11 +191,11 @@ impl<'a> BackgroundProxy<'a> {
 
 #[doc(alias = "xdp_portal_request_background")]
 /// A handy wrapper around [`BackgroundProxy::request_background`].
-pub async fn request<S: AsRef<str> + Type + Serialize>(
+pub async fn request(
     identifier: &WindowIdentifier,
     reason: &str,
     auto_start: bool,
-    command_line: Option<&[S]>,
+    command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
     dbus_activatable: bool,
 ) -> Result<Background, Error> {
     let connection = zbus::Connection::session().await?;

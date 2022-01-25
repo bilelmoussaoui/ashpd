@@ -71,16 +71,13 @@ where
     Ok(response)
 }
 
-pub(crate) async fn call_basic_response_method<B>(
+pub(crate) async fn call_basic_response_method(
     proxy: &zbus::Proxy<'_>,
     handle_token: &HandleToken,
     method_name: &str,
-    body: &B,
-) -> Result<(), Error>
-where
-    B: serde::ser::Serialize + Type + Debug,
-{
-    call_request_method::<BasicResponse, B>(proxy, handle_token, method_name, body).await?;
+    body: &(impl serde::ser::Serialize + Type + Debug),
+) -> Result<(), Error> {
+    call_request_method::<BasicResponse, _>(proxy, handle_token, method_name, body).await?;
     Ok(())
 }
 

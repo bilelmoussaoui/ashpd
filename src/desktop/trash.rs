@@ -82,10 +82,7 @@ impl<'a> TrashProxy<'a> {
     /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Trash.TrashFile).
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
-    pub async fn trash_file<T>(&self, fd: &T) -> Result<(), Error>
-    where
-        T: AsRawFd,
-    {
+    pub async fn trash_file(&self, fd: &impl AsRawFd) -> Result<(), Error> {
         let status = call_method(self.inner(), "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
@@ -96,7 +93,7 @@ impl<'a> TrashProxy<'a> {
 
 #[doc(alias = "xdp_portal_trash_file")]
 /// A handy wrapper around [`TrashProxy::trash_file`].
-pub async fn trash_file<F: AsRawFd>(fd: &F) -> Result<(), Error> {
+pub async fn trash_file(fd: &impl AsRawFd) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = TrashProxy::new(&connection).await?;
     proxy.trash_file(fd).await

@@ -199,7 +199,7 @@ impl WindowIdentifier {
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     #[doc(alias = "xdp_parent_new_gtk")]
-    pub async fn from_native<W: glib::IsA<gtk4::Native>>(native: &W) -> Self {
+    pub async fn from_native(native: &impl glib::IsA<gtk4::Native>) -> Self {
         let surface = native.surface();
         let backend = surface.display().backend();
         let handle = if backend.is_wayland() {
@@ -245,7 +245,7 @@ impl WindowIdentifier {
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     #[doc(alias = "xdp_parent_new_gtk")]
-    pub async fn from_window<W: glib::IsA<gtk3::gdk::Window>>(win: &W) -> Self {
+    pub async fn from_window(win: &impl glib::IsA<gtk3::gdk::Window>) -> Self {
         let backend = win.as_ref().display().backend();
         let handle = if backend.is_wayland() {
             let (sender, receiver) = futures::channel::oneshot::channel::<String>();

@@ -119,15 +119,11 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// See also [`QueryStatusByPIDFd`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.QueryStatusByPIDFd).
     #[doc(alias = "QueryStatusByPIDFd")]
-    pub async fn query_status_by_pidfd<F, R>(
+    pub async fn query_status_by_pidfd(
         &self,
-        target: &F,
-        requester: &R,
-    ) -> Result<Status, Error>
-    where
-        F: AsRawFd,
-        R: AsRawFd,
-    {
+        target: &impl AsRawFd,
+        requester: &impl AsRawFd,
+    ) -> Result<Status, Error> {
         call_method(
             self.inner(),
             "QueryStatusByPIDFd",
@@ -188,11 +184,11 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// See also [`RegisterGameByPIDFd`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.RegisterGameByPIDFd).
     #[doc(alias = "RegisterGameByPIDFd")]
-    pub async fn register_game_by_pidfd<F, R>(&self, target: &F, requester: &R) -> Result<(), Error>
-    where
-        F: AsRawFd,
-        R: AsRawFd,
-    {
+    pub async fn register_game_by_pidfd(
+        &self,
+        target: &impl AsRawFd,
+        requester: &impl AsRawFd,
+    ) -> Result<(), Error> {
         let status = call_method(
             self.inner(),
             "RegisterGameByPIDFd",
@@ -261,15 +257,11 @@ impl<'a> GameModeProxy<'a> {
     ///
     /// See also [`UnregisterGameByPIDFd`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GameMode.UnregisterGameByPIDFd).
     #[doc(alias = "UnregisterGameByPIDFd")]
-    pub async fn unregister_game_by_pidfd<F, R>(
+    pub async fn unregister_game_by_pidfd(
         &self,
-        target: &F,
-        requester: &R,
-    ) -> Result<(), Error>
-    where
-        F: AsRawFd,
-        R: AsRawFd,
-    {
+        target: &impl AsRawFd,
+        requester: &impl AsRawFd,
+    ) -> Result<(), Error> {
         let status = call_method(
             self.inner(),
             "UnregisterGameByPIDFd",

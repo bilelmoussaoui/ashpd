@@ -230,15 +230,12 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Add`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Add).
     #[doc(alias = "Add")]
-    pub async fn add<F>(
+    pub async fn add(
         &self,
-        o_path_fd: &F,
+        o_path_fd: &(impl AsRawFd + fmt::Debug),
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<OwnedDocumentID, Error>
-    where
-        F: AsRawFd + fmt::Debug,
-    {
+    ) -> Result<OwnedDocumentID, Error> {
         call_method(
             self.inner(),
             "Add",
@@ -266,9 +263,9 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`AddFull`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.AddFull).
     #[doc(alias = "AddFull")]
-    pub async fn add_full<F: AsRawFd>(
+    pub async fn add_full(
         &self,
-        o_path_fds: &[&F],
+        o_path_fds: &[&impl AsRawFd],
         flags: BitFlags<Flags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
@@ -301,17 +298,13 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`AddNamed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.AddNamed).
     #[doc(alias = "AddNamed")]
-    pub async fn add_named<F, P>(
+    pub async fn add_named(
         &self,
-        o_path_parent_fd: &F,
-        filename: P,
+        o_path_parent_fd: &(impl AsRawFd + fmt::Debug),
+        filename: (impl AsRef<Path> + Serialize + Type + fmt::Debug),
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<OwnedDocumentID, Error>
-    where
-        F: AsRawFd + fmt::Debug,
-        P: AsRef<Path> + Serialize + Type + fmt::Debug,
-    {
+    ) -> Result<OwnedDocumentID, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         call_method(
@@ -347,18 +340,14 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`AddNamedFull`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.AddNamedFull).
     #[doc(alias = "AddNamedFull")]
-    pub async fn add_named_full<F, P>(
+    pub async fn add_named_full(
         &self,
-        o_path_fd: &F,
-        filename: P,
+        o_path_fd: &(impl AsRawFd + fmt::Debug),
+        filename: (impl AsRef<Path> + Serialize + Type + fmt::Debug),
         flags: BitFlags<Flags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
-    ) -> Result<(OwnedDocumentID, HashMap<String, OwnedValue>), Error>
-    where
-        F: AsRawFd + fmt::Debug,
-        P: AsRef<Path> + Serialize + Type + fmt::Debug,
-    {
+    ) -> Result<(OwnedDocumentID, HashMap<String, OwnedValue>), Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         call_method(
@@ -510,9 +499,9 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup<P: AsRef<Path> + Serialize + Type + fmt::Debug>(
+    pub async fn lookup(
         &self,
-        filename: P,
+        filename: (impl AsRef<Path> + Serialize + Type + fmt::Debug),
     ) -> Result<Option<OwnedDocumentID>, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");

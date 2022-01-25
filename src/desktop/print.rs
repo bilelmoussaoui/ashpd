@@ -722,17 +722,14 @@ impl<'a> PrintProxy<'a> {
     /// See also [`Print`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Print.Print).
     #[doc(alias = "Print")]
     #[doc(alias = "xdp_portal_print_file")]
-    pub async fn print<F>(
+    pub async fn print(
         &self,
         identifier: &WindowIdentifier,
         title: &str,
-        fd: &F,
+        fd: &impl AsRawFd,
         token: Option<u32>,
         modal: bool,
-    ) -> Result<(), Error>
-    where
-        F: AsRawFd,
-    {
+    ) -> Result<(), Error> {
         let options = PrintOptions::default()
             .token(token.unwrap_or(0))
             .modal(modal);

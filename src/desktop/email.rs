@@ -98,37 +98,37 @@ impl Email {
 
     /// Similar to `set_addresses`.
     #[must_use]
-    pub fn addresses<S: AsRef<str> + Type + Serialize>(mut self, addresses: &[S]) -> Self {
+    pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
         self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to send the email to.
-    pub fn set_addresses<S: AsRef<str> + Type + Serialize>(&mut self, addresses: &[S]) {
+    pub fn set_addresses(&mut self, addresses: &[impl AsRef<str> + Type + Serialize]) {
         self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
     }
 
     /// Sets a list of email addresses to BCC.
     #[must_use]
-    pub fn bcc<S: AsRef<str> + Type + Serialize>(mut self, bcc: &[S]) -> Self {
+    pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
         self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to BCC.
-    pub fn set_bcc<S: AsRef<str> + Type + Serialize>(&mut self, bcc: &[S]) {
+    pub fn set_bcc(&mut self, bcc: &[impl AsRef<str> + Type + Serialize]) {
         self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
     }
 
     /// Sets a list of email addresses to CC.
     #[must_use]
-    pub fn cc<S: AsRef<str> + Type + Serialize>(mut self, cc: &[S]) -> Self {
+    pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
         self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
         self
     }
 
     /// Sets a list of email addresses to CC.
-    pub fn set_cc<S: AsRef<str> + Type + Serialize>(&mut self, cc: &[S]) {
+    pub fn set_cc(&mut self, cc: &[impl AsRef<str> + Type + Serialize]) {
         self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
     }
 
@@ -158,7 +158,7 @@ impl Email {
 
     /// Attaches a file to the email.
     #[must_use]
-    pub fn attach<F: AsRawFd>(mut self, attachment: &F) -> Self {
+    pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
         let attachment = Fd::from(attachment.as_raw_fd());
         match self.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),
