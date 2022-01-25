@@ -122,11 +122,11 @@ impl<'a> CameraProxy<'a> {
 /// may cause the media session controller to auto-connect the client to an incorrect node.
 ///
 /// The method looks for the available output streams of a `media.role` type of `Camera`
-/// and return their Node ID.
+/// and return their Node ID if it found any.
 ///
 /// *Note* The socket referenced by `fd` must not be used while this function is running.
 #[cfg(feature = "feature_pipewire")]
-pub async fn pipewire_node_id(fd: RawFd) -> Result<u32, pw::Error> {
+pub async fn pipewire_node_id(fd: RawFd) -> Result<Option<u32>, pw::Error> {
     let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
 
     if fd == -1 {
@@ -141,7 +141,7 @@ pub async fn pipewire_node_id(fd: RawFd) -> Result<u32, pw::Error> {
         if let Err(err) = pipewire_node_id_inner(fd, move |node_id| {
             if let Ok(mut guard) = inner_sender.lock() {
                 if let Some(inner_sender) = guard.take() {
-                    let _result = inner_sender.send(Ok(node_id));
+                    let _result = inner_sender.send(Ok(Some(node_id)));
                 }
             }
         }) {
@@ -150,6 +150,13 @@ pub async fn pipewire_node_id(fd: RawFd) -> Result<u32, pw::Error> {
             let mut guard = sender.lock().unwrap();
             if let Some(sender) = guard.take() {
                 let _ = sender.send(Err(err));
+            }
+        } else {
+            #[cfg(feature = "log")]
+            tracing::info!("Couldn't find any Node ID");
+            let mut guard = sender.lock().unwrap();
+            if let Some(sender) = guard.take() {
+                let _ = sender.send(Ok(None));
             }
         }
     });
