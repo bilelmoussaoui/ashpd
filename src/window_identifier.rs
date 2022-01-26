@@ -285,7 +285,7 @@ impl WindowIdentifier {
     /// Create an instance of [`WindowIdentifier`] from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
-    pub fn form_raw_handle(handle: &RawWindowHandle) -> Self {
+    pub fn from_raw_handle(handle: &RawWindowHandle) -> Self {
         use RawWindowHandle::{Wayland, Xlib};
         match handle {
             Wayland(wl_handle) => match wayland_handle_export(wl_handle.surface) {
