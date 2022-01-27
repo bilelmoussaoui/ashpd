@@ -135,6 +135,9 @@ pub enum WindowIdentifier {
     Other(String),
 }
 
+#[cfg(any(feature = "feature_gtk4", feature = "feature_gtk3"))]
+static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-window-handle";
+
 unsafe impl Send for WindowIdentifier {}
 unsafe impl Sync for WindowIdentifier {}
 
@@ -209,17 +212,26 @@ impl WindowIdentifier {
             let top_level = surface
                 .downcast_ref::<gdk4wayland::WaylandToplevel>()
                 .unwrap();
-
-            top_level.export_handle(clone!(@strong sender => move |_, handle| {
-                let wayland_handle = format!("wayland:{}", handle);
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
-                    if let Some(m) = sender.lock().await.take() {
-                        let _ = m.send(wayland_handle);
-                    }
-                }));
-            }));
-            receiver.await.ok()
+            unsafe {
+                if let Some(mut handle) = top_level.data(WINDOW_HANDLE_KEY) {
+                    let (handle, ref_count): &mut (Option<String>, u8) = handle.as_mut();
+                    *ref_count += 1;
+                    handle.clone()
+                } else {
+                    top_level.export_handle(clone!(@strong sender => move |_, handle| {
+                        let wayland_handle = format!("wayland:{}", handle);
+                        let ctx = glib::MainContext::default();
+                        ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
+                            if let Some(m) = sender.lock().await.take() {
+                                let _ = m.send(wayland_handle);
+                            }
+                        }));
+                    }));
+                    let handle = receiver.await.ok();
+                    top_level.set_data(WINDOW_HANDLE_KEY, (handle.clone(), 1));
+                    handle
+                }
+            }
         } else if backend.is_x11() {
             surface
                 .downcast_ref::<gdk4x11::X11Surface>()
@@ -254,16 +266,27 @@ impl WindowIdentifier {
                 .as_ref()
                 .downcast_ref::<gdk3wayland::WaylandWindow>()
                 .unwrap();
-            wayland_win.export_handle(clone!(@strong sender => move |_, handle| {
-                let wayland_handle = format!("wayland:{}", handle);
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
-                    if let Some(m) = sender.lock().await.take() {
-                        let _ = m.send(wayland_handle);
-                    }
-                }));
-            }));
-            receiver.await.ok()
+            unsafe {
+                if let Some(mut handle) = wayland_win.data(WINDOW_HANDLE_KEY) {
+                    let (handle, ref_count): &mut (Option<String>, u8) = handle.as_mut();
+                    *ref_count += 1;
+                    handle.clone()
+                } else {
+                    wayland_win.export_handle(clone!(@strong sender => move |_, handle| {
+                        let wayland_handle = format!("wayland:{}", handle);
+                        let ctx = glib::MainContext::default();
+                        ctx.spawn_local(clone!(@strong sender, @strong wayland_handle => async move {
+                            if let Some(m) = sender.lock().await.take() {
+                                let _ = m.send(wayland_handle);
+                            }
+                        }));
+                    }));
+
+                    let handle = receiver.await.ok();
+                    wayland_win.set_data(WINDOW_HANDLE_KEY, (handle.clone(), 1));
+                    handle
+                }
+            }
         } else if backend.is_x11() {
             win.as_ref()
                 .downcast_ref::<gdk3x11::X11Window>()
@@ -432,7 +455,15 @@ impl Drop for WindowIdentifier {
                     let surface = native.surface();
                     if surface.display().backend().is_wayland() {
                         let top_level = surface.downcast_ref::<gdk4wayland::WaylandToplevel>().unwrap();
-                        top_level.unexport_handle();
+                        unsafe {
+                            let (_handle, ref_count): &mut(Option<String>, u8) = top_level.data(WINDOW_HANDLE_KEY).unwrap().as_mut();
+                            if ref_count > &mut 1 {
+                                *ref_count -= 1;
+                                return;
+                            }
+                            top_level.unexport_handle();
+                            let _ = top_level.steal_data::<(Option<String>, u8)>(WINDOW_HANDLE_KEY);
+                        }
                     }
                 };
             }));
@@ -447,11 +478,22 @@ impl Drop for WindowIdentifier {
         #[cfg(feature = "feature_gtk3")]
         if let Self::Gtk3 { window, .. } = self {
             let ctx = glib::MainContext::default();
+
             ctx.spawn_local(clone!(@strong window => async move {
                 if let Some(window) = window.lock().await.as_ref() {
-                    if window.display().backend().is_wayland() {
-                        let wayland_win = window.downcast_ref::<gdk3wayland::WaylandWindow>().unwrap();
-                        wayland_win.unexport_handle();
+                    unsafe {
+                        if window.display().backend().is_wayland() {
+                            let wayland_win = window.downcast_ref::<gdk3wayland::WaylandWindow>().unwrap();
+
+                            let (_handle, ref_count): &mut(Option<String>, u8) = wayland_win.data(WINDOW_HANDLE_KEY).unwrap().as_mut();
+                            if ref_count > &mut 1 {
+                                *ref_count -= 1;
+                                return;
+                            }
+                            wayland_win.unexport_handle();
+                            let _ = wayland_win.steal_data::<(Option<String>, u8)>(WINDOW_HANDLE_KEY);
+
+                        }
                     }
                 }
             }));
