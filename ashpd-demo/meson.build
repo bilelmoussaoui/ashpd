@@ -1,6 +1,6 @@
 project('ashpd-demo',
   'rust',
-  version: '0.2.0',
+  version: '0.2.1',
   license: 'MIT',
   meson_version: '>= 0.59'
 )
@@ -22,10 +22,6 @@ appstream_util = find_program('appstream-util', required: false)
 cargo = find_program('cargo', required: true)
 
 version = meson.project_version()
-version_array = version.split('.')
-major_version = version_array[0].to_int()
-minor_version = version_array[1].to_int()
-version_micro = version_array[2].to_int()
 
 prefix = get_option('prefix')
 bindir = prefix / get_option('bindir')
