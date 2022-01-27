@@ -23,5 +23,5 @@ package = "libshumate"
 version = "0.1.0-alpha.4"
 
 [dependencies.ashpd]
-version = "0.2.0"
+version = "0.2.2"
 features = ["feature_gtk4", "feature_pipewire", "log"]
