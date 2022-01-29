@@ -9,7 +9,7 @@ use gtk::{
 use tracing::warn;
 
 use crate::application::Application;
-use crate::config::APP_ID;
+use crate::config;
 use crate::portals::desktop::{
     AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
     LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage,
@@ -99,7 +99,7 @@ mod imp {
                 remote_desktop: TemplateChild::default(),
                 print: TemplateChild::default(),
                 color_scheme_btn: TemplateChild::default(),
-                settings: gio::Settings::new(APP_ID),
+                settings: gio::Settings::new(config::APP_ID),
             }
         }
 
@@ -121,6 +121,10 @@ mod imp {
     impl ObjectImpl for ApplicationWindow {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
+            if config::PROFILE == "Devel" {
+                obj.add_css_class("devel");
+            }
+
             // Add pages based on whether the app is sandboxed
             if ashpd::is_sandboxed() {
                 self.sidebar
