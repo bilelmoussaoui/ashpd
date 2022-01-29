@@ -81,6 +81,7 @@ mod imp {
         }
 
         fn startup(&self, app: &Self::Type) {
+            self.parent_startup(app);
             debug!("Application::startup");
             // Set icons for shell
             gtk::Window::set_default_icon_name(config::APP_ID);
@@ -91,7 +92,6 @@ mod imp {
                 }),
             );
             app.update_color_scheme();
-            self.parent_startup(app);
         }
     }
 

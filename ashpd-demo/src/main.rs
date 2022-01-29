@@ -20,7 +20,6 @@ fn main() {
     textdomain(GETTEXT_PACKAGE).unwrap();
 
     gtk::glib::set_application_name(&gettext("ASHPD Demo"));
-    gtk::init().expect("Unable to start GTK4");
     gst::init().expect("Unable to init gstreamer");
 
     gst4gtk::plugin_register_static().expect("Failed to register gstgtk4 plugin");
