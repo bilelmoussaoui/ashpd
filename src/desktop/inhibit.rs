@@ -130,8 +130,9 @@ impl InhibitState {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[doc(alias = "XdpLoginSessionState")]
+#[repr(u8)]
 /// The current state of the user's session.
 pub enum SessionState {
     #[doc(alias = "XDP_LOGIN_SESSION_RUNNING")]

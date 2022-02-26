@@ -91,6 +91,7 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::ffi::OsStrExt;
 use std::{ffi::CString, path::Path};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
@@ -103,7 +104,8 @@ use crate::{helpers::call_request_method, Error, WindowIdentifier};
 /// pattern.
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
-#[derive(Serialize, Clone, Deserialize, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Debug, Type)]
+#[repr(u8)]
 enum FilterType {
     GlobPattern = 0,
     MimeType = 1,

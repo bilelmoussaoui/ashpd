@@ -22,7 +22,7 @@
 //! }
 //! ```
 
-use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
 use super::DESTINATION;
@@ -67,7 +67,8 @@ impl UpdateInfo {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[repr(u8)]
 /// The update status.
 pub enum UpdateStatus {
     #[doc(alias = "XDP_UPDATE_STATUS_RUNNING")]

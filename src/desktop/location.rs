@@ -30,6 +30,7 @@ use std::fmt::Debug;
 
 use futures::TryFutureExt;
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
@@ -38,8 +39,9 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Debug, Type)]
 #[doc(alias = "XdpLocationAccuracy")]
+#[repr(u8)]
 /// The accuracy of the location.
 pub enum Accuracy {
     #[doc(alias = "XDP_LOCATION_ACCURACY_NONE")]

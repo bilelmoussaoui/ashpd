@@ -89,8 +89,9 @@ pub enum CursorMode {
     Metadata,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
+#[repr(u8)]
 pub enum PersistMode {
     #[doc(alias = "XDP_PERSIST_MODE_NONE")]
     /// Do not persist.

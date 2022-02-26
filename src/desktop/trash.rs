@@ -30,14 +30,15 @@
 
 use std::os::unix::io::AsRawFd;
 
-use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{error::PortalError, helpers::call_method, Error};
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Hash, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 /// The status of moving a file to the trash.
+#[repr(u8)]
 enum TrashStatus {
     /// Moving the file to the trash failed.
     Failed = 0,
@@ -97,4 +98,25 @@ pub async fn trash_file(fd: &impl AsRawFd) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = TrashProxy::new(&connection).await?;
     proxy.trash_file(fd).await
+}
+
+#[cfg(test)]
+mod test {
+    use super::TrashStatus;
+
+    #[test]
+    fn status_serde() {
+        #[derive(Debug, serde::Serialize, serde::Deserialize)]
+        struct Test {
+            status: TrashStatus,
+        }
+
+        let status = Test {
+            status: TrashStatus::Failed,
+        };
+
+        let x = serde_json::to_string(&status).unwrap();
+        let y: Test = serde_json::from_str(&x).unwrap();
+        assert_eq!(y.status, TrashStatus::Failed);
+    }
 }
