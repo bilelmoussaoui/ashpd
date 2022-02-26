@@ -29,7 +29,6 @@ gdk4x11 = {package = "gdk4-x11", version = "0.4", optional = true}
 gtk4 = {version = "0.4", optional = true}
 
 pw = {package= "pipewire", version = "0.4", optional = true}
-
 serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 rand = {version = "0.8", default-features = false}
@@ -41,3 +40,6 @@ raw-window-handle = {version = "0.4", optional = true}
 wayland-client = {version = "0.30.0-alpha2", optional = true}
 wayland-protocols = {version = "0.30.0-alpha2", optional = true, features = ["unstable_protocols", "client"]}
 wayland-backend = {version = "0.1.0-alpha2", optional = true, features = ["client_system"]}
+
+[dev-dependencies]
+serde_json = "1.0"

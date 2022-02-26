@@ -20,7 +20,7 @@
 
 use std::fmt;
 
-use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{DESTINATION, PATH};
@@ -55,7 +55,8 @@ impl NetworkStatus {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
+#[repr(u8)]
 /// Host's network activity
 pub enum Connectivity {
     /// The host is not configured with a route to the internet.

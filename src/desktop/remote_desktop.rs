@@ -66,7 +66,6 @@ use std::collections::HashMap;
 
 use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
-use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type, Value};
 
@@ -77,9 +76,10 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize, Deserialize, Copy, Clone, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Debug, Type)]
 #[doc(alias = "XdpKeyState")]
 /// The keyboard key state.
+#[repr(u8)]
 pub enum KeyState {
     #[doc(alias = "XDP_KEY_PRESSED")]
     /// The key is pressed.
@@ -106,8 +106,9 @@ pub enum DeviceType {
     Touchscreen,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[doc(alias = "XdpDiscreteAxis")]
+#[repr(u8)]
 /// The available axis.
 pub enum Axis {
     #[doc(alias = "XDP_AXIS_VERTICAL_SCROLL")]
