@@ -26,7 +26,7 @@ use crate::{error::PortalError, helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 /// The status of the game mode.
-#[repr(i8)]
+#[repr(i32)]
 pub enum Status {
     /// GameMode is inactive.
     Inactive = 0,
@@ -39,7 +39,7 @@ pub enum Status {
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(i8)]
+#[repr(i32)]
 /// The status of a (un-)register game mode request.
 enum RegisterStatus {
     /// If the game was successfully (un-)registered.

@@ -79,7 +79,7 @@ use crate::{
 #[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Debug, Type)]
 #[doc(alias = "XdpKeyState")]
 /// The keyboard key state.
-#[repr(u8)]
+#[repr(u32)]
 pub enum KeyState {
     #[doc(alias = "XDP_KEY_PRESSED")]
     /// The key is pressed.
@@ -108,7 +108,7 @@ pub enum DeviceType {
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 #[doc(alias = "XdpDiscreteAxis")]
-#[repr(u8)]
+#[repr(u32)]
 /// The available axis.
 pub enum Axis {
     #[doc(alias = "XDP_AXIS_VERTICAL_SCROLL")]

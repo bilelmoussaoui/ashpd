@@ -56,7 +56,7 @@ impl NetworkStatus {
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
-#[repr(u8)]
+#[repr(u32)]
 /// Host's network activity
 pub enum Connectivity {
     /// The host is not configured with a route to the internet.

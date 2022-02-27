@@ -68,7 +68,7 @@ impl UpdateInfo {
 }
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
-#[repr(u8)]
+#[repr(u32)]
 /// The update status.
 pub enum UpdateStatus {
     #[doc(alias = "XDP_UPDATE_STATUS_RUNNING")]
