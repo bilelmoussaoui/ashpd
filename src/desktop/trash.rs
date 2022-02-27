@@ -38,7 +38,7 @@ use crate::{error::PortalError, helpers::call_method, Error};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 /// The status of moving a file to the trash.
-#[repr(u8)]
+#[repr(u32)]
 enum TrashStatus {
     /// Moving the file to the trash failed.
     Failed = 0,

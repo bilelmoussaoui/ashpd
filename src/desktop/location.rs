@@ -41,7 +41,7 @@ use crate::{
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Debug, Type)]
 #[doc(alias = "XdpLocationAccuracy")]
-#[repr(u8)]
+#[repr(u32)]
 /// The accuracy of the location.
 pub enum Accuracy {
     #[doc(alias = "XDP_LOCATION_ACCURACY_NONE")]

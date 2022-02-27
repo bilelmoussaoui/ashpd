@@ -105,7 +105,7 @@ use crate::{helpers::call_request_method, Error, WindowIdentifier};
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
 #[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Debug, Type)]
-#[repr(u8)]
+#[repr(u32)]
 enum FilterType {
     GlobPattern = 0,
     MimeType = 1,
