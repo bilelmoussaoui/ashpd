@@ -230,7 +230,7 @@ impl Stream {
         self.1.size
     }
 
-    pub fn source_type(&self) -> SourceType {
+    pub fn source_type(&self) -> Option<SourceType> {
         self.1.source_type
     }
 
@@ -257,7 +257,7 @@ struct StreamProperties {
     id: Option<String>,
     position: Option<(i32, i32)>,
     size: Option<(i32, i32)>,
-    source_type: SourceType,
+    source_type: Option<SourceType>,
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.
