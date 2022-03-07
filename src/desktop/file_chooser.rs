@@ -305,7 +305,7 @@ impl SaveFileOptions {
 
     /// Sets the current folder.
     #[must_use]
-    pub fn current_folder(mut self, current_folder: impl AsRef<Path> + Type + Serialize) -> Self {
+    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
         let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
             .expect("`current_folder` should not be null terminated");
         self.current_folder = Some(cstr.into_bytes_with_nul());
@@ -314,7 +314,7 @@ impl SaveFileOptions {
 
     /// Sets the absolute path of the file.
     #[must_use]
-    pub fn current_file(mut self, current_file: impl AsRef<Path> + Type + Serialize) -> Self {
+    pub fn current_file(mut self, current_file: impl AsRef<Path>) -> Self {
         let cstr = CString::new(current_file.as_ref().as_os_str().as_bytes())
             .expect("`current_file` should not be null terminated");
         self.current_file = Some(cstr.into_bytes_with_nul());
@@ -392,7 +392,7 @@ impl SaveFilesOptions {
 
     /// Specifies the current folder path.
     #[must_use]
-    pub fn current_folder(mut self, current_folder: impl AsRef<Path> + Type + Serialize) -> Self {
+    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
         let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
             .expect("`current_folder` should not be null terminated");
         self.current_folder = Some(cstr.into_bytes_with_nul());
@@ -401,7 +401,7 @@ impl SaveFilesOptions {
 
     /// Sets a list of files to save.
     #[must_use]
-    pub fn files(mut self, files: &[impl AsRef<Path> + Type + Serialize]) -> Self {
+    pub fn files(mut self, files: &[impl AsRef<Path>]) -> Self {
         self.files = Some(
             files
                 .iter()
