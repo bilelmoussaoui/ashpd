@@ -314,8 +314,8 @@ impl<'a> FlatpakProxy<'a> {
     #[doc(alias = "xdp_portal_spawn")]
     pub async fn spawn(
         &self,
-        cwd_path: (impl AsRef<Path> + Type + Serialize + Debug),
-        argv: &[impl AsRef<Path> + Type + Serialize + Debug],
+        cwd_path: impl AsRef<Path>,
+        argv: &[impl AsRef<Path>],
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,

@@ -301,7 +301,7 @@ impl<'a> DocumentsProxy<'a> {
     pub async fn add_named(
         &self,
         o_path_parent_fd: &(impl AsRawFd + fmt::Debug),
-        filename: (impl AsRef<Path> + Serialize + Type + fmt::Debug),
+        filename: impl AsRef<Path>,
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<OwnedDocumentID, Error> {
@@ -343,7 +343,7 @@ impl<'a> DocumentsProxy<'a> {
     pub async fn add_named_full(
         &self,
         o_path_fd: &(impl AsRawFd + fmt::Debug),
-        filename: (impl AsRef<Path> + Serialize + Type + fmt::Debug),
+        filename: impl AsRef<Path>,
         flags: BitFlags<Flags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
@@ -501,7 +501,7 @@ impl<'a> DocumentsProxy<'a> {
     #[doc(alias = "Lookup")]
     pub async fn lookup(
         &self,
-        filename: (impl AsRef<Path> + Serialize + Type + fmt::Debug),
+        filename: impl AsRef<Path>,
     ) -> Result<Option<OwnedDocumentID>, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
