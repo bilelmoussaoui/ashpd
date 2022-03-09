@@ -8,7 +8,7 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "dbus"]
 license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
-version = "0.2.5"
+version = "0.2.6"
 
 [features]
 default_features = []
@@ -37,9 +37,9 @@ futures = "0.3"
 tracing = {version = "0.1", optional = true}
 libc = {version = "0.2.94", optional = true}
 raw-window-handle = {version = "0.4", optional = true}
-wayland-client = {version = "0.30.0-alpha2", optional = true}
-wayland-protocols = {version = "0.30.0-alpha2", optional = true, features = ["unstable_protocols", "client"]}
-wayland-backend = {version = "0.1.0-alpha2", optional = true, features = ["client_system"]}
+wayland-client = {version = "0.30.0-alpha6", optional = true}
+wayland-protocols = {version = "0.30.0-alpha6", optional = true, features = ["unstable_protocols", "client"]}
+wayland-backend = {version = "0.1.0-alpha6", optional = true, features = ["client_system"]}
 
 [dev-dependencies]
 serde_json = "1.0"
