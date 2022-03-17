@@ -322,9 +322,15 @@ impl WindowIdentifier {
                     Self::default()
                 }
             },
-            Xlib(x_handle) => Self::Other(format!("x11:0x{:x}", x_handle.window)),
+            Xlib(x_handle) => Self::from_xid(x_handle.window),
+            Xcb(x_handle) => Self::from_xid(x_handle.window),
             _ => Self::default(), // Fallback to default
         }
+    }
+
+    /// Create an instance of [`WindowIdentifier`] from an x11 window's XID.
+    pub fn from_xid(xid: u32) -> Self {
+        Self::Other(format!("x11:0x{:x}", xid))
     }
 
     #[cfg(all(
