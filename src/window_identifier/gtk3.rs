@@ -1,4 +1,4 @@
-use super::{wayland, x11, WindowType};
+use super::WindowIdentifierType;
 
 use futures::lock::Mutex;
 use gdk::Backend;
@@ -18,7 +18,7 @@ static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk3-window-handle";
 
 pub struct Gtk3WindowIdentifier {
     window: gdk::Window,
-    type_: WindowType,
+    type_: WindowIdentifierType,
 }
 
 impl Gtk3WindowIdentifier {
@@ -55,7 +55,7 @@ impl Gtk3WindowIdentifier {
                 };
                 Some(Self {
                     window: window.clone().upcast(),
-                    type_: WindowType::Wayland(handle.unwrap_or_default()),
+                    type_: WindowIdentifierType::Wayland(handle.unwrap_or_default()),
                 })
             }
             Backend::X11 => {
@@ -65,7 +65,7 @@ impl Gtk3WindowIdentifier {
                     .map(|w| w.xid())?;
                 Some(Self {
                     window: window.clone().upcast(),
-                    type_: WindowType::X11(xid),
+                    type_: WindowIdentifierType::X11(xid),
                 })
             }
             _ => None,
@@ -77,7 +77,7 @@ impl Gtk3WindowIdentifier {
         let display = self.window.display();
         unsafe {
             match self.type_ {
-                WindowType::Wayland(_) => {
+                WindowIdentifierType::Wayland(_) => {
                     let mut wayland_handle = WaylandHandle::empty();
                     wayland_handle.surface = gdk3wayland::ffi::gdk_wayland_window_get_wl_surface(
                         self.window
@@ -95,7 +95,7 @@ impl Gtk3WindowIdentifier {
                     );
                     RawWindowHandle::Wayland(wayland_handle)
                 }
-                WindowType::X11(xid) => {
+                WindowIdentifierType::X11(xid) => {
                     let mut x11_handle = XlibHandle::empty();
                     x11_handle.window = xid;
                     x11_handle.display = gdk3x11::ffi::gdk_x11_display_get_xdisplay(
@@ -114,17 +114,14 @@ impl Gtk3WindowIdentifier {
 
 impl fmt::Display for Gtk3WindowIdentifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.type_ {
-            WindowType::Wayland(handle) => f.write_str(&wayland::to_handle(&handle)),
-            WindowType::X11(xid) => f.write_str(&x11::to_handle(*xid)),
-        }
+        f.write_str(&format!("{}", self.type_))
     }
 }
 
 impl Drop for Gtk3WindowIdentifier {
     fn drop(&mut self) {
         match self.type_ {
-            WindowType::Wayland(_) => unsafe {
+            WindowIdentifierType::Wayland(_) => unsafe {
                 let wayland_win = self
                     .window
                     .downcast_ref::<gdk3wayland::WaylandWindow>()

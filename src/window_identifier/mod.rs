@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::{ser::Serializer, Serialize};
 use zbus::zvariant::{Signature, Type};
 /// Most portals interact with the user by showing dialogs.
@@ -115,20 +117,29 @@ impl Serialize for WindowIdentifier {
     where
         S: Serializer,
     {
-        serializer.serialize_str(&self.inner())
+        serializer.serialize_str(&self.to_string())
     }
 }
 
 impl std::fmt::Display for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.inner())
+        match self {
+            #[cfg(feature = "feature_gtk4")]
+            Self::Gtk4(identifier) => f.write_str(&format!("{}", identifier)),
+            #[cfg(feature = "feature_gtk3")]
+            Self::Gtk3(identifier) => f.write_str(&format!("{}", identifier)),
+            #[cfg(feature = "wayland")]
+            Self::Wayland(identifier) => f.write_str(&format!("{}", identifier)),
+            Self::X11(identifier) => f.write_str(&format!("{}", identifier)),
+            Self::Other(handle) => f.write_str(&format!("{}", handle)),
+        }
     }
 }
 
 impl std::fmt::Debug for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("WindowIdentifier")
-            .field(&self.inner())
+            .field(&format!("{}", self))
             .finish()
     }
 }
@@ -143,19 +154,6 @@ impl WindowIdentifier {
     /// Create a new window identifier
     pub fn new(identifier: &str) -> Self {
         Self::Other(identifier.to_string())
-    }
-
-    pub(crate) fn inner(&self) -> String {
-        match self {
-            #[cfg(feature = "feature_gtk4")]
-            Self::Gtk4(identifier) => identifier.to_string(),
-            #[cfg(feature = "feature_gtk3")]
-            Self::Gtk3(identifier) => identifier.to_string(),
-            #[cfg(feature = "wayland")]
-            Self::Wayland(identifier) => identifier.to_string(),
-            Self::X11(identifier) => identifier.to_string(),
-            Self::Other(handle) => handle.to_owned(),
-        }
     }
 
     #[cfg(feature = "feature_gtk4")]
@@ -251,11 +249,20 @@ impl WindowIdentifier {
 }
 
 /// Supported WindowIdentifier kinds
-#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum WindowType {
+pub(crate) enum WindowIdentifierType {
     X11(u64),
+    #[allow(dead_code)]
     Wayland(String),
+}
+
+impl fmt::Display for WindowIdentifierType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::X11(xid) => f.write_str(&format!("x11:0x{:x}", xid)),
+            Self::Wayland(handle) => f.write_str(&format!("wayland:{}", handle)),
+        }
+    }
 }
 
 #[cfg(feature = "feature_gtk4")]
@@ -270,11 +277,7 @@ mod gtk3;
 #[cfg(feature = "feature_gtk3")]
 pub use self::gtk3::Gtk3WindowIdentifier;
 
-#[cfg(any(
-    feature = "wayland",
-    feature = "feature_gtk3",
-    feature = "feature_gtk4"
-))]
+#[cfg(any(feature = "wayland"))]
 mod wayland;
 
 #[cfg(feature = "wayland")]

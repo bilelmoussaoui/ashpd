@@ -1,47 +1,47 @@
-#[cfg(feature = "wayland")]
+use super::WindowIdentifierType;
 use std::fmt;
-#[cfg(feature = "wayland")]
 use wayland_client::{
     protocol::{__interfaces::WL_SURFACE_INTERFACE, wl_surface::WlSurface},
     ConnectionHandle, Proxy, QueueHandle,
 };
-#[cfg(feature = "wayland")]
 use wayland_protocols::unstable::xdg_foreign::v2::client::{
     zxdg_exported_v2::{Event, ZxdgExportedV2},
     zxdg_exporter_v2::ZxdgExporterV2,
 };
 
-#[cfg(feature = "wayland")]
 pub struct WaylandWindowIdentifier {
     exported: ZxdgExportedV2,
-    handle: String,
+    type_: WindowIdentifierType,
 }
 
-#[cfg(feature = "wayland")]
 impl WaylandWindowIdentifier {
     pub fn new(surface: &WlSurface) -> Option<Self> {
         match wayland_handle_export_from_surface(surface) {
-            Ok((exported, handle)) => Some(Self { exported, handle }),
+            Ok((exported, handle)) => Some(Self {
+                exported,
+                type_: WindowIdentifierType::Wayland(handle),
+            }),
             _ => None,
         }
     }
 
     pub fn from_raw(surface_ptr: *mut std::ffi::c_void) -> Option<Self> {
         match wayland_handle_export(surface_ptr) {
-            Ok((exported, handle)) => Some(Self { exported, handle }),
+            Ok((exported, handle)) => Some(Self {
+                exported,
+                type_: WindowIdentifierType::Wayland(handle),
+            }),
             _ => None,
         }
     }
 }
 
-#[cfg(feature = "wayland")]
 impl fmt::Display for WaylandWindowIdentifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&to_handle(&self.handle))
+        f.write_str(&format!("{}", self.type_))
     }
 }
 
-#[cfg(feature = "wayland")]
 impl Drop for WaylandWindowIdentifier {
     fn drop(&mut self) {
         if let Err(_err) = wayland_handle_unexport(&self.exported) {
@@ -51,11 +51,9 @@ impl Drop for WaylandWindowIdentifier {
     }
 }
 
-#[cfg(feature = "wayland")]
 #[derive(Default, Debug)]
 struct ExportedWaylandHandle(String);
 
-#[cfg(feature = "wayland")]
 impl wayland_client::Dispatch<ZxdgExportedV2> for ExportedWaylandHandle {
     type UserData = ();
 
@@ -76,7 +74,6 @@ impl wayland_client::Dispatch<ZxdgExportedV2> for ExportedWaylandHandle {
     }
 }
 
-#[cfg(feature = "wayland")]
 /// A helper to export a wayland handle from a WLSurface
 ///
 /// Needed for converting a RawWindowHandle to a WindowIdentifier
@@ -103,7 +100,6 @@ fn wayland_handle_export(
     Ok((exported, wl_handle.0))
 }
 
-#[cfg(feature = "wayland")]
 /// A helper to export a wayland handle from a WLSurface
 ///
 /// Needed for converting a RawWindowHandle to a WindowIdentifier
@@ -122,7 +118,6 @@ fn wayland_handle_export_from_surface(
     queue.blocking_dispatch(&mut wl_handle)?;
     Ok((exported, wl_handle.0))
 }
-#[cfg(feature = "wayland")]
 /// A helper to unexport a wayland handle from a previously exported one
 ///
 /// Needed for converting a RawWindowHandle to a WindowIdentifier
@@ -132,8 +127,4 @@ fn wayland_handle_unexport(exported: &ZxdgExportedV2) -> Result<(), Box<dyn std:
     exported.destroy(&mut handle);
 
     Ok(())
-}
-
-pub fn to_handle(wayland_handle: &str) -> String {
-    format!("wayland:{}", wayland_handle)
 }
