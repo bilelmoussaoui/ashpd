@@ -34,6 +34,7 @@
                 </binding>
                 <child type="start">
                   <object class="GtkButton" id="color_scheme_btn">
+                    <property name="visible">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">app.dark-mode</property>
