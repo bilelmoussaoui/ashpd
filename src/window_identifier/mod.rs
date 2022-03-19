@@ -21,6 +21,8 @@ use zbus::zvariant::{Signature, Type};
 ///
 /// ```rust,ignore
 /// let identifier = WindowIdentifier::from_xid(212321);
+///
+/// /// Open some portals
 /// ```
 ///
 /// ## From a Wayland Surface
@@ -29,8 +31,20 @@ use zbus::zvariant::{Signature, Type};
 ///
 /// ```text
 /// // let wl_surface = some_surface;
-/// // let identifier = WindowIdentifier::from_wayland(wl_surface as *mut _);
+/// // let identifier = WindowIdentifier::from_wayland(wl_surface);
+///
+/// /// Open some portals
 /// ```
+///
+/// Or using a raw `wl_surface` pointer
+///
+/// ```text
+/// // let wl_surface_ptr = some_surface;
+/// // let identifier = WindowIdentifier::from_wayland_raw(wl_surface_ptr);
+///
+/// /// Open some portals
+/// ```
+///
 /// ## With GTK 4
 ///
 /// The feature `feature_gtk4` must be enabled. You can get a
@@ -72,7 +86,9 @@ use zbus::zvariant::{Signature, Type};
 /// If you have access to `RawWindowHandle` you can convert it to a [`WindowIdentifier`] with
 /// ```rust, ignore
 ///     let handle = RawWindowHandle::Xlib(XlibHandle::empty());
-///     let identifier = WindowIdentifier::from_raw_handle(handle);///
+///     let identifier = WindowIdentifier::from_raw_handle(handle);
+///
+///     /// Open some portals
 /// ```
 ///
 /// In case you don't have access to a WindowIdentifier:
@@ -82,8 +98,6 @@ use zbus::zvariant::{Signature, Type};
 ///
 /// let identifier = WindowIdentifier::default();
 /// ```
-/// We would love merge requests that adds other `From<T> for WindowIdentifier`
-/// implementations for other toolkits.
 #[doc(alias = "XdpParent")]
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
@@ -205,7 +219,7 @@ impl WindowIdentifier {
     ///
     /// ## Safety
     ///
-    /// The surface has to be a valid Wayland surface ptr
+    /// The surface has to be a valid Wayland surface pointer.
     pub unsafe fn from_wayland_raw(surface_ptr: *mut std::ffi::c_void) -> Self {
         match WaylandWindowIdentifier::from_raw(surface_ptr) {
             Some(identifier) => Self::Wayland(identifier),
