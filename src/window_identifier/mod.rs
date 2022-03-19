@@ -100,7 +100,7 @@ pub enum WindowIdentifier {
     #[doc(hidden)]
     X11(X11WindowIdentifier),
     #[doc(hidden)]
-    Other(String),
+    None,
 }
 
 unsafe impl Send for WindowIdentifier {}
@@ -131,7 +131,7 @@ impl std::fmt::Display for WindowIdentifier {
             #[cfg(feature = "wayland")]
             Self::Wayland(identifier) => f.write_str(&format!("{}", identifier)),
             Self::X11(identifier) => f.write_str(&format!("{}", identifier)),
-            Self::Other(handle) => f.write_str(&format!("{}", handle)),
+            Self::None => f.write_str(""),
         }
     }
 }
@@ -146,16 +146,11 @@ impl std::fmt::Debug for WindowIdentifier {
 
 impl Default for WindowIdentifier {
     fn default() -> Self {
-        Self::new("")
+        Self::None
     }
 }
 
 impl WindowIdentifier {
-    /// Create a new window identifier
-    pub fn new(identifier: &str) -> Self {
-        Self::Other(identifier.to_string())
-    }
-
     #[cfg(feature = "feature_gtk4")]
     /// Creates a [`WindowIdentifier`] from a [`gtk4::Native`](https://docs.gtk.org/gtk4/class.Native.html).
     ///
