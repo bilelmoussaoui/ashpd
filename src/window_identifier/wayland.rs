@@ -19,7 +19,14 @@ pub struct WaylandWindowIdentifier {
 
 #[cfg(feature = "wayland")]
 impl WaylandWindowIdentifier {
-    pub fn new(surface_ptr: *mut std::ffi::c_void) -> Option<Self> {
+    pub fn new(surface: &WlSurface) -> Option<Self> {
+        match wayland_handle_export_from_surface(surface) {
+            Ok((exported, handle)) => Some(Self { exported, handle }),
+            _ => None,
+        }
+    }
+
+    pub fn from_raw(surface_ptr: *mut std::ffi::c_void) -> Option<Self> {
         match wayland_handle_export(surface_ptr) {
             Ok((exported, handle)) => Some(Self { exported, handle }),
             _ => None,
@@ -96,6 +103,25 @@ fn wayland_handle_export(
     Ok((exported, wl_handle.0))
 }
 
+#[cfg(feature = "wayland")]
+/// A helper to export a wayland handle from a WLSurface
+///
+/// Needed for converting a RawWindowHandle to a WindowIdentifier
+fn wayland_handle_export_from_surface(
+    surface: &WlSurface,
+) -> Result<(ZxdgExportedV2, String), Box<dyn std::error::Error>> {
+    let cnx = wayland_client::Connection::connect_to_env()?;
+    let mut handle = cnx.handle();
+
+    let exporter = ZxdgExporterV2::from_id(&mut handle, surface.id())?;
+    let mut queue = cnx.new_event_queue();
+    let mut wl_handle = ExportedWaylandHandle::default();
+
+    let queue_handle = queue.handle();
+    let exported = exporter.export_toplevel(&mut handle, &surface, &queue_handle, ())?;
+    queue.blocking_dispatch(&mut wl_handle)?;
+    Ok((exported, wl_handle.0))
+}
 #[cfg(feature = "wayland")]
 /// A helper to unexport a wayland handle from a previously exported one
 ///
