@@ -98,7 +98,7 @@ pub enum WindowIdentifier {
     #[doc(hidden)]
     Wayland(WaylandWindowIdentifier),
     #[doc(hidden)]
-    X11(X11WindowIdentifier),
+    X11(WindowIdentifierType),
     #[doc(hidden)]
     None,
 }
@@ -196,8 +196,8 @@ impl WindowIdentifier {
     }
 
     /// Create an instance of [`WindowIdentifier`] from an X11 window's XID.
-    pub fn from_xid(xid: u64) -> Self {
-        Self::X11(X11WindowIdentifier::new(xid))
+    pub fn from_xid(xid: std::os::raw::c_ulong) -> Self {
+        Self::X11(WindowIdentifierType::X11(xid))
     }
 
     #[cfg(feature = "wayland")]
@@ -245,8 +245,8 @@ impl WindowIdentifier {
 
 /// Supported WindowIdentifier kinds
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum WindowIdentifierType {
-    X11(u64),
+pub enum WindowIdentifierType {
+    X11(std::os::raw::c_ulong),
     #[allow(dead_code)]
     Wayland(String),
 }
@@ -277,7 +277,3 @@ mod wayland;
 
 #[cfg(feature = "wayland")]
 pub use self::wayland::WaylandWindowIdentifier;
-
-mod x11;
-
-pub use self::x11::X11WindowIdentifier;
