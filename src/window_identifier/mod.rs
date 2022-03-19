@@ -195,7 +195,7 @@ impl WindowIdentifier {
     pub fn from_raw_handle(handle: &raw_window_handle::RawWindowHandle) -> Self {
         use raw_window_handle::RawWindowHandle::{Wayland, Xcb, Xlib};
         match handle {
-            Wayland(wl_handle) => Self::from_wayland(wl_handle.surface),
+            Wayland(wl_handle) => unsafe { Self::from_wayland_raw(wl_handle.surface) },
             Xlib(x_handle) => Self::from_xid(x_handle.window),
             Xcb(x_handle) => Self::from_xid(x_handle.window.into()),
             _ => Self::default(), // Fallback to default
@@ -213,8 +213,17 @@ impl WindowIdentifier {
     /// ## Safety
     ///
     /// The surface has to be a valid Wayland surface ptr
-    pub unsafe fn from_wayland(surface_ptr: *mut std::ffi::c_void) -> Self {
-        match WaylandWindowIdentifier::new(surface_ptr) {
+    pub unsafe fn from_wayland_raw(surface_ptr: *mut std::ffi::c_void) -> Self {
+        match WaylandWindowIdentifier::from_raw(surface_ptr) {
+            Some(identifier) => Self::Wayland(identifier),
+            None => Self::default(),
+        }
+    }
+
+    #[cfg(feature = "wayland")]
+    /// Create an instance of [`WindowIdentifier`] from a Wayland surface.
+    pub fn from_wayland(surface: &wayland_client::protocol::wl_surface::WlSurface) -> Self {
+        match WaylandWindowIdentifier::new(surface) {
             Some(identifier) => Self::Wayland(identifier),
             None => Self::default(),
         }
