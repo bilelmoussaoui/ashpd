@@ -291,3 +291,16 @@ mod wayland;
 
 #[cfg(feature = "wayland")]
 pub use self::wayland::WaylandWindowIdentifier;
+
+#[cfg(test)]
+mod tests {
+    use super::WindowIdentifier;
+
+    #[test]
+    fn test_serialize() {
+        let x11 = WindowIdentifier::from_xid(1024);
+        assert_eq!(x11.to_string(), "x11:0x400");
+
+        assert_eq!(WindowIdentifier::default().to_string(), "");
+    }
+}
