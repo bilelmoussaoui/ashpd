@@ -21,6 +21,8 @@ pub mod camera;
 /// Request access to specific devices such as camera, speakers or microphone.
 pub mod device;
 
+pub mod dynamic_launcher;
+
 /// Compose an email.
 pub mod email;
 
