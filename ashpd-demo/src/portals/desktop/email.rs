@@ -76,19 +76,19 @@ impl EmailPage {
         let root = self.native().unwrap();
 
         let mut email = Email::new();
-        if let Some(subject) = subject {
+        if let Some(ref subject) = subject {
             email.set_subject(&subject);
         }
-        if let Some(body) = body {
+        if let Some(ref body) = body {
             email.set_body(&body);
         }
-        if let Some(addresses) = addresses {
+        if let Some(ref addresses) = addresses {
             email.set_addresses(&addresses);
         }
-        if let Some(bcc) = bcc {
+        if let Some(ref bcc) = bcc {
             email.set_bcc(&bcc);
         }
-        if let Some(cc) = cc {
+        if let Some(ref cc) = cc {
             email.set_cc(&cc);
         }
 

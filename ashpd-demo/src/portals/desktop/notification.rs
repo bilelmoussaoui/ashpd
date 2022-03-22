@@ -1,15 +1,21 @@
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{
-    desktop::notification::{Button, Notification, NotificationProxy, Priority},
+    desktop::{
+        notification::{Button, Notification, NotificationProxy, Priority},
+        Icon,
+    },
     zbus,
     zvariant::Value,
 };
+use gettextrs::gettext;
 use glib::clone;
-use gtk::glib;
 use gtk::subclass::prelude::*;
+use gtk::{gio, glib};
 
 mod imp {
+    use std::cell::RefCell;
+
     use super::*;
     use adw::subclass::prelude::*;
 
@@ -32,6 +38,7 @@ mod imp {
         pub parameters_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
+        pub selected_icon: RefCell<Option<gio::File>>,
     }
 
     #[glib::object_subclass]
@@ -51,6 +58,17 @@ mod imp {
                     }
                 }));
             });
+
+            klass.install_action(
+                "notification.select-icon",
+                None,
+                move |page, _action, _target| {
+                    let ctx = glib::MainContext::default();
+                    ctx.spawn_local(clone!(@weak page => async move {
+                        page.select_icon().await
+                    }));
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -73,6 +91,19 @@ impl NotificationPage {
         glib::Object::new(&[]).expect("Failed to create a NotificationPage")
     }
 
+    async fn select_icon(&self) {
+        let file_chooser = gtk::FileChooserNative::builder()
+            .accept_label(&gettext("Select"))
+            .cancel_label(&gettext("Cancel"))
+            .build();
+
+        if gtk::ResponseType::Accept == file_chooser.run_future().await {
+            let file = file_chooser.file().unwrap();
+            self.imp().selected_icon.replace(Some(file));
+        }
+        file_chooser.destroy();
+    }
+
     async fn send(&self) -> ashpd::Result<()> {
         let imp = self.imp();
 
@@ -87,14 +118,21 @@ impl NotificationPage {
             _ => unimplemented!(),
         };
 
+
         let notification = Notification::new(&title)
             .default_action("open")
-            .default_action_target(Value::U32(100).into())
+            .default_action_target(Value::U32(100))
             .body(&body)
             .priority(priority)
-            .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-            .button(Button::new("Delete", "delete").target(Value::U32(40).into()));
-
+            .button(Button::new("Copy", "copy").target(Value::U32(32)))
+            .button(Button::new("Delete", "delete").target(Value::U32(40)));
+        if let Some(icon_file) = imp.selected_icon.borrow_mut().take() {
+            //let (bytes, _) = icon_file.load_bytes(gio::Cancellable::NONE).unwrap();
+            //Icon::Bytes(bytes.to_vec())
+            notification.set_icon(Icon::Uri(&icon_file.uri()));
+        } else {
+            notification.set_icon(Icon::Names(&["dialog-information-symbolic"]));
+        };
         let cnx = zbus::Connection::session().await?;
         let proxy = NotificationProxy::new(&cnx).await?;
         match proxy.add_notification(&notification_id, notification).await {

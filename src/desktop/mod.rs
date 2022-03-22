@@ -84,4 +84,4 @@ pub mod trash;
 pub mod wallpaper;
 
 mod icon;
-pub use icon::Icon;
+pub use icon::{OwnedIcon, Icon};

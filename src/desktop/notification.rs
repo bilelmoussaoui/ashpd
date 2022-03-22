@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::{Icon, notification::{Action, Button, Notification, NotificationProxy, Priority}};
+//! use ashpd::desktop::{Icon, OwnedIcon, notification::{Action, Button, Notification, NotificationProxy, Priority}};
 //! use std::{thread, time};
 //! use zbus::zvariant::Value;
 //!
@@ -16,7 +16,7 @@
 //!             Notification::new("Contrast")
 //!                 .default_action("open")
 //!                 .default_action_target(Value::U32(100))
-//!                 .icon(Icon::Uri("file:///home/some_user/some_dir/some_icon.png"))
+//!                 .icon(Icon::Uri("file:///home/some_user/some_dir/some_icon.png").to_owned())
 //!                 .body("color copied to clipboard")
 //!                 .priority(Priority::High)
 //!                 .button(Button::new("Copy", "copy").target(Value::U32(32)))
@@ -46,7 +46,7 @@ use std::{fmt, str::FromStr};
 use serde::{self, Deserialize, Serialize, Serializer};
 use zbus::zvariant::{OwnedValue, SerializeDict, Signature, Type, Value};
 
-use super::{Icon, DESTINATION, PATH};
+use super::{Icon, OwnedIcon, DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
     Error,
@@ -176,9 +176,20 @@ impl<'a> Notification<'a> {
     }
 
     /// Sets an icon to the notification.
+    pub fn set_icon(&mut self, icon: Icon<'a>) {
+        self.icon = Some(icon);
+    }
+
+    /// Sets an icon to the notification.
     #[must_use]
     pub fn icon(mut self, icon: Icon<'a>) -> Self {
         self.icon = Some(icon);
+        self
+    }
+
+    #[must_use]
+    pub fn owned_icon(mut self, icon: OwnedIcon) -> Self {
+    //    self.icon = Some(icon);
         self
     }
 

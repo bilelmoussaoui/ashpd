@@ -5,7 +5,7 @@ use zbus::zvariant::{self, Type};
 ///
 /// Portals like [`Notification`](crate::desktop::notification) and Dynamic Launcher
 /// requires passing an Icon that is serialized as a `(sv)`.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Icon<'a> {
     /// URI to an icon file
     Uri(&'a str),
@@ -55,6 +55,27 @@ impl<'a> Serialize for Icon<'a> {
     }
 }
 
+
+/// Owned version of [`Icon`](crate::desktop::Icon)
+#[derive(Debug)]
+pub struct OwnedIcon(Icon<'static>);
+
+impl Type for OwnedIcon {
+    fn signature() -> zvariant::Signature<'static> {
+        Icon::signature()
+    }
+}
+
+impl Serialize for OwnedIcon {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        Icon::serialize(&self.0, serializer)
+    }
+}
+
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -62,5 +83,6 @@ mod test {
     #[test]
     fn check_icon_signature() {
         assert_eq!(Icon::signature(), "(sv)");
+        assert_eq!(OwnedIcon::signature(), "(sv)");
     }
 }
