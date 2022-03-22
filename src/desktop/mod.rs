@@ -82,3 +82,6 @@ pub mod trash;
 
 /// Set a wallpaper on lockscreen, background or both.
 pub mod wallpaper;
+
+mod icon;
+pub use icon::Icon;

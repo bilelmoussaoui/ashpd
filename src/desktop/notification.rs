@@ -45,7 +45,7 @@ use std::{fmt, str::FromStr};
 use serde::{self, Deserialize, Serialize, Serializer};
 use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Signature, Type};
 
-use super::{DESTINATION, PATH};
+use super::{Icon, DESTINATION, PATH};
 use crate::{
     helpers::{call_method, receive_signal},
     Error,
@@ -128,7 +128,7 @@ impl Type for Priority {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(SerializeDict, Type, Debug)]
 /// A notification
 #[zvariant(signature = "dict")]
 pub struct Notification {
@@ -137,7 +137,7 @@ pub struct Notification {
     /// User-visible string to display as the body.
     body: Option<String>,
     /// Serialized icon (e.g using gio::Icon::serialize).
-    icon: Option<OwnedValue>,
+    icon: Option<Icon>,
     /// The priority for the notification.
     priority: Option<Priority>,
     /// Name of an action that is exported by the application.
@@ -178,7 +178,7 @@ impl Notification {
 
     /// Sets an icon to the notification.
     #[must_use]
-    pub fn icon(mut self, icon: OwnedValue) -> Self {
+    pub fn icon(mut self, icon: Icon) -> Self {
         self.icon = Some(icon);
         self
     }
