@@ -78,9 +78,7 @@ impl FromStr for Device {
             "Microphone" | "microphone" => Ok(Device::Microphone),
             "Speakers" | "speakers" => Ok(Device::Speakers),
             "Camera" | "camera" => Ok(Device::Camera),
-            _ => Err(Error::ParseError(
-                "Failed to parse device, invalid value".to_string(),
-            )),
+            _ => Err(Error::ParseError("Failed to parse device, invalid value")),
         }
     }
 }

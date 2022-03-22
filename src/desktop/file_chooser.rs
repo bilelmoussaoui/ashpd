@@ -161,17 +161,17 @@ impl Choice {
     /// * `initial_selection` - the initially selected value.
     pub fn new(id: &str, label: &str, initial_selection: &str) -> Self {
         Self(
-            id.to_string(),
-            label.to_string(),
+            id.to_owned(),
+            label.to_owned(),
             vec![],
-            initial_selection.to_string(),
+            initial_selection.to_owned(),
         )
     }
 
     /// Adds a (key, value) as a choice.
     #[must_use]
     pub fn insert(mut self, key: &str, value: &str) -> Self {
-        self.2.push((key.to_string(), value.to_string()));
+        self.2.push((key.to_owned(), value.to_owned()));
         self
     }
 

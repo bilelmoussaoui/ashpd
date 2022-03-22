@@ -135,9 +135,7 @@ impl FromStr for Permission {
             "Write" | "write" => Ok(Permission::Write),
             "GrantPermissions" | "grant-permissions" => Ok(Permission::GrantPermissions),
             "Delete" | "delete" => Ok(Permission::Delete),
-            _ => Err(Error::ParseError(
-                "Failed to parse priority, invalid value".to_string(),
-            )),
+            _ => Err(Error::ParseError("Failed to parse priority, invalid value")),
         }
     }
 }

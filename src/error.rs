@@ -39,7 +39,7 @@ pub enum Error {
     /// A signal returned no response.
     NoResponse,
     /// Failed to parse a string into an enum variant
-    ParseError(String),
+    ParseError(&'static str),
 }
 
 impl std::error::Error for Error {}

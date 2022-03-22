@@ -128,9 +128,7 @@ impl FromStr for SetOn {
             "Lockscreen" => Ok(SetOn::Lockscreen),
             "Background" => Ok(SetOn::Background),
             "Both" => Ok(SetOn::Both),
-            _ => Err(Error::ParseError(
-                "Failed to parse SetOn, invalid value".to_string(),
-            )),
+            _ => Err(Error::ParseError("Failed to parse SetOn, invalid value")),
         }
     }
 }
