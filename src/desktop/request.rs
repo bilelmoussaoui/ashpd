@@ -6,7 +6,7 @@ use std::{
 
 use serde::{
     de::{self, Error as SeError, Visitor},
-    Deserialize, Deserializer, Serialize,
+    Deserialize, Deserializer,
 };
 use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
 
@@ -102,7 +102,7 @@ where
     }
 }
 
-#[derive(Serialize, Deserialize, Type)]
+#[derive(Deserialize, Type)]
 /// The most basic response. Used when only the status of the request is what we
 /// receive as a response.
 pub(crate) struct BasicResponse(HashMap<String, OwnedValue>);
@@ -134,7 +134,7 @@ impl std::fmt::Display for ResponseError {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
+#[derive(Deserialize, PartialEq, Debug, Type)]
 #[doc(hidden)]
 enum ResponseType {
     /// Success, the request is carried out.

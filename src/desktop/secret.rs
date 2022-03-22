@@ -19,25 +19,25 @@
 
 use std::os::unix::prelude::AsRawFd;
 
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
 #[zvariant(signature = "dict")]
-struct RetrieveOptions {
+struct RetrieveOptions<'a> {
     /// A string returned by a previous call to `retrieve_secret`.
-    token: Option<String>,
+    token: Option<&'a str>,
 }
 
-impl RetrieveOptions {
+impl<'a> RetrieveOptions<'a> {
     /// Sets the token received on a previous call to
     /// [`SecretProxy::retrieve_secret`].
     #[must_use]
-    pub fn token(mut self, token: &str) -> Self {
-        self.token = Some(token.to_string());
+    pub fn token(mut self, token: &'a str) -> Self {
+        self.token = Some(token);
         self
     }
 }

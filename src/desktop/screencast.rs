@@ -44,7 +44,7 @@ use std::{
 
 use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
@@ -89,7 +89,7 @@ pub enum CursorMode {
     Metadata,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type)]
+#[derive(Serialize_repr, PartialEq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]
 pub enum PersistMode {
@@ -110,7 +110,7 @@ impl Default for PersistMode {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
@@ -120,10 +120,10 @@ struct CreateSessionOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::select_sources`] request.
 #[zvariant(signature = "dict")]
-struct SelectSourcesOptions {
+struct SelectSourcesOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// What types of content to record.
@@ -132,11 +132,11 @@ struct SelectSourcesOptions {
     multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
     cursor_mode: Option<BitFlags<CursorMode>>,
-    restore_token: Option<String>,
+    restore_token: Option<&'a str>,
     persist_mode: Option<PersistMode>,
 }
 
-impl SelectSourcesOptions {
+impl<'a> SelectSourcesOptions<'a> {
     /// Sets whether to allow selecting multiple sources.
     #[must_use]
     pub fn multiple(mut self, multiple: bool) -> Self {
@@ -164,12 +164,12 @@ impl SelectSourcesOptions {
         self
     }
 
-    pub fn set_restore_token(&mut self, token: &str) {
-        self.restore_token = Some(token.to_string());
+    pub fn set_restore_token(&mut self, token: &'a str) {
+        self.restore_token = Some(token);
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenCastProxy::start`] request.
 #[zvariant(signature = "dict")]
 struct StartCastOptions {
@@ -177,7 +177,7 @@ struct StartCastOptions {
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response to a [`ScreenCastProxy::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSession {
@@ -187,7 +187,7 @@ struct CreateSession {
     session_handle: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type)]
+#[derive(DeserializeDict, Type)]
 /// A response to a [`ScreenCastProxy::start`] request.
 #[zvariant(signature = "dict")]
 struct Streams {
@@ -201,7 +201,7 @@ impl Debug for Streams {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Clone)]
+#[derive(Deserialize, Type)]
 /// A PipeWire stream.
 pub struct Stream(u32, StreamProperties);
 
@@ -250,7 +250,7 @@ impl Debug for Stream {
             .finish()
     }
 }
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Clone)]
+#[derive(DeserializeDict, Type, Debug)]
 /// The stream properties.
 #[zvariant(signature = "dict")]
 struct StreamProperties {
@@ -416,7 +416,7 @@ impl<'a> ScreenCastProxy<'a> {
             &(session, &identifier, &options),
         )
         .await?;
-        Ok((streams.streams.to_vec(), streams.restore_token))
+        Ok((streams.streams, streams.restore_token))
     }
 
     /// Available cursor mode.

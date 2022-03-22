@@ -35,7 +35,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::prelude::RawFd;
 use std::{collections::HashMap, ffi::CString, fmt::Debug, os::unix::prelude::AsRawFd, path::Path};
-use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{Fd, OwnedObjectPath, SerializeDict, Type};
 
 use crate::{
     helpers::{call_method, receive_signal},
@@ -43,7 +43,7 @@ use crate::{
 };
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// A bitmask representing the "permissions" of a newly created sandbox.
 pub enum SandboxFlags {
@@ -60,7 +60,7 @@ pub enum SandboxFlags {
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpSpawnFlags")]
 /// Flags affecting the created sandbox.
@@ -94,7 +94,7 @@ pub enum SpawnFlags {
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// Flags marking what optional features are available.
 pub enum SupportsFlags {
@@ -102,18 +102,18 @@ pub enum SupportsFlags {
     ExposePids,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FlatpakProxy::spawn`] request.
 #[zvariant(signature = "dict")]
-pub struct SpawnOptions {
+pub struct SpawnOptions<'a> {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
     #[zvariant(rename = "sandbox-expose")]
-    sandbox_expose: Option<Vec<String>>,
+    sandbox_expose: Option<Vec<&'a str>>,
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, read-only.
     #[zvariant(rename = "sandbox-expose-ro")]
-    sandbox_expose_ro: Option<Vec<String>>,
+    sandbox_expose_ro: Option<Vec<&'a str>>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
     #[zvariant(rename = "sandbox-expose-fd")]
@@ -127,7 +127,7 @@ pub struct SpawnOptions {
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
     /// A list of environment variables to remove.
     #[zvariant(rename = "unset-env")]
-    unset_env: Option<Vec<String>>,
+    unset_env: Option<Vec<&'a str>>,
     /// A file descriptor of the directory that  will be used as `/usr` in the new sandbox.
     #[zvariant(rename = "usr-fd")]
     usr_fd: Option<RawFd>,
@@ -136,17 +136,15 @@ pub struct SpawnOptions {
     app_fd: Option<RawFd>,
 }
 
-impl SpawnOptions {
+impl<'a> SpawnOptions<'a> {
     /// Sets the list of filenames for files to expose the new sandbox.
     /// **Note** absolute paths or subdirectories are not allowed.
     #[must_use]
-    pub fn sandbox_expose(mut self, sandbox_expose: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.sandbox_expose = Some(
-            sandbox_expose
-                .iter()
-                .map(|s| s.as_ref().to_string())
-                .collect(),
-        );
+    pub fn sandbox_expose(
+        mut self,
+        sandbox_expose: &'a [&'a (impl AsRef<str> + Type + Serialize)],
+    ) -> Self {
+        self.sandbox_expose = Some(sandbox_expose.iter().map(|s| s.as_ref()).collect());
         self
     }
 
@@ -156,14 +154,9 @@ impl SpawnOptions {
     #[must_use]
     pub fn sandbox_expose_ro(
         mut self,
-        sandbox_expose_ro: &[impl AsRef<str> + Type + Serialize],
+        sandbox_expose_ro: &'a [impl AsRef<str> + Type + Serialize],
     ) -> Self {
-        self.sandbox_expose_ro = Some(
-            sandbox_expose_ro
-                .iter()
-                .map(|s| s.as_ref().to_string())
-                .collect(),
-        );
+        self.sandbox_expose_ro = Some(sandbox_expose_ro.iter().map(|s| s.as_ref()).collect());
         self
     }
 
@@ -201,8 +194,8 @@ impl SpawnOptions {
 
     /// Env variables to unset.
     #[must_use]
-    pub fn unset_env(mut self, env: &[&str]) -> Self {
-        self.unset_env = Some(env.iter().map(|e| e.to_string()).collect());
+    pub fn unset_env(mut self, env: &'a [impl AsRef<str> + Type + Serialize]) -> Self {
+        self.unset_env = Some(env.iter().map(|s| s.as_ref()).collect());
         self
     }
 
@@ -221,7 +214,7 @@ impl SpawnOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FlatpakProxy::create_update_monitor`] request.
 ///
 /// Currently there are no possible options yet.
@@ -319,7 +312,7 @@ impl<'a> FlatpakProxy<'a> {
         fds: HashMap<u32, Fd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
-        options: SpawnOptions,
+        options: SpawnOptions<'_>,
     ) -> Result<u32, Error> {
         let cwd_path = CString::new(cwd_path.as_ref().as_os_str().as_bytes())
             .expect("The `cwd_path` should not contain a trailing 0 bytes");

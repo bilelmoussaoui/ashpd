@@ -91,7 +91,7 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde_repr::Serialize_repr;
 use std::os::unix::ffi::OsStrExt;
 use std::{ffi::CString, path::Path};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
@@ -99,39 +99,39 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
-#[derive(Serialize, Deserialize, Type, Clone, Debug)]
+#[derive(Serialize, Type, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
 /// pattern.
-pub struct FileFilter(String, Vec<(FilterType, String)>);
+pub struct FileFilter<'a>(&'a str, Vec<(FilterType, &'a str)>);
 
-#[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, PartialEq, Debug, Type)]
 #[repr(u32)]
 enum FilterType {
     GlobPattern = 0,
     MimeType = 1,
 }
 
-impl FileFilter {
+impl<'a> FileFilter<'a> {
     /// Create a new file filter
     ///
     /// # Arguments
     ///
     /// * `label` - user-visible name of the file filter.
-    pub fn new(label: &str) -> Self {
-        Self(label.to_string(), vec![])
+    pub fn new(label: &'a str) -> Self {
+        Self(label, vec![])
     }
 
     /// Adds a mime type to the file filter.
     #[must_use]
-    pub fn mimetype(mut self, mimetype: &str) -> Self {
-        self.1.push((FilterType::MimeType, mimetype.to_string()));
+    pub fn mimetype(mut self, mimetype: &'a str) -> Self {
+        self.1.push((FilterType::MimeType, mimetype));
         self
     }
 
     /// Adds a glob pattern to the file filter.
     #[must_use]
-    pub fn glob(mut self, pattern: &str) -> Self {
-        self.1.push((FilterType::GlobPattern, pattern.to_string()));
+    pub fn glob(mut self, pattern: &'a str) -> Self {
+        self.1.push((FilterType::GlobPattern, pattern));
         self
     }
 }
@@ -191,14 +191,14 @@ impl Choice {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FileChooserProxy::open_file`] request.
 #[zvariant(signature = "dict")]
-pub struct OpenFileOptions {
+pub struct OpenFileOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Label for the accept button. Mnemonic underlines are allowed.
-    accept_label: Option<String>,
+    accept_label: Option<&'a str>,
     /// Whether the dialog should be modal.
     modal: Option<bool>,
     /// Whether multiple files can be selected or not.
@@ -206,18 +206,18 @@ pub struct OpenFileOptions {
     /// Whether to select for folders instead of files.
     directory: Option<bool>,
     /// List of serialized file filters.
-    filters: Vec<FileFilter>,
+    filters: Vec<FileFilter<'a>>,
     /// Request that this filter be set by default at dialog creation.
-    current_filter: Option<FileFilter>,
+    current_filter: Option<FileFilter<'a>>,
     /// List of serialized combo boxes to add to the file chooser
     choices: Vec<Choice>,
 }
 
-impl OpenFileOptions {
+impl<'a> OpenFileOptions<'a> {
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_string());
+    pub fn accept_label(mut self, accept_label: &'a str) -> Self {
+        self.accept_label = Some(accept_label);
         self
     }
 
@@ -244,14 +244,14 @@ impl OpenFileOptions {
 
     /// Adds a files filter.
     #[must_use]
-    pub fn add_filter(mut self, filter: FileFilter) -> Self {
+    pub fn add_filter(mut self, filter: FileFilter<'a>) -> Self {
         self.filters.push(filter);
         self
     }
 
     /// Specifies the default filter.
     #[must_use]
-    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
+    pub fn current_filter(mut self, current_filter: FileFilter<'a>) -> Self {
         self.current_filter = Some(current_filter);
         self
     }
@@ -264,42 +264,42 @@ impl OpenFileOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FileChooserProxy::save_file`] request.
 #[zvariant(signature = "dict")]
-pub struct SaveFileOptions {
+pub struct SaveFileOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Label for the accept button. Mnemonic underlines are allowed.
-    accept_label: Option<String>,
+    accept_label: Option<&'a str>,
     /// Whether the dialog should be modal.
     modal: Option<bool>,
     /// Suggested filename.
-    current_name: Option<String>,
+    current_name: Option<&'a str>,
     /// Suggested folder to save the file in.
     current_folder: Option<Vec<u8>>,
     /// The current file (when saving an existing file).
     current_file: Option<Vec<u8>>,
     /// List of serialized file filters.
-    filters: Vec<FileFilter>,
+    filters: Vec<FileFilter<'a>>,
     /// Request that this filter be set by default at dialog creation.
-    current_filter: Option<FileFilter>,
+    current_filter: Option<FileFilter<'a>>,
     /// List of serialized combo boxes to add to the file chooser
     choices: Vec<Choice>,
 }
 
-impl SaveFileOptions {
+impl<'a> SaveFileOptions<'a> {
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_string());
+    pub fn accept_label(mut self, accept_label: &'a str) -> Self {
+        self.accept_label = Some(accept_label);
         self
     }
 
     /// Sets the current file name.
     #[must_use]
-    pub fn current_name(mut self, current_name: &str) -> Self {
-        self.current_name = Some(current_name.to_string());
+    pub fn current_name(mut self, current_name: &'a str) -> Self {
+        self.current_name = Some(current_name);
         self
     }
 
@@ -330,14 +330,14 @@ impl SaveFileOptions {
 
     /// Adds a files filter.
     #[must_use]
-    pub fn add_filter(mut self, filter: FileFilter) -> Self {
+    pub fn add_filter(mut self, filter: FileFilter<'a>) -> Self {
         self.filters.push(filter);
         self
     }
 
     /// Sets the default filter.
     #[must_use]
-    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
+    pub fn current_filter(mut self, current_filter: FileFilter<'a>) -> Self {
         self.current_filter = Some(current_filter);
         self
     }
@@ -350,14 +350,14 @@ impl SaveFileOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FileChooserProxy::save_files`] request.
 #[zvariant(signature = "dict")]
-pub struct SaveFilesOptions {
+pub struct SaveFilesOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Label for the accept button. Mnemonic underlines are allowed.
-    accept_label: Option<String>,
+    accept_label: Option<&'a str>,
     /// Whether the dialog should be modal.
     modal: Option<bool>,
     /// List of serialized combo boxes to add to the file chooser
@@ -368,11 +368,11 @@ pub struct SaveFilesOptions {
     files: Option<Vec<Vec<u8>>>,
 }
 
-impl SaveFilesOptions {
+impl<'a> SaveFilesOptions<'a> {
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_string());
+    pub fn accept_label(mut self, accept_label: &'a str) -> Self {
+        self.accept_label = Some(accept_label);
         self
     }
 
@@ -481,7 +481,7 @@ impl<'a> FileChooserProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         title: &str,
-        options: OpenFileOptions,
+        options: OpenFileOptions<'_>,
     ) -> Result<SelectedFiles, Error> {
         call_request_method(
             self.inner(),
@@ -509,7 +509,7 @@ impl<'a> FileChooserProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         title: &str,
-        options: SaveFileOptions,
+        options: SaveFileOptions<'_>,
     ) -> Result<SelectedFiles, Error> {
         call_request_method(
             self.inner(),
@@ -542,7 +542,7 @@ impl<'a> FileChooserProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         title: &str,
-        options: SaveFilesOptions,
+        options: SaveFilesOptions<'_>,
     ) -> Result<SelectedFiles, Error> {
         call_request_method(
             self.inner(),

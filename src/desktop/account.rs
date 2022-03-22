@@ -46,25 +46,25 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`AccountProxy::user_information`] request.
 #[zvariant(signature = "dict")]
-struct UserInfoOptions {
+struct UserInfoOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Shown in the dialog to explain why the information is needed.
-    reason: Option<String>,
+    reason: Option<&'a str>,
 }
 
-impl UserInfoOptions {
+impl<'a> UserInfoOptions<'a> {
     /// Sets a user-visible reason for the request.
-    pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_string());
+    pub fn reason(mut self, reason: &'a str) -> Self {
+        self.reason = Some(reason);
         self
     }
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, Clone, Type)]
+#[derive(Debug, DeserializeDict, Clone, Type)]
 /// The response of a [`AccountProxy::user_information`] request.
 #[zvariant(signature = "dict")]
 pub struct UserInfo {

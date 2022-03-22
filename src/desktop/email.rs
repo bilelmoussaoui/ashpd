@@ -51,34 +51,34 @@
 use std::os::unix::prelude::AsRawFd;
 
 use serde::Serialize;
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
 #[zvariant(signature = "dict")]
-pub struct Email {
+pub struct Email<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// The email address to send to.
-    address: Option<String>,
+    address: Option<&'a str>,
     /// The email addresses to send to.
-    addresses: Option<Vec<String>>,
+    addresses: Option<Vec<&'a str>>,
     /// The email addresses to CC.
-    cc: Option<Vec<String>>,
+    cc: Option<Vec<&'a str>>,
     /// The email addresses to BCC.
-    bcc: Option<Vec<String>>,
+    bcc: Option<Vec<&'a str>>,
     /// The subject of the email.
-    subject: Option<String>,
+    subject: Option<&'a str>,
     /// The body of the email.
-    body: Option<String>,
+    body: Option<&'a str>,
     /// A list of file descriptors of files to attach.
     attachment_fds: Option<Vec<Fd>>,
 }
 
-impl Email {
+impl<'a> Email<'a> {
     /// Create a new instance of [`Email`].
     pub fn new() -> Self {
         Self::default()
@@ -86,74 +86,74 @@ impl Email {
 
     /// Similar to `set_address`.
     #[must_use]
-    pub fn address(mut self, address: &str) -> Self {
-        self.address = Some(address.to_string());
+    pub fn address(mut self, address: &'a str) -> Self {
+        self.address = Some(address);
         self
     }
 
     /// Sets the email address to send the email to.
-    pub fn set_address(&mut self, address: &str) {
-        self.address = Some(address.to_string());
+    pub fn set_address(&mut self, address: &'a str) {
+        self.address = Some(address);
     }
 
     /// Similar to `set_addresses`.
     #[must_use]
-    pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
+    pub fn addresses(mut self, addresses: &'a [impl AsRef<str> + Type + Serialize]) -> Self {
+        self.addresses = Some(addresses.iter().map(|s| s.as_ref()).collect());
         self
     }
 
     /// Sets a list of email addresses to send the email to.
-    pub fn set_addresses(&mut self, addresses: &[impl AsRef<str> + Type + Serialize]) {
-        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
+    pub fn set_addresses(&mut self, addresses: &'a [impl AsRef<str> + Type + Serialize]) {
+        self.addresses = Some(addresses.iter().map(|s| s.as_ref()).collect());
     }
 
     /// Sets a list of email addresses to BCC.
     #[must_use]
-    pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
+    pub fn bcc(mut self, bcc: &'a [impl AsRef<str> + Type + Serialize]) -> Self {
+        self.bcc = Some(bcc.iter().map(|s| s.as_ref()).collect());
         self
     }
 
     /// Sets a list of email addresses to BCC.
-    pub fn set_bcc(&mut self, bcc: &[impl AsRef<str> + Type + Serialize]) {
-        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
+    pub fn set_bcc(&mut self, bcc: &'a [impl AsRef<str> + Type + Serialize]) {
+        self.bcc = Some(bcc.iter().map(|s| s.as_ref()).collect());
     }
 
     /// Sets a list of email addresses to CC.
     #[must_use]
-    pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
+    pub fn cc(mut self, cc: &'a [impl AsRef<str> + Type + Serialize]) -> Self {
+        self.cc = Some(cc.iter().map(|s| s.as_ref()).collect());
         self
     }
 
     /// Sets a list of email addresses to CC.
-    pub fn set_cc(&mut self, cc: &[impl AsRef<str> + Type + Serialize]) {
-        self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
+    pub fn set_cc(&mut self, cc: &'a [impl AsRef<str> + Type + Serialize]) {
+        self.cc = Some(cc.iter().map(|s| s.as_ref()).collect());
     }
 
     /// Similar to `set_subject`.
     #[must_use]
-    pub fn subject(mut self, subject: &str) -> Self {
-        self.subject = Some(subject.to_string());
+    pub fn subject(mut self, subject: &'a str) -> Self {
+        self.subject = Some(subject);
         self
     }
 
     /// Sets the email subject.
-    pub fn set_subject(&mut self, subject: &str) {
-        self.subject = Some(subject.to_string());
+    pub fn set_subject(&mut self, subject: &'a str) {
+        self.subject = Some(subject);
     }
 
     /// Similar to `set_body`.
     #[must_use]
-    pub fn body(mut self, body: &str) -> Self {
-        self.body = Some(body.to_string());
+    pub fn body(mut self, body: &'a str) -> Self {
+        self.body = Some(body);
         self
     }
 
     /// Sets the email body.
-    pub fn set_body(&mut self, body: &str) {
-        self.body = Some(body.to_string());
+    pub fn set_body(&mut self, body: &'a str) {
+        self.body = Some(body);
     }
 
     /// Attaches a file to the email.
@@ -211,7 +211,7 @@ impl<'a> EmailProxy<'a> {
     pub async fn compose_email(
         &self,
         identifier: &WindowIdentifier,
-        email: Email,
+        email: Email<'_>,
     ) -> Result<(), Error> {
         call_basic_response_method(
             self.inner(),
@@ -225,7 +225,7 @@ impl<'a> EmailProxy<'a> {
 
 /// A handy wrapper around [`EmailProxy::compose_email`]
 #[doc(alias = "xdp_portal_compose_email")]
-pub async fn compose(identifier: &WindowIdentifier, email: Email) -> Result<(), Error> {
+pub async fn compose(identifier: &WindowIdentifier, email: Email<'_>) -> Result<(), Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = EmailProxy::new(&connection).await?;
     proxy.compose_email(identifier, email).await?;

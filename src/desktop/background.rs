@@ -53,14 +53,14 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Clone, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
 #[zvariant(signature = "dict")]
-struct BackgroundOptions {
+struct BackgroundOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// User-visible reason for the request.
-    reason: Option<String>,
+    reason: Option<&'a str>,
     /// [`true`] if the app also wants to be started automatically at login.
     autostart: Option<bool>,
     /// if [`true`], use D-Bus activation for autostart.
@@ -70,13 +70,13 @@ struct BackgroundOptions {
     /// If this is not specified, the Exec line from the desktop file will be
     /// used.
     #[zvariant(rename = "commandline")]
-    command: Option<Vec<String>>,
+    command: Option<Vec<&'a str>>,
 }
 
-impl BackgroundOptions {
+impl<'a> BackgroundOptions<'a> {
     /// Sets a user-visible reason for the request.
-    pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_string());
+    pub fn reason(mut self, reason: &'a str) -> Self {
+        self.reason = Some(reason);
         self
     }
 
@@ -95,13 +95,13 @@ impl BackgroundOptions {
     /// Specifies the command line to execute.
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    pub fn command(mut self, command: Option<&[impl AsRef<str> + Type + Serialize]>) -> Self {
-        self.command = command.map(|s| s.iter().map(|s| s.as_ref().to_string()).collect());
+    pub fn command(mut self, command: Option<&'a [impl AsRef<str> + Type + Serialize]>) -> Self {
+        self.command = command.map(|s| s.iter().map(|s| s.as_ref()).collect());
         self
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// The response of a [`BackgroundProxy::request_background`] request.
 #[zvariant(signature = "dict")]
 pub struct Background {

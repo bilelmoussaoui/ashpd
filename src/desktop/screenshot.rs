@@ -67,7 +67,7 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_request_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::screenshot`] request.
 #[zvariant(signature = "dict")]
 struct ScreenshotOptions {
@@ -97,7 +97,7 @@ impl ScreenshotOptions {
     }
 }
 
-#[derive(DeserializeDict, SerializeDict, Clone, Type)]
+#[derive(DeserializeDict, Clone, Type)]
 /// A response to a [`ScreenshotProxy::screenshot`] request.
 #[zvariant(signature = "dict")]
 struct Screenshot {
@@ -111,7 +111,7 @@ impl Debug for Screenshot {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`ScreenshotProxy::pick_color`] request.
 #[zvariant(signature = "dict")]
 struct PickColorOptions {
@@ -119,7 +119,7 @@ struct PickColorOptions {
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, Type)]
+#[derive(DeserializeDict, Clone, Copy, PartialEq, Type)]
 /// A response to a [`ScreenshotProxy::pick_color`] request.
 /// **Note** the values are normalized.
 #[zvariant(signature = "dict")]

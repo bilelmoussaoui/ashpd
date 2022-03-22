@@ -96,33 +96,33 @@
 
 use std::os::unix::prelude::AsRawFd;
 
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
 #[zvariant(signature = "dict")]
-struct OpenDirOptions {
+struct OpenDirOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     // Token to activate the chosen application.
-    activation_token: Option<String>,
+    activation_token: Option<&'a str>,
 }
 
-impl OpenDirOptions {
+impl<'a> OpenDirOptions<'a> {
     #[allow(dead_code)]
-    pub fn set_activation_token(&mut self, activation_token: &str) {
-        self.activation_token = Some(activation_token.to_string());
+    pub fn set_activation_token(&mut self, activation_token: &'a str) {
+        self.activation_token = Some(activation_token);
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_file`] or
 /// [`OpenURIProxy::open_uri`] request.
 #[zvariant(signature = "dict")]
-struct OpenFileOptions {
+struct OpenFileOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Whether to allow the chosen application to write to the file.
@@ -134,10 +134,10 @@ struct OpenFileOptions {
     /// false, the portal may use a default or pick the last choice.
     ask: Option<bool>,
     // Token to activate the chosen application.
-    activation_token: Option<String>,
+    activation_token: Option<&'a str>,
 }
 
-impl OpenFileOptions {
+impl<'a> OpenFileOptions<'a> {
     /// Whether the file should be writeable or not.
     pub fn writeable(mut self, writeable: bool) -> Self {
         self.writeable = Some(writeable);
@@ -151,8 +151,8 @@ impl OpenFileOptions {
     }
 
     #[allow(dead_code)]
-    pub fn set_activation_token(&mut self, activation_token: &str) {
-        self.activation_token = Some(activation_token.to_string());
+    pub fn set_activation_token(&mut self, activation_token: &'a str) {
+        self.activation_token = Some(activation_token);
     }
 }
 

@@ -29,8 +29,8 @@
 use std::fmt::Debug;
 
 use futures::TryFutureExt;
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::Deserialize;
+use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
@@ -39,7 +39,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Debug, Type)]
+#[derive(Serialize_repr, PartialEq, Clone, Copy, Debug, Type)]
 #[doc(alias = "XdpLocationAccuracy")]
 #[repr(u32)]
 /// The accuracy of the location.
@@ -64,7 +64,7 @@ pub enum Accuracy {
     Exact = 5,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
@@ -100,7 +100,7 @@ impl CreateSessionOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::start`] request.
 #[zvariant(signature = "dict")]
 struct SessionStartOptions {
@@ -108,7 +108,7 @@ struct SessionStartOptions {
     handle_token: HandleToken,
 }
 
-#[derive(Serialize, Deserialize, Type)]
+#[derive(Deserialize, Type)]
 /// The response received on a `location_updated` signal.
 pub struct Location(OwnedObjectPath, LocationInner);
 
@@ -186,7 +186,7 @@ impl Debug for Location {
     }
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct LocationInner {
     #[zvariant(rename = "Accuracy")]

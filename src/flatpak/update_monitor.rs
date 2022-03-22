@@ -22,7 +22,7 @@
 //! }
 //! ```
 
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde_repr::Deserialize_repr;
 use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
 use super::DESTINATION;
@@ -31,14 +31,14 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitorProxy::update`] request.
 ///
 /// Currently there are no possible options yet.
 #[zvariant(signature = "dict")]
 struct UpdateOptions {}
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response containing the update information when an update is available.
 #[zvariant(signature = "dict")]
 pub struct UpdateInfo {
@@ -67,7 +67,7 @@ impl UpdateInfo {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// The update status.
 pub enum UpdateStatus {
@@ -85,7 +85,7 @@ pub enum UpdateStatus {
     Failed = 3,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response of the update progress signal.
 #[zvariant(signature = "dict")]
 pub struct UpdateProgress {

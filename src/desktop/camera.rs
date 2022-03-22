@@ -21,7 +21,7 @@ use std::{
     os::unix::prelude::{IntoRawFd, RawFd},
 };
 
-use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
+use zbus::zvariant::{OwnedFd, SerializeDict, Type, Value};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
@@ -29,7 +29,7 @@ use crate::{
     Error,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`CameraProxy::access_camera`] request.
 #[zvariant(signature = "dict")]
 struct CameraAccessOptions {

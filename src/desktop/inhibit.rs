@@ -38,7 +38,7 @@
 
 use enumflags2::{bitflags, BitFlags};
 use futures::TryFutureExt;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
@@ -48,7 +48,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
 #[zvariant(signature = "dict")]
 struct CreateMonitorOptions {
@@ -58,26 +58,26 @@ struct CreateMonitorOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::inhibit`] request.
 #[zvariant(signature = "dict")]
-struct InhibitOptions {
+struct InhibitOptions<'a> {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// User-visible reason for the inhibition.
-    reason: Option<String>,
+    reason: Option<&'a str>,
 }
 
-impl InhibitOptions {
+impl<'a> InhibitOptions<'a> {
     /// Sets a user visible reason for the inhibit request.
-    pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_string());
+    pub fn reason(mut self, reason: &'a str) -> Self {
+        self.reason = Some(reason);
         self
     }
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Serialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpInhibitFlags")]
 /// The actions to inhibit that can end the user's session
@@ -96,7 +96,7 @@ pub enum InhibitFlags {
     Idle,
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 /// A response to a [`InhibitProxy::create_monitor`] request.
 #[zvariant(signature = "dict")]
 struct CreateMonitor {
@@ -105,7 +105,7 @@ struct CreateMonitor {
     session_handle: String,
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct State {
     #[zvariant(rename = "screensaver-active")]
@@ -114,7 +114,7 @@ struct State {
     session_state: SessionState,
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Debug, Deserialize, Type)]
 /// A response received when the `state_changed` signal is received.
 pub struct InhibitState(OwnedObjectPath, State);
 
@@ -130,7 +130,7 @@ impl InhibitState {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
 #[doc(alias = "XdpLoginSessionState")]
 #[repr(u32)]
 /// The current state of the user's session.

@@ -16,12 +16,12 @@
 
 use serde::{Deserialize, Serialize, Serializer};
 use std::{fmt, str::FromStr};
-use zbus::zvariant::{DeserializeDict, SerializeDict, Signature, Type};
+use zbus::zvariant::{SerializeDict, Signature, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error};
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
 #[zvariant(signature = "dict")]
 struct AccessDeviceOptions {

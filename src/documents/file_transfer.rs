@@ -26,7 +26,7 @@
 
 use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type, Value};
+use zbus::zvariant::{Fd, SerializeDict, Type, Value};
 
 use super::{DESTINATION, PATH};
 use crate::{
@@ -34,7 +34,7 @@ use crate::{
     Error,
 };
 
-#[derive(SerializeDict, DeserializeDict, Debug, Type, Default)]
+#[derive(SerializeDict, Debug, Type, Default)]
 /// Specified options for a [`FileTransferProxy::start_transfer`] request.
 #[zvariant(signature = "dict")]
 struct TransferOptions {

@@ -76,7 +76,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Copy, Clone, PartialEq, Debug, Type)]
 #[doc(alias = "XdpKeyState")]
 /// The keyboard key state.
 #[repr(u32)]
@@ -106,7 +106,7 @@ pub enum DeviceType {
     Touchscreen,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, PartialEq, Debug, Type)]
 #[doc(alias = "XdpDiscreteAxis")]
 #[repr(u32)]
 /// The available axis.
@@ -119,7 +119,7 @@ pub enum Axis {
     Horizontal = 1,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateRemoteOptions {
@@ -129,7 +129,7 @@ struct CreateRemoteOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response to a [`RemoteDesktopProxy::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSession {
@@ -139,7 +139,7 @@ struct CreateSession {
     session_handle: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::select_devices`] request.
 #[zvariant(signature = "dict")]
 struct SelectDevicesOptions {
@@ -157,7 +157,7 @@ impl SelectDevicesOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktopProxy::start`] request.
 #[zvariant(signature = "dict")]
 struct StartRemoteOptions {
@@ -165,7 +165,7 @@ struct StartRemoteOptions {
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(DeserializeDict, Type, Debug, Default)]
 /// A response to a [`RemoteDesktopProxy::select_devices`] request.
 #[zvariant(signature = "dict")]
 struct SelectedDevices {

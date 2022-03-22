@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
+//! use ashpd::desktop::{Icon, notification::{Action, Button, Notification, NotificationProxy, Priority}};
 //! use std::{thread, time};
 //! use zbus::zvariant::Value;
 //!
@@ -15,11 +15,12 @@
 //!             notification_id,
 //!             Notification::new("Contrast")
 //!                 .default_action("open")
-//!                 .default_action_target(Value::U32(100).into())
+//!                 .default_action_target(Value::U32(100))
+//!                 .icon(Icon::Uri("file:///home/some_user/some_dir/some_icon.png"))
 //!                 .body("color copied to clipboard")
 //!                 .priority(Priority::High)
-//!                 .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-//!                 .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
+//!                 .button(Button::new("Copy", "copy").target(Value::U32(32)))
+//!                 .button(Button::new("Delete", "delete").target(Value::U32(40))),
 //!         )
 //!         .await?;
 //!
@@ -43,7 +44,7 @@
 use std::{fmt, str::FromStr};
 
 use serde::{self, Deserialize, Serialize, Serializer};
-use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Signature, Type};
+use zbus::zvariant::{OwnedValue, SerializeDict, Signature, Type, Value};
 
 use super::{Icon, DESTINATION, PATH};
 use crate::{
@@ -131,35 +132,35 @@ impl Type for Priority {
 #[derive(SerializeDict, Type, Debug)]
 /// A notification
 #[zvariant(signature = "dict")]
-pub struct Notification {
+pub struct Notification<'a> {
     /// User-visible string to display as the title.
-    title: String,
+    title: &'a str,
     /// User-visible string to display as the body.
-    body: Option<String>,
+    body: Option<&'a str>,
     /// Serialized icon (e.g using gio::Icon::serialize).
-    icon: Option<Icon>,
+    icon: Option<Icon<'a>>,
     /// The priority for the notification.
     priority: Option<Priority>,
     /// Name of an action that is exported by the application.
     /// This action will be activated when the user clicks on the notification.
     #[zvariant(rename = "default-action")]
-    default_action: Option<String>,
+    default_action: Option<&'a str>,
     /// Target parameter to send along when activating the default action.
     #[zvariant(rename = "default-action-target")]
-    default_action_target: Option<OwnedValue>,
+    default_action_target: Option<Value<'a>>,
     /// Array of buttons to add to the notification.
-    buttons: Option<Vec<Button>>,
+    buttons: Option<Vec<Button<'a>>>,
 }
 
-impl Notification {
+impl<'a> Notification<'a> {
     /// Create a new notification.
     ///
     /// # Arguments
     ///
     /// * `title` - the notification title.
-    pub fn new(title: &str) -> Self {
+    pub fn new(title: &'a str) -> Self {
         Self {
-            title: title.to_string(),
+            title,
             body: None,
             priority: None,
             icon: None,
@@ -171,14 +172,14 @@ impl Notification {
 
     /// Sets the notification body.
     #[must_use]
-    pub fn body(mut self, body: &str) -> Self {
-        self.body = Some(body.to_string());
+    pub fn body(mut self, body: &'a str) -> Self {
+        self.body = Some(body);
         self
     }
 
     /// Sets an icon to the notification.
     #[must_use]
-    pub fn icon(mut self, icon: Icon) -> Self {
+    pub fn icon(mut self, icon: Icon<'a>) -> Self {
         self.icon = Some(icon);
         self
     }
@@ -192,21 +193,21 @@ impl Notification {
 
     /// Sets the default action when the user clicks on the notification.
     #[must_use]
-    pub fn default_action(mut self, default_action: &str) -> Self {
-        self.default_action = Some(default_action.to_string());
+    pub fn default_action(mut self, default_action: &'a str) -> Self {
+        self.default_action = Some(default_action);
         self
     }
 
     /// Sets a value to be sent in the `action_invoked` signal.
     #[must_use]
-    pub fn default_action_target(mut self, default_action_target: OwnedValue) -> Self {
+    pub fn default_action_target(mut self, default_action_target: Value<'a>) -> Self {
         self.default_action_target = Some(default_action_target);
         self
     }
 
     /// Adds a new button to the notification.
     #[must_use]
-    pub fn button(mut self, button: Button) -> Self {
+    pub fn button(mut self, button: Button<'a>) -> Self {
         match self.buttons {
             Some(ref mut buttons) => buttons.push(button),
             None => {
@@ -217,20 +218,20 @@ impl Notification {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(SerializeDict, Type, Debug)]
 /// A notification button
 #[zvariant(signature = "dict")]
-pub struct Button {
+pub struct Button<'a> {
     /// User-visible label for the button. Mandatory.
-    label: String,
+    label: &'a str,
     /// Name of an action that is exported by the application. The action will
     /// be activated when the user clicks on the button.
-    action: String,
+    action: &'a str,
     /// Target parameter to send along when activating the action.
-    target: Option<OwnedValue>,
+    target: Option<Value<'a>>,
 }
 
-impl Button {
+impl<'a> Button<'a> {
     /// Create a new notification button.
     ///
     /// # Arguments
@@ -238,17 +239,17 @@ impl Button {
     /// * `label` - the user visible label of the button.
     /// * `action` - the action name to be invoked when the user clicks on the
     ///   button.
-    pub fn new(label: &str, action: &str) -> Self {
+    pub fn new(label: &'a str, action: &'a str) -> Self {
         Self {
-            label: label.to_string(),
-            action: action.to_string(),
+            label,
+            action,
             target: None,
         }
     }
 
     /// The value to send with the action name when the button is clicked.
     #[must_use]
-    pub fn target(mut self, target: OwnedValue) -> Self {
+    pub fn target(mut self, target: Value<'a>) -> Self {
         self.target = Some(target);
         self
     }
@@ -270,7 +271,7 @@ impl Action {
     }
 
     /// The parameters passed to the action.
-    pub fn parameter(&self) -> &Vec<OwnedValue> {
+    pub fn parameter(&self) -> &[OwnedValue] {
         &self.2
     }
 }
@@ -344,7 +345,7 @@ impl<'a> NotificationProxy<'a> {
     pub async fn add_notification(
         &self,
         id: &str,
-        notification: Notification,
+        notification: Notification<'_>,
     ) -> Result<(), Error> {
         call_method(self.inner(), "AddNotification", &(id, notification)).await
     }
