@@ -19,9 +19,9 @@
 
 use std::os::unix::prelude::AsRawFd;
 
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
 
-use super::{DESTINATION, PATH};
+use super::{request::RequestProxy, DESTINATION, PATH};
 use crate::{helpers::call_method, Error};
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
@@ -86,11 +86,13 @@ impl<'a> SecretProxy<'a> {
         } else {
             RetrieveOptions::default()
         };
-        call_method(
+        let path = call_method::<OwnedObjectPath, _>(
             self.inner(),
             "RetrieveSecret",
             &(Fd::from(fd.as_raw_fd()), options),
         )
-        .await
+        .await?;
+        let request = RequestProxy::new(self.inner().connection(), path).await?;
+        request.receive_response::<String>().await
     }
 }
