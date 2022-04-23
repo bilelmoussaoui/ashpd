@@ -19,15 +19,12 @@
 
 use std::os::unix::prelude::AsRawFd;
 
-use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
-use super::{request::RequestProxy, HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_method, call_request_method},
-    Error,
-};
+use super::{HandleToken, DESTINATION, PATH};
+use crate::{helpers::call_request_method, Error};
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
 #[zvariant(signature = "dict")]
 struct RetrieveOptions {
@@ -44,6 +41,12 @@ impl RetrieveOptions {
         self.token = Some(token.to_string());
         self
     }
+}
+
+#[derive(Debug, Type, DeserializeDict)]
+#[zvariant(signature = "dict")]
+struct RetrieveResponse {
+    token: String,
 }
 
 /// The interface lets sandboxed applications retrieve a per-application secret.
@@ -90,12 +93,13 @@ impl<'a> SecretProxy<'a> {
         } else {
             RetrieveOptions::default()
         };
-        call_request_method(
+        let response = call_request_method::<RetrieveResponse, _>(
             self.inner(),
             &options.handle_token,
             "RetrieveSecret",
             &(Fd::from(fd.as_raw_fd()), &options),
         )
-        .await
+        .await?;
+        Ok(response.token)
     }
 }
