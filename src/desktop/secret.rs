@@ -21,13 +21,17 @@ use std::os::unix::prelude::AsRawFd;
 
 use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
 
-use super::{request::RequestProxy, DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
+use super::{request::RequestProxy, HandleToken, DESTINATION, PATH};
+use crate::{
+    helpers::{call_method, call_request_method},
+    Error,
+};
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
 #[zvariant(signature = "dict")]
 struct RetrieveOptions {
+    handle_token: HandleToken,
     /// A string returned by a previous call to `retrieve_secret`.
     token: Option<String>,
 }
@@ -86,13 +90,12 @@ impl<'a> SecretProxy<'a> {
         } else {
             RetrieveOptions::default()
         };
-        let path = call_method::<OwnedObjectPath, _>(
+        call_request_method(
             self.inner(),
+            &options.handle_token,
             "RetrieveSecret",
-            &(Fd::from(fd.as_raw_fd()), options),
+            &(Fd::from(fd.as_raw_fd()), &options),
         )
-        .await?;
-        let request = RequestProxy::new(self.inner().connection(), path).await?;
-        request.receive_response::<String>().await
+        .await
     }
 }
