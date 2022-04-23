@@ -2,27 +2,27 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::secret::SecretProxy;
-//! use std::fs::File;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
 //!     let proxy = SecretProxy::new(&connection).await?;
 //!
-//!     let file = File::open("test.txt").unwrap();
+//!     let (mut x1,x2) = std::os::unix::net::UnixStream::pair().unwrap();
+//!     let secret = proxy.retrieve_secret(&x2, None).await.unwrap();
+//!     drop(x2);
+//!     let mut buf = Vec::new();
+//!     x1.read_to_end(&mut buf);
 //!
-//!     let secret = proxy.retrieve_secret(&file, None).await?;
-//!
-//!     println!("{:#?}", secret);
 //!     Ok(())
 //! }
 //! ```
 
 use std::os::unix::prelude::AsRawFd;
 
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_request_method, Error};
+use crate::{helpers::call_basic_response_method, Error};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
@@ -30,6 +30,7 @@ use crate::{helpers::call_request_method, Error};
 struct RetrieveOptions {
     handle_token: HandleToken,
     /// A string returned by a previous call to `retrieve_secret`.
+    /// TODO: seems to not be used by the portal...
     token: Option<String>,
 }
 
@@ -37,16 +38,11 @@ impl RetrieveOptions {
     /// Sets the token received on a previous call to
     /// [`SecretProxy::retrieve_secret`].
     #[must_use]
+    #[allow(unused)]
     pub fn token(mut self, token: &str) -> Self {
         self.token = Some(token.to_string());
         self
     }
-}
-
-#[derive(Debug, Type, DeserializeDict)]
-#[zvariant(signature = "dict")]
-struct RetrieveResponse {
-    token: String,
 }
 
 /// The interface lets sandboxed applications retrieve a per-application secret.
@@ -80,26 +76,17 @@ impl<'a> SecretProxy<'a> {
     /// # Arguments
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
-    /// * `token` -  A string returned by a previous call to
     ///   [`retrieve_secret()`][`SecretProxy::retrieve_secret`].
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve_secret(
-        &self,
-        fd: &impl AsRawFd,
-        token: Option<&str>,
-    ) -> Result<String, Error> {
-        let options = if let Some(token) = token {
-            RetrieveOptions::default().token(token)
-        } else {
-            RetrieveOptions::default()
-        };
-        let response = call_request_method::<RetrieveResponse, _>(
+    pub async fn retrieve_secret(&self, fd: &impl AsRawFd) -> Result<(), Error> {
+        let options = RetrieveOptions::default();
+        call_basic_response_method(
             self.inner(),
             &options.handle_token,
             "RetrieveSecret",
             &(Fd::from(fd.as_raw_fd()), &options),
         )
         .await?;
-        Ok(response.token)
+        Ok(())
     }
 }
