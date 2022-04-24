@@ -9,7 +9,7 @@
 //!     let proxy = SecretProxy::new(&connection).await?;
 //!
 //!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
-//!     let secret = proxy.retrieve_secret(&x2).await.unwrap();
+//!     let secret = proxy.retrieve_secret(&x2).await?;
 //!     drop(x2);
 //!     let mut buf = Vec::new();
 //!     x1.read_to_end(&mut buf);
@@ -77,7 +77,6 @@ impl<'a> SecretProxy<'a> {
     /// # Arguments
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
-    ///   [`retrieve_secret()`][`SecretProxy::retrieve_secret`].
     #[doc(alias = "RetrieveSecret")]
     pub async fn retrieve_secret(&self, fd: &impl AsRawFd) -> Result<(), Error> {
         let options = RetrieveOptions::default();
