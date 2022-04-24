@@ -2,13 +2,14 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::secret::SecretProxy;
+//! use std::io::Read;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
 //!     let proxy = SecretProxy::new(&connection).await?;
 //!
-//!     let (mut x1,x2) = std::os::unix::net::UnixStream::pair().unwrap();
-//!     let secret = proxy.retrieve_secret(&x2, None).await.unwrap();
+//!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
+//!     let secret = proxy.retrieve_secret(&x2).await.unwrap();
 //!     drop(x2);
 //!     let mut buf = Vec::new();
 //!     x1.read_to_end(&mut buf);
