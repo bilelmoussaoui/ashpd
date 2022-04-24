@@ -9,7 +9,7 @@
 //!     let proxy = SecretProxy::new(&connection).await?;
 //!
 //!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
-//!     let secret = proxy.retrieve_secret(&x2).await?;
+//!     proxy.retrieve_secret(&x2).await?;
 //!     drop(x2);
 //!     let mut buf = Vec::new();
 //!     x1.read_to_end(&mut buf);
@@ -18,6 +18,7 @@
 //! }
 //! ```
 
+use std::io::Read;
 use std::os::unix::prelude::AsRawFd;
 
 use zbus::zvariant::{Fd, SerializeDict, Type};
@@ -89,4 +90,20 @@ impl<'a> SecretProxy<'a> {
         .await?;
         Ok(())
     }
+}
+
+/// A handy wrapper around [`SecretProxy::retrieve_secret`].
+///
+/// It crates a UnixStream internally for receiving the secret.
+pub async fn retrieve_secret() -> Result<Vec<u8>, Error> {
+    let connection = zbus::Connection::session().await?;
+    let proxy = SecretProxy::new(&connection).await?;
+
+    let (mut x1, x2) = std::os::unix::net::UnixStream::pair()?;
+    proxy.retrieve_secret(&x2).await?;
+    drop(x2);
+    let mut buf = Vec::new();
+    x1.read_to_end(&mut buf)?;
+
+    Ok(buf)
 }

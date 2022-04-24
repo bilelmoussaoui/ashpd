@@ -28,6 +28,7 @@ pub enum PortalError {
 }
 
 #[derive(Debug)]
+#[non_exhaustive]
 /// The error type for ashpd.
 pub enum Error {
     /// The portal request didn't succeed.
@@ -40,6 +41,8 @@ pub enum Error {
     NoResponse,
     /// Failed to parse a string into an enum variant
     ParseError(String),
+    /// Input/Output
+    IO(std::io::Error),
 }
 
 impl std::error::Error for Error {}
@@ -51,6 +54,7 @@ impl std::fmt::Display for Error {
             Self::Zbus(e) => f.write_str(&format!("ZBus Error: {}", e)),
             Self::Portal(e) => f.write_str(&format!("Portal request failed: {}", e)),
             Self::NoResponse => f.write_str("Portal error: no response"),
+            Self::IO(e) => f.write_str(&format!("IO: {e}")),
             Self::ParseError(e) => f.write_str(e),
         }
     }
@@ -83,5 +87,11 @@ impl From<zbus::Error> for Error {
 impl From<zbus::zvariant::Error> for Error {
     fn from(e: zbus::zvariant::Error) -> Self {
         Self::Zbus(zbus::Error::Variant(e))
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
+        Self::IO(e)
     }
 }
