@@ -14,8 +14,9 @@
 //! }
 //! ```
 
-use serde::{Deserialize, Serialize, Serializer};
 use std::{fmt, str::FromStr};
+
+use serde::{Deserialize, Serialize, Serializer};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Signature, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -135,7 +136,8 @@ impl<'a> DeviceProxy<'a> {
     ///   made.
     /// * `devices` - A list of devices to request access to.
     ///
-    /// *Note* Asking for multiple devices at the same time may or may not be supported
+    /// *Note* Asking for multiple devices at the same time may or may not be
+    /// supported
     ///
     /// # Specifications
     ///

@@ -3,16 +3,17 @@
 //! Print a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::print::PrintProxy;
-//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
+//!
+//! use ashpd::{desktop::print::PrintProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
 //!     let proxy = PrintProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
 //!
-//!     let file = File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
+//!     let file =
+//!         File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
 //!     let pre_print = proxy
 //!         .prepare_print(
 //!             &identifier,
@@ -23,21 +24,14 @@
 //!         )
 //!         .await?;
 //!     proxy
-//!         .print(
-//!             &identifier,
-//!             "test",
-//!             &file,
-//!             Some(pre_print.token),
-//!             true,
-//!         )
+//!         .print(&identifier, "test", &file, Some(pre_print.token), true)
 //!         .await?;
 //!
 //!     Ok(())
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
-use std::{fmt, str::FromStr};
+use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 
 use serde::{Deserialize, Serialize, Serializer};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Signature, Type};

@@ -3,8 +3,7 @@ use std::{
     fmt::{self, Debug, Display},
 };
 
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
+use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use zbus::{names::OwnedMemberName, zvariant::Type};
 

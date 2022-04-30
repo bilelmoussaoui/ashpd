@@ -2,10 +2,13 @@
 //!
 //! ## Sets a wallpaper from a file:
 //!
-//!```rust,no_run
-//! use ashpd::desktop::wallpaper::{self, SetOn};
-//! use ashpd::WindowIdentifier;
+//! ```rust,no_run
 //! use std::fs::File;
+//!
+//! use ashpd::{
+//!     desktop::wallpaper::{self, SetOn},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
@@ -17,9 +20,12 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
-//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
+//!
+//! use ashpd::{
+//!     desktop::wallpaper::{SetOn, WallpaperProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
@@ -35,9 +41,11 @@
 //!
 //! ## Sets a wallpaper from a URI:
 //!
-//!```rust,no_run
-//! use ashpd::desktop::wallpaper::{self, SetOn};
-//! use ashpd::WindowIdentifier;
+//! ```rust,no_run
+//! use ashpd::{
+//!     desktop::wallpaper::{self, SetOn},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
@@ -49,8 +57,10 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::wallpaper::{SetOn, WallpaperProxy};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::wallpaper::{SetOn, WallpaperProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -67,8 +77,7 @@
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
-use std::{fmt, str::FromStr};
+use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize, Serializer};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Signature, Type};

@@ -3,8 +3,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::background;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{desktop::background, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let response = background::request(
@@ -27,8 +26,7 @@
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::background;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{desktop::background, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let response = background::request(

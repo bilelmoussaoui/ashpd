@@ -1,8 +1,9 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::documents::{FileTransferProxy};
 //! use std::fs::File;
+//!
+//! use ashpd::documents::FileTransferProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -10,9 +11,7 @@
 //!
 //!     let key = proxy.start_transfer(true, true).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy
-//!         .add_files(&key, &[&file])
-//!         .await?;
+//!     proxy.add_files(&key, &[&file]).await?;
 //!
 //!     // The files would be retrieved by another process
 //!     let files = proxy.retrieve_files(&key).await?;

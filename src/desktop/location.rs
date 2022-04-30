@@ -1,8 +1,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::location::{Accuracy, LocationProxy};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::location::{Accuracy, LocationProxy},
+//!     WindowIdentifier,
+//! };
 //! use futures::TryFutureExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -10,7 +12,9 @@
 //!     let proxy = LocationProxy::new(&connection).await?;
 //!     let identifier = WindowIdentifier::default();
 //!
-//!     let session = proxy.create_session(None, None, Some(Accuracy::Street)).await?;
+//!     let session = proxy
+//!         .create_session(None, None, Some(Accuracy::Street))
+//!         .await?;
 //!
 //!     let (_, location) = futures::try_join!(
 //!         proxy.start(&session, &identifier).into_future(),

@@ -1,14 +1,14 @@
 //! # Examples
 //!
 //! ```rust, no_run
-//! use ashpd::desktop::account;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{desktop::account, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let user_info = account::user_information(
 //!         &WindowIdentifier::default(),
 //!         "App would like to access user information",
-//!     ).await?;
+//!     )
+//!     .await?;
 //!
 //!     println!("Name: {}", user_info.name());
 //!     println!("ID: {}", user_info.id());
@@ -20,8 +20,7 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::account::AccountProxy;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{desktop::account::AccountProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;

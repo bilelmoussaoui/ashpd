@@ -1,17 +1,18 @@
-use super::WindowIdentifierType;
+use std::{fmt, sync::Arc};
+
 use futures::lock::Mutex;
 use gdk::Backend;
 #[cfg(feature = "raw_handle")]
 use glib::translate::ToGlibPtr;
-use gtk4::prelude::*;
 use gtk4::{
     gdk,
     glib::{self, clone},
+    prelude::*,
 };
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{RawWindowHandle, WaylandHandle, XlibHandle};
-use std::fmt;
-use std::sync::Arc;
+
+use super::WindowIdentifierType;
 
 static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk4-window-handle";
 

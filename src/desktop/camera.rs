@@ -115,16 +115,18 @@ impl<'a> CameraProxy<'a> {
     }
 }
 
-/// A helper to get the PipeWire Node ID to use with the camera file descriptor returned by
-/// [`CameraProxy::open_pipe_wire_remote`].
+/// A helper to get the PipeWire Node ID to use with the camera file descriptor
+/// returned by [`CameraProxy::open_pipe_wire_remote`].
 ///
-/// Currently, the camera portal only gives us a file descriptor. Not passing a node id
-/// may cause the media session controller to auto-connect the client to an incorrect node.
+/// Currently, the camera portal only gives us a file descriptor. Not passing a
+/// node id may cause the media session controller to auto-connect the client to
+/// an incorrect node.
 ///
-/// The method looks for the available output streams of a `media.role` type of `Camera`
-/// and return their Node ID if it found any.
+/// The method looks for the available output streams of a `media.role` type of
+/// `Camera` and return their Node ID if it found any.
 ///
-/// *Note* The socket referenced by `fd` must not be used while this function is running.
+/// *Note* The socket referenced by `fd` must not be used while this function is
+/// running.
 #[cfg(feature = "feature_pipewire")]
 pub async fn pipewire_node_id(fd: RawFd) -> Result<Option<u32>, pw::Error> {
     let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };

@@ -1,8 +1,9 @@
 use super::{DESTINATION, PATH};
 use crate::Error;
 
-/// The interface provides information about the user-selected system-wide power profile, to sandboxed applications.
-/// It is not a portal in the strict sense, since it does not involve user interaction.
+/// The interface provides information about the user-selected system-wide power
+/// profile, to sandboxed applications. It is not a portal in the strict sense,
+/// since it does not involve user interaction.
 ///
 /// via a library API such as the GLib [`gio::PowerProfileMonitor`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.PowerProfileMonitor.html) interface.
 ///

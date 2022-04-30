@@ -4,8 +4,7 @@
 //! Only available for Flatpak applications.
 //!
 //! ```rust,no_run
-//! use ashpd::flatpak::FlatpakProxy;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{flatpak::FlatpakProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;

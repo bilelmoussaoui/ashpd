@@ -1,5 +1,5 @@
-use super::WindowIdentifierType;
 use std::fmt;
+
 use wayland_client::{
     protocol::{__interfaces::WL_SURFACE_INTERFACE, wl_surface::WlSurface},
     ConnectionHandle, Proxy, QueueHandle,
@@ -8,6 +8,8 @@ use wayland_protocols::unstable::xdg_foreign::v2::client::{
     zxdg_exported_v2::{Event, ZxdgExportedV2},
     zxdg_exporter_v2::ZxdgExporterV2,
 };
+
+use super::WindowIdentifierType;
 
 pub struct WaylandWindowIdentifier {
     exported: ZxdgExportedV2,

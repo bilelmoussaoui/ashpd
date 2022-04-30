@@ -1,8 +1,9 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
 //! use std::{thread, time};
+//!
+//! use ashpd::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
 //! use zbus::zvariant::Value;
 //!
 //! async fn run() -> ashpd::Result<()> {

@@ -4,8 +4,10 @@
 //! The portal is currently useless without PipeWire & Rust support.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType},
+//!     WindowIdentifier,
+//! };
 //! use enumflags2::BitFlags;
 //!
 //! async fn run() -> ashpd::Result<()> {

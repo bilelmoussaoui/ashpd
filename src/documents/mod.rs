@@ -37,10 +37,10 @@ pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
 
 use std::{
-    collections::HashMap, ffi::CString, os::unix::ffi::OsStrExt, os::unix::prelude::AsRawFd,
-};
-use std::{
+    collections::HashMap,
+    ffi::CString,
     fmt,
+    os::unix::{ffi::OsStrExt, prelude::AsRawFd},
     path::{Path, PathBuf},
     str::FromStr,
 };

@@ -155,7 +155,8 @@ impl<'a> SettingsProxy<'a> {
         T::try_from(value).map_err(From::from)
     }
 
-    /// Reads the value of namespace: `org.freedesktop.appearance` and `color-scheme` key.
+    /// Reads the value of namespace: `org.freedesktop.appearance` and
+    /// `color-scheme` key.
     pub async fn color_scheme(&self) -> Result<ColorScheme, Error> {
         let scheme = match self
             .read::<u32>("org.freedesktop.appearance", "color-scheme")
@@ -168,7 +169,8 @@ impl<'a> SettingsProxy<'a> {
         Ok(scheme)
     }
 
-    /// Listen to changes of the namespace `org.freedesktop.appearance` for `color-scheme` key.
+    /// Listen to changes of the namespace `org.freedesktop.appearance` for
+    /// `color-scheme` key.
     pub async fn receive_color_scheme_changed(&self) -> Result<ColorScheme, Error> {
         loop {
             let setting = self.receive_setting_changed().await?;

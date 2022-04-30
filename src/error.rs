@@ -1,5 +1,6 @@
-use crate::desktop::request::ResponseError;
 use zbus::DBusError;
+
+use crate::desktop::request::ResponseError;
 
 /// An error type that describes the various DBus errors.
 ///

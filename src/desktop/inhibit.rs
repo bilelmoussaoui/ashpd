@@ -3,9 +3,12 @@
 //! How to inhibit logout/user switch
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState};
-//! use ashpd::WindowIdentifier;
 //! use std::{thread, time};
+//!
+//! use ashpd::{
+//!     desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;

@@ -3,9 +3,10 @@
 //! Spawn a process outside of the sandbox, only works in a Flatpak.
 //!
 //! ```rust,no_run
+//! use std::collections::HashMap;
+//!
 //! use ashpd::flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions};
 //! use enumflags2::BitFlags;
-//! use std::collections::HashMap;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -29,12 +30,20 @@
 pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
+use std::{
+    collections::HashMap,
+    ffi::CString,
+    fmt::Debug,
+    os::unix::{
+        ffi::OsStrExt,
+        prelude::{AsRawFd, RawFd},
+    },
+    path::Path,
+};
+
 use enumflags2::{bitflags, BitFlags};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::os::unix::ffi::OsStrExt;
-use std::os::unix::prelude::RawFd;
-use std::{collections::HashMap, ffi::CString, fmt::Debug, os::unix::prelude::AsRawFd, path::Path};
 use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
 
 use crate::{
@@ -87,7 +96,8 @@ pub enum SpawnFlags {
     /// Emit a SpawnStarted signal once the sandboxed process has been fully
     /// started.
     NotifyStart,
-    /// Expose the sandbox process IDs in the caller's sandbox and the caller's process IDs in the new sandbox.
+    /// Expose the sandbox process IDs in the caller's sandbox and the caller's
+    /// process IDs in the new sandbox.
     SharePids,
     /// Don't provide app files at `/app` in the new sandbox.
     EmptyApp,
@@ -128,10 +138,12 @@ pub struct SpawnOptions {
     /// A list of environment variables to remove.
     #[zvariant(rename = "unset-env")]
     unset_env: Option<Vec<String>>,
-    /// A file descriptor of the directory that  will be used as `/usr` in the new sandbox.
+    /// A file descriptor of the directory that  will be used as `/usr` in the
+    /// new sandbox.
     #[zvariant(rename = "usr-fd")]
     usr_fd: Option<RawFd>,
-    /// A file descriptor of the directory that  will be used as `/app` in the new sandbox.
+    /// A file descriptor of the directory that  will be used as `/app` in the
+    /// new sandbox.
     #[zvariant(rename = "app-fd")]
     app_fd: Option<RawFd>,
 }
@@ -206,14 +218,16 @@ impl SpawnOptions {
         self
     }
 
-    /// Set a file descriptor of the directory that  will be used as `/usr` in the new sandbox.
+    /// Set a file descriptor of the directory that  will be used as `/usr` in
+    /// the new sandbox.
     #[must_use]
     pub fn usr_fd(mut self, fd: impl AsRawFd) -> Self {
         self.usr_fd = Some(fd.as_raw_fd());
         self
     }
 
-    /// Set a file descriptor of the directory that  will be used as `/app` in the new sandbox.
+    /// Set a file descriptor of the directory that  will be used as `/app` in
+    /// the new sandbox.
     #[must_use]
     pub fn app_fd(mut self, fd: impl AsRawFd) -> Self {
         self.app_fd = Some(fd.as_raw_fd());

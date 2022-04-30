@@ -1,9 +1,10 @@
 //! # Examples
 //!
 //!
-//!```rust,no_run
-//! use ashpd::desktop::trash;
+//! ```rust,no_run
 //! use std::fs::File;
+//!
+//! use ashpd::desktop::trash;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-night.jpg").unwrap();
@@ -15,8 +16,9 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::trash::TrashProxy;
 //! use std::fs::File;
+//!
+//! use ashpd::desktop::trash::TrashProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();

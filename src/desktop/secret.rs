@@ -1,8 +1,9 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::secret::SecretProxy;
 //! use std::io::Read;
+//!
+//! use ashpd::desktop::secret::SecretProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -18,8 +19,7 @@
 //! }
 //! ```
 
-use std::io::Read;
-use std::os::unix::prelude::AsRawFd;
+use std::{io::Read, os::unix::prelude::AsRawFd};
 
 use zbus::zvariant::{Fd, SerializeDict, Type};
 

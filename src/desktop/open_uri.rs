@@ -2,10 +2,10 @@
 //!
 //! ## Open a file
 //!
-//!```rust,no_run
-//! use ashpd::desktop::open_uri;
-//! use ashpd::WindowIdentifier;
+//! ```rust,no_run
 //! use std::fs::File;
+//!
+//! use ashpd::{desktop::open_uri, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
@@ -17,9 +17,9 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::open_uri::OpenURIProxy;
-//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
+//!
+//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
@@ -27,17 +27,19 @@
 //!     let connection = zbus::Connection::session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
-//!     proxy.open_file(&WindowIdentifier::default(), &file, false, true).await?;
+//!     proxy
+//!         .open_file(&WindowIdentifier::default(), &file, false, true)
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
 //!
 //! ## Open a directory
 //!
-//!```rust,no_run
-//! use ashpd::desktop::open_uri;
-//! use ashpd::WindowIdentifier;
+//! ```rust,no_run
 //! use std::fs::File;
+//!
+//! use ashpd::{desktop::open_uri, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
@@ -49,9 +51,9 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::open_uri::OpenURIProxy;
-//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
+//!
+//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
@@ -59,7 +61,9 @@
 //!     let connection = zbus::Connection::session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!
-//!     proxy.open_directory(&WindowIdentifier::default(), &directory).await?;
+//!     proxy
+//!         .open_directory(&WindowIdentifier::default(), &directory)
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
@@ -67,9 +71,8 @@
 //! ## Open a file from a URI
 //!
 //!
-//!```rust,no_run
-//! use ashpd::desktop::open_uri;
-//! use ashpd::WindowIdentifier;
+//! ```rust,no_run
+//! use ashpd::{desktop::open_uri, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
@@ -81,15 +84,16 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::open_uri::OpenURIProxy;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
 //!     let proxy = OpenURIProxy::new(&connection).await?;
 //!     let uri = "https://github.com/bilelmoussaoui/ashpd";
 //!
-//!     proxy.open_uri(&WindowIdentifier::default(), uri, false, true).await?;
+//!     proxy
+//!         .open_uri(&WindowIdentifier::default(), uri, false, true)
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```

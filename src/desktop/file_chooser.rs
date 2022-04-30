@@ -3,8 +3,10 @@
 //! ## Opening a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -38,8 +40,10 @@
 //! ## Ask to save a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -65,8 +69,10 @@
 //! ## Ask to save multiple files
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{FileChooserProxy, SaveFilesOptions};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::file_chooser::{FileChooserProxy, SaveFilesOptions},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -90,10 +96,10 @@
 //! }
 //! ```
 
+use std::{ffi::CString, os::unix::ffi::OsStrExt, path::Path};
+
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::os::unix::ffi::OsStrExt;
-use std::{ffi::CString, path::Path};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};

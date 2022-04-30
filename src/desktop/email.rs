@@ -2,10 +2,13 @@
 //!
 //! Compose an email
 //!
-//!```rust,no_run
-//! use ashpd::desktop::email::{self, Email};
-//! use ashpd::WindowIdentifier;
+//! ```rust,no_run
 //! use std::fs::File;
+//!
+//! use ashpd::{
+//!     desktop::email::{self, Email},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
@@ -25,9 +28,12 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::email::{Email, EmailProxy};
-//! use ashpd::WindowIdentifier;
 //! use std::fs::File;
+//!
+//! use ashpd::{
+//!     desktop::email::{Email, EmailProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;

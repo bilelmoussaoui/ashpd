@@ -24,8 +24,7 @@ pub use self::window_identifier::WindowIdentifier;
 pub mod flatpak;
 mod helpers;
 pub use enumflags2;
-pub use zbus;
-pub use zbus::zvariant;
+pub use zbus::{self, zvariant};
 
 /// Check whether the application is running inside a sandbox.
 ///

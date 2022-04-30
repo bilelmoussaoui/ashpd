@@ -1,8 +1,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy},
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -10,26 +12,37 @@
 //!
 //!     let session = proxy.create_session().await?;
 //!
-//!     proxy.select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer).await?;
+//!     proxy
+//!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
+//!         .await?;
 //!
 //!     let (devices, _) = proxy.start(&session, &WindowIdentifier::default()).await?;
 //!     println!("{:#?}", devices);
 //!
 //!     // 13 for Enter key code
-//!     proxy.notify_keyboard_keycode(&session, 13, KeyState::Pressed).await?;
+//!     proxy
+//!         .notify_keyboard_keycode(&session, 13, KeyState::Pressed)
+//!         .await?;
 //!
 //!     Ok(())
 //! }
 //! ```
 //!
-//! You can also use the Remote Desktop portal with the ScreenCast one. In order to do so,
-//! you need to call [`ScreenCastProxy::select_sources()`](crate::desktop::screencast::ScreenCastProxy::select_sources)
-//! on the session created with [`RemoteDesktopProxy::create_session()`](crate::desktop::remote_desktop::RemoteDesktopProxy::create_session)
+//! You can also use the Remote Desktop portal with the ScreenCast one. In order
+//! to do so, you need to call
+//! [`ScreenCastProxy::select_sources()`](crate::desktop::screencast::
+//! ScreenCastProxy::select_sources) on the session created with
+//! [`RemoteDesktopProxy::create_session()`](crate::desktop::remote_desktop::
+//! RemoteDesktopProxy::create_session)
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy};
-//! use ashpd::desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType};
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{
+//!     desktop::{
+//!         remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy},
+//!         screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType},
+//!     },
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -39,7 +52,9 @@
 //!
 //!     let session = proxy.create_session().await?;
 //!
-//!     proxy.select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer).await?;
+//!     proxy
+//!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
+//!         .await?;
 //!     screencast
 //!         .select_sources(
 //!             &session,
@@ -56,7 +71,9 @@
 //!     println!("{:#?}", streams);
 //!
 //!     // 13 for Enter key code
-//!     proxy.notify_keyboard_keycode(&session, 13, KeyState::Pressed).await?;
+//!     proxy
+//!         .notify_keyboard_keycode(&session, 13, KeyState::Pressed)
+//!         .await?;
 //!
 //!     Ok(())
 //! }
@@ -70,7 +87,6 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type, Value};
 
 use super::{screencast::Stream, HandleToken, SessionProxy, DESTINATION, PATH};
-
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method},
     Error, WindowIdentifier,

@@ -9,9 +9,9 @@ use zbus::zvariant::{Signature, Type};
 /// this reason.
 ///
 /// Under X11, the [`WindowIdentifier`] should have the form `x11:XID`, where
-/// XID is the XID of the application window in hexadecimal. Under Wayland, it should have the
-/// form `wayland:HANDLE`, where HANDLE is a surface handle obtained with the
-/// [xdg-foreign](https://github.com/wayland-project/wayland-protocols/blob/master/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
+/// XID is the XID of the application window in hexadecimal. Under Wayland, it
+/// should have the form `wayland:HANDLE`, where HANDLE is a surface handle
+/// obtained with the [xdg-foreign](https://github.com/wayland-project/wayland-protocols/blob/master/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
 ///
 /// See also [Parent window identifiers](https://flatpak.github.io/xdg-desktop-portal/index.html#parent_window).
 ///
@@ -83,8 +83,8 @@ use zbus::zvariant::{Signature, Type};
 ///
 /// ## Other Toolkits
 ///
-/// If you have access to `RawWindowHandle` you can convert it to a [`WindowIdentifier`] with
-/// ```rust, ignore
+/// If you have access to `RawWindowHandle` you can convert it to a
+/// [`WindowIdentifier`] with ```rust, ignore
 /// let handle = RawWindowHandle::Xlib(XlibHandle::empty());
 /// let identifier = WindowIdentifier::from_raw_handle(handle);
 ///
@@ -196,7 +196,8 @@ impl WindowIdentifier {
     }
 
     #[cfg(feature = "raw_handle")]
-    /// Create an instance of [`WindowIdentifier`] from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
+    /// Create an instance of [`WindowIdentifier`] from a
+    /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
     ///
     /// The constructor returns a valid handle under both Wayland & X11.
     pub fn from_raw_handle(handle: &raw_window_handle::RawWindowHandle) -> Self {
@@ -240,12 +241,14 @@ impl WindowIdentifier {
         feature = "raw_handle",
         any(feature = "feature_gtk3", feature = "feature_gtk4")
     ))]
-    /// Convert a [`WindowIdentifier`] to [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
+    /// Convert a [`WindowIdentifier`] to
+    /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
     ///
     /// # Panics
     ///
-    /// If you attempt to convert a [`WindowIdentifier`] created from a [`RawWindowHandle`](raw_window_handle::RawWindowHandle`)
-    /// instead of the gtk3 / gtk4 constructors.
+    /// If you attempt to convert a [`WindowIdentifier`] created from a
+    /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`) instead of
+    /// the gtk3 / gtk4 constructors.
     pub fn as_raw_handle(&self) -> raw_window_handle::RawWindowHandle {
         match self {
             #[cfg(feature = "feature_gtk4")]
