@@ -84,13 +84,15 @@ use zbus::zvariant::Type;
 /// ## Other Toolkits
 ///
 /// If you have access to `RawWindowHandle` you can convert it to a
-/// [`WindowIdentifier`] with ```rust, ignore
+/// [`WindowIdentifier`] with
+///
+/// ```rust, ignore
 /// let handle = RawWindowHandle::Xlib(XlibHandle::empty());
 /// let identifier = WindowIdentifier::from_raw_handle(handle);
 ///
 /// /// Open some portals
 /// ```
-/// 
+///
 /// In case you don't have access to a WindowIdentifier:
 /// ```rust
 /// use ashpd::WindowIdentifier;
