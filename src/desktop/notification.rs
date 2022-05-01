@@ -117,7 +117,6 @@ impl FromStr for Priority {
     }
 }
 
-
 #[derive(SerializeDict, Type, Debug)]
 /// A notification
 #[zvariant(signature = "dict")]

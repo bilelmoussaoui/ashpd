@@ -300,7 +300,6 @@ pub async fn set_from_file(
     Ok(())
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::SetOn;
