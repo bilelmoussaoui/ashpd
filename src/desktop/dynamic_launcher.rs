@@ -1,41 +1,39 @@
 //! # Examples
 //!
-//! ```rust, no_run
-//! use ashpd::{desktop::DynamicLauncher, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let user_info = DynamicLauncher::user_information(
-//!         &WindowIdentifier::default(),
-//!         "App would like to access user information",
-//!     )
-//!     .await?;
-//!
-//!     println!("Name: {}", user_info.name());
-//!     println!("ID: {}", user_info.id());
-//!
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
 //! ```rust,no_run
-//! use ashpd::{desktop::DynamicLauncher::DynamicLauncherProxy, WindowIdentifier};
+//! use ashpd::{
+//!     desktop::{
+//!         dynamic_launcher::{DynamicLauncherProxy, LauncherType, PrepareInstallOptions},
+//!         Icon,
+//!     },
+//!     WindowIdentifier,
+//! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
 //!
 //!     let proxy = DynamicLauncherProxy::new(&connection).await?;
-//!     let user_info = proxy
-//!         .user_information(
+//!     let (name, token) = proxy
+//!         .prepare_install(
 //!             &WindowIdentifier::default(),
-//!             "App would like to access user information",
+//!             "My App",
+//!             Icon::from_names(&["dialog-symbolic"]),
+//!             PrepareInstallOptions::default(),
 //!         )
 //!         .await?;
 //!
-//!     println!("Name: {}", user_info.name());
-//!     println!("ID: {}", user_info.id());
+//!     // Name and Icon will be overwritten from what we provided above
+//!     // Exec will be overridden to call `flatpak run our-app` if the application is sandboxed
+//!     let desktop_entry = r#"
+//!         [Desktop Entry]
+//!         Comment=My Web App
+//!         Type=Application
+//!     "#;
+//!     proxy
+//!         .install(&token, "some_file.desktop", desktop_entry)
+//!         .await?;
 //!
+//!     proxy.uninstall("some_file.desktop").await?;
 //!     Ok(())
 //! }
 //! ```

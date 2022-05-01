@@ -44,11 +44,16 @@ impl Serialize for Icon {
                     // Safe to unwrap because we are sure it is of the correct type
                     array.append(zvariant::Value::from(name)).unwrap();
                 }
-                tuple.serialize_element(&names)?;
+                tuple.serialize_element(&zvariant::Value::from(array))?;
             }
             Self::Bytes(bytes) => {
                 tuple.serialize_element("bytes")?;
-                tuple.serialize_element(&zvariant::Value::from(bytes))?;
+                let mut array = zvariant::Array::new(u8::signature());
+                for byte in bytes.iter() {
+                    // Safe to unwrap because we are sure it is of the correct type
+                    array.append(zvariant::Value::from(*byte)).unwrap();
+                }
+                tuple.serialize_element(&zvariant::Value::from(array))?;
             }
         }
         tuple.end()
@@ -61,17 +66,27 @@ impl<'de> Deserialize<'de> for Icon {
         D: serde::Deserializer<'de>,
     {
         let (type_, data) = <(String, OwnedValue)>::deserialize(deserializer)?;
-
         match type_.as_str() {
             "file" => Ok(Self::Uri(data.try_into().map_err(|_| {
                 de::Error::custom("Couldn't deserialize Icon of type 'file'")
             })?)),
-            "bytes" => Ok(Self::Bytes(data.try_into().map_err(|_| {
-                de::Error::custom("Couldn't deserialize Icon of type 'bytes'")
-            })?)),
-            "themed" => Ok(Self::Names(data.try_into().map_err(|_| {
-                de::Error::custom("Couldn't deserialize Icon of type 'themed'")
-            })?)),
+            "bytes" => {
+                let array = data.downcast_ref::<zvariant::Array>().unwrap();
+                let mut bytes = Vec::with_capacity(array.len());
+                for byte in array.iter() {
+                    bytes.push(*byte.downcast_ref::<u8>().unwrap());
+                }
+                Ok(Self::Bytes(bytes))
+            }
+            "themed" => {
+                let array = data.downcast_ref::<zvariant::Array>().unwrap();
+                let mut names = Vec::with_capacity(array.len());
+                for value in array.iter() {
+                    let name = value.downcast_ref::<zvariant::Str>().unwrap();
+                    names.push(name.as_str().to_owned());
+                }
+                Ok(Self::Names(names))
+            }
             _ => Err(de::Error::custom("Invalid Icon type")),
         }
     }
@@ -112,6 +127,9 @@ impl TryFrom<OwnedValue> for Icon {
 
 #[cfg(test)]
 mod test {
+    use byteorder::LE;
+    use zbus::zvariant::{from_slice, to_bytes, EncodingContext as Context};
+
     use super::*;
 
     #[test]
@@ -121,9 +139,22 @@ mod test {
 
     #[test]
     fn serialize_deserialize() {
-        let icon = Icon::from_names(&["dialog-info-symbolic"]);
-        let string = serde_json::to_string(&icon).unwrap();
-        let output: Icon = serde_json::from_str(&string).unwrap();
-        assert_eq!(output, icon);
+        let ctxt = Context::<LE>::new_dbus(0);
+
+        let icon = Icon::from_names(&["dialog-symbolic"]);
+
+        let encoded = to_bytes(ctxt, &icon).unwrap();
+        let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
+        assert_eq!(decoded, icon);
+
+        let icon = Icon::Uri("file://some/icon.png".to_owned());
+        let encoded = to_bytes(ctxt, &icon).unwrap();
+        let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
+        assert_eq!(decoded, icon);
+
+        let icon = Icon::Bytes(vec![1, 0, 1, 0]);
+        let encoded = to_bytes(ctxt, &icon).unwrap();
+        let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
+        assert_eq!(decoded, icon);
     }
 }
