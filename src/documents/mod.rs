@@ -46,7 +46,7 @@ use std::{
 };
 
 use enumflags2::{bitflags, BitFlags};
-use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
@@ -79,8 +79,9 @@ pub type OwnedApplicationID = String;
 /// application
 pub type Permissions = HashMap<OwnedApplicationID, Vec<Permission>>;
 
-#[derive(Debug, Clone, PartialEq, Eq, Type)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq, Type)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "kebab-case")]
 /// The possible permissions to grant to a specific application for a specific
 /// document.
 pub enum Permission {
@@ -138,29 +139,6 @@ impl FromStr for Permission {
             "Delete" | "delete" => Ok(Permission::Delete),
             _ => Err(Error::ParseError("Failed to parse priority, invalid value")),
         }
-    }
-}
-
-impl Serialize for Permission {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Read => serializer.serialize_str("read"),
-            Self::Write => serializer.serialize_str("write"),
-            Self::GrantPermissions => serializer.serialize_str("grant-permissions"),
-            Self::Delete => serializer.serialize_str("delete"),
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for Permission {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Ok(Permission::from_str(&String::deserialize(deserializer)?).expect("invalid permission"))
     }
 }
 
@@ -543,3 +521,18 @@ impl<'a> DocumentsProxy<'a> {
 mod file_transfer;
 
 pub use file_transfer::FileTransferProxy;
+
+#[cfg(test)]
+mod tests {
+    use crate::documents::Permission;
+
+    #[test]
+    fn serialize_deserialize() {
+        let permission = Permission::GrantPermissions;
+        let string = serde_json::to_string(&permission).unwrap();
+        assert_eq!(string, "\"grant-permissions\"");
+
+        let decoded = serde_json::from_str(&string).unwrap();
+        assert_eq!(permission, decoded);
+    }
+}

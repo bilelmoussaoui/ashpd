@@ -70,39 +70,13 @@ impl Default for LauncherType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Type)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Type)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
 pub enum IconType {
     Png,
     Jpeg,
     Svg,
-}
-
-impl Serialize for IconType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            IconType::Jpeg => serializer.serialize_str("jpeg"),
-            IconType::Png => serializer.serialize_str("png"),
-            IconType::Svg => serializer.serialize_str("svg"),
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for IconType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        match String::deserialize(deserializer)?.as_str() {
-            "png" => Ok(IconType::Png),
-            "jpeg" => Ok(IconType::Jpeg),
-            "svg" => Ok(IconType::Svg),
-            _ => unreachable!(),
-        }
-    }
 }
 
 #[derive(Deserialize, Type)]

@@ -16,7 +16,7 @@
 
 use std::{fmt, str::FromStr};
 
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -30,7 +30,7 @@ struct AccessDeviceOptions {
     handle_token: HandleToken,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, Type)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 /// The possible device to request access to.
 pub enum Device {
@@ -82,15 +82,6 @@ impl FromStr for Device {
             "Camera" | "camera" => Ok(Device::Camera),
             _ => Err(Error::ParseError("Failed to parse device, invalid value")),
         }
-    }
-}
-
-impl Serialize for Device {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string().to_lowercase())
     }
 }
 

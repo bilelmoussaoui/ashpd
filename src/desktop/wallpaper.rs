@@ -79,7 +79,7 @@
 
 use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 
-use serde::{self, Deserialize, Serialize, Serializer};
+use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use crate::{
@@ -88,7 +88,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Hash, Type)]
+#[derive(Deserialize, Serialize, Debug, Clone, Copy, PartialEq, Hash, Type)]
 #[zvariant(signature = "s")]
 /// Where to set the wallpaper on.
 pub enum SetOn {
@@ -140,15 +140,6 @@ impl FromStr for SetOn {
             "Both" => Ok(SetOn::Both),
             _ => Err(Error::ParseError("Failed to parse SetOn, invalid value")),
         }
-    }
-}
-
-impl Serialize for SetOn {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string().to_lowercase())
     }
 }
 
@@ -307,4 +298,20 @@ pub async fn set_from_file(
         .set_wallpaper_file(identifier, file, show_preview, set_on)
         .await?;
     Ok(())
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::SetOn;
+
+    #[test]
+    fn serialize_deserialize() {
+        let set_on = SetOn::Both;
+        let string = serde_json::to_string(&set_on).unwrap();
+        assert_eq!(string, "\"Both\"");
+
+        let decoded = serde_json::from_str(&string).unwrap();
+        assert_eq!(set_on, decoded);
+    }
 }

@@ -33,7 +33,7 @@
 
 use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -42,8 +42,9 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Type)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "PascalCase")]
 /// The page orientation.
 pub enum Orientation {
     /// Landscape.
@@ -105,21 +106,7 @@ impl FromStr for Orientation {
     }
 }
 
-impl Serialize for Orientation {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Landscape => serializer.serialize_str("landscape"),
-            Self::Portrait => serializer.serialize_str("portrait"),
-            Self::ReverseLandscape => serializer.serialize_str("reverse_landscape"),
-            Self::ReversePortrait => serializer.serialize_str("reverse_portrait"),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Type)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 /// The print quality.
 pub enum Quality {
@@ -177,15 +164,6 @@ impl FromStr for Quality {
             "High" | "high" => Ok(Quality::High),
             _ => Err(Error::ParseError("Failed to parse quality, invalid value")),
         }
-    }
-}
-
-impl Serialize for Quality {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string().to_lowercase())
     }
 }
 
