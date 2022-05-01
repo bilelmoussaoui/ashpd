@@ -30,10 +30,9 @@
 //!
 //! You can also use the Remote Desktop portal with the ScreenCast one. In order
 //! to do so, you need to call
-//! [`ScreenCastProxy::select_sources()`](crate::desktop::screencast::
-//! ScreenCastProxy::select_sources) on the session created with
-//! [`RemoteDesktopProxy::create_session()`](crate::desktop::remote_desktop::
-//! RemoteDesktopProxy::create_session)
+//! [`ScreenCastProxy::select_sources()`][select_sources]
+//! on the session created with
+//! [`RemoteDesktopProxy::create_session()`][create_session]
 //!
 //! ```rust,no_run
 //! use ashpd::{
@@ -78,6 +77,8 @@
 //!     Ok(())
 //! }
 //! ```
+//! [select_sources]: crate::desktop::screencast::ScreenCastProxy::select_sources
+//! [create_session]: crate::desktop::remote_desktop::RemoteDesktopProxy::create_session
 
 use std::collections::HashMap;
 
