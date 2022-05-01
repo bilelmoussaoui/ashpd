@@ -74,7 +74,7 @@ struct BackgroundOptions {
 impl BackgroundOptions {
     /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_string());
+        self.reason = Some(reason.to_owned());
         self
     }
 
@@ -94,7 +94,7 @@ impl BackgroundOptions {
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
     pub fn command(mut self, command: Option<&[impl AsRef<str> + Type + Serialize]>) -> Self {
-        self.command = command.map(|s| s.iter().map(|s| s.as_ref().to_string()).collect());
+        self.command = command.map(|s| s.iter().map(|s| s.as_ref().to_owned()).collect());
         self
     }
 }

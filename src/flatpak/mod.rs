@@ -156,7 +156,7 @@ impl SpawnOptions {
         self.sandbox_expose = Some(
             sandbox_expose
                 .iter()
-                .map(|s| s.as_ref().to_string())
+                .map(|s| s.as_ref().to_owned())
                 .collect(),
         );
         self
@@ -173,7 +173,7 @@ impl SpawnOptions {
         self.sandbox_expose_ro = Some(
             sandbox_expose_ro
                 .iter()
-                .map(|s| s.as_ref().to_string())
+                .map(|s| s.as_ref().to_owned())
                 .collect(),
         );
         self
@@ -214,7 +214,7 @@ impl SpawnOptions {
     /// Env variables to unset.
     #[must_use]
     pub fn unset_env(mut self, env: &[&str]) -> Self {
-        self.unset_env = Some(env.iter().map(|e| e.to_string()).collect());
+        self.unset_env = Some(env.iter().map(|e| e.to_owned().to_owned()).collect());
         self
     }
 

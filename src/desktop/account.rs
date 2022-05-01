@@ -58,7 +58,7 @@ struct UserInfoOptions {
 impl UserInfoOptions {
     /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_string());
+        self.reason = Some(reason.to_owned());
         self
     }
 }

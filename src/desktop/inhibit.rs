@@ -74,7 +74,7 @@ struct InhibitOptions {
 impl InhibitOptions {
     /// Sets a user visible reason for the inhibit request.
     pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_string());
+        self.reason = Some(reason.to_owned());
         self
     }
 }

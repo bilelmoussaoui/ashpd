@@ -153,7 +153,7 @@ impl Notification {
     /// * `title` - the notification title.
     pub fn new(title: &str) -> Self {
         Self {
-            title: title.to_string(),
+            title: title.to_owned(),
             body: None,
             priority: None,
             icon: None,
@@ -166,7 +166,7 @@ impl Notification {
     /// Sets the notification body.
     #[must_use]
     pub fn body(mut self, body: &str) -> Self {
-        self.body = Some(body.to_string());
+        self.body = Some(body.to_owned());
         self
     }
 
@@ -187,7 +187,7 @@ impl Notification {
     /// Sets the default action when the user clicks on the notification.
     #[must_use]
     pub fn default_action(mut self, default_action: &str) -> Self {
-        self.default_action = Some(default_action.to_string());
+        self.default_action = Some(default_action.to_owned());
         self
     }
 
@@ -234,8 +234,8 @@ impl Button {
     ///   button.
     pub fn new(label: &str, action: &str) -> Self {
         Self {
-            label: label.to_string(),
-            action: action.to_string(),
+            label: label.to_owned(),
+            action: action.to_owned(),
             target: None,
         }
     }

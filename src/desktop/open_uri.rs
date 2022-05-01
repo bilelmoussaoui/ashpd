@@ -118,7 +118,7 @@ struct OpenDirOptions {
 impl OpenDirOptions {
     #[allow(dead_code)]
     pub fn set_activation_token(&mut self, activation_token: &str) {
-        self.activation_token = Some(activation_token.to_string());
+        self.activation_token = Some(activation_token.to_owned());
     }
 }
 
@@ -156,7 +156,7 @@ impl OpenFileOptions {
 
     #[allow(dead_code)]
     pub fn set_activation_token(&mut self, activation_token: &str) {
-        self.activation_token = Some(activation_token.to_string());
+        self.activation_token = Some(activation_token.to_owned());
     }
 }
 

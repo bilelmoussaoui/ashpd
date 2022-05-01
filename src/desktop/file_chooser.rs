@@ -124,20 +124,20 @@ impl FileFilter {
     ///
     /// * `label` - user-visible name of the file filter.
     pub fn new(label: &str) -> Self {
-        Self(label.to_string(), vec![])
+        Self(label.to_owned(), vec![])
     }
 
     /// Adds a mime type to the file filter.
     #[must_use]
     pub fn mimetype(mut self, mimetype: &str) -> Self {
-        self.1.push((FilterType::MimeType, mimetype.to_string()));
+        self.1.push((FilterType::MimeType, mimetype.to_owned()));
         self
     }
 
     /// Adds a glob pattern to the file filter.
     #[must_use]
     pub fn glob(mut self, pattern: &str) -> Self {
-        self.1.push((FilterType::GlobPattern, pattern.to_string()));
+        self.1.push((FilterType::GlobPattern, pattern.to_owned()));
         self
     }
 }
@@ -167,17 +167,17 @@ impl Choice {
     /// * `initial_selection` - the initially selected value.
     pub fn new(id: &str, label: &str, initial_selection: &str) -> Self {
         Self(
-            id.to_string(),
-            label.to_string(),
+            id.to_owned(),
+            label.to_owned(),
             vec![],
-            initial_selection.to_string(),
+            initial_selection.to_owned(),
         )
     }
 
     /// Adds a (key, value) as a choice.
     #[must_use]
     pub fn insert(mut self, key: &str, value: &str) -> Self {
-        self.2.push((key.to_string(), value.to_string()));
+        self.2.push((key.to_owned(), value.to_owned()));
         self
     }
 
@@ -223,7 +223,7 @@ impl OpenFileOptions {
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
     pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_string());
+        self.accept_label = Some(accept_label.to_owned());
         self
     }
 
@@ -298,14 +298,14 @@ impl SaveFileOptions {
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
     pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_string());
+        self.accept_label = Some(accept_label.to_owned());
         self
     }
 
     /// Sets the current file name.
     #[must_use]
     pub fn current_name(mut self, current_name: &str) -> Self {
-        self.current_name = Some(current_name.to_string());
+        self.current_name = Some(current_name.to_owned());
         self
     }
 
@@ -378,7 +378,7 @@ impl SaveFilesOptions {
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
     pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_string());
+        self.accept_label = Some(accept_label.to_owned());
         self
     }
 

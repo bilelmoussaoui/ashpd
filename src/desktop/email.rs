@@ -93,73 +93,73 @@ impl Email {
     /// Similar to `set_address`.
     #[must_use]
     pub fn address(mut self, address: &str) -> Self {
-        self.address = Some(address.to_string());
+        self.address = Some(address.to_owned());
         self
     }
 
     /// Sets the email address to send the email to.
     pub fn set_address(&mut self, address: &str) {
-        self.address = Some(address.to_string());
+        self.address = Some(address.to_owned());
     }
 
     /// Similar to `set_addresses`.
     #[must_use]
     pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
+        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
         self
     }
 
     /// Sets a list of email addresses to send the email to.
     pub fn set_addresses(&mut self, addresses: &[impl AsRef<str> + Type + Serialize]) {
-        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_string()).collect());
+        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets a list of email addresses to BCC.
     #[must_use]
     pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
+        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
         self
     }
 
     /// Sets a list of email addresses to BCC.
     pub fn set_bcc(&mut self, bcc: &[impl AsRef<str> + Type + Serialize]) {
-        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_string()).collect());
+        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets a list of email addresses to CC.
     #[must_use]
     pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
+        self.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
         self
     }
 
     /// Sets a list of email addresses to CC.
     pub fn set_cc(&mut self, cc: &[impl AsRef<str> + Type + Serialize]) {
-        self.cc = Some(cc.iter().map(|s| s.as_ref().to_string()).collect());
+        self.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Similar to `set_subject`.
     #[must_use]
     pub fn subject(mut self, subject: &str) -> Self {
-        self.subject = Some(subject.to_string());
+        self.subject = Some(subject.to_owned());
         self
     }
 
     /// Sets the email subject.
     pub fn set_subject(&mut self, subject: &str) {
-        self.subject = Some(subject.to_string());
+        self.subject = Some(subject.to_owned());
     }
 
     /// Similar to `set_body`.
     #[must_use]
     pub fn body(mut self, body: &str) -> Self {
-        self.body = Some(body.to_string());
+        self.body = Some(body.to_owned());
         self
     }
 
     /// Sets the email body.
     pub fn set_body(&mut self, body: &str) {
-        self.body = Some(body.to_string());
+        self.body = Some(body.to_owned());
     }
 
     /// Attaches a file to the email.

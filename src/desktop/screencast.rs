@@ -167,7 +167,7 @@ impl SelectSourcesOptions {
     }
 
     pub fn set_restore_token(&mut self, token: &str) {
-        self.restore_token = Some(token.to_string());
+        self.restore_token = Some(token.to_owned());
     }
 }
 
