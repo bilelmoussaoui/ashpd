@@ -58,6 +58,7 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
 /// The notification priority
 pub enum Priority {
     /// Low.
