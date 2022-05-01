@@ -32,6 +32,7 @@ struct AccessDeviceOptions {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
 /// The possible device to request access to.
 pub enum Device {
     /// A microphone.

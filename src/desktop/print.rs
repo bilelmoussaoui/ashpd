@@ -44,7 +44,7 @@ use crate::{
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename_all = "snake_case")]
 /// The page orientation.
 pub enum Orientation {
     /// Landscape.
@@ -108,6 +108,7 @@ impl FromStr for Orientation {
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
 /// The print quality.
 pub enum Quality {
     /// Draft quality.
