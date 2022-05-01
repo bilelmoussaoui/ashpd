@@ -14,7 +14,7 @@ use crate::{
         request::{BasicResponse, RequestProxy, Response},
         HandleToken,
     },
-    Error,
+    Error, PortalError,
 };
 
 pub(crate) async fn call_request_method<R, B>(
@@ -42,7 +42,11 @@ where
         "Listening to signal 'Response' on '{}'",
         request.inner().interface()
     );
-    let mut stream = request.inner().receive_signal("Response").await?;
+    let mut stream = request
+        .inner()
+        .receive_signal("Response")
+        .await
+        .map_err::<PortalError, _>(From::from)?;
 
     let (response, path) = futures::try_join!(
         async {
@@ -61,7 +65,10 @@ where
             response as Result<_, Error>
         },
         async {
-            let msg = proxy.call_method(method_name, body).await?;
+            let msg = proxy
+                .call_method(method_name, body)
+                .await
+                .map_err::<PortalError, _>(From::from)?;
             let path = msg.body::<OwnedObjectPath>()?.into_inner();
 
             #[cfg(feature = "log")]
@@ -96,7 +103,10 @@ where
         signal_name,
         proxy.interface()
     );
-    let mut stream = proxy.receive_signal(signal_name).await?;
+    let mut stream = proxy
+        .receive_signal(signal_name)
+        .await
+        .map_err::<PortalError, _>(From::from)?;
     let message = stream.next().await.ok_or(Error::NoResponse)?;
     #[cfg(feature = "log")]
     tracing::info!(
@@ -124,7 +134,10 @@ where
         tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
         tracing::debug!("With body {:#?}", body);
     }
-    let msg = proxy.call_method(method_name, body).await?;
+    let msg = proxy
+        .call_method(method_name, body)
+        .await
+        .map_err::<PortalError, _>(From::from)?;
     let reply = msg.body::<R>()?;
     msg.take_fds();
 
