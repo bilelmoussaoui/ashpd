@@ -48,6 +48,7 @@ pub async fn run() -> ashpd::Result<()> {
 | Feature | Description |
 | ---     | ----------- |
 | log | Record various debug information using the `tracing` library |
+| tokio_runtime | Enable tokio runtime on zbus dependency |
 | feature_gtk3 | Implement `From<Color>` for [`gdk3::RGBA`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.RGBA.html) |
 |  | Provides `WindowIdentifier::from_window` that takes a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) |
 | feature_gtk4 | Implement `From<Color>` for [`gdk4::RGBA`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gdk4/struct.RGBA.html) |
