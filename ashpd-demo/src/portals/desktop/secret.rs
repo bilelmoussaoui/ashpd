@@ -5,7 +5,7 @@ use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use std::sync::{Arc, Mutex};
-use std::{fs::File, io::Read};
+use std::{io::Read};
 
 mod imp {
     use super::*;
@@ -61,28 +61,23 @@ impl SecretPage {
     async fn retrieve_secret(&self) {
         let imp = self.imp();
 
-        if let Ok(token) = retrieve_secret(None).await {
-            tracing::debug!("Received token: {:#?}", token);
-            imp.token_label.set_text(&token);
+        if let Ok(key) = retrieve_secret().await {
+            let key_str = format!("{:?}", key).trim_start_matches('[').trim_end_matches(']').replace(",", " ");
+            imp.token_label.set_text(&key_str);
             imp.response_group.show();
         }
     }
 }
 
-async fn retrieve_secret(old_token: Option<&str>) -> ashpd::Result<String> {
-    use glib::translate::*;
+async fn retrieve_secret() -> ashpd::Result<Vec<u8>> {
     let connection = zbus::Connection::session().await?;
     let proxy = secret::SecretProxy::new(&connection).await?;
 
-    let path: std::path::PathBuf =
-        unsafe { from_glib_none(glib::ffi::g_mkdtemp("some_stuff_XXXXXX".to_glib_none().0)) };
-    let mut file = File::open(path).unwrap();
+    let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
+    proxy.retrieve_secret(&x2).await?;
+    drop(x2);
+    let mut buf = Vec::new();
+    x1.read_to_end(&mut buf)?;
 
-    let new_token = proxy.retrieve_secret(&file, old_token).await?;
-    tracing::info!("Received secret {}", new_token);
-
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
-    println!("{}", contents);
-    Ok(new_token)
+    Ok(buf)
 }
