@@ -1,14 +1,14 @@
 //! # Examples
 //!
 //! ```rust, no_run
-//! use ashpd::desktop::DynamicLauncher;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{desktop::DynamicLauncher, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let user_info = DynamicLauncher::user_information(
 //!         &WindowIdentifier::default(),
 //!         "App would like to access user information",
-//!     ).await?;
+//!     )
+//!     .await?;
 //!
 //!     println!("Name: {}", user_info.name());
 //!     println!("ID: {}", user_info.id());
@@ -20,8 +20,7 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::DynamicLauncher::DynamicLauncherProxy;
-//! use ashpd::WindowIdentifier;
+//! use ashpd::{desktop::DynamicLauncher::DynamicLauncherProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -48,7 +47,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
+use super::{HandleToken, Icon, DESTINATION, PATH};
 use crate::{
     helpers::{call_method, call_request_method},
     Error, WindowIdentifier,
@@ -114,10 +113,11 @@ impl<'de> Deserialize<'de> for IconType {
 }
 
 #[derive(Deserialize, Type)]
-pub struct Icon(zvariant::OwnedValue, IconType, u32);
+#[zvariant(signature = "(vsu)")]
+pub struct LauncherIcon(Icon, IconType, u32);
 
-impl Icon {
-    pub fn data(&self) -> &zvariant::Value<'_> {
+impl LauncherIcon {
+    pub fn icon(&self) -> &Icon {
         &self.0
     }
 
@@ -168,7 +168,8 @@ impl PrepareInstallOptions {
     }
 }
 
-/// The interface lets sandboxed applications install launchers like Web Application from your browser or Steam.
+/// The interface lets sandboxed applications install launchers like Web
+/// Application from your browser or Steam.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.DynamicLauncher`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.DynamicLauncher).
 #[derive(Debug)]
@@ -202,7 +203,7 @@ impl<'a> DynamicLauncherProxy<'a> {
         &self,
         parent_window: &WindowIdentifier,
         name: &str,
-        icon: &zvariant::Value<'_>,
+        icon: Icon,
         options: PrepareInstallOptions,
     ) -> Result<(String, String), Error> {
         let response = call_request_method(
@@ -220,11 +221,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     /// See also [`RequestInstallToken`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.RequestInstallToken).
     #[doc(alias = "RequestInstallToken")]
     #[doc(alias = "xdp_portal_dynamic_launcher_request_install_token")]
-    pub async fn request_install_token(
-        &self,
-        name: &str,
-        icon: &zvariant::Value<'_>,
-    ) -> Result<String, Error> {
+    pub async fn request_install_token(&self, name: &str, icon: Icon) -> Result<String, Error> {
         // No supported options for now
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
         let token =
@@ -281,7 +278,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     /// See also [`GetIcon`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.GetIcon).
     #[doc(alias = "GetIcon")]
     #[doc(alias = "xdp_portal_dynamic_launcher_get_icon")]
-    pub async fn icon(&self, desktop_file_id: &str) -> Result<Icon, Error> {
+    pub async fn icon(&self, desktop_file_id: &str) -> Result<LauncherIcon, Error> {
         call_method(self.inner(), "GetIcon", &(desktop_file_id)).await
     }
 
@@ -313,8 +310,8 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_icon_signatuire() {
-        let signature = Icon::signature();
+    fn test_icon_signature() {
+        let signature = LauncherIcon::signature();
         assert_eq!(signature.as_str(), "(vsu)");
 
         let icon = vec![IconType::Png];
