@@ -99,7 +99,7 @@ impl FromStr for Orientation {
             "ReverseLandscape" | "reverse_landscape" => Ok(Orientation::ReverseLandscape),
             "ReversePortrait" | "reverse_portrait" => Ok(Orientation::ReversePortrait),
             _ => Err(Error::ParseError(
-                "Failed to parse orientation, invalid value".to_string(),
+                "Failed to parse orientation, invalid value",
             )),
         }
     }
@@ -175,9 +175,7 @@ impl FromStr for Quality {
             "Low" | "low" => Ok(Quality::Low),
             "Normal" | "normal" => Ok(Quality::Normal),
             "High" | "high" => Ok(Quality::High),
-            _ => Err(Error::ParseError(
-                "Failed to parse quality, invalid value".to_string(),
-            )),
+            _ => Err(Error::ParseError("Failed to parse quality, invalid value")),
         }
     }
 }

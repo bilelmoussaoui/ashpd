@@ -108,9 +108,7 @@ impl FromStr for Priority {
             "Normal" | "normal" => Ok(Priority::Normal),
             "High" | "high" => Ok(Priority::High),
             "Urgent" | "urgent" => Ok(Priority::Urgent),
-            _ => Err(Error::ParseError(
-                "Failed to parse priority, invalid value".to_string(),
-            )),
+            _ => Err(Error::ParseError("Failed to parse priority, invalid value")),
         }
     }
 }

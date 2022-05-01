@@ -41,7 +41,7 @@ pub enum Error {
     /// A signal returned no response.
     NoResponse,
     /// Failed to parse a string into an enum variant
-    ParseError(String),
+    ParseError(&'static str),
     /// Input/Output
     IO(std::io::Error),
 }
