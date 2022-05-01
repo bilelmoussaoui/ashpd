@@ -72,17 +72,12 @@ impl Default for LauncherType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Type)]
+#[zvariant(signature = "s")]
 pub enum IconType {
     Png,
     Jpeg,
     Svg,
-}
-
-impl Type for IconType {
-    fn signature() -> zvariant::Signature<'static> {
-        String::signature()
-    }
 }
 
 impl Serialize for IconType {
