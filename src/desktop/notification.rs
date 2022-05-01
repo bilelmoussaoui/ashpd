@@ -3,7 +3,10 @@
 //! ```rust,no_run
 //! use std::{thread, time};
 //!
-//! use ashpd::desktop::notification::{Action, Button, Notification, NotificationProxy, Priority};
+//! use ashpd::desktop::{
+//!     notification::{Action, Button, Notification, NotificationProxy, Priority},
+//!     Icon,
+//! };
 //! use zbus::zvariant::Value;
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -19,6 +22,7 @@
 //!                 .default_action_target(Value::U32(100).into())
 //!                 .body("color copied to clipboard")
 //!                 .priority(Priority::High)
+//!                 .icon(Icon::from_names(&["dialog-question-symbolic"]))
 //!                 .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
 //!                 .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
 //!         )

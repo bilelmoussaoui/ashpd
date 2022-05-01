@@ -9,6 +9,17 @@ pub enum Icon {
     Bytes(Vec<u8>),
 }
 
+impl Icon {
+    pub fn from_names(names: &[&str]) -> Self {
+        Self::Names(
+            names
+                .iter()
+                .map(|name| name.to_owned().to_owned())
+                .collect(),
+        )
+    }
+}
+
 impl Serialize for Icon {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
