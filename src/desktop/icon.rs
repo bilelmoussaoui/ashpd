@@ -1,17 +1,12 @@
 use serde::ser::{Serialize, SerializeTuple};
 use zbus::zvariant::{self, Type};
 
-#[derive(Debug)]
+#[derive(Debug, Type)]
+#[zvariant(signature = "(sv)")]
 pub enum Icon {
     Uri(String),
     Names(Vec<String>),
     Bytes(Vec<u8>),
-}
-
-impl Type for Icon {
-    fn signature() -> zvariant::Signature<'static> {
-        zvariant::Signature::from_static_str_unchecked("(sv)")
-    }
 }
 
 impl Serialize for Icon {

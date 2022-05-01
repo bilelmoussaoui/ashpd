@@ -34,7 +34,7 @@
 use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 
 use serde::{Deserialize, Serialize, Serializer};
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Signature, Type};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
@@ -42,7 +42,8 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
 /// The page orientation.
 pub enum Orientation {
     /// Landscape.
@@ -118,13 +119,8 @@ impl Serialize for Orientation {
     }
 }
 
-impl Type for Orientation {
-    fn signature() -> Signature<'static> {
-        String::signature()
-    }
-}
-
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
 /// The print quality.
 pub enum Quality {
     /// Draft quality.
@@ -192,12 +188,6 @@ impl Serialize for Quality {
         S: Serializer,
     {
         serializer.serialize_str(&self.to_string().to_lowercase())
-    }
-}
-
-impl Type for Quality {
-    fn signature() -> Signature<'static> {
-        String::signature()
     }
 }
 

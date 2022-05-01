@@ -1,7 +1,7 @@
 use std::fmt;
 
 use serde::{ser::Serializer, Serialize};
-use zbus::zvariant::{Signature, Type};
+use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
@@ -90,14 +90,15 @@ use zbus::zvariant::{Signature, Type};
 ///
 /// /// Open some portals
 /// ```
-///
+/// 
 /// In case you don't have access to a WindowIdentifier:
-///
 /// ```rust
 /// use ashpd::WindowIdentifier;
 ///
 /// let identifier = WindowIdentifier::default();
 /// ```
+#[derive(Type)]
+#[zvariant(signature = "s")]
 #[doc(alias = "XdpParent")]
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
@@ -119,12 +120,6 @@ pub enum WindowIdentifier {
 
 unsafe impl Send for WindowIdentifier {}
 unsafe impl Sync for WindowIdentifier {}
-
-impl Type for WindowIdentifier {
-    fn signature() -> Signature<'static> {
-        String::signature()
-    }
-}
 
 impl Serialize for WindowIdentifier {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

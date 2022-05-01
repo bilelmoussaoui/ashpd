@@ -17,7 +17,7 @@
 use std::{fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize, Serializer};
-use zbus::zvariant::{DeserializeDict, SerializeDict, Signature, Type};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{helpers::call_basic_response_method, Error};
@@ -30,7 +30,8 @@ struct AccessDeviceOptions {
     handle_token: HandleToken,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
 /// The possible device to request access to.
 pub enum Device {
     /// A microphone.
@@ -92,12 +93,6 @@ impl Serialize for Device {
         S: Serializer,
     {
         serializer.serialize_str(&self.to_string().to_lowercase())
-    }
-}
-
-impl Type for Device {
-    fn signature() -> Signature<'static> {
-        String::signature()
     }
 }
 

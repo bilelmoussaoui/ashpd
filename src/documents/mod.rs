@@ -48,7 +48,7 @@ use std::{
 use enumflags2::{bitflags, BitFlags};
 use serde::{de::Deserializer, Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, OwnedValue, Signature, Type};
+use zbus::zvariant::{Fd, OwnedValue, Type};
 
 use crate::{
     helpers::{call_method, path_from_null_terminated},
@@ -79,7 +79,8 @@ pub type OwnedApplicationID = String;
 /// application
 pub type Permissions = HashMap<OwnedApplicationID, Vec<Permission>>;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
 /// The possible permissions to grant to a specific application for a specific
 /// document.
 pub enum Permission {
@@ -162,12 +163,6 @@ impl<'de> Deserialize<'de> for Permission {
         D: Deserializer<'de>,
     {
         Ok(Permission::from_str(&String::deserialize(deserializer)?).expect("invalid permission"))
-    }
-}
-
-impl Type for Permission {
-    fn signature() -> Signature<'static> {
-        String::signature()
     }
 }
 

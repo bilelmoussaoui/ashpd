@@ -44,7 +44,7 @@
 use std::{fmt, str::FromStr};
 
 use serde::{self, Deserialize, Serialize, Serializer};
-use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Signature, Type};
+use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Type};
 
 use super::{Icon, DESTINATION, PATH};
 use crate::{
@@ -52,7 +52,8 @@ use crate::{
     Error,
 };
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
 /// The notification priority
 pub enum Priority {
     /// Low.
@@ -120,12 +121,6 @@ impl Serialize for Priority {
         S: Serializer,
     {
         serializer.serialize_str(&self.to_string().to_lowercase())
-    }
-}
-
-impl Type for Priority {
-    fn signature() -> Signature<'static> {
-        String::signature()
     }
 }
 

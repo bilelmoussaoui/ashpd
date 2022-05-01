@@ -80,7 +80,7 @@
 use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize, Serializer};
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Signature, Type};
+use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
@@ -88,7 +88,8 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Hash)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Hash, Type)]
+#[zvariant(signature = "s")]
 /// Where to set the wallpaper on.
 pub enum SetOn {
     /// Set the wallpaper only on the lock-screen.
@@ -150,12 +151,6 @@ impl Serialize for SetOn {
         S: Serializer,
     {
         serializer.serialize_str(&self.to_string().to_lowercase())
-    }
-}
-
-impl Type for SetOn {
-    fn signature() -> Signature<'static> {
-        String::signature()
     }
 }
 
