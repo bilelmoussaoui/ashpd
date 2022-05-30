@@ -199,7 +199,10 @@ struct Streams {
 
 impl Debug for Streams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_list().entries(self.streams.iter()).finish()
+        f.debug_tuple("Streams")
+            .field(&self.restore_token)
+            .field(&self.streams)
+            .finish()
     }
 }
 
