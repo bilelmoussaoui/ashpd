@@ -53,7 +53,7 @@ impl<'a> SessionProxy<'a> {
             unique_identifier, handle_token
         ))
         .unwrap();
-        #[cfg(feature = "log")]
+        #[cfg(feature = "tracing")]
         tracing::info!("Creating a org.freedesktop.portal.Session {}", path);
         SessionProxy::new(connection, path).await
     }

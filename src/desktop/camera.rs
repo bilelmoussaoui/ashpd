@@ -127,7 +127,7 @@ impl<'a> CameraProxy<'a> {
 ///
 /// *Note* The socket referenced by `fd` must not be used while this function is
 /// running.
-#[cfg(feature = "feature_pipewire")]
+#[cfg(feature = "pipewire")]
 pub async fn pipewire_node_id(fd: RawFd) -> Result<Option<u32>, pw::Error> {
     let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
 
@@ -147,14 +147,14 @@ pub async fn pipewire_node_id(fd: RawFd) -> Result<Option<u32>, pw::Error> {
                 }
             }
         }) {
-            #[cfg(feature = "log")]
+            #[cfg(feature = "tracing")]
             tracing::error!("Failed to get pipewire node id {:#?}", err);
             let mut guard = sender.lock().unwrap();
             if let Some(sender) = guard.take() {
                 let _ = sender.send(Err(err));
             }
         } else {
-            #[cfg(feature = "log")]
+            #[cfg(feature = "tracing")]
             tracing::info!("Couldn't find any Node ID");
             let mut guard = sender.lock().unwrap();
             if let Some(sender) = guard.take() {
@@ -165,7 +165,7 @@ pub async fn pipewire_node_id(fd: RawFd) -> Result<Option<u32>, pw::Error> {
     receiver.await.unwrap()
 }
 
-#[cfg(feature = "feature_pipewire")]
+#[cfg(feature = "pipewire")]
 fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(
     fd: RawFd,
     callback: F,
@@ -181,7 +181,7 @@ fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(
         .add_listener_local()
         .global(move |global| {
             if let Some(props) = &global.props {
-                #[cfg(feature = "log")]
+                #[cfg(feature = "tracing")]
                 tracing::info!("found properties: {:#?}", props);
                 if props.get("media.role") == Some("Camera") {
                     callback.clone()(global.id);

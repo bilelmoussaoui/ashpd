@@ -12,10 +12,9 @@ version = "0.4.0"
 
 [features]
 default = ["async-std"]
-feature_gtk3 = ["gdk3x11", "gdk3wayland", "gtk3"]
-feature_gtk4 = ["gdk4x11", "gdk4wayland", "gtk4"]
-feature_pipewire = ["pw", "libc"]
-log = ["tracing"]
+gtk3 = ["gdk3x11", "gdk3wayland", "dep:gtk3"]
+gtk4 = ["gdk4x11", "gdk4wayland", "dep:gtk4"]
+pipewire = ["pw", "libc"]
 tokio = ["zbus/tokio", "dep:tokio"]
 raw_handle = ["raw-window-handle", "wayland"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
