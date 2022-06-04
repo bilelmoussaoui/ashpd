@@ -2,9 +2,9 @@ use std::fmt;
 
 use wayland_client::{
     protocol::{__interfaces::WL_SURFACE_INTERFACE, wl_surface::WlSurface},
-    ConnectionHandle, Proxy, QueueHandle,
+    Proxy, QueueHandle,
 };
-use wayland_protocols::unstable::xdg_foreign::v2::client::{
+use wayland_protocols::xdg::foreign::zv2::client::{
     zxdg_exported_v2::{Event, ZxdgExportedV2},
     zxdg_exporter_v2::ZxdgExporterV2,
 };
@@ -56,15 +56,13 @@ impl Drop for WaylandWindowIdentifier {
 #[derive(Default, Debug)]
 struct ExportedWaylandHandle(String);
 
-impl wayland_client::Dispatch<ZxdgExportedV2> for ExportedWaylandHandle {
-    type UserData = ();
-
+impl wayland_client::Dispatch<ZxdgExportedV2, ()> for ExportedWaylandHandle {
     fn event(
         &mut self,
         _proxy: &ZxdgExportedV2,
         event: <ZxdgExportedV2 as Proxy>::Event,
-        _data: &Self::UserData,
-        _connhandle: &mut ConnectionHandle<'_>,
+        _data: &(),
+        _connhandle: &wayland_client::Connection,
         _qhandle: &QueueHandle<Self>,
     ) {
         match event {
@@ -83,21 +81,20 @@ fn wayland_handle_export(
     surface_ptr: *mut std::ffi::c_void,
 ) -> Result<(ZxdgExportedV2, String), Box<dyn std::error::Error>> {
     let cnx = wayland_client::Connection::connect_to_env()?;
-    let mut handle = cnx.handle();
     let surface_id = unsafe {
         wayland_backend::sys::client::ObjectId::from_ptr(
             &WL_SURFACE_INTERFACE,
             surface_ptr as *mut _,
         )?
     };
-    let surface = WlSurface::from_id(&mut handle, surface_id)?;
+    let surface = WlSurface::from_id(&cnx, surface_id)?;
 
-    let exporter = ZxdgExporterV2::from_id(&mut handle, surface.id())?;
+    let exporter = ZxdgExporterV2::from_id(&cnx, surface.id())?;
     let mut queue = cnx.new_event_queue();
     let mut wl_handle = ExportedWaylandHandle::default();
 
     let queue_handle = queue.handle();
-    let exported = exporter.export_toplevel(&mut handle, &surface, &queue_handle, ())?;
+    let exported = exporter.export_toplevel(&surface, &queue_handle, ())?;
     queue.blocking_dispatch(&mut wl_handle)?;
     Ok((exported, wl_handle.0))
 }
@@ -109,14 +106,13 @@ fn wayland_handle_export_from_surface(
     surface: &WlSurface,
 ) -> Result<(ZxdgExportedV2, String), Box<dyn std::error::Error>> {
     let cnx = wayland_client::Connection::connect_to_env()?;
-    let mut handle = cnx.handle();
 
-    let exporter = ZxdgExporterV2::from_id(&mut handle, surface.id())?;
+    let exporter = ZxdgExporterV2::from_id(&cnx, surface.id())?;
     let mut queue = cnx.new_event_queue();
     let mut wl_handle = ExportedWaylandHandle::default();
 
     let queue_handle = queue.handle();
-    let exported = exporter.export_toplevel(&mut handle, &surface, &queue_handle, ())?;
+    let exported = exporter.export_toplevel(surface, &queue_handle, ())?;
     queue.blocking_dispatch(&mut wl_handle)?;
     Ok((exported, wl_handle.0))
 }
@@ -124,9 +120,7 @@ fn wayland_handle_export_from_surface(
 ///
 /// Needed for converting a RawWindowHandle to a WindowIdentifier
 fn wayland_handle_unexport(exported: &ZxdgExportedV2) -> Result<(), Box<dyn std::error::Error>> {
-    let cnx = wayland_client::Connection::connect_to_env()?;
-    let mut handle = cnx.handle();
-    exported.destroy(&mut handle);
+    exported.destroy();
 
     Ok(())
 }
