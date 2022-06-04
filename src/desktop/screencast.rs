@@ -8,7 +8,6 @@
 //!     desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType},
 //!     WindowIdentifier,
 //! };
-//! use enumflags2::BitFlags;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
@@ -19,7 +18,7 @@
 //!     proxy
 //!         .select_sources(
 //!             &session,
-//!             BitFlags::from(CursorMode::Metadata),
+//!             CursorMode::Metadata,
 //!             SourceType::Monitor | SourceType::Window,
 //!             true,
 //!             None,
@@ -133,7 +132,7 @@ struct SelectSourcesOptions {
     /// Whether to allow selecting multiple sources.
     multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
-    cursor_mode: Option<BitFlags<CursorMode>>,
+    cursor_mode: Option<CursorMode>,
     restore_token: Option<String>,
     persist_mode: Option<PersistMode>,
 }
@@ -148,7 +147,7 @@ impl SelectSourcesOptions {
 
     /// Sets how the cursor will be drawn on the screen cast stream.
     #[must_use]
-    pub fn cursor_mode(mut self, cursor_mode: BitFlags<CursorMode>) -> Self {
+    pub fn cursor_mode(mut self, cursor_mode: CursorMode) -> Self {
         self.cursor_mode = Some(cursor_mode);
         self
     }
@@ -364,7 +363,7 @@ impl<'a> ScreenCastProxy<'a> {
     pub async fn select_sources(
         &self,
         session: &SessionProxy<'_>,
-        cursor_mode: BitFlags<CursorMode>,
+        cursor_mode: CursorMode,
         types: BitFlags<SourceType>,
         multiple: bool,
         restore_token: Option<&str>,
