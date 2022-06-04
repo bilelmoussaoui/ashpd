@@ -222,7 +222,7 @@ impl ScreenCastPage {
         let connection = zbus::Connection::session().await?;
         let proxy = ScreenCastProxy::new(&connection).await?;
         let session = proxy.create_session().await?;
-        let token = imp.session_token.lock().await;
+        let mut token = imp.session_token.lock().await;
         proxy
             .select_sources(
                 &session,
@@ -234,9 +234,9 @@ impl ScreenCastPage {
             )
             .await?;
         self.send_notification("Starting a screen cast session", NotificationKind::Info);
-        let (streams, token) = proxy.start(&session, &identifier).await?;
-        if let Some(t) = token {
-            imp.session_token.lock().await.replace(t);
+        let (streams, new_token) = proxy.start(&session, &identifier).await?;
+        if let Some(t) = new_token {
+            token.replace(t);
         }
         let fd = proxy.open_pipe_wire_remote(&session).await?;
         Ok((streams, fd, session))
