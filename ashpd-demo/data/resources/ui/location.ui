@@ -51,7 +51,6 @@
                 <child>
                   <object class="AdwComboRow" id="accuracy_combo">
                     <property name="title" translatable="yes">Accuracy</property>
-                    <property name="selected">5</property>
                     <property name="model">
                       <object class="GtkStringList">
                         <items>
@@ -64,6 +63,7 @@
                         </items>
                       </object>
                     </property>
+                    <property name="selected">5</property>
                   </object>
                 </child>
               </object>

@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use adw::prelude::*;
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktopProxy},
@@ -10,8 +11,10 @@ use ashpd::{
     zbus, WindowIdentifier,
 };
 use futures::lock::Mutex;
-use glib::clone;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{
+    glib::{self, clone},
+    subclass::prelude::*,
+};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -44,11 +47,7 @@ mod imp {
         #[template_child]
         pub virtual_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
-        pub hidden_check: TemplateChild<gtk::CheckButton>,
-        #[template_child]
-        pub embedded_check: TemplateChild<gtk::CheckButton>,
-        #[template_child]
-        pub metadata_check: TemplateChild<gtk::CheckButton>,
+        pub cursor_mode_combo: TemplateChild<adw::ComboRow>,
     }
 
     #[glib::object_subclass]
@@ -102,9 +101,9 @@ mod imp {
                     imp.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
                     imp.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
                     imp.window_check.set_sensitive(source_types.contains(SourceType::Window));
-                    imp.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
-                    imp.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
-                    imp.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
+                   // imp.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
+                  //  imp.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
+                   // imp.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
                 }
 
                 if let Ok(devices) = available_devices().await {
@@ -161,20 +160,13 @@ impl RemoteDesktopPage {
     }
 
     /// Returns the selected CursorMode
-    fn selected_cursor_mode(&self) -> BitFlags<CursorMode> {
-        let imp = self.imp();
-
-        let mut cursor_mode: BitFlags<CursorMode> = BitFlags::empty();
-        if imp.hidden_check.is_active() {
-            cursor_mode.insert(CursorMode::Hidden);
+    fn selected_cursor_mode(&self) -> CursorMode {
+        match self.imp().cursor_mode_combo.selected() {
+            0 => CursorMode::Hidden,
+            1 => CursorMode::Embedded,
+            2 => CursorMode::Metadata,
+            _ => unimplemented!(),
         }
-        if imp.embedded_check.is_active() {
-            cursor_mode.insert(CursorMode::Embedded);
-        }
-        if imp.metadata_check.is_active() {
-            cursor_mode.insert(CursorMode::Metadata);
-        }
-        cursor_mode
     }
 
     async fn start_session(&self) {

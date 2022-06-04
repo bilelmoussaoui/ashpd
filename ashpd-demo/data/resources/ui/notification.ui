@@ -48,7 +48,6 @@
                 <child>
                   <object class="AdwComboRow" id="priority_combo">
                     <property name="title" translatable="yes">Priority</property>
-                    <property name="selected">1</property>
                     <property name="model">
                       <object class="GtkStringList">
                         <items>
@@ -59,6 +58,7 @@
                         </items>
                       </object>
                     </property>
+                    <property name="selected">1</property>
                   </object>
                 </child>
               </object>

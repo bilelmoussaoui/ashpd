@@ -1,5 +1,6 @@
 use std::{os::unix::io::RawFd, sync::Arc};
 
+use adw::prelude::*;
 use ashpd::{
     desktop::{
         screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType, Stream},
@@ -9,8 +10,10 @@ use ashpd::{
     zbus, WindowIdentifier,
 };
 use futures::lock::Mutex;
-use glib::clone;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{
+    glib::{self, clone},
+    subclass::prelude::*,
+};
 
 use crate::widgets::{
     CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
@@ -38,11 +41,7 @@ mod imp {
         #[template_child]
         pub virtual_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
-        pub hidden_check: TemplateChild<gtk::CheckButton>,
-        #[template_child]
-        pub embedded_check: TemplateChild<gtk::CheckButton>,
-        #[template_child]
-        pub metadata_check: TemplateChild<gtk::CheckButton>,
+        pub cursor_mode_combo: TemplateChild<adw::ComboRow>,
         pub session_token: Arc<Mutex<Option<String>>>,
     }
 
@@ -90,9 +89,9 @@ mod imp {
                     imp.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
                     imp.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
                     imp.window_check.set_sensitive(source_types.contains(SourceType::Window));
-                    imp.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
-                    imp.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
-                    imp.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
+//                    imp.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
+//                    imp.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
+//                    imp.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
                 }
             }));
             self.parent_map(widget);
@@ -127,13 +126,11 @@ impl ScreenCastPage {
 
     /// Returns the selected CursorMode
     fn selected_cursor_mode(&self) -> CursorMode {
-        let imp = self.imp();
-        if imp.hidden_check.is_active() {
-            CursorMode::Hidden
-        } else if imp.embedded_check.is_active() {
-            CursorMode::Embedded
-        } else {
-            CursorMode::Metadata
+        match self.imp().cursor_mode_combo.selected() {
+            0 => CursorMode::Hidden,
+            1 => CursorMode::Embedded,
+            2 => CursorMode::Metadata,
+            _ => unimplemented!(),
         }
     }
 

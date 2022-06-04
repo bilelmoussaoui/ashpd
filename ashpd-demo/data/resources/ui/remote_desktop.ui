@@ -72,6 +72,22 @@
                     </child>
                   </object>
                 </child>
+                <child>
+                  <object class="AdwComboRow" id="cursor_mode_combo">
+                    <property name="title" translatable="yes">Cursor Mode</property>
+                    <property name="visible" bind-source="screencast_switch" bind-property="active" bind-flags="sync-create" />
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">Hidden</item>
+                          <item translatable="yes">Embedded</item>
+                          <item translatable="yes">Metadata</item>
+                        </items>
+                      </object>
+                    </property>
+                    <property name="selected">1</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
@@ -107,46 +123,6 @@
                     <property name="activatable-widget">virtual_check</property>
                     <child>
                       <object class="GtkCheckButton" id="virtual_check">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
-                <property name="description" translatable="yes">Cursor Mode</property>
-                <property name="visible" bind-source="screencast_switch" bind-property="active" bind-flags="sync-create" />
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Hidden</property>
-                    <property name="activatable-widget">hidden_check</property>
-                    <child>
-                      <object class="GtkCheckButton" id="hidden_check">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Embedded</property>
-                    <property name="activatable-widget">embedded_check</property>
-                    <child>
-                      <object class="GtkCheckButton" id="embedded_check">
-                        <property name="active">True</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Metadata</property>
-                    <property name="activatable-widget">metadata_check</property>
-                    <child>
-                      <object class="GtkCheckButton" id="metadata_check">
                         <property name="valign">center</property>
                       </object>
                     </child>
