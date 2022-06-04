@@ -19,8 +19,12 @@
 //! }
 //! ```
 
-use std::{io::Read, os::unix::prelude::AsRawFd};
+use std::os::unix::prelude::AsRawFd;
 
+#[cfg(feature = "async-std")]
+use async_std::{os::unix::net::UnixStream, prelude::*};
+#[cfg(all(feature = "tokio_runtime", not(feature = "async-std")))]
+use tokio::{io::AsyncReadExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -99,11 +103,11 @@ pub async fn retrieve_secret() -> Result<Vec<u8>, Error> {
     let connection = zbus::Connection::session().await?;
     let proxy = SecretProxy::new(&connection).await?;
 
-    let (mut x1, x2) = std::os::unix::net::UnixStream::pair()?;
+    let (mut x1, x2) = UnixStream::pair()?;
     proxy.retrieve_secret(&x2).await?;
     drop(x2);
     let mut buf = Vec::new();
-    x1.read_to_end(&mut buf)?;
+    x1.read_to_end(&mut buf).await?;
 
     Ok(buf)
 }

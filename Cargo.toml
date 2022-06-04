@@ -11,12 +11,12 @@ repository = "https://github.com/bilelmoussaoui/ashpd"
 version = "0.4.0"
 
 [features]
-default_features = []
+default = ["async-std"]
 feature_gtk3 = ["gdk3x11", "gdk3wayland", "gtk3"]
 feature_gtk4 = ["gdk4x11", "gdk4wayland", "gtk4"]
 feature_pipewire = ["pw", "libc"]
 log = ["tracing"]
-tokio_runtime = ["zbus/tokio"]
+tokio_runtime = ["zbus/tokio", "tokio"]
 raw_handle = ["raw-window-handle", "wayland"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 
@@ -42,6 +42,8 @@ raw-window-handle = {version = "0.4", optional = true}
 wayland-client = {version = "0.30.0-beta.3", optional = true}
 wayland-protocols = {version = "0.30.0-beta.3", optional = true, features = ["unstable", "client"]}
 wayland-backend = {version = "0.1.0-beta.3", optional = true, features = ["client_system"]}
+async-std = {version = "1.11", optional = true}
+tokio = {version = "1.17", features = ["fs", "io-util"], optional = true, default-features = false}
 
 [dev-dependencies]
 serde_json = "1.0"
