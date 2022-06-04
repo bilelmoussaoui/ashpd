@@ -29,7 +29,7 @@ checksum = "08f9b8508dccb7687a1d6c4ce66b2b0ecef467c94667de27d8d7fe1f8d2a9cdc"
 [[package]]
 name = "ashpd"
 version = "0.3.2"
-source = "git+https://github.com/bilelmoussaoui/ashpd?branch=bilelmoussaoui/screencast-stuff#a96eef8a6db5b85c09041a9c027a7d80ad813eef"
+source = "git+https://github.com/bilelmoussaoui/ashpd#8d391905626d15777a5903d04984ee1d5f006b2c"
 dependencies = [
  "enumflags2",
  "futures",
