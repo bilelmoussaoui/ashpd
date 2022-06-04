@@ -2,7 +2,7 @@
 name = "ashpd-demo"
 version = "0.2.3"
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 tracing = "0.1"
@@ -16,12 +16,13 @@ gst4gtk = { package = "gst-plugin-gtk4", version = "0.1"}
 gtk = {package = "gtk4", version = "0.4"}
 adw = {version = "0.1", package = "libadwaita"}
 serde = {version = "1.0", features = ["derive"]}
-chrono = {version = "0.4", default-features = false}
+chrono = {version = "0.4", default-features = false, features = ["clock"]}
 
 [dependencies.shumate]
 package = "libshumate"
 version = "0.1.0-alpha.4"
 
 [dependencies.ashpd]
-version = "0.3"
+git = "https://github.com/bilelmoussaoui/ashpd"
+branch = "bilelmoussaoui/screencast-stuff"
 features = ["feature_gtk4", "feature_pipewire", "log"]
