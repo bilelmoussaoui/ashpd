@@ -42,6 +42,8 @@ mod imp {
         pub virtual_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub cursor_mode_combo: TemplateChild<adw::ComboRow>,
+        #[template_child]
+        pub persist_mode_combo: TemplateChild<adw::ComboRow>,
         pub session_token: Arc<Mutex<Option<String>>>,
     }
 
@@ -130,7 +132,16 @@ impl ScreenCastPage {
             0 => CursorMode::Hidden,
             1 => CursorMode::Embedded,
             2 => CursorMode::Metadata,
-            _ => unimplemented!(),
+            _ => unreachable!(),
+        }
+    }
+
+    fn selected_persist_mode(&self) -> PersistMode {
+        match self.imp().persist_mode_combo.selected() {
+            0 => PersistMode::DoNot,
+            1 => PersistMode::Application,
+            2 => PersistMode::ExplicitlyRevoked,
+            _ => unreachable!(),
         }
     }
 
@@ -205,6 +216,7 @@ impl ScreenCastPage {
         let imp = self.imp();
         let sources = self.selected_sources();
         let cursor_mode = self.selected_cursor_mode();
+        let persist_mode = self.selected_persist_mode();
         let multiple = imp.multiple_switch.is_active();
 
         let root = self.native().unwrap();
@@ -222,7 +234,7 @@ impl ScreenCastPage {
                 sources,
                 multiple,
                 token.as_deref(),
-                PersistMode::ExplicitlyRevoked,
+                persist_mode,
             )
             .await?;
         self.send_notification("Starting a screen cast session", NotificationKind::Info);
