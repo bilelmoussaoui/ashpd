@@ -17,6 +17,8 @@ static SESSION: OnceCell<zbus::Connection> = OnceCell::new();
 /// Alias for a [`Result`] with the error type `ashpd::Error`.
 pub type Result<T> = std::result::Result<T, Error>;
 
+mod activation_token;
+pub use activation_token::ActivationToken;
 /// Interact with the user's desktop such as taking a screenshot, setting a
 /// background or querying the user's location.
 pub mod desktop;
