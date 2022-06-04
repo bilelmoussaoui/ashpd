@@ -1,15 +1,18 @@
-use crate::widgets::{PortalPage, PortalPageImpl};
+use std::{
+    io::Read,
+    sync::{Arc, Mutex},
+};
+
 use ashpd::{desktop::secret, zbus};
 use glib::clone;
-use gtk::glib;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use std::sync::{Arc, Mutex};
-use std::{io::Read};
+use gtk::{glib, prelude::*, subclass::prelude::*};
+
+use crate::widgets::{PortalPage, PortalPageImpl};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/secret.ui")]
@@ -62,7 +65,10 @@ impl SecretPage {
         let imp = self.imp();
 
         if let Ok(key) = retrieve_secret().await {
-            let key_str = format!("{:?}", key).trim_start_matches('[').trim_end_matches(']').replace(",", " ");
+            let key_str = format!("{:?}", key)
+                .trim_start_matches('[')
+                .trim_end_matches(']')
+                .replace(",", " ");
             imp.token_label.set_text(&key_str);
             imp.response_group.show();
         }

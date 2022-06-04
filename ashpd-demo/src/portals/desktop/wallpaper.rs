@@ -1,15 +1,16 @@
 use std::cell::RefCell;
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{desktop::wallpaper, WindowIdentifier};
 use glib::clone;
-use gtk::glib;
-use gtk::subclass::prelude::*;
+use gtk::{glib, subclass::prelude::*};
+
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/wallpaper.ui")]

@@ -1,12 +1,16 @@
-use crate::widgets::{PortalPage, PortalPageImpl};
 use ashpd::{documents::DocumentsProxy, zbus};
-use gtk::glib::{self, clone};
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
+use gtk::{
+    glib::{self, clone},
+    prelude::*,
+    subclass::prelude::*,
+};
+
+use crate::widgets::{PortalPage, PortalPageImpl};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/documents.ui")]

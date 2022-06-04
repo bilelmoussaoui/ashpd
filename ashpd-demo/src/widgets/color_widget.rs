@@ -1,6 +1,4 @@
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use gtk::{gdk, glib, graphene};
+use gtk::{gdk, glib, graphene, prelude::*, subclass::prelude::*};
 
 mod imp {
     use std::cell::RefCell;

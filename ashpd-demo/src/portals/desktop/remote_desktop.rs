@@ -1,4 +1,5 @@
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use std::sync::Arc;
+
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktopProxy},
@@ -10,15 +11,15 @@ use ashpd::{
 };
 use futures::lock::Mutex;
 use glib::clone;
-use gtk::glib;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use std::sync::Arc;
+use gtk::{glib, prelude::*, subclass::prelude::*};
+
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
+    use adw::subclass::prelude::*;
+
     use super::*;
     use crate::portals::desktop::screencast::available_types;
-    use adw::subclass::prelude::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/remote_desktop.ui")]

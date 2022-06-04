@@ -1,14 +1,13 @@
 use ashpd::{desktop::screenshot, WindowIdentifier};
 use glib::clone;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use gtk::{gio, glib};
+use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screenshot.ui")]

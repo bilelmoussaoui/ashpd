@@ -1,12 +1,12 @@
 use std::os::unix::io::AsRawFd;
 
 use gst::prelude::*;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
 use gtk::{
     gdk,
     glib::{self, clone},
     graphene,
+    prelude::*,
+    subclass::prelude::*,
 };
 
 mod imp {

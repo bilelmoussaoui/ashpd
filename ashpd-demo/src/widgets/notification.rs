@@ -1,6 +1,8 @@
-use gtk::glib::{self, clone};
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
+use gtk::{
+    glib::{self, clone},
+    prelude::*,
+    subclass::prelude::*,
+};
 
 pub enum NotificationKind {
     Info,
@@ -9,8 +11,9 @@ pub enum NotificationKind {
 }
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/notification_widget.ui")]

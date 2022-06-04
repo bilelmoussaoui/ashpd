@@ -1,5 +1,3 @@
-use crate::portals::{is_empty, split_comma};
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{
     desktop::file_chooser::{
@@ -8,12 +6,17 @@ use ashpd::{
     zbus, WindowIdentifier,
 };
 use glib::clone;
-use gtk::glib;
-use gtk::subclass::prelude::*;
+use gtk::{glib, subclass::prelude::*};
+
+use crate::{
+    portals::{is_empty, split_comma},
+    widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/file_chooser.ui")]

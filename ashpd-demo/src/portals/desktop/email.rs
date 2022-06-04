@@ -1,17 +1,22 @@
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use ashpd::{
     desktop::email::{self, Email},
     WindowIdentifier,
 };
-use gtk::glib::{self, clone};
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
+use gtk::{
+    glib::{self, clone},
+    prelude::*,
+    subclass::prelude::*,
+};
 
-use crate::portals::{is_empty, split_comma};
+use crate::{
+    portals::{is_empty, split_comma},
+    widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/email.ui")]

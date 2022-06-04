@@ -1,12 +1,13 @@
-use gtk::glib;
-use gtk::prelude::*;
+use gtk::{glib, prelude::*};
 
 mod imp {
-    use super::*;
+    use std::cell::RefCell;
+
     use glib::{ParamFlags, ParamSpec, ParamSpecString, Value};
     use gtk::subclass::prelude::*;
     use once_cell::sync::Lazy;
-    use std::cell::RefCell;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/sidebar_row.ui")]

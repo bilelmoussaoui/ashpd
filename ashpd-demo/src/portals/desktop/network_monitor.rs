@@ -1,12 +1,16 @@
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 use adw::prelude::*;
 use ashpd::{desktop::network_monitor::NetworkMonitorProxy, zbus};
-use gtk::glib::{self, clone};
-use gtk::subclass::prelude::*;
+use gtk::{
+    glib::{self, clone},
+    subclass::prelude::*,
+};
+
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/network_monitor.ui")]

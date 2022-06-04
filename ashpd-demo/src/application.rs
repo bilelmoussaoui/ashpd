@@ -6,21 +6,19 @@ use ashpd::{
     zbus, zvariant,
 };
 use gio::ApplicationFlags;
-use glib::clone;
-use glib::WeakRef;
-use gtk::subclass::prelude::*;
-use gtk::{gio, glib};
+use glib::{clone, WeakRef};
+use gtk::{gio, glib, subclass::prelude::*};
 use gtk_macros::action;
 use once_cell::sync::OnceCell;
 use serde::Serialize;
 use tracing::{debug, info};
 
-use crate::config;
-use crate::window::ApplicationWindow;
+use crate::{config, window::ApplicationWindow};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug)]
     pub struct Application {

@@ -1,22 +1,27 @@
 use gettextrs::gettext;
 use glib::signal::Inhibit;
-use gtk::subclass::prelude::*;
-use gtk::{self, prelude::*};
 use gtk::{
-    gio,
+    self, gio,
     glib::{self, clone},
+    prelude::*,
+    subclass::prelude::*,
 };
 use tracing::warn;
 
-use crate::application::Application;
-use crate::config;
-use crate::portals::desktop::{
-    AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage, InhibitPage,
-    LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage,
-    RemoteDesktopPage, ScreenCastPage, ScreenshotPage, WallpaperPage, SecretPage
+use crate::{
+    application::Application,
+    config,
+    portals::{
+        desktop::{
+            AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage,
+            InhibitPage, LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage,
+            PrintPage, ProxyResolverPage, RemoteDesktopPage, ScreenCastPage, ScreenshotPage,
+            SecretPage, WallpaperPage,
+        },
+        DocumentsPage,
+    },
+    widgets::SidebarRow,
 };
-use crate::portals::DocumentsPage;
-use crate::widgets::SidebarRow;
 
 mod imp {
     use adw::subclass::prelude::*;

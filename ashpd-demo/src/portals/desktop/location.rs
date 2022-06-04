@@ -1,4 +1,5 @@
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use std::sync::Arc;
+
 use adw::prelude::*;
 use ashpd::{
     desktop::{
@@ -8,17 +9,20 @@ use ashpd::{
     zbus, WindowIdentifier,
 };
 use chrono::{DateTime, Local, TimeZone};
-use futures::future::{AbortHandle, Abortable};
-use futures::lock::Mutex;
+use futures::{
+    future::{AbortHandle, Abortable},
+    lock::Mutex,
+};
 use glib::clone;
-use gtk::glib;
-use gtk::subclass::prelude::*;
+use gtk::{glib, subclass::prelude::*};
 use shumate::prelude::*;
-use std::sync::Arc;
+
+use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/location.ui")]
@@ -116,7 +120,7 @@ mod imp {
             viewport.set_reference_map_source(Some(&source));
             viewport.set_zoom_level(6.0);
 
-            //self.map_license.append_map_source(&source);
+            // self.map_license.append_map_source(&source);
             self.parent_constructed(obj);
         }
 

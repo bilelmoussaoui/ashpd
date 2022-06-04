@@ -1,16 +1,17 @@
+use std::os::unix::prelude::RawFd;
+
+use ashpd::{desktop::camera, zbus};
+use glib::clone;
+use gtk::{glib, prelude::*, subclass::prelude::*};
+
 use crate::widgets::{
     CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
 };
-use ashpd::{desktop::camera, zbus};
-use glib::clone;
-use gtk::glib;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use std::os::unix::prelude::RawFd;
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/camera.ui")]

@@ -1,6 +1,5 @@
-use crate::widgets::{
-    CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
-};
+use std::{os::unix::io::RawFd, sync::Arc};
+
 use ashpd::{
     desktop::{
         screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType, Stream},
@@ -11,15 +10,16 @@ use ashpd::{
 };
 use futures::lock::Mutex;
 use glib::clone;
-use gtk::glib;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use std::os::unix::io::RawFd;
-use std::sync::Arc;
+use gtk::{glib, prelude::*, subclass::prelude::*};
+
+use crate::widgets::{
+    CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
+};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screencast.ui")]
@@ -126,20 +126,15 @@ impl ScreenCastPage {
     }
 
     /// Returns the selected CursorMode
-    fn selected_cursor_mode(&self) -> BitFlags<CursorMode> {
+    fn selected_cursor_mode(&self) -> CursorMode {
         let imp = self.imp();
-
-        let mut cursor_mode: BitFlags<CursorMode> = BitFlags::empty();
         if imp.hidden_check.is_active() {
-            cursor_mode.insert(CursorMode::Hidden);
+            CursorMode::Hidden
+        } else if imp.embedded_check.is_active() {
+            CursorMode::Embedded
+        } else {
+            CursorMode::Metadata
         }
-        if imp.embedded_check.is_active() {
-            cursor_mode.insert(CursorMode::Embedded);
-        }
-        if imp.metadata_check.is_active() {
-            cursor_mode.insert(CursorMode::Metadata);
-        }
-        cursor_mode
     }
 
     async fn start_session(&self) {

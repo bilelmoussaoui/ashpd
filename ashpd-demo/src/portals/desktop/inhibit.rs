@@ -1,19 +1,26 @@
-use crate::widgets::{PortalPage, PortalPageImpl};
+use std::sync::Arc;
+
 use ashpd::{
-    desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState},
-    desktop::SessionProxy,
+    desktop::{
+        inhibit::{InhibitFlags, InhibitProxy, SessionState},
+        SessionProxy,
+    },
     enumflags2::BitFlags,
     zbus, WindowIdentifier,
 };
 use futures::lock::Mutex;
-use gtk::glib::{self, clone};
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
-use std::sync::Arc;
+use gtk::{
+    glib::{self, clone},
+    prelude::*,
+    subclass::prelude::*,
+};
+
+use crate::widgets::{PortalPage, PortalPageImpl};
 
 mod imp {
-    use super::*;
     use adw::subclass::prelude::*;
+
+    use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/inhibit.ui")]
