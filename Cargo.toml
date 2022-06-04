@@ -16,7 +16,7 @@ feature_gtk3 = ["gdk3x11", "gdk3wayland", "gtk3"]
 feature_gtk4 = ["gdk4x11", "gdk4wayland", "gtk4"]
 feature_pipewire = ["pw", "libc"]
 log = ["tracing"]
-tokio_runtime = ["zbus/tokio", "tokio"]
+tokio = ["zbus/tokio", "dep:tokio"]
 raw_handle = ["raw-window-handle", "wayland"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 

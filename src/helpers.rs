@@ -9,7 +9,7 @@ use std::{
 use async_std::{fs::File, prelude::*};
 use futures::StreamExt;
 use serde::Deserialize;
-#[cfg(all(feature = "tokio_runtime", not(feature = "async-std")))]
+#[cfg(feature = "tokio")]
 use tokio::{fs::File, io::AsyncReadExt};
 use zbus::zvariant::{ObjectPath, OwnedObjectPath, Type};
 
