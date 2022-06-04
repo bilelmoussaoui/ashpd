@@ -31,9 +31,9 @@ pub use zbus::{self, zvariant};
 /// The function checks whether the file `/.flatpak-info` exists, or if the app
 /// is running as a snap, or if the environment variable `GTK_USE_PORTAL` is set
 /// to `1`.
-pub fn is_sandboxed() -> bool {
-    std::path::Path::new("/.flatpak-info").exists()
-        || crate::helpers::is_snap()
+pub async fn is_sandboxed() -> bool {
+    crate::helpers::is_flatpak().await
+        || crate::helpers::is_snap().await
         || std::env::var("GTK_USE_PORTAL")
             .map(|v| v == "1")
             .unwrap_or(false)

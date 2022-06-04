@@ -1,13 +1,16 @@
 use std::{
     ffi::OsStr,
     fmt::Debug,
-    io::Read,
     os::unix::prelude::OsStrExt,
     path::{Path, PathBuf},
 };
 
+#[cfg(feature = "async-std")]
+use async_std::{fs::File, prelude::*};
 use futures::StreamExt;
 use serde::Deserialize;
+#[cfg(all(feature = "tokio_runtime", not(feature = "async-std")))]
+use tokio::{fs::File, io::AsyncReadExt};
 use zbus::zvariant::{ObjectPath, OwnedObjectPath, Type};
 
 use crate::{
@@ -152,16 +155,29 @@ pub(crate) fn path_from_null_terminated(bytes: Vec<u8>) -> PathBuf {
     Path::new(OsStr::from_bytes(bytes.split_last().unwrap().1)).to_path_buf()
 }
 
-pub(crate) fn is_snap() -> bool {
+pub(crate) async fn is_flatpak() -> bool {
+    #[cfg(feature = "async-std")]
+    {
+        async_std::path::PathBuf::from("/.flatpak-info")
+            .exists()
+            .await
+    }
+    #[cfg(not(feature = "async-std"))]
+    {
+        std::path::PathBuf::from("/.flatpak-info").exists()
+    }
+}
+
+pub(crate) async fn is_snap() -> bool {
     let pid = std::process::id();
     let path = format!("/proc/{}/cgroup", pid);
-    let mut file = match std::fs::File::open(path) {
+    let mut file = match File::open(path).await {
         Ok(file) => file,
         Err(_) => return false,
     };
 
     let mut buffer = String::new();
-    match file.read_to_string(&mut buffer) {
+    match file.read_to_string(&mut buffer).await {
         Ok(_) => cgroup_v2_is_snap(&buffer),
         Err(_) => false,
     }
