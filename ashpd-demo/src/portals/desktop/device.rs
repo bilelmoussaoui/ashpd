@@ -55,11 +55,7 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for DevicePage {
-        fn constructed(&self, obj: &Self::Type) {
-            obj.set_sensitive(!ashpd::is_sandboxed());
-        }
-    }
+    impl ObjectImpl for DevicePage {}
     impl WidgetImpl for DevicePage {}
     impl BinImpl for DevicePage {}
     impl PortalPageImpl for DevicePage {}

@@ -127,9 +127,11 @@ mod imp {
             if config::PROFILE == "Devel" {
                 obj.add_css_class("devel");
             }
-
+            let is_sandboxed = futures::executor::block_on(async {
+                ashpd::is_sandboxed().await
+            });
             // Add pages based on whether the app is sandboxed
-            if ashpd::is_sandboxed() {
+            if is_sandboxed {
                 self.sidebar
                     .insert(&SidebarRow::new(&gettext("Background"), "background"), 1);
                 self.stack

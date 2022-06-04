@@ -144,8 +144,11 @@ impl Application {
                 }));
             })
         );
+        let is_sandboxed = futures::executor::block_on(async {
+            ashpd::is_sandboxed().await
+        });
         // The restart app requires the Flatpak portal
-        gtk_macros::get_action!(self, @restart).set_enabled(ashpd::is_sandboxed());
+        gtk_macros::get_action!(self, @restart).set_enabled(is_sandboxed);
 
         let action = self.imp().settings.create_action("dark-mode");
         self.add_action(&action);
