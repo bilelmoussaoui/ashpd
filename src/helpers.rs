@@ -31,17 +31,17 @@ where
     R: for<'de> Deserialize<'de> + Type + Debug,
     B: serde::ser::Serialize + Type + Debug,
 {
-    #[cfg(feature = "log")]
+    #[cfg(feature = "tracing")]
     tracing::info!(
         "Calling a request method '{}:{}'",
         proxy.interface(),
         method_name
     );
-    #[cfg(feature = "log")]
+    #[cfg(feature = "tracing")]
     tracing::debug!("The body is: {:#?}", body);
     let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
     // We don't use receive_response because we want to create the stream in advance
-    #[cfg(feature = "log")]
+    #[cfg(feature = "tracing")]
     tracing::info!(
         "Listening to signal 'Response' on '{}'",
         request.inner().interface()
@@ -55,7 +55,7 @@ where
     let (response, path) = futures::try_join!(
         async {
             let message = stream.next().await.ok_or(Error::NoResponse)?;
-            #[cfg(feature = "log")]
+            #[cfg(feature = "tracing")]
             tracing::info!(
                 "Received signal 'Response' on '{}'",
                 request.inner().interface()
@@ -64,7 +64,7 @@ where
                 Response::Err(e) => Err(e.into()),
                 Response::Ok(r) => Ok(r),
             };
-            #[cfg(feature = "log")]
+            #[cfg(feature = "tracing")]
             tracing::debug!("Received response {:#?}", response);
             response as Result<_, Error>
         },
@@ -75,7 +75,7 @@ where
                 .map_err::<PortalError, _>(From::from)?;
             let path = msg.body::<OwnedObjectPath>()?.into_inner();
 
-            #[cfg(feature = "log")]
+            #[cfg(feature = "tracing")]
             tracing::debug!("Received request path {}", path.as_str());
             Ok(path) as Result<ObjectPath<'_>, Error>
         },
@@ -101,7 +101,7 @@ pub(crate) async fn receive_signal<R>(
 where
     R: for<'de> Deserialize<'de> + Type + Debug,
 {
-    #[cfg(feature = "log")]
+    #[cfg(feature = "tracing")]
     tracing::info!(
         "Listening to signal '{}' on '{}'",
         signal_name,
@@ -112,14 +112,14 @@ where
         .await
         .map_err::<PortalError, _>(From::from)?;
     let message = stream.next().await.ok_or(Error::NoResponse)?;
-    #[cfg(feature = "log")]
+    #[cfg(feature = "tracing")]
     tracing::info!(
         "Received signal '{}' on '{}'",
         signal_name,
         proxy.interface()
     );
     let content = message.body::<R>()?;
-    #[cfg(feature = "log")]
+    #[cfg(feature = "tracing")]
     tracing::debug!("With body {:#?}", content);
     Ok(content)
 }
@@ -133,7 +133,7 @@ where
     R: for<'de> Deserialize<'de> + Type,
     B: serde::ser::Serialize + Type + Debug,
 {
-    #[cfg(feature = "log")]
+    #[cfg(feature = "tracing")]
     {
         tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
         tracing::debug!("With body {:#?}", body);

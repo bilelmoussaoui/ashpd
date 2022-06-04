@@ -24,4 +24,4 @@ version = "0.1.0-alpha.4"
 
 [dependencies.ashpd]
 git = "https://github.com/bilelmoussaoui/ashpd"
-features = ["feature_gtk4", "feature_pipewire", "log"]
+features = ["gtk4", "pipewire", "tracing"]

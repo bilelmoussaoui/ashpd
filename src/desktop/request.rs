@@ -196,7 +196,7 @@ impl<'a> RequestProxy<'a> {
             unique_identifier, handle_token
         ))
         .unwrap();
-        #[cfg(feature = "log")]
+        #[cfg(feature = "tracing")]
         tracing::info!("Creating a org.freedesktop.portal.Request {}", path);
         RequestProxy::new(connection, path).await
     }

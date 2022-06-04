@@ -47,7 +47,7 @@ impl fmt::Display for WaylandWindowIdentifier {
 impl Drop for WaylandWindowIdentifier {
     fn drop(&mut self) {
         if let Err(_err) = wayland_handle_unexport(&self.exported) {
-            #[cfg(feature = "log")]
+            #[cfg(feature = "tracing")]
             tracing::error!("Failed to unexport wayland handle {}", _err);
         }
     }

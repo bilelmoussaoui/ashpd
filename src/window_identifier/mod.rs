@@ -47,7 +47,7 @@ use zbus::zvariant::Type;
 ///
 /// ## With GTK 4
 ///
-/// The feature `feature_gtk4` must be enabled. You can get a
+/// The feature `gtk4` must be enabled. You can get a
 /// [`WindowIdentifier`] from a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) using `WindowIdentifier::from_native`
 ///
 /// ```rust, ignore
@@ -65,7 +65,7 @@ use zbus::zvariant::Type;
 ///
 /// ## With GTK 3
 ///
-/// The feature `feature_gtk3` must be enabled. You can get a
+/// The feature `gtk3` must be enabled. You can get a
 /// [`WindowIdentifier`] from a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) using
 /// `WindowIdentifier::from_window`
 ///
@@ -104,11 +104,11 @@ use zbus::zvariant::Type;
 #[doc(alias = "XdpParent")]
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
-    #[cfg(feature = "feature_gtk4")]
+    #[cfg(feature = "gtk4")]
     #[doc(hidden)]
     Gtk4(Gtk4WindowIdentifier),
     /// GTK 3 Window Identifier
-    #[cfg(feature = "feature_gtk3")]
+    #[cfg(feature = "gtk3")]
     #[doc(hidden)]
     Gtk3(Gtk3WindowIdentifier),
     #[cfg(feature = "wayland")]
@@ -135,9 +135,9 @@ impl Serialize for WindowIdentifier {
 impl std::fmt::Display for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            #[cfg(feature = "feature_gtk4")]
+            #[cfg(feature = "gtk4")]
             Self::Gtk4(identifier) => f.write_str(&format!("{}", identifier)),
-            #[cfg(feature = "feature_gtk3")]
+            #[cfg(feature = "gtk3")]
             Self::Gtk3(identifier) => f.write_str(&format!("{}", identifier)),
             #[cfg(feature = "wayland")]
             Self::Wayland(identifier) => f.write_str(&format!("{}", identifier)),
@@ -162,7 +162,7 @@ impl Default for WindowIdentifier {
 }
 
 impl WindowIdentifier {
-    #[cfg(feature = "feature_gtk4")]
+    #[cfg(feature = "gtk4")]
     /// Creates a [`WindowIdentifier`] from a [`gtk4::Native`](https://docs.gtk.org/gtk4/class.Native.html).
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
@@ -177,7 +177,7 @@ impl WindowIdentifier {
         }
     }
 
-    #[cfg(feature = "feature_gtk3")]
+    #[cfg(feature = "gtk3")]
     #[doc(alias = "xdp_parent_new_gtk")]
     /// Creates a [`WindowIdentifier`] from a [`gdk::Window`](https://developer.gnome.org/gdk3/stable/gdk3-Windows.html).
     ///
@@ -234,10 +234,7 @@ impl WindowIdentifier {
         }
     }
 
-    #[cfg(all(
-        feature = "raw_handle",
-        any(feature = "feature_gtk3", feature = "feature_gtk4")
-    ))]
+    #[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
     /// Convert a [`WindowIdentifier`] to
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
     ///
@@ -248,9 +245,9 @@ impl WindowIdentifier {
     /// the gtk3 / gtk4 constructors.
     pub fn as_raw_handle(&self) -> raw_window_handle::RawWindowHandle {
         match self {
-            #[cfg(feature = "feature_gtk4")]
+            #[cfg(feature = "gtk4")]
             Self::Gtk4(identifier) => identifier.as_raw_handle(),
-            #[cfg(feature = "feature_gtk3")]
+            #[cfg(feature = "gtk3")]
             Self::Gtk3(identifier) => identifier.as_raw_handle(),
             _ => unreachable!(),
         }
@@ -274,16 +271,16 @@ impl fmt::Display for WindowIdentifierType {
     }
 }
 
-#[cfg(feature = "feature_gtk4")]
+#[cfg(feature = "gtk4")]
 mod gtk4;
 
-#[cfg(feature = "feature_gtk4")]
+#[cfg(feature = "gtk4")]
 pub use self::gtk4::Gtk4WindowIdentifier;
 
-#[cfg(feature = "feature_gtk3")]
+#[cfg(feature = "gtk3")]
 mod gtk3;
 
-#[cfg(feature = "feature_gtk3")]
+#[cfg(feature = "gtk3")]
 pub use self::gtk3::Gtk3WindowIdentifier;
 
 #[cfg(any(feature = "wayland"))]
