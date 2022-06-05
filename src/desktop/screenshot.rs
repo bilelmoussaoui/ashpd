@@ -6,7 +6,11 @@
 //! use ashpd::{desktop::screenshot, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let uri = screenshot::take(&WindowIdentifier::default(), true, true).await?;
+//!     let uri = screenshot::ScreenshotBuilder::default()
+//!         .modal(true)
+//!         .interactive(true)
+//!         .build()
+//!         .await?;
 //!     println!("URI: {}", uri);
 //!     Ok(())
 //! }
@@ -35,7 +39,7 @@
 //! use ashpd::{desktop::screenshot, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let color = screenshot::pick_color(&WindowIdentifier::default()).await?;
+//!     let color = screenshot::ColorBuilder::default().build().await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -265,22 +269,61 @@ impl<'a> ScreenshotProxy<'a> {
     }
 }
 
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_pick_color")]
 /// A handy wrapper around [`ScreenshotProxy::pick_color`].
-pub async fn pick_color(identifier: &WindowIdentifier) -> Result<Color, Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = ScreenshotProxy::new(&connection).await?;
-    proxy.pick_color(identifier).await
+pub struct ColorBuilder {
+    identifier: WindowIdentifier,
 }
 
+impl ColorBuilder {
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    pub async fn build(self) -> Result<Color, Error> {
+        let connection = zbus::Connection::session().await?;
+        let proxy = ScreenshotProxy::new(&connection).await?;
+        proxy.pick_color(&self.identifier).await
+    }
+}
+
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_take_screenshot")]
 /// A handy wrapper around [`ScreenshotProxy::screenshot`].
-pub async fn take(
-    identifier: &WindowIdentifier,
+pub struct ScreenshotBuilder {
+    identifier: WindowIdentifier,
     interactive: bool,
     modal: bool,
-) -> Result<String, Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = ScreenshotProxy::new(&connection).await?;
-    proxy.screenshot(identifier, interactive, modal).await
+}
+
+impl ScreenshotBuilder {
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Sets whether the dialog should be a modal.
+    #[must_use]
+    pub fn modal(mut self, modal: bool) -> Self {
+        self.modal = modal;
+        self
+    }
+
+    /// Sets whether the dialog should offer customization before a screenshot
+    /// or not.
+    #[must_use]
+    pub fn interactive(mut self, interactive: bool) -> Self {
+        self.interactive = interactive;
+        self
+    }
+
+    pub async fn build(self) -> Result<String, Error> {
+        let connection = zbus::Connection::session().await?;
+        let proxy = ScreenshotProxy::new(&connection).await?;
+        proxy
+            .screenshot(&self.identifier, self.interactive, self.modal)
+            .await
+    }
 }

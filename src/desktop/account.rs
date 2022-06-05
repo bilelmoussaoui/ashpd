@@ -4,11 +4,10 @@
 //! use ashpd::{desktop::account, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let user_info = account::user_information(
-//!         &WindowIdentifier::default(),
-//!         "App would like to access user information",
-//!     )
-//!     .await?;
+//!     let user_info = account::UserInfoBuilder::default()
+//!         .reason("App would like to access user information")
+//!         .build()
+//!         .await?;
 //!
 //!     println!("Name: {}", user_info.name());
 //!     println!("ID: {}", user_info.id());
@@ -146,11 +145,26 @@ impl<'a> AccountProxy<'a> {
 #[doc(alias = "xdp_portal_get_user_information")]
 #[doc(alias = "get_user_information")]
 /// A handy wrapper around [`AccountProxy::user_information`].
-pub async fn user_information(
-    identifier: &WindowIdentifier,
-    reason: &str,
-) -> Result<UserInfo, Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = AccountProxy::new(&connection).await?;
-    proxy.user_information(identifier, reason).await
+#[derive(Default)]
+pub struct UserInfoBuilder {
+    identifier: WindowIdentifier,
+    reason: String,
+}
+
+impl UserInfoBuilder {
+    pub fn reason(mut self, reason: &str) -> Self {
+        self.reason = reason.to_owned();
+        self
+    }
+
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    pub async fn build(self) -> Result<UserInfo, Error> {
+        let connection = zbus::Connection::session().await?;
+        let proxy = AccountProxy::new(&connection).await?;
+        proxy.user_information(&self.identifier, &self.reason).await
+    }
 }

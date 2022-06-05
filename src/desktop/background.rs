@@ -6,14 +6,12 @@
 //! use ashpd::{desktop::background, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = background::request(
-//!         &WindowIdentifier::default(),
-//!         "Automatically fetch your latest mails",
-//!         true,
-//!         Some(&["geary"]),
-//!         false,
-//!     )
-//!     .await?;
+//!     let response = background::RequestBackgroundBuilder::default()
+//!         .reason("Automatically fetch your latest mails")
+//!         .auto_start(true)
+//!         .command(&["geary"])
+//!         .build()
+//!         .await?;
 //!
 //!     println!("{}", response.auto_start());
 //!     println!("{}", response.run_in_background());
@@ -22,27 +20,8 @@
 //! }
 //! ```
 //!
-//! If the [`None`] is provided as an argument for `command_line`, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+//! If no `command` is provided, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
-//!
-//! ```rust,no_run
-//! use ashpd::{desktop::background, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let response = background::request(
-//!         &WindowIdentifier::default(),
-//!         "Automatically fetch your latest mails",
-//!         true,
-//!         None::<&[&str]>,
-//!         false,
-//!     )
-//!     .await?;
-//!
-//!     println!("{}", response.auto_start());
-//!     println!("{}", response.run_in_background());
-//!
-//!     Ok(())
-//! }
 //! ```
 
 use serde::Serialize;
@@ -188,23 +167,54 @@ impl<'a> BackgroundProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_request_background")]
+#[derive(Debug, Default)]
 /// A handy wrapper around [`BackgroundProxy::request_background`].
-pub async fn request(
-    identifier: &WindowIdentifier,
-    reason: &str,
+pub struct RequestBackgroundBuilder {
+    identifier: WindowIdentifier,
+    reason: String,
     auto_start: bool,
-    command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
+    command_line: Option<Vec<String>>,
     dbus_activatable: bool,
-) -> Result<Background, Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = BackgroundProxy::new(&connection).await?;
-    proxy
-        .request_background(
-            identifier,
-            reason,
-            auto_start,
-            command_line,
-            dbus_activatable,
-        )
-        .await
+}
+
+impl RequestBackgroundBuilder {
+    /// Sets a user-visible reason for the request.
+    pub fn reason(mut self, reason: &str) -> Self {
+        self.reason = reason.to_owned();
+        self
+    }
+
+    /// Sets whether to auto start the application or not.
+    pub fn auto_start(mut self, auto_start: bool) -> Self {
+        self.auto_start = auto_start;
+        self
+    }
+
+    /// Sets whether the application is dbus activatable.
+    pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
+        self.dbus_activatable = dbus_activatable;
+        self
+    }
+
+    /// Specifies the command line to execute.
+    /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+    /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
+    pub fn command(mut self, command: &[impl AsRef<str> + Type + Serialize]) -> Self {
+        self.command_line = Some(command.iter().map(|s| s.as_ref().to_owned()).collect());
+        self
+    }
+
+    pub async fn build(self) -> Result<Background, Error> {
+        let connection = zbus::Connection::session().await?;
+        let proxy = BackgroundProxy::new(&connection).await?;
+        proxy
+            .request_background(
+                &self.identifier,
+                &self.reason,
+                self.auto_start,
+                self.command_line.as_deref(),
+                self.dbus_activatable,
+            )
+            .await
+    }
 }

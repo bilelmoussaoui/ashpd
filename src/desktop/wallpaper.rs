@@ -12,7 +12,10 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
-//!     wallpaper::set_from_file(&WindowIdentifier::default(), &file, true, SetOn::Both).await?;
+//!     wallpaper::SetWallpaperBuilder::default()
+//!         .show_preview(true)
+//!         .build_file(&file)
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
@@ -49,7 +52,10 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
-//!     wallpaper::set_from_uri(&WindowIdentifier::default(), &uri, true, SetOn::Both).await?;
+//!     wallpaper::SetWallpaperBuilder::default()
+//!         .show_preview(true)
+//!         .build_uri(&uri)
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
@@ -98,6 +104,12 @@ pub enum SetOn {
     Background,
     /// Set the wallpaper on both lock-screen and background.
     Both,
+}
+
+impl Default for SetOn {
+    fn default() -> Self {
+        Self::Both
+    }
 }
 
 impl fmt::Display for SetOn {
@@ -268,36 +280,57 @@ impl<'a> WallpaperProxy<'a> {
     }
 }
 
-#[doc(alias = "xdp_portal_set_wallpaper")]
-/// A handy wrapper around [`WallpaperProxy::set_wallpaper_uri`].
-pub async fn set_from_uri(
-    identifier: &WindowIdentifier,
-    uri: &str,
+#[derive(Debug, Default)]
+
+pub struct SetWallpaperBuilder {
+    identifier: WindowIdentifier,
     show_preview: bool,
     set_on: SetOn,
-) -> Result<(), Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = WallpaperProxy::new(&connection).await?;
-    proxy
-        .set_wallpaper_uri(identifier, uri, show_preview, set_on)
-        .await?;
-    Ok(())
 }
 
-#[doc(alias = "xdp_portal_set_wallpaper")]
-/// A handy wrapper around [`WallpaperProxy::set_wallpaper_file`].
-pub async fn set_from_file(
-    identifier: &WindowIdentifier,
-    file: &impl AsRawFd,
-    show_preview: bool,
-    set_on: SetOn,
-) -> Result<(), Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = WallpaperProxy::new(&connection).await?;
-    proxy
-        .set_wallpaper_file(identifier, file, show_preview, set_on)
-        .await?;
-    Ok(())
+impl SetWallpaperBuilder {
+    /// Whether to show a preview of the picture.
+    /// **Note** the portal may decide to show a preview even if this option is
+    /// not set.
+    #[must_use]
+    pub fn show_preview(mut self, show_preview: bool) -> Self {
+        self.show_preview = show_preview;
+        self
+    }
+
+    /// Sets where to set the wallpaper on.
+    #[must_use]
+    pub fn set_on(mut self, set_on: SetOn) -> Self {
+        self.set_on = set_on;
+        self
+    }
+
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    #[doc(alias = "xdp_portal_set_wallpaper")]
+    /// A handy wrapper around [`WallpaperProxy::set_wallpaper_uri`].
+    pub async fn build_uri(self, uri: &str) -> Result<(), Error> {
+        let connection = zbus::Connection::session().await?;
+        let proxy = WallpaperProxy::new(&connection).await?;
+        proxy
+            .set_wallpaper_uri(&self.identifier, uri, self.show_preview, self.set_on)
+            .await?;
+        Ok(())
+    }
+
+    #[doc(alias = "xdp_portal_set_wallpaper")]
+    /// A handy wrapper around [`WallpaperProxy::set_wallpaper_file`].
+    pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
+        let connection = zbus::Connection::session().await?;
+        let proxy = WallpaperProxy::new(&connection).await?;
+        proxy
+            .set_wallpaper_file(&self.identifier, file, self.show_preview, self.set_on)
+            .await?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
