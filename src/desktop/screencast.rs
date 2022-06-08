@@ -10,8 +10,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = ScreenCastProxy::new(&connection).await?;
+//!     let proxy = ScreenCastProxy::new().await?;
 //!
 //!     let session = proxy.create_session().await?;
 //!
@@ -51,7 +50,7 @@ use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method},
+    helpers::{call_basic_response_method, call_method, call_request_method, session_connection},
     Error, WindowIdentifier,
 };
 
@@ -273,8 +272,9 @@ pub struct ScreenCastProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> ScreenCastProxy<'a> {
     /// Create a new instance of [`ScreenCastProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<ScreenCastProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<ScreenCastProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.ScreenCast")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -305,11 +305,7 @@ impl<'a> ScreenCastProxy<'a> {
                 &options
             )
             .into_future(),
-            SessionProxy::from_unique_name(
-                self.inner().connection(),
-                &options.session_handle_token
-            )
-            .into_future(),
+            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)

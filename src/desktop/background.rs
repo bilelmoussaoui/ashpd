@@ -49,7 +49,10 @@ use serde::Serialize;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_request_method, Error, WindowIdentifier};
+use crate::{
+    helpers::{call_request_method, session_connection},
+    Error, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Clone, Default)]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
@@ -132,8 +135,9 @@ pub struct BackgroundProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
     /// Create a new instance of [`BackgroundProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<BackgroundProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<BackgroundProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Background")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -196,8 +200,7 @@ pub async fn request(
     command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
     dbus_activatable: bool,
 ) -> Result<Background, Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = BackgroundProxy::new(&connection).await?;
+    let proxy = BackgroundProxy::new().await?;
     proxy
         .request_background(
             identifier,

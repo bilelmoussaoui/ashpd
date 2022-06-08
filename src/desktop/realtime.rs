@@ -1,5 +1,8 @@
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
+use crate::{
+    helpers::{call_method, session_connection},
+    Error,
+};
 
 /// Interface for setting a thread to realtime from within the sandbox.
 ///
@@ -10,8 +13,9 @@ pub struct RealtimeProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> RealtimeProxy<'a> {
     /// Create a new instance of [`RealtimeProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<RealtimeProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<RealtimeProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Realtime")?
             .path(PATH)?
             .destination(DESTINATION)?

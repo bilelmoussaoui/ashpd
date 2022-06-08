@@ -9,7 +9,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
-//!     let proxy = LocationProxy::new(&connection).await?;
+//!     let proxy = LocationProxy::new().await?;
 //!     let identifier = WindowIdentifier::default();
 //!
 //!     let session = proxy
@@ -39,7 +39,7 @@ use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, receive_signal},
+    helpers::{call_basic_response_method, call_method, receive_signal, session_connection},
     Error, WindowIdentifier,
 };
 
@@ -221,8 +221,9 @@ pub struct LocationProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> LocationProxy<'a> {
     /// Create a new instance of [`LocationProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<LocationProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<LocationProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Location")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -278,8 +279,7 @@ impl<'a> LocationProxy<'a> {
                 &(options)
             )
             .into_future(),
-            SessionProxy::from_unique_name(self.0.connection(), &options.session_handle_token)
-                .into_future(),
+            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path(), &path.into_inner());
         Ok(proxy)

@@ -22,9 +22,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = TrashProxy::new(&connection).await?;
-//!
+//!     let proxy = TrashProxy::new().await?;
 //!     proxy.trash_file(&file).await?;
 //!     Ok(())
 //! }
@@ -36,7 +34,11 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
 use super::{DESTINATION, PATH};
-use crate::{error::PortalError, helpers::call_method, Error};
+use crate::{
+    error::PortalError,
+    helpers::{call_method, session_connection},
+    Error,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
 /// The status of moving a file to the trash.
@@ -57,8 +59,9 @@ pub struct TrashProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> TrashProxy<'a> {
     /// Create a new instance of [`TrashProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<TrashProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<TrashProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Trash")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -97,8 +100,7 @@ impl<'a> TrashProxy<'a> {
 #[doc(alias = "xdp_portal_trash_file")]
 /// A handy wrapper around [`TrashProxy::trash_file`].
 pub async fn trash_file(fd: &impl AsRawFd) -> Result<(), Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = TrashProxy::new(&connection).await?;
+    let proxy = TrashProxy::new().await?;
     proxy.trash_file(fd).await
 }
 

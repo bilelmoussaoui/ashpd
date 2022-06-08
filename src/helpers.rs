@@ -18,7 +18,7 @@ use crate::{
         request::{BasicResponse, RequestProxy, Response},
         HandleToken,
     },
-    Error, PortalError,
+    Error, PortalError, SESSION,
 };
 
 pub(crate) async fn call_request_method<R, B>(
@@ -39,7 +39,7 @@ where
     );
     #[cfg(feature = "tracing")]
     tracing::debug!("The body is: {:#?}", body);
-    let request = RequestProxy::from_unique_name(proxy.connection(), handle_token).await?;
+    let request = RequestProxy::from_unique_name(handle_token).await?;
     // We don't use receive_response because we want to create the stream in advance
     #[cfg(feature = "tracing")]
     tracing::info!(
@@ -201,6 +201,16 @@ fn cgroup_v2_is_snap(cgroups: &str) -> bool {
             Some(scope.starts_with("snap."))
         })
         .any(|x| x.unwrap_or(false))
+}
+
+pub(crate) async fn session_connection() -> zbus::Result<zbus::Connection> {
+    if let Some(cnx) = SESSION.get() {
+        Ok(cnx.clone())
+    } else {
+        let cnx = zbus::Connection::session().await?;
+        SESSION.set(cnx.clone()).expect("Can't reset a OnceCell");
+        Ok(cnx)
+    }
 }
 
 #[cfg(test)]

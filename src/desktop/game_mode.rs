@@ -4,8 +4,7 @@
 //! use ashpd::desktop::game_mode::GameModeProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = GameModeProxy::new(&connection).await?;
+//!     let proxy = GameModeProxy::new().await?;
 //!
 //!     println!("{:#?}", proxy.register_game(246612).await?);
 //!     println!("{:#?}", proxy.query_status(246612).await?);
@@ -22,7 +21,11 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
 use super::{DESTINATION, PATH};
-use crate::{error::PortalError, helpers::call_method, Error};
+use crate::{
+    error::PortalError,
+    helpers::{call_method, session_connection},
+    Error,
+};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
 /// The status of the game mode.
@@ -78,8 +81,9 @@ pub struct GameModeProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> GameModeProxy<'a> {
     /// Create a new instance of [`GameModeProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<GameModeProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<GameModeProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.GameMode")?
             .path(PATH)?
             .destination(DESTINATION)?

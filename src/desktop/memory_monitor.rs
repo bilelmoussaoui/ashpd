@@ -5,7 +5,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
-//!     let proxy = MemoryMonitorProxy::new(&connection).await?;
+//!     let proxy = MemoryMonitorProxy::new().await?;
 //!
 //!     let level = proxy.receive_low_memory_warning().await?;
 //!     println!("{:#?}", level);
@@ -15,7 +15,10 @@
 //! ```
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::receive_signal, Error};
+use crate::{
+    helpers::{receive_signal, session_connection},
+    Error,
+};
 
 /// The interface provides information about low system memory to sandboxed
 /// applications. It is not a portal in the strict sense, since it does not
@@ -28,8 +31,9 @@ pub struct MemoryMonitorProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> MemoryMonitorProxy<'a> {
     /// Create a new instance of [`MemoryMonitorProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<MemoryMonitorProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<MemoryMonitorProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.MemoryMonitor")?
             .path(PATH)?
             .destination(DESTINATION)?

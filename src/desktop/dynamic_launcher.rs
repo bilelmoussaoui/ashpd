@@ -10,9 +10,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!
-//!     let proxy = DynamicLauncherProxy::new(&connection).await?;
+//!     let proxy = DynamicLauncherProxy::new().await?;
 //!     let (name, token) = proxy
 //!         .prepare_install(
 //!             &WindowIdentifier::default(),
@@ -47,7 +45,7 @@ use zbus::zvariant::{self, SerializeDict, Type};
 
 use super::{HandleToken, Icon, DESTINATION, PATH};
 use crate::{
-    helpers::{call_method, call_request_method},
+    helpers::{call_method, call_request_method, session_connection},
     Error, WindowIdentifier,
 };
 
@@ -145,8 +143,9 @@ pub struct DynamicLauncherProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> DynamicLauncherProxy<'a> {
     /// Create a new instance of [`DynamicLauncherProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<DynamicLauncherProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<DynamicLauncherProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.DynamicLauncher")?
             .path(PATH)?
             .destination(DESTINATION)?

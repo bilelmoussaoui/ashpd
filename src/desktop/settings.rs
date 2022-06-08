@@ -2,8 +2,7 @@
 //! use ashpd::desktop::settings::SettingsProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = SettingsProxy::new(&connection).await?;
+//!     let proxy = SettingsProxy::new().await?;
 //!
 //!     println!(
 //!         "{:#?}",
@@ -31,7 +30,7 @@ use zbus::zvariant::{OwnedValue, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{
-    helpers::{call_method, receive_signal},
+    helpers::{call_method, receive_signal, session_connection},
     Error,
 };
 
@@ -91,8 +90,9 @@ pub struct SettingsProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> SettingsProxy<'a> {
     /// Create a new instance of [`SettingsProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<SettingsProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<SettingsProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Settings")?
             .path(PATH)?
             .destination(DESTINATION)?

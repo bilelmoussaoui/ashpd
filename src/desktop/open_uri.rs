@@ -24,8 +24,7 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = OpenURIProxy::new(&connection).await?;
+//!     let proxy = OpenURIProxy::new().await?;
 //!
 //!     proxy
 //!         .open_file(&WindowIdentifier::default(), &file, false, true)
@@ -58,8 +57,7 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
 //!
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = OpenURIProxy::new(&connection).await?;
+//!     let proxy = OpenURIProxy::new().await?;
 //!
 //!     proxy
 //!         .open_directory(&WindowIdentifier::default(), &directory)
@@ -87,8 +85,7 @@
 //! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = OpenURIProxy::new(&connection).await?;
+//!     let proxy = OpenURIProxy::new().await?;
 //!     let uri = "https://github.com/bilelmoussaoui/ashpd";
 //!
 //!     proxy
@@ -103,7 +100,10 @@ use std::os::unix::prelude::AsRawFd;
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, session_connection},
+    Error, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`OpenURIProxy::open_directory`] request.
@@ -171,8 +171,9 @@ pub struct OpenURIProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {
     /// Create a new instance of [`OpenURIProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<OpenURIProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<OpenURIProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.OpenURI")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -288,8 +289,7 @@ pub async fn open_uri(
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = OpenURIProxy::new(&connection).await?;
+    let proxy = OpenURIProxy::new().await?;
     proxy.open_uri(identifier, uri, writeable, ask).await?;
     Ok(())
 }
@@ -301,8 +301,7 @@ pub async fn open_file(
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = OpenURIProxy::new(&connection).await?;
+    let proxy = OpenURIProxy::new().await?;
     proxy.open_file(identifier, file, writeable, ask).await?;
     Ok(())
 }
@@ -313,8 +312,7 @@ pub async fn open_directory(
     identifier: &WindowIdentifier,
     directory: &impl AsRawFd,
 ) -> Result<(), Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = OpenURIProxy::new(&connection).await?;
+    let proxy = OpenURIProxy::new().await?;
     proxy.open_directory(identifier, directory).await?;
     Ok(())
 }

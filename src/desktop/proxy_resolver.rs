@@ -6,7 +6,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let connection = zbus::Connection::session().await?;
-//!     let proxy = ProxyResolverProxy::new(&connection).await?;
+//!     let proxy = ProxyResolverProxy::new().await?;
 //!
 //!     println!("{:#?}", proxy.lookup("www.google.com").await?);
 //!
@@ -15,7 +15,10 @@
 //! ```
 
 use super::{DESTINATION, PATH};
-use crate::{helpers::call_method, Error};
+use crate::{
+    helpers::{call_method, session_connection},
+    Error,
+};
 
 /// The interface provides network proxy information to sandboxed applications.
 /// It is not a portal in the strict sense, since it does not involve user
@@ -29,8 +32,9 @@ pub struct ProxyResolverProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> ProxyResolverProxy<'a> {
     /// Create a new instance of [`ProxyResolverProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<ProxyResolverProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<ProxyResolverProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.ProxyResolver")?
             .path(PATH)?
             .destination(DESTINATION)?

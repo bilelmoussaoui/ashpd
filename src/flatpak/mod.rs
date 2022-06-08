@@ -9,8 +9,7 @@
 //! use enumflags2::BitFlags;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = FlatpakProxy::new(&connection).await?;
+//!     let proxy = FlatpakProxy::new().await?;
 //!
 //!     proxy
 //!         .spawn(
@@ -47,7 +46,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
 
 use crate::{
-    helpers::{call_method, receive_signal},
+    helpers::{call_method, receive_signal, session_connection},
     Error,
 };
 
@@ -253,8 +252,9 @@ pub struct FlatpakProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> FlatpakProxy<'a> {
     /// Create a new instance of [`FlatpakProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<FlatpakProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<FlatpakProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Flatpak")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -282,7 +282,7 @@ impl<'a> FlatpakProxy<'a> {
         let path: OwnedObjectPath =
             call_method(self.inner(), "CreateUpdateMonitor", &(options)).await?;
 
-        UpdateMonitorProxy::new(self.inner().connection(), path.into_inner()).await
+        UpdateMonitorProxy::new(path.into_inner()).await
     }
 
     /// Emitted when a process starts by [`spawn()`][`FlatpakProxy::spawn`].
