@@ -55,7 +55,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Clone, Default)]
-/// Specified options for a [`BackgroundProxy::request_background`] request.
+/// Specified options for a [`Background::request_background`] request.
 #[zvariant(signature = "dict")]
 struct BackgroundOptions {
     /// A string that will be used as the last element of the handle.
@@ -103,16 +103,16 @@ impl BackgroundOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug)]
-/// The response of a [`BackgroundProxy::request_background`] request.
+/// The response of a [`Background::request_background`] request.
 #[zvariant(signature = "dict")]
-pub struct Background {
+pub struct Response {
     /// If the application is allowed to run in the background.
     background: bool,
     /// If the application is will be auto-started.
     autostart: bool,
 }
 
-impl Background {
+impl Response {
     /// If the application is allowed to run in the background.
     pub fn run_in_background(&self) -> bool {
         self.background
@@ -131,11 +131,11 @@ impl Background {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Background")]
-pub struct BackgroundProxy<'a>(zbus::Proxy<'a>);
+pub struct Background<'a>(zbus::Proxy<'a>);
 
-impl<'a> BackgroundProxy<'a> {
-    /// Create a new instance of [`BackgroundProxy`].
-    pub async fn new() -> Result<BackgroundProxy<'a>, Error> {
+impl<'a> Background<'a> {
+    /// Create a new instance of [`Background`].
+    pub async fn new() -> Result<Background<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Background")?
@@ -175,7 +175,7 @@ impl<'a> BackgroundProxy<'a> {
         auto_start: bool,
         command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
         dbus_activatable: bool,
-    ) -> Result<Background, Error> {
+    ) -> Result<Response, Error> {
         let options = BackgroundOptions::default()
             .reason(reason)
             .autostart(auto_start)
@@ -192,15 +192,15 @@ impl<'a> BackgroundProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_request_background")]
-/// A handy wrapper around [`BackgroundProxy::request_background`].
+/// A handy wrapper around [`Background::request_background`].
 pub async fn request(
     identifier: &WindowIdentifier,
     reason: &str,
     auto_start: bool,
     command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
     dbus_activatable: bool,
-) -> Result<Background, Error> {
-    let proxy = BackgroundProxy::new().await?;
+) -> Result<Response, Error> {
+    let proxy = Background::new().await?;
     proxy
         .request_background(
             identifier,

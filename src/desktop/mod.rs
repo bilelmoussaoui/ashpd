@@ -5,7 +5,7 @@ mod handle_token;
 pub(crate) mod request;
 mod session;
 pub(crate) use self::handle_token::HandleToken;
-pub use self::{request::ResponseError, session::SessionProxy};
+pub use self::{request::ResponseError, session::Session};
 
 /// Request access to the current logged user information such as the id, name
 /// or their avatar uri.

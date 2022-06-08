@@ -1,8 +1,8 @@
 //! ```rust,no_run
-//! use ashpd::desktop::settings::SettingsProxy;
+//! use ashpd::desktop::settings::Settings;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = SettingsProxy::new().await?;
+//!     let proxy = Settings::new().await?;
 //!
 //!     println!(
 //!         "{:#?}",
@@ -86,11 +86,11 @@ pub enum ColorScheme {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Settings).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Settings")]
-pub struct SettingsProxy<'a>(zbus::Proxy<'a>);
+pub struct Settings<'a>(zbus::Proxy<'a>);
 
-impl<'a> SettingsProxy<'a> {
-    /// Create a new instance of [`SettingsProxy`].
-    pub async fn new() -> Result<SettingsProxy<'a>, Error> {
+impl<'a> Settings<'a> {
+    /// Create a new instance of [`Settings`].
+    pub async fn new() -> Result<Settings<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Settings")?

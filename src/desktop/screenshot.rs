@@ -15,10 +15,10 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot::ScreenshotProxy, WindowIdentifier};
+//! use ashpd::{desktop::screenshot::Screenshot, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ScreenshotProxy::new().await?;
+//!     let proxy = Screenshot::new().await?;
 //!
 //!     let uri = proxy
 //!         .screenshot(&WindowIdentifier::default(), true, true)
@@ -44,10 +44,10 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot::ScreenshotProxy, WindowIdentifier};
+//! use ashpd::{desktop::screenshot::Screenshot, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ScreenshotProxy::new().await?;
+//!     let proxy = Screenshot::new().await?;
 //!
 //!     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
@@ -67,7 +67,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`ScreenshotProxy::screenshot`] request.
+/// Specified options for a [`Screenshot::screenshot`] request.
 #[zvariant(signature = "dict")]
 struct ScreenshotOptions {
     /// A string that will be used as the last element of the handle.
@@ -97,21 +97,21 @@ impl ScreenshotOptions {
 }
 
 #[derive(DeserializeDict, SerializeDict, Clone, Type)]
-/// A response to a [`ScreenshotProxy::screenshot`] request.
+/// A response to a [`Screenshot::screenshot`] request.
 #[zvariant(signature = "dict")]
-struct Screenshot {
+struct ScreenshotResponse {
     /// The screenshot uri.
     uri: String,
 }
 
-impl Debug for Screenshot {
+impl Debug for ScreenshotResponse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.uri)
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`ScreenshotProxy::pick_color`] request.
+/// Specified options for a [`Screenshot::pick_color`] request.
 #[zvariant(signature = "dict")]
 struct PickColorOptions {
     /// A string that will be used as the last element of the handle.
@@ -119,7 +119,7 @@ struct PickColorOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, Type)]
-/// A response to a [`ScreenshotProxy::pick_color`] request.
+/// A response to a [`Screenshot::pick_color`] request.
 /// **Note** the values are normalized.
 #[zvariant(signature = "dict")]
 pub struct Color {
@@ -187,11 +187,11 @@ impl std::fmt::Display for Color {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Screenshot).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
-pub struct ScreenshotProxy<'a>(zbus::Proxy<'a>);
+pub struct Screenshot<'a>(zbus::Proxy<'a>);
 
-impl<'a> ScreenshotProxy<'a> {
-    /// Create a new instance of [`ScreenshotProxy`].
-    pub async fn new() -> Result<ScreenshotProxy<'a>, Error> {
+impl<'a> Screenshot<'a> {
+    /// Create a new instance of [`Screenshot`].
+    pub async fn new() -> Result<Screenshot<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Screenshot")?
@@ -256,7 +256,7 @@ impl<'a> ScreenshotProxy<'a> {
         let options = ScreenshotOptions::default()
             .interactive(interactive)
             .modal(modal);
-        let response: Screenshot = call_request_method(
+        let response: ScreenshotResponse = call_request_method(
             self.inner(),
             &options.handle_token,
             "Screenshot",
@@ -268,19 +268,19 @@ impl<'a> ScreenshotProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_pick_color")]
-/// A handy wrapper around [`ScreenshotProxy::pick_color`].
+/// A handy wrapper around [`Screenshot::pick_color`].
 pub async fn pick_color(identifier: &WindowIdentifier) -> Result<Color, Error> {
-    let proxy = ScreenshotProxy::new().await?;
+    let proxy = Screenshot::new().await?;
     proxy.pick_color(identifier).await
 }
 
 #[doc(alias = "xdp_portal_take_screenshot")]
-/// A handy wrapper around [`ScreenshotProxy::screenshot`].
+/// A handy wrapper around [`Screenshot::screenshot`].
 pub async fn take(
     identifier: &WindowIdentifier,
     interactive: bool,
     modal: bool,
 ) -> Result<String, Error> {
-    let proxy = ScreenshotProxy::new().await?;
+    let proxy = Screenshot::new().await?;
     proxy.screenshot(identifier, interactive, modal).await
 }

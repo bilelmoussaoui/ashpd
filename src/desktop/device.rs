@@ -1,14 +1,14 @@
 //! **Note** This portal doesn't work for sandboxed applications.
 //! # Examples
 //!
-//! Access a [`Device`](crate::desktop::device::Device)
+//! Access a [`Device`](crate::desktop::device::DeviceKind)
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::device::{Device, DeviceProxy};
+//! use ashpd::desktop::device::{DeviceKind, Device};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = DeviceProxy::new().await?;
-//!     proxy.access_device(6879, &[Device::Speakers]).await?;
+//!     let proxy = Device::new().await?;
+//!     proxy.access_device(6879, &[DeviceKind::Speakers]).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -25,7 +25,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`DeviceProxy::access_device`] request.
+/// Specified options for a [`Device::access_device`] request.
 #[zvariant(signature = "dict")]
 struct AccessDeviceOptions {
     /// A string that will be used as the last element of the handle.
@@ -36,7 +36,7 @@ struct AccessDeviceOptions {
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// The possible device to request access to.
-pub enum Device {
+pub enum DeviceKind {
     /// A microphone.
     Microphone,
     /// Speakers.
@@ -45,7 +45,7 @@ pub enum Device {
     Camera,
 }
 
-impl fmt::Display for Device {
+impl fmt::Display for DeviceKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Microphone => write!(f, "Microphone"),
@@ -55,7 +55,7 @@ impl fmt::Display for Device {
     }
 }
 
-impl AsRef<str> for Device {
+impl AsRef<str> for DeviceKind {
     fn as_ref(&self) -> &str {
         match self {
             Self::Microphone => "Microphone",
@@ -65,24 +65,24 @@ impl AsRef<str> for Device {
     }
 }
 
-impl From<Device> for &'static str {
-    fn from(d: Device) -> Self {
+impl From<DeviceKind> for &'static str {
+    fn from(d: DeviceKind) -> Self {
         match d {
-            Device::Microphone => "Microphone",
-            Device::Speakers => "Speakers",
-            Device::Camera => "Camera",
+            DeviceKind::Microphone => "Microphone",
+            DeviceKind::Speakers => "Speakers",
+            DeviceKind::Camera => "Camera",
         }
     }
 }
 
-impl FromStr for Device {
+impl FromStr for DeviceKind {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "Microphone" | "microphone" => Ok(Device::Microphone),
-            "Speakers" | "speakers" => Ok(Device::Speakers),
-            "Camera" | "camera" => Ok(Device::Camera),
+            "Microphone" | "microphone" => Ok(Self::Microphone),
+            "Speakers" | "speakers" => Ok(Self::Speakers),
+            "Camera" | "camera" => Ok(Self::Camera),
             _ => Err(Error::ParseError("Failed to parse device, invalid value")),
         }
     }
@@ -96,11 +96,11 @@ impl FromStr for Device {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Device).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Device")]
-pub struct DeviceProxy<'a>(zbus::Proxy<'a>);
+pub struct Device<'a>(zbus::Proxy<'a>);
 
-impl<'a> DeviceProxy<'a> {
-    /// Create a new instance of [`DeviceProxy`].
-    pub async fn new() -> Result<DeviceProxy<'a>, Error> {
+impl<'a> Device<'a> {
+    /// Create a new instance of [`Device`].
+    pub async fn new() -> Result<Device<'a>, Error> {
         let connection = session_connection().await?;
 
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
@@ -132,7 +132,7 @@ impl<'a> DeviceProxy<'a> {
     ///
     /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Device.AccessDevice).
     #[doc(alias = "AccessDevice")]
-    pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<(), Error> {
+    pub async fn access_device(&self, pid: u32, devices: &[DeviceKind]) -> Result<(), Error> {
         let options = AccessDeviceOptions::default();
         call_basic_response_method(
             self.inner(),

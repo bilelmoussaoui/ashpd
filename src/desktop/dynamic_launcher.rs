@@ -3,14 +3,14 @@
 //! ```rust,no_run
 //! use ashpd::{
 //!     desktop::{
-//!         dynamic_launcher::{DynamicLauncherProxy, LauncherType, PrepareInstallOptions},
+//!         dynamic_launcher::{DynamicLauncher, LauncherType, PrepareInstallOptions},
 //!         Icon,
 //!     },
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = DynamicLauncherProxy::new().await?;
+//!     let proxy = DynamicLauncher::new().await?;
 //!     let (name, token) = proxy
 //!         .prepare_install(
 //!             &WindowIdentifier::default(),
@@ -139,11 +139,11 @@ impl PrepareInstallOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.DynamicLauncher`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.DynamicLauncher).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.DynamicLauncher")]
-pub struct DynamicLauncherProxy<'a>(zbus::Proxy<'a>);
+pub struct DynamicLauncher<'a>(zbus::Proxy<'a>);
 
-impl<'a> DynamicLauncherProxy<'a> {
-    /// Create a new instance of [`DynamicLauncherProxy`].
-    pub async fn new() -> Result<DynamicLauncherProxy<'a>, Error> {
+impl<'a> DynamicLauncher<'a> {
+    /// Create a new instance of [`DynamicLauncher`].
+    pub async fn new() -> Result<DynamicLauncher<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.DynamicLauncher")?

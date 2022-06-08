@@ -4,13 +4,13 @@
 //! use std::{thread, time};
 //!
 //! use ashpd::desktop::{
-//!     notification::{Action, Button, Notification, NotificationProxy, Priority},
+//!     notification::{Action, Button, Notification, Notifications, Priority},
 //!     Icon,
 //! };
 //! use zbus::zvariant::Value;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = NotificationProxy::new().await?;
+//!     let proxy = Notifications::new().await?;
 //!
 //!     let notification_id = "org.gnome.design.Contrast";
 //!     proxy
@@ -284,11 +284,11 @@ impl Action {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Notification).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Notification")]
-pub struct NotificationProxy<'a>(zbus::Proxy<'a>);
+pub struct Notifications<'a>(zbus::Proxy<'a>);
 
-impl<'a> NotificationProxy<'a> {
-    /// Create a new instance of [`NotificationProxy`].
-    pub async fn new() -> Result<NotificationProxy<'a>, Error> {
+impl<'a> Notifications<'a> {
+    /// Create a new instance of [`Notifications`].
+    pub async fn new() -> Result<Notifications<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Notification")?

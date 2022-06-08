@@ -5,12 +5,12 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType},
+//!     desktop::screencast::{CursorMode, PersistMode, ScreenCast, SourceType},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ScreenCastProxy::new().await?;
+//!     let proxy = ScreenCast::new().await?;
 //!
 //!     let session = proxy.create_session().await?;
 //!
@@ -48,7 +48,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use super::{HandleToken, Session, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method, session_connection},
     Error, WindowIdentifier,
@@ -111,7 +111,7 @@ impl Default for PersistMode {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`ScreenCastProxy::create_session`] request.
+/// Specified options for a [`ScreenCast::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
@@ -121,7 +121,7 @@ struct CreateSessionOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`ScreenCastProxy::select_sources`] request.
+/// Specified options for a [`ScreenCast::select_sources`] request.
 #[zvariant(signature = "dict")]
 struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
@@ -170,7 +170,7 @@ impl SelectSourcesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`ScreenCastProxy::start`] request.
+/// Specified options for a [`ScreenCast::start`] request.
 #[zvariant(signature = "dict")]
 struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
@@ -178,7 +178,7 @@ struct StartCastOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug)]
-/// A response to a [`ScreenCastProxy::create_session`] request.
+/// A response to a [`ScreenCast::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSession {
     // TODO: investigate why this doesn't return an ObjectPath
@@ -188,7 +188,7 @@ struct CreateSession {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type)]
-/// A response to a [`ScreenCastProxy::start`] request.
+/// A response to a [`ScreenCast::start`] request.
 #[zvariant(signature = "dict")]
 struct Streams {
     streams: Vec<Stream>,
@@ -268,11 +268,11 @@ struct StreamProperties {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.ScreenCast).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ScreenCast")]
-pub struct ScreenCastProxy<'a>(zbus::Proxy<'a>);
+pub struct ScreenCast<'a>(zbus::Proxy<'a>);
 
-impl<'a> ScreenCastProxy<'a> {
-    /// Create a new instance of [`ScreenCastProxy`].
-    pub async fn new() -> Result<ScreenCastProxy<'a>, Error> {
+impl<'a> ScreenCast<'a> {
+    /// Create a new instance of [`ScreenCast`].
+    pub async fn new() -> Result<ScreenCast<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.ScreenCast")?
@@ -295,7 +295,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.CreateSession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_screencast_session")]
-    pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default();
         let (session, proxy) = futures::try_join!(
             call_request_method::<CreateSession, _>(
@@ -305,7 +305,7 @@ impl<'a> ScreenCastProxy<'a> {
                 &options
             )
             .into_future(),
-            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)
@@ -316,8 +316,8 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
-    ///   [`create_session()`][`ScreenCastProxy::create_session`].
+    /// * `session` - A [`Session`], created with
+    ///   [`create_session()`][`ScreenCast::create_session`].
     ///
     /// # Returns
     ///
@@ -327,7 +327,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
-    pub async fn open_pipe_wire_remote(&self, session: &SessionProxy<'_>) -> Result<RawFd, Error> {
+    pub async fn open_pipe_wire_remote(&self, session: &Session<'_>) -> Result<RawFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
         let options: HashMap<&str, Value<'_>> = HashMap::new();
@@ -345,8 +345,8 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
-    ///   [`create_session()`][`ScreenCastProxy::create_session`].
+    /// * `session` - A [`Session`], created with
+    ///   [`create_session()`][`ScreenCast::create_session`].
     /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast
     ///   stream.
     /// * `types` - Sets the types of content to record.
@@ -358,7 +358,7 @@ impl<'a> ScreenCastProxy<'a> {
     #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         cursor_mode: CursorMode,
         types: BitFlags<SourceType>,
         multiple: bool,
@@ -391,8 +391,8 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
-    ///   [`create_session()`][`ScreenCastProxy::create_session`].
+    /// * `session` - A [`Session`], created with
+    ///   [`create_session()`][`ScreenCast::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
     /// # Return
@@ -405,7 +405,7 @@ impl<'a> ScreenCastProxy<'a> {
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         identifier: &WindowIdentifier,
     ) -> Result<(Vec<Stream>, Option<String>), Error> {
         let options = StartCastOptions::default();

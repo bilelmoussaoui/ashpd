@@ -1,10 +1,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::documents::{DocumentsProxy, Permission};
+//! use ashpd::documents::{Documents, Permission};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = DocumentsProxy::new().await?;
+//!     let proxy = Documents::new().await?;
 //!
 //!     println!("{:#?}", proxy.mount_point().await?);
 //!
@@ -151,21 +151,21 @@ impl FromStr for Permission {
 ///
 /// Individual files will appear at `/run/user/$UID/doc/$DOC_ID/filename`,
 /// where `$DOC_ID` is the ID of the file in the document store.
-/// It is returned by the [`DocumentsProxy::add`] and
-/// [`DocumentsProxy::add_named`] calls.
+/// It is returned by the [`Documents::add`] and
+/// [`Documents::add_named`] calls.
 ///
 /// The permissions that the application has for a document store entry (see
-/// [`DocumentsProxy::grant_permissions`]) are reflected in the POSIX mode bits
+/// [`Documents::grant_permissions`]) are reflected in the POSIX mode bits
 /// in the fuse filesystem.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Documents).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
-pub struct DocumentsProxy<'a>(zbus::Proxy<'a>);
+pub struct Documents<'a>(zbus::Proxy<'a>);
 
-impl<'a> DocumentsProxy<'a> {
-    /// Create a new instance of [`DocumentsProxy`].
-    pub async fn new() -> Result<DocumentsProxy<'a>, Error> {
+impl<'a> Documents<'a> {
+    /// Create a new instance of [`Documents`].
+    pub async fn new() -> Result<Documents<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Documents")?
@@ -520,7 +520,7 @@ impl<'a> DocumentsProxy<'a> {
 /// Interact with `org.freedesktop.portal.FileTransfer` interface.
 mod file_transfer;
 
-pub use file_transfer::FileTransferProxy;
+pub use file_transfer::FileTransfer;
 
 #[cfg(test)]
 mod tests {

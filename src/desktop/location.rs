@@ -2,13 +2,13 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::location::{Accuracy, LocationProxy},
+//!     desktop::location::{Accuracy, Location},
 //!     WindowIdentifier,
 //! };
 //! use futures::TryFutureExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = LocationProxy::new().await?;
+//!     let proxy = Location::new().await?;
 //!     let identifier = WindowIdentifier::default();
 //!
 //!     let session = proxy
@@ -36,7 +36,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use super::{HandleToken, Session, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, receive_signal, session_connection},
     Error, WindowIdentifier,
@@ -68,7 +68,7 @@ pub enum Accuracy {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`LocationProxy::create_session`] request.
+/// Specified options for a [`Location::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
@@ -104,7 +104,7 @@ impl CreateSessionOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`LocationProxy::start`] request.
+/// Specified options for a [`Location::start`] request.
 #[zvariant(signature = "dict")]
 struct SessionStartOptions {
     /// A string that will be used as the last element of the handle.
@@ -113,9 +113,9 @@ struct SessionStartOptions {
 
 #[derive(Serialize, Deserialize, Type)]
 /// The response received on a `location_updated` signal.
-pub struct Location(OwnedObjectPath, LocationInner);
+pub struct Response(OwnedObjectPath, LocationInner);
 
-impl Location {
+impl Response {
     /// The accuracy, in meters.
     pub fn accuracy(&self) -> f64 {
         self.1.accuracy
@@ -174,9 +174,9 @@ impl Location {
     }
 }
 
-impl Debug for Location {
+impl Debug for Response {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Location")
+        f.debug_struct("Response")
             .field("accuracy", &self.accuracy())
             .field("altitude", &self.altitude())
             .field("speed", &self.speed())
@@ -216,11 +216,11 @@ struct LocationInner {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Location`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Location).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Location")]
-pub struct LocationProxy<'a>(zbus::Proxy<'a>);
+pub struct Location<'a>(zbus::Proxy<'a>);
 
-impl<'a> LocationProxy<'a> {
-    /// Create a new instance of [`LocationProxy`].
-    pub async fn new() -> Result<LocationProxy<'a>, Error> {
+impl<'a> Location<'a> {
+    /// Create a new instance of [`Location`].
+    pub async fn new() -> Result<Location<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Location")?
@@ -243,7 +243,7 @@ impl<'a> LocationProxy<'a> {
     /// See also [`LocationUpdated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Location.LocationUpdated).
     #[doc(alias = "LocationUpdated")]
     #[doc(alias = "XdpPortal::location-updated")]
-    pub async fn receive_location_updated(&self) -> Result<Location, Error> {
+    pub async fn receive_location_updated(&self) -> Result<Response, Error> {
         receive_signal(&self.0, "LocationUpdated").await
     }
 
@@ -266,7 +266,7 @@ impl<'a> LocationProxy<'a> {
         distance_threshold: Option<u32>,
         time_threshold: Option<u32>,
         accuracy: Option<Accuracy>,
-    ) -> Result<SessionProxy<'a>, Error> {
+    ) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default()
             .distance_threshold(distance_threshold.unwrap_or(0))
             .time_threshold(time_threshold.unwrap_or(0))
@@ -278,7 +278,7 @@ impl<'a> LocationProxy<'a> {
                 &(options)
             )
             .into_future(),
-            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path(), &path.into_inner());
         Ok(proxy)
@@ -289,8 +289,8 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
-    ///   [`create_session()`][`LocationProxy::create_session`].
+    /// * `session` - A [`Session`], created with
+    ///   [`create_session()`][`Location::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
     /// # Specifications
@@ -300,7 +300,7 @@ impl<'a> LocationProxy<'a> {
     #[doc(alias = "xdp_portal_location_monitor_start")]
     pub async fn start(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         identifier: &WindowIdentifier,
     ) -> Result<(), Error> {
         let options = SessionStartOptions::default();

@@ -20,10 +20,10 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::account::AccountProxy, WindowIdentifier};
+//! use ashpd::{desktop::account::Account, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = AccountProxy::new().await?;
+//!     let proxy = Account::new().await?;
 //!     let user_info = proxy
 //!         .user_information(
 //!             &WindowIdentifier::default(),
@@ -47,7 +47,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`AccountProxy::user_information`] request.
+/// Specified options for a [`Account::user_information`] request.
 #[zvariant(signature = "dict")]
 struct UserInfoOptions {
     /// A string that will be used as the last element of the handle.
@@ -65,7 +65,7 @@ impl UserInfoOptions {
 }
 
 #[derive(Debug, SerializeDict, DeserializeDict, Clone, Type)]
-/// The response of a [`AccountProxy::user_information`] request.
+/// The response of a [`Account::user_information`] request.
 #[zvariant(signature = "dict")]
 pub struct UserInfo {
     /// User identifier.
@@ -102,11 +102,11 @@ impl UserInfo {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Account).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Account")]
-pub struct AccountProxy<'a>(zbus::Proxy<'a>);
+pub struct Account<'a>(zbus::Proxy<'a>);
 
-impl<'a> AccountProxy<'a> {
-    /// Create a new instance of [`AccountProxy`].
-    pub async fn new() -> Result<AccountProxy<'a>, Error> {
+impl<'a> Account<'a> {
+    /// Create a new instance of [`Account`].
+    pub async fn new() -> Result<Account<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Account")?
@@ -147,11 +147,11 @@ impl<'a> AccountProxy<'a> {
 
 #[doc(alias = "xdp_portal_get_user_information")]
 #[doc(alias = "get_user_information")]
-/// A handy wrapper around [`AccountProxy::user_information`].
+/// A handy wrapper around [`Account::user_information`].
 pub async fn user_information(
     identifier: &WindowIdentifier,
     reason: &str,
 ) -> Result<UserInfo, Error> {
-    let proxy = AccountProxy::new().await?;
+    let proxy = Account::new().await?;
     proxy.user_information(identifier, reason).await
 }

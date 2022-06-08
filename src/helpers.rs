@@ -15,7 +15,7 @@ use zbus::zvariant::{ObjectPath, OwnedObjectPath, Type};
 
 use crate::{
     desktop::{
-        request::{BasicResponse, RequestProxy, Response},
+        request::{BasicResponse, Request, Response},
         HandleToken,
     },
     Error, PortalError, SESSION,
@@ -39,7 +39,7 @@ where
     );
     #[cfg(feature = "tracing")]
     tracing::debug!("The body is: {:#?}", body);
-    let request = RequestProxy::from_unique_name(handle_token).await?;
+    let request = Request::from_unique_name(handle_token).await?;
     // We don't use receive_response because we want to create the stream in advance
     #[cfg(feature = "tracing")]
     tracing::info!(

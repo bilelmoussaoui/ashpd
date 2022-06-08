@@ -23,14 +23,14 @@
 //! use std::fs::File;
 //!
 //! use ashpd::{
-//!     desktop::wallpaper::{SetOn, WallpaperProxy},
+//!     desktop::wallpaper::{SetOn, Wallpaper},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!
-//!     let proxy = WallpaperProxy::new().await?;
+//!     let proxy = Wallpaper::new().await?;
 //!     proxy
 //!         .set_wallpaper_file(&WindowIdentifier::default(), &wallpaper, true, SetOn::Both)
 //!         .await?;
@@ -57,12 +57,12 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::wallpaper::{SetOn, WallpaperProxy},
+//!     desktop::wallpaper::{SetOn, Wallpaper},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = WallpaperProxy::new().await?;
+//!     let proxy = Wallpaper::new().await?;
 //!     proxy
 //!         .set_wallpaper_uri(
 //!             &WindowIdentifier::default(),
@@ -142,8 +142,8 @@ impl FromStr for SetOn {
 }
 
 #[derive(SerializeDict, DeserializeDict, Clone, Type, Debug, Default)]
-/// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a
-/// [`WallpaperProxy::set_wallpaper_uri`] request.
+/// Specified options for a [`Wallpaper::set_wallpaper_file`] or a
+/// [`Wallpaper::set_wallpaper_uri`] request.
 #[zvariant(signature = "dict")]
 struct WallpaperOptions {
     /// A string that will be used as the last element of the handle.
@@ -179,11 +179,11 @@ impl WallpaperOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Wallpaper).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Wallpaper")]
-pub struct WallpaperProxy<'a>(zbus::Proxy<'a>);
+pub struct Wallpaper<'a>(zbus::Proxy<'a>);
 
-impl<'a> WallpaperProxy<'a> {
-    /// Create a new instance of [`WallpaperProxy`].
-    pub async fn new() -> Result<WallpaperProxy<'a>, Error> {
+impl<'a> Wallpaper<'a> {
+    /// Create a new instance of [`Wallpaper`].
+    pub async fn new() -> Result<Wallpaper<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Wallpaper")?
@@ -268,14 +268,14 @@ impl<'a> WallpaperProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_set_wallpaper")]
-/// A handy wrapper around [`WallpaperProxy::set_wallpaper_uri`].
+/// A handy wrapper around [`Wallpaper::set_wallpaper_uri`].
 pub async fn set_from_uri(
     identifier: &WindowIdentifier,
     uri: &str,
     show_preview: bool,
     set_on: SetOn,
 ) -> Result<(), Error> {
-    let proxy = WallpaperProxy::new().await?;
+    let proxy = Wallpaper::new().await?;
     proxy
         .set_wallpaper_uri(identifier, uri, show_preview, set_on)
         .await?;
@@ -283,14 +283,14 @@ pub async fn set_from_uri(
 }
 
 #[doc(alias = "xdp_portal_set_wallpaper")]
-/// A handy wrapper around [`WallpaperProxy::set_wallpaper_file`].
+/// A handy wrapper around [`Wallpaper::set_wallpaper_file`].
 pub async fn set_from_file(
     identifier: &WindowIdentifier,
     file: &impl AsRawFd,
     show_preview: bool,
     set_on: SetOn,
 ) -> Result<(), Error> {
-    let proxy = WallpaperProxy::new().await?;
+    let proxy = Wallpaper::new().await?;
     proxy
         .set_wallpaper_file(identifier, file, show_preview, set_on)
         .await?;

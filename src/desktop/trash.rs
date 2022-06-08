@@ -18,11 +18,11 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::desktop::trash::TrashProxy;
+//! use ashpd::desktop::trash::Trash;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     let proxy = TrashProxy::new().await?;
+//!     let proxy = Trash::new().await?;
 //!     proxy.trash_file(&file).await?;
 //!     Ok(())
 //! }
@@ -55,11 +55,11 @@ enum TrashStatus {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Trash`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Trash).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Trash")]
-pub struct TrashProxy<'a>(zbus::Proxy<'a>);
+pub struct Trash<'a>(zbus::Proxy<'a>);
 
-impl<'a> TrashProxy<'a> {
-    /// Create a new instance of [`TrashProxy`].
-    pub async fn new() -> Result<TrashProxy<'a>, Error> {
+impl<'a> Trash<'a> {
+    /// Create a new instance of [`Trash`].
+    pub async fn new() -> Result<Trash<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Trash")?
@@ -98,9 +98,9 @@ impl<'a> TrashProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_trash_file")]
-/// A handy wrapper around [`TrashProxy::trash_file`].
+/// A handy wrapper around [`Trash::trash_file`].
 pub async fn trash_file(fd: &impl AsRawFd) -> Result<(), Error> {
-    let proxy = TrashProxy::new().await?;
+    let proxy = Trash::new().await?;
     proxy.trash_file(fd).await
 }
 

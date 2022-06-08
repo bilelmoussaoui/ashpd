@@ -19,12 +19,12 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
+//! use ashpd::{desktop::open_uri::OpenURI, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!
-//!     let proxy = OpenURIProxy::new().await?;
+//!     let proxy = OpenURI::new().await?;
 //!
 //!     proxy
 //!         .open_file(&WindowIdentifier::default(), &file, false, true)
@@ -52,12 +52,12 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
+//! use ashpd::{desktop::open_uri::OpenURI, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
 //!
-//!     let proxy = OpenURIProxy::new().await?;
+//!     let proxy = OpenURI::new().await?;
 //!
 //!     proxy
 //!         .open_directory(&WindowIdentifier::default(), &directory)
@@ -82,10 +82,10 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
+//! use ashpd::{desktop::open_uri::OpenURI, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = OpenURIProxy::new().await?;
+//!     let proxy = OpenURI::new().await?;
 //!     let uri = "https://github.com/bilelmoussaoui/ashpd";
 //!
 //!     proxy
@@ -106,7 +106,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`OpenURIProxy::open_directory`] request.
+/// Specified options for a [`OpenURI::open_directory`] request.
 #[zvariant(signature = "dict")]
 struct OpenDirOptions {
     /// A string that will be used as the last element of the handle.
@@ -123,8 +123,8 @@ impl OpenDirOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`OpenURIProxy::open_file`] or
-/// [`OpenURIProxy::open_uri`] request.
+/// Specified options for a [`OpenURI::open_file`] or
+/// [`OpenURI::open_uri`] request.
 #[zvariant(signature = "dict")]
 struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
@@ -167,11 +167,11 @@ impl OpenFileOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.OpenURI).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
-pub struct OpenURIProxy<'a>(zbus::Proxy<'a>);
+pub struct OpenURI<'a>(zbus::Proxy<'a>);
 
-impl<'a> OpenURIProxy<'a> {
-    /// Create a new instance of [`OpenURIProxy`].
-    pub async fn new() -> Result<OpenURIProxy<'a>, Error> {
+impl<'a> OpenURI<'a> {
+    /// Create a new instance of [`OpenURI`].
+    pub async fn new() -> Result<OpenURI<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.OpenURI")?
@@ -282,37 +282,37 @@ impl<'a> OpenURIProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_open_uri")]
-/// A handy wrapper around [`OpenURIProxy::open_uri`].
+/// A handy wrapper around [`OpenURI::open_uri`].
 pub async fn open_uri(
     identifier: &WindowIdentifier,
     uri: &str,
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
-    let proxy = OpenURIProxy::new().await?;
+    let proxy = OpenURI::new().await?;
     proxy.open_uri(identifier, uri, writeable, ask).await?;
     Ok(())
 }
 
-/// A handy wrapper around [`OpenURIProxy::open_file`].
+/// A handy wrapper around [`OpenURI::open_file`].
 pub async fn open_file(
     identifier: &WindowIdentifier,
     file: &impl AsRawFd,
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
-    let proxy = OpenURIProxy::new().await?;
+    let proxy = OpenURI::new().await?;
     proxy.open_file(identifier, file, writeable, ask).await?;
     Ok(())
 }
 
 #[doc(alias = "xdp_portal_open_directory")]
-/// A handy wrapper around [`OpenURIProxy::open_directory`].
+/// A handy wrapper around [`OpenURI::open_directory`].
 pub async fn open_directory(
     identifier: &WindowIdentifier,
     directory: &impl AsRawFd,
 ) -> Result<(), Error> {
-    let proxy = OpenURIProxy::new().await?;
+    let proxy = OpenURI::new().await?;
     proxy.open_directory(identifier, directory).await?;
     Ok(())
 }

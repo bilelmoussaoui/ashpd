@@ -5,10 +5,10 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::{desktop::print::PrintProxy, WindowIdentifier};
+//! use ashpd::{desktop::print::Print, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = PrintProxy::new().await?;
+//!     let proxy = Print::new().await?;
 //!     let identifier = WindowIdentifier::default();
 //!
 //!     let file =
@@ -548,7 +548,7 @@ impl PageSetup {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`PrintProxy::prepare_print`] request.
+/// Specified options for a [`Print::prepare_print`] request.
 #[zvariant(signature = "dict")]
 struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
@@ -566,20 +566,20 @@ impl PreparePrintOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`PrintProxy::print`] request.
+/// Specified options for a [`Print::print`] request.
 #[zvariant(signature = "dict")]
 struct PrintOptions {
     /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
     modal: Option<bool>,
-    /// Token that was returned by a previous [`PrintProxy::prepare_print`]
+    /// Token that was returned by a previous [`Print::prepare_print`]
     /// call.
     token: Option<u32>,
 }
 
 impl PrintOptions {
-    /// A token retrieved from [`PrintProxy::prepare_print`].
+    /// A token retrieved from [`Print::prepare_print`].
     pub fn token(mut self, token: u32) -> Self {
         self.token = Some(token);
         self
@@ -593,7 +593,7 @@ impl PrintOptions {
 }
 
 #[derive(DeserializeDict, SerializeDict, Type, Debug)]
-/// A response to a [`PrintProxy::prepare_print`] request.
+/// A response to a [`Print::prepare_print`] request.
 #[zvariant(signature = "dict")]
 pub struct PreparePrint {
     /// The printing settings.
@@ -610,11 +610,11 @@ pub struct PreparePrint {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Print`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Print).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Print")]
-pub struct PrintProxy<'a>(zbus::Proxy<'a>);
+pub struct Print<'a>(zbus::Proxy<'a>);
 
-impl<'a> PrintProxy<'a> {
-    /// Create a new instance of [`PrintProxy`].
-    pub async fn new() -> Result<PrintProxy<'a>, Error> {
+impl<'a> Print<'a> {
+    /// Create a new instance of [`Print`].
+    pub async fn new() -> Result<Print<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Print")?
@@ -675,7 +675,7 @@ impl<'a> PrintProxy<'a> {
     /// * `title` - The title for the print dialog.
     /// * `fd` - File descriptor for reading the content to print.
     /// * `token` - A token returned by a call to
-    ///   [`prepare_print()`][`PrintProxy::prepare_print`].
+    ///   [`prepare_print()`][`Print::prepare_print`].
     /// * `modal` - Whether the dialog should be a modal.
     ///
     /// # Specifications

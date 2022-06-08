@@ -2,10 +2,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::proxy_resolver::ProxyResolverProxy;
+//! use ashpd::desktop::proxy_resolver::ProxyResolver;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ProxyResolverProxy::new().await?;
+//!     let proxy = ProxyResolver::new().await?;
 //!
 //!     println!("{:#?}", proxy.lookup("www.google.com").await?);
 //!
@@ -27,11 +27,11 @@ use crate::{
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ProxyResolver`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.ProxyResolver).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ProxyResolver")]
-pub struct ProxyResolverProxy<'a>(zbus::Proxy<'a>);
+pub struct ProxyResolver<'a>(zbus::Proxy<'a>);
 
-impl<'a> ProxyResolverProxy<'a> {
-    /// Create a new instance of [`ProxyResolverProxy`].
-    pub async fn new() -> Result<ProxyResolverProxy<'a>, Error> {
+impl<'a> ProxyResolver<'a> {
+    /// Create a new instance of [`ProxyResolver`].
+    pub async fn new() -> Result<ProxyResolver<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.ProxyResolver")?

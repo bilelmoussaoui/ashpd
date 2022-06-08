@@ -1,10 +1,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::game_mode::GameModeProxy;
+//! use ashpd::desktop::game_mode::GameMode;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = GameModeProxy::new().await?;
+//!     let proxy = GameMode::new().await?;
 //!
 //!     println!("{:#?}", proxy.register_game(246612).await?);
 //!     println!("{:#?}", proxy.query_status(246612).await?);
@@ -69,19 +69,19 @@ enum RegisterStatus {
 /// this is necessary.
 ///
 /// Note: GameMode will monitor active clients, i.e. games and other programs
-/// that have successfully called [`GameModeProxy::register_game`]. In the event
+/// that have successfully called [`GameMode::register_game`]. In the event
 /// that a client terminates without a call to the
-/// [`GameModeProxy::unregister_game`] method, GameMode will automatically
+/// [`GameMode::unregister_game`] method, GameMode will automatically
 /// un-register the client. This might happen with a (small) delay.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.GameMode`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.GameMode).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.GameMode")]
-pub struct GameModeProxy<'a>(zbus::Proxy<'a>);
+pub struct GameMode<'a>(zbus::Proxy<'a>);
 
-impl<'a> GameModeProxy<'a> {
-    /// Create a new instance of [`GameModeProxy`].
-    pub async fn new() -> Result<GameModeProxy<'a>, Error> {
+impl<'a> GameMode<'a> {
+    /// Create a new instance of [`GameMode`].
+    pub async fn new() -> Result<GameMode<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.GameMode")?

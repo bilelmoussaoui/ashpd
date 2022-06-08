@@ -4,12 +4,12 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions},
+//!     desktop::file_chooser::{Choice, FileChooser, FileFilter, OpenFileOptions},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FileChooserProxy::new().await?;
+//!     let proxy = FileChooser::new().await?;
 //!     let files = proxy
 //!         .open_file(
 //!             &WindowIdentifier::default(),
@@ -39,12 +39,12 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions},
+//!     desktop::file_chooser::{FileChooser, FileFilter, SaveFileOptions},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FileChooserProxy::new().await?;
+//!     let proxy = FileChooser::new().await?;
 //!     let files = proxy
 //!         .save_file(
 //!             &WindowIdentifier::default(),
@@ -67,12 +67,12 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::file_chooser::{FileChooserProxy, SaveFilesOptions},
+//!     desktop::file_chooser::{FileChooser, SaveFilesOptions},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FileChooserProxy::new().await?;
+//!     let proxy = FileChooser::new().await?;
 //!     let files = proxy
 //!         .save_files(
 //!             &WindowIdentifier::default(),
@@ -196,7 +196,7 @@ impl Choice {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`FileChooserProxy::open_file`] request.
+/// Specified options for a [`FileChooser::open_file`] request.
 #[zvariant(signature = "dict")]
 pub struct OpenFileOptions {
     /// A string that will be used as the last element of the handle.
@@ -269,7 +269,7 @@ impl OpenFileOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`FileChooserProxy::save_file`] request.
+/// Specified options for a [`FileChooser::save_file`] request.
 #[zvariant(signature = "dict")]
 pub struct SaveFileOptions {
     /// A string that will be used as the last element of the handle.
@@ -355,7 +355,7 @@ impl SaveFileOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`FileChooserProxy::save_files`] request.
+/// Specified options for a [`FileChooser::save_files`] request.
 #[zvariant(signature = "dict")]
 pub struct SaveFilesOptions {
     /// A string that will be used as the last element of the handle.
@@ -422,8 +422,8 @@ impl SaveFilesOptions {
 
 #[derive(Debug, Type, SerializeDict, Clone, DeserializeDict)]
 /// A response to a
-/// [`FileChooserProxy::open_file`]/[`FileChooserProxy::save_file`]/
-/// [`FileChooserProxy::save_files`] request.
+/// [`FileChooser::open_file`]/[`FileChooser::save_file`]/
+/// [`FileChooser::save_files`] request.
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
     uris: Vec<String>,
@@ -449,11 +449,11 @@ impl SelectedFiles {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileChooser).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
-pub struct FileChooserProxy<'a>(zbus::Proxy<'a>);
+pub struct FileChooser<'a>(zbus::Proxy<'a>);
 
-impl<'a> FileChooserProxy<'a> {
-    /// Create a new instance of [`FileChooserProxy`].
-    pub async fn new() -> Result<FileChooserProxy<'a>, Error> {
+impl<'a> FileChooser<'a> {
+    /// Create a new instance of [`FileChooser`].
+    pub async fn new() -> Result<FileChooser<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.FileChooser")?

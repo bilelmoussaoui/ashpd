@@ -12,11 +12,11 @@ It provides an alternative to the C library [https://github.com/flatpak/libporta
 Ask the compositor to pick a color
 
 ```rust,no_run
-use ashpd::desktop::screenshot::ScreenshotProxy;
+use ashpd::desktop::screenshot::Screenshot;
 use ashpd::WindowIdentifier;
 
 async fn run() -> ashpd::Result<()> {
-    let proxy = ScreenshotProxy::new().await?;
+    let proxy = Screenshot::new().await?;
     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
     println!("({}, {}, {})", color.red(), color.green(), color.blue());
     Ok(())
@@ -26,10 +26,10 @@ async fn run() -> ashpd::Result<()> {
 Start a PipeWire stream from the user's camera
 
 ```rust,no_run
-use ashpd::desktop::camera::CameraProxy;
+use ashpd::desktop::camera::Camera;
 
 pub async fn run() -> ashpd::Result<()> {
-    let proxy = CameraProxy::new().await?;
+    let proxy = Camera::new().await?;
     if proxy.is_camera_present().await? {
         proxy.access_camera().await?;
         let remote_fd = proxy.open_pipe_wire_remote().await?;

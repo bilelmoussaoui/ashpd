@@ -1,10 +1,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::camera::CameraProxy;
+//! use ashpd::desktop::camera::Camera;
 //!
 //! pub async fn run() -> ashpd::Result<()> {
-//!     let proxy = CameraProxy::new().await?;
+//!     let proxy = Camera::new().await?;
 //!     if proxy.is_camera_present().await? {
 //!         proxy.access_camera().await?;
 //!
@@ -29,7 +29,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`CameraProxy::access_camera`] request.
+/// Specified options for a [`Camera::access_camera`] request.
 #[zvariant(signature = "dict")]
 struct CameraAccessOptions {
     /// A string that will be used as the last element of the handle.
@@ -42,11 +42,11 @@ struct CameraAccessOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Camera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Camera).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Camera")]
-pub struct CameraProxy<'a>(zbus::Proxy<'a>);
+pub struct Camera<'a>(zbus::Proxy<'a>);
 
-impl<'a> CameraProxy<'a> {
-    /// Create a new instance of [`CameraProxy`].
-    pub async fn new() -> Result<CameraProxy<'a>, Error> {
+impl<'a> Camera<'a> {
+    /// Create a new instance of [`Camera`].
+    pub async fn new() -> Result<Camera<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Camera")?
@@ -116,7 +116,7 @@ impl<'a> CameraProxy<'a> {
 }
 
 /// A helper to get the PipeWire Node ID to use with the camera file descriptor
-/// returned by [`CameraProxy::open_pipe_wire_remote`].
+/// returned by [`Camera::open_pipe_wire_remote`].
 ///
 /// Currently, the camera portal only gives us a file descriptor. Not passing a
 /// node id may cause the media session controller to auto-connect the client to

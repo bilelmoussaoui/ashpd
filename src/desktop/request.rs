@@ -17,8 +17,8 @@ use crate::{
     Error,
 };
 
-/// A typical response returned by the [`RequestProxy::receive_response`] signal
-/// of a [`RequestProxy`].
+/// A typical response returned by the [`Request::receive_response`] signal
+/// of a [`Request`].
 #[derive(Debug)]
 pub(crate) enum Response<T>
 where
@@ -164,14 +164,14 @@ impl From<ResponseError> for ResponseType {
 /// the "Response" signal on the Request object.
 ///
 /// The application can abort the interaction calling
-/// [`close()`][`RequestProxy::close`] on the Request object.
+/// [`close()`][`Request::close`] on the Request object.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Request).
 #[doc(alias = "org.freedesktop.portal.Request")]
-pub(crate) struct RequestProxy<'a>(zbus::Proxy<'a>);
+pub(crate) struct Request<'a>(zbus::Proxy<'a>);
 
-impl<'a> RequestProxy<'a> {
-    pub async fn new<P>(path: P) -> Result<RequestProxy<'a>, Error>
+impl<'a> Request<'a> {
+    pub async fn new<P>(path: P) -> Result<Request<'a>, Error>
     where
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
@@ -186,7 +186,7 @@ impl<'a> RequestProxy<'a> {
         Ok(Self(proxy))
     }
 
-    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<RequestProxy<'a>, Error> {
+    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<'a>, Error> {
         let connection = session_connection().await?;
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
@@ -233,9 +233,9 @@ impl<'a> RequestProxy<'a> {
     }
 }
 
-impl<'a> Debug for RequestProxy<'a> {
+impl<'a> Debug for Request<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("RequestProxy")
+        f.debug_tuple("Request")
             .field(&self.inner().path().as_str())
             .finish()
     }
