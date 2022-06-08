@@ -4,8 +4,7 @@
 //! use ashpd::desktop::camera::CameraProxy;
 //!
 //! pub async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = CameraProxy::new(&connection).await?;
+//!     let proxy = CameraProxy::new().await?;
 //!     if proxy.is_camera_present().await? {
 //!         proxy.access_camera().await?;
 //!
@@ -25,7 +24,7 @@ use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method},
+    helpers::{call_basic_response_method, call_method, session_connection},
     Error,
 };
 
@@ -47,8 +46,9 @@ pub struct CameraProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> CameraProxy<'a> {
     /// Create a new instance of [`CameraProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<CameraProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<CameraProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Camera")?
             .path(PATH)?
             .destination(DESTINATION)?

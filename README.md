@@ -16,9 +16,7 @@ use ashpd::desktop::screenshot::ScreenshotProxy;
 use ashpd::WindowIdentifier;
 
 async fn run() -> ashpd::Result<()> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = ScreenshotProxy::new(&connection).await?;
-
+    let proxy = ScreenshotProxy::new().await?;
     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
     println!("({}, {}, {})", color.red(), color.green(), color.blue());
     Ok(())
@@ -31,9 +29,7 @@ Start a PipeWire stream from the user's camera
 use ashpd::desktop::camera::CameraProxy;
 
 pub async fn run() -> ashpd::Result<()> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = CameraProxy::new(&connection).await?;
-
+    let proxy = CameraProxy::new().await?;
     if proxy.is_camera_present().await? {
         proxy.access_camera().await?;
         let remote_fd = proxy.open_pipe_wire_remote().await?;

@@ -4,8 +4,7 @@
 //! use ashpd::documents::{DocumentsProxy, Permission};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = DocumentsProxy::new(&connection).await?;
+//!     let proxy = DocumentsProxy::new().await?;
 //!
 //!     println!("{:#?}", proxy.mount_point().await?);
 //!
@@ -51,7 +50,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
 use crate::{
-    helpers::{call_method, path_from_null_terminated},
+    helpers::{call_method, path_from_null_terminated, session_connection},
     Error,
 };
 
@@ -166,8 +165,9 @@ pub struct DocumentsProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> DocumentsProxy<'a> {
     /// Create a new instance of [`DocumentsProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<DocumentsProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<DocumentsProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Documents")?
             .path(PATH)?
             .destination(DESTINATION)?

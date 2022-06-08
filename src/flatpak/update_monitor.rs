@@ -7,8 +7,7 @@
 //! use ashpd::{flatpak::FlatpakProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = FlatpakProxy::new(&connection).await?;
+//!     let proxy = FlatpakProxy::new().await?;
 //!
 //!     let monitor = proxy.create_update_monitor().await?;
 //!     let info = monitor.receive_update_available().await?;
@@ -26,7 +25,7 @@ use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
 use super::DESTINATION;
 use crate::{
-    helpers::{call_method, receive_signal},
+    helpers::{call_method, receive_signal, session_connection},
     Error, WindowIdentifier,
 };
 
@@ -117,11 +116,9 @@ impl<'a> UpdateMonitorProxy<'a> {
     ///
     /// **Note** A [`UpdateMonitorProxy`] is not supposed to be created
     /// manually.
-    pub(crate) async fn new(
-        connection: &zbus::Connection,
-        path: ObjectPath<'a>,
-    ) -> Result<UpdateMonitorProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub(crate) async fn new(path: ObjectPath<'a>) -> Result<UpdateMonitorProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Flatpak.UpdateMonitor")?
             .path(path)?
             .destination(DESTINATION)?

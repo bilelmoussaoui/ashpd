@@ -6,8 +6,7 @@
 //! use ashpd::desktop::secret::SecretProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = SecretProxy::new(&connection).await?;
+//!     let proxy = SecretProxy::new().await?;
 //!
 //!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
 //!     proxy.retrieve_secret(&x2).await?;
@@ -28,7 +27,10 @@ use tokio::{io::AsyncReadExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error};
+use crate::{
+    helpers::{call_basic_response_method, session_connection},
+    Error,
+};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`SecretProxy::retrieve_secret`] request.
@@ -62,8 +64,9 @@ pub struct SecretProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> SecretProxy<'a> {
     /// Create a new instance of [`SecretProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<SecretProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<SecretProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Secret")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -100,8 +103,7 @@ impl<'a> SecretProxy<'a> {
 ///
 /// It crates a UnixStream internally for receiving the secret.
 pub async fn retrieve_secret() -> Result<Vec<u8>, Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = SecretProxy::new(&connection).await?;
+    let proxy = SecretProxy::new().await?;
 
     let (mut x1, x2) = UnixStream::pair()?;
     proxy.retrieve_secret(&x2).await?;

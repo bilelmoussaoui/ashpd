@@ -36,8 +36,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = EmailProxy::new(&connection).await?;
+//!     let proxy = EmailProxy::new().await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
 //!         .compose_email(
@@ -60,7 +59,10 @@ use serde::Serialize;
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error, WindowIdentifier};
+use crate::{
+    helpers::{call_basic_response_method, session_connection},
+    Error, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 /// Specified options for a [`EmailProxy::compose_email`] request.
@@ -185,8 +187,9 @@ pub struct EmailProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> EmailProxy<'a> {
     /// Create a new instance of [`EmailProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<EmailProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<EmailProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Email")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -232,8 +235,7 @@ impl<'a> EmailProxy<'a> {
 /// A handy wrapper around [`EmailProxy::compose_email`]
 #[doc(alias = "xdp_portal_compose_email")]
 pub async fn compose(identifier: &WindowIdentifier, email: Email) -> Result<(), Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = EmailProxy::new(&connection).await?;
+    let proxy = EmailProxy::new().await?;
     proxy.compose_email(identifier, email).await?;
 
     Ok(())

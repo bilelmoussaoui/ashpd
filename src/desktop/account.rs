@@ -23,9 +23,7 @@
 //! use ashpd::{desktop::account::AccountProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!
-//!     let proxy = AccountProxy::new(&connection).await?;
+//!     let proxy = AccountProxy::new().await?;
 //!     let user_info = proxy
 //!         .user_information(
 //!             &WindowIdentifier::default(),
@@ -43,7 +41,10 @@
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_request_method, Error, WindowIdentifier};
+use crate::{
+    helpers::{call_request_method, session_connection},
+    Error, WindowIdentifier,
+};
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
 /// Specified options for a [`AccountProxy::user_information`] request.
@@ -105,8 +106,9 @@ pub struct AccountProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> AccountProxy<'a> {
     /// Create a new instance of [`AccountProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<AccountProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<AccountProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Account")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -150,7 +152,6 @@ pub async fn user_information(
     identifier: &WindowIdentifier,
     reason: &str,
 ) -> Result<UserInfo, Error> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = AccountProxy::new(&connection).await?;
+    let proxy = AccountProxy::new().await?;
     proxy.user_information(identifier, reason).await
 }

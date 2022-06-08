@@ -10,8 +10,7 @@
 //! use zbus::zvariant::Value;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = NotificationProxy::new(&connection).await?;
+//!     let proxy = NotificationProxy::new().await?;
 //!
 //!     let notification_id = "org.gnome.design.Contrast";
 //!     proxy
@@ -52,7 +51,7 @@ use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Type};
 
 use super::{Icon, DESTINATION, PATH};
 use crate::{
-    helpers::{call_method, receive_signal},
+    helpers::{call_method, receive_signal, session_connection},
     Error,
 };
 
@@ -289,8 +288,9 @@ pub struct NotificationProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> NotificationProxy<'a> {
     /// Create a new instance of [`NotificationProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<NotificationProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<NotificationProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Notification")?
             .path(PATH)?
             .destination(DESTINATION)?

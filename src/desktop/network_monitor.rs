@@ -5,8 +5,7 @@
 //! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = NetworkMonitorProxy::new(&connection).await?;
+//!     let proxy = NetworkMonitorProxy::new().await?;
 //!
 //!     println!("{}", proxy.can_reach("www.google.com", 80).await?);
 //!     println!("{}", proxy.is_available().await?);
@@ -25,7 +24,7 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{
-    helpers::{call_method, receive_signal},
+    helpers::{call_method, receive_signal, session_connection},
     Error,
 };
 
@@ -93,8 +92,9 @@ pub struct NetworkMonitorProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> NetworkMonitorProxy<'a> {
     /// Create a new instance of [`NetworkMonitorProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<NetworkMonitorProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<NetworkMonitorProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.NetworkMonitor")?
             .path(PATH)?
             .destination(DESTINATION)?

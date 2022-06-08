@@ -11,8 +11,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = InhibitProxy::new(&connection).await?;
+//!     let proxy = InhibitProxy::new().await?;
 //!     let identifier = WindowIdentifier::default();
 //!
 //!     let session = proxy.create_monitor(&identifier).await?;
@@ -47,7 +46,10 @@ use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method, receive_signal},
+    helpers::{
+        call_basic_response_method, call_method, call_request_method, receive_signal,
+        session_connection,
+    },
     Error, WindowIdentifier,
 };
 
@@ -159,8 +161,9 @@ pub struct InhibitProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> InhibitProxy<'a> {
     /// Create a new instance of [`InhibitProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<InhibitProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<InhibitProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Inhibit")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -196,11 +199,7 @@ impl<'a> InhibitProxy<'a> {
         let (monitor, proxy): (CreateMonitor, SessionProxy) = futures::try_join!(
             call_request_method(self.inner(), &options.handle_token, "CreateMonitor", body)
                 .into_future(),
-            SessionProxy::from_unique_name(
-                self.inner().connection(),
-                &options.session_handle_token
-            )
-            .into_future(),
+            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path().as_str(), &monitor.session_handle);
         Ok(proxy)

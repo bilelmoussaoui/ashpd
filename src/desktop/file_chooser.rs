@@ -9,9 +9,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!
-//!     let proxy = FileChooserProxy::new(&connection).await?;
+//!     let proxy = FileChooserProxy::new().await?;
 //!     let files = proxy
 //!         .open_file(
 //!             &WindowIdentifier::default(),
@@ -46,8 +44,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = FileChooserProxy::new(&connection).await?;
+//!     let proxy = FileChooserProxy::new().await?;
 //!     let files = proxy
 //!         .save_file(
 //!             &WindowIdentifier::default(),
@@ -75,9 +72,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!
-//!     let proxy = FileChooserProxy::new(&connection).await?;
+//!     let proxy = FileChooserProxy::new().await?;
 //!     let files = proxy
 //!         .save_files(
 //!             &WindowIdentifier::default(),
@@ -103,7 +98,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_request_method, Error, WindowIdentifier};
+use crate::{
+    helpers::{call_request_method, session_connection},
+    Error, WindowIdentifier,
+};
 
 #[derive(Serialize, Deserialize, Type, Clone, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -455,8 +453,9 @@ pub struct FileChooserProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> FileChooserProxy<'a> {
     /// Create a new instance of [`FileChooserProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<FileChooserProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<FileChooserProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.FileChooser")?
             .path(PATH)?
             .destination(DESTINATION)?

@@ -1,5 +1,5 @@
 use super::{DESTINATION, PATH};
-use crate::Error;
+use crate::{helpers::session_connection, Error};
 
 /// The interface provides information about the user-selected system-wide power
 /// profile, to sandboxed applications. It is not a portal in the strict sense,
@@ -14,8 +14,9 @@ pub struct PowerProfileMonitorProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> PowerProfileMonitorProxy<'a> {
     /// Create a new instance of [`PowerProfileMonitorProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<PowerProfileMonitorProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<PowerProfileMonitorProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.PowerProfileMonitor")?
             .path(PATH)?
             .destination(DESTINATION)?

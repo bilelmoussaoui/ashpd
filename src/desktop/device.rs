@@ -7,8 +7,7 @@
 //! use ashpd::desktop::device::{Device, DeviceProxy};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = DeviceProxy::new(&connection).await?;
+//!     let proxy = DeviceProxy::new().await?;
 //!     proxy.access_device(6879, &[Device::Speakers]).await?;
 //!     Ok(())
 //! }
@@ -20,7 +19,10 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
-use crate::{helpers::call_basic_response_method, Error};
+use crate::{
+    helpers::{call_basic_response_method, session_connection},
+    Error,
+};
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -98,8 +100,10 @@ pub struct DeviceProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> DeviceProxy<'a> {
     /// Create a new instance of [`DeviceProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<DeviceProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<DeviceProxy<'a>, Error> {
+        let connection = session_connection().await?;
+
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Device")?
             .path(PATH)?
             .destination(DESTINATION)?

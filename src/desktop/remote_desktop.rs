@@ -7,8 +7,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = RemoteDesktopProxy::new(&connection).await?;
+//!     let proxy = RemoteDesktopProxy::new().await?;
 //!
 //!     let session = proxy.create_session().await?;
 //!
@@ -44,9 +43,8 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = RemoteDesktopProxy::new(&connection).await?;
-//!     let screencast = ScreenCastProxy::new(&connection).await?;
+//!     let proxy = RemoteDesktopProxy::new().await?;
+//!     let screencast = ScreenCastProxy::new().await?;
 //!     let identifier = WindowIdentifier::default();
 //!
 //!     let session = proxy.create_session().await?;
@@ -89,7 +87,7 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type, Value};
 
 use super::{screencast::Stream, HandleToken, SessionProxy, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method},
+    helpers::{call_basic_response_method, call_method, call_request_method, session_connection},
     Error, WindowIdentifier,
 };
 
@@ -201,8 +199,9 @@ pub struct RemoteDesktopProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> RemoteDesktopProxy<'a> {
     /// Create a new instance of [`RemoteDesktopProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<RemoteDesktopProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<RemoteDesktopProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.RemoteDesktop")?
             .path(PATH)?
             .destination(DESTINATION)?
@@ -235,11 +234,7 @@ impl<'a> RemoteDesktopProxy<'a> {
                 &options
             )
             .into_future(),
-            SessionProxy::from_unique_name(
-                self.inner().connection(),
-                &options.session_handle_token
-            )
-            .into_future()
+            SessionProxy::from_unique_name(&options.session_handle_token).into_future()
         )?;
         assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)

@@ -13,7 +13,7 @@ use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
 use super::DESTINATION;
 use crate::{
     desktop::HandleToken,
-    helpers::{call_method, receive_signal},
+    helpers::{call_method, receive_signal, session_connection},
     Error,
 };
 
@@ -171,12 +171,13 @@ impl From<ResponseError> for ResponseType {
 pub(crate) struct RequestProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> RequestProxy<'a> {
-    pub async fn new<P>(connection: &zbus::Connection, path: P) -> Result<RequestProxy<'a>, Error>
+    pub async fn new<P>(path: P) -> Result<RequestProxy<'a>, Error>
     where
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Request")?
             .path(path)?
             .destination(DESTINATION)?
@@ -185,10 +186,8 @@ impl<'a> RequestProxy<'a> {
         Ok(Self(proxy))
     }
 
-    pub async fn from_unique_name(
-        connection: &zbus::Connection,
-        handle_token: &HandleToken,
-    ) -> Result<RequestProxy<'a>, Error> {
+    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<RequestProxy<'a>, Error> {
+        let connection = session_connection().await?;
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
         let path = ObjectPath::try_from(format!(
@@ -198,7 +197,7 @@ impl<'a> RequestProxy<'a> {
         .unwrap();
         #[cfg(feature = "tracing")]
         tracing::info!("Creating a org.freedesktop.portal.Request {}", path);
-        RequestProxy::new(connection, path).await
+        Self::new(path).await
     }
 
     /// Get a reference to the underlying Proxy.

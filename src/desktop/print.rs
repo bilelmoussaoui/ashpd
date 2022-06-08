@@ -8,8 +8,7 @@
 //! use ashpd::{desktop::print::PrintProxy, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
-//!     let proxy = PrintProxy::new(&connection).await?;
+//!     let proxy = PrintProxy::new().await?;
 //!     let identifier = WindowIdentifier::default();
 //!
 //!     let file =
@@ -38,7 +37,7 @@ use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
-    helpers::{call_basic_response_method, call_request_method},
+    helpers::{call_basic_response_method, call_request_method, session_connection},
     Error, WindowIdentifier,
 };
 
@@ -615,8 +614,9 @@ pub struct PrintProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> PrintProxy<'a> {
     /// Create a new instance of [`PrintProxy`].
-    pub async fn new(connection: &zbus::Connection) -> Result<PrintProxy<'a>, Error> {
-        let proxy = zbus::ProxyBuilder::new_bare(connection)
+    pub async fn new() -> Result<PrintProxy<'a>, Error> {
+        let connection = session_connection().await?;
+        let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Print")?
             .path(PATH)?
             .destination(DESTINATION)?
