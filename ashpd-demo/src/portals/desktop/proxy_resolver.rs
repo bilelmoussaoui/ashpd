@@ -68,8 +68,7 @@ impl ProxyResolverPage {
         let imp = self.imp();
         let uri = imp.uri.text();
 
-        let cnx = zbus::Connection::session().await?;
-        let proxy = ProxyResolverProxy::new(&cnx).await?;
+        let proxy = ProxyResolverProxy::new().await?;
 
         match proxy.lookup(&uri).await {
             Ok(resolved_uris) => {
