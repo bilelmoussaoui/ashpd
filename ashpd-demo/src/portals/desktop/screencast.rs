@@ -223,8 +223,7 @@ impl ScreenCastPage {
 
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        let connection = zbus::Connection::session().await?;
-        let proxy = ScreenCastProxy::new(&connection).await?;
+        let proxy = ScreenCastProxy::new().await?;
         let session = proxy.create_session().await?;
         let mut token = imp.session_token.lock().await;
         proxy
@@ -248,8 +247,7 @@ impl ScreenCastPage {
 }
 
 pub async fn available_types() -> ashpd::Result<(BitFlags<CursorMode>, BitFlags<SourceType>)> {
-    let cnx = zbus::Connection::session().await?;
-    let proxy = ScreenCastProxy::new(&cnx).await?;
+    let proxy = ScreenCastProxy::new().await?;
 
     let cursor_modes = proxy.available_cursor_modes().await?;
     let source_types = proxy.available_source_types().await?;

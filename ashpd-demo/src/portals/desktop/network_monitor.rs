@@ -85,8 +85,7 @@ impl NetworkMonitorPage {
 
     async fn refresh(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let cnx = zbus::Connection::session().await?;
-        let proxy = NetworkMonitorProxy::new(&cnx).await?;
+        let proxy = NetworkMonitorProxy::new().await?;
         let status = proxy.status().await?;
 
         imp.connectivity
@@ -100,8 +99,7 @@ impl NetworkMonitorPage {
 
     async fn can_reach(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let cnx = zbus::Connection::session().await?;
-        let proxy = NetworkMonitorProxy::new(&cnx).await?;
+        let proxy = NetworkMonitorProxy::new().await?;
 
         let hostname = imp.host_entry.text();
         let port = imp.port_entry.text().parse().unwrap_or(80);

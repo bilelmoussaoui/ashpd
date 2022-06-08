@@ -76,8 +76,7 @@ impl SecretPage {
 }
 
 async fn retrieve_secret() -> ashpd::Result<Vec<u8>> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = secret::SecretProxy::new(&connection).await?;
+    let proxy = secret::SecretProxy::new().await?;
 
     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
     proxy.retrieve_secret(&x2).await?;

@@ -144,9 +144,7 @@ impl Application {
                 }));
             })
         );
-        let is_sandboxed = futures::executor::block_on(async {
-            ashpd::is_sandboxed().await
-        });
+        let is_sandboxed = futures::executor::block_on(async { ashpd::is_sandboxed().await });
         // The restart app requires the Flatpak portal
         gtk_macros::get_action!(self, @restart).set_enabled(is_sandboxed);
 
@@ -225,8 +223,7 @@ impl Application {
     }
 
     async fn restart(&self) -> ashpd::Result<()> {
-        let cnx = zbus::Connection::session().await?;
-        let proxy = FlatpakProxy::new(&cnx).await?;
+        let proxy = FlatpakProxy::new().await?;
         proxy
             .spawn(
                 "/",

@@ -244,8 +244,7 @@ pub async fn locate<'a>(
     time_threshold: u32,
     accuracy: Accuracy,
 ) -> ashpd::Result<(SessionProxy<'a>, LocationProxy<'a>)> {
-    let connection = zbus::Connection::session().await?;
-    let proxy = LocationProxy::new(&connection).await?;
+    let proxy = LocationProxy::new().await?;
     let session = proxy
         .create_session(
             Some(distance_threshold),

@@ -96,8 +96,7 @@ impl NotificationPage {
             .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
             .button(Button::new("Delete", "delete").target(Value::U32(40).into()));
 
-        let cnx = zbus::Connection::session().await?;
-        let proxy = NotificationProxy::new(&cnx).await?;
+        let proxy = NotificationProxy::new().await?;
         match proxy.add_notification(&notification_id, notification).await {
             Ok(_) => {
                 self.send_notification("Notification sent", NotificationKind::Success);

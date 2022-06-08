@@ -72,8 +72,7 @@ impl DevicePage {
     }
 
     async fn request(&self) -> ashpd::Result<()> {
-        let cnx = zbus::Connection::session().await?;
-        let proxy = DeviceProxy::new(&cnx).await?;
+        let proxy = DeviceProxy::new().await?;
 
         proxy
             .access_device(std::process::id(), self.selected_devices().as_slice())

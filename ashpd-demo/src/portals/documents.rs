@@ -61,8 +61,7 @@ impl DocumentsPage {
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {
-        let cnx = zbus::Connection::session().await?;
-        let proxy = DocumentsProxy::new(&cnx).await?;
+        let proxy = DocumentsProxy::new().await?;
 
         let mount_point = proxy.mount_point().await?;
         self.imp()
