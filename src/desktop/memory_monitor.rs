@@ -4,11 +4,10 @@
 //! use ashpd::desktop::memory_monitor::MemoryMonitorProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = MemoryMonitorProxy::new().await?;
 //!
 //!     let level = proxy.receive_low_memory_warning().await?;
-//!     println!("{:#?}", level);
+//!     println!("{}", level);
 //!
 //!     Ok(())
 //! }

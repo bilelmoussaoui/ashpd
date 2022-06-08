@@ -8,7 +8,6 @@
 //! use futures::TryFutureExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = LocationProxy::new().await?;
 //!     let identifier = WindowIdentifier::default();
 //!

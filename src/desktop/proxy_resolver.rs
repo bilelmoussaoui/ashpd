@@ -5,7 +5,6 @@
 //! use ashpd::desktop::proxy_resolver::ProxyResolverProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let connection = zbus::Connection::session().await?;
 //!     let proxy = ProxyResolverProxy::new().await?;
 //!
 //!     println!("{:#?}", proxy.lookup("www.google.com").await?);
