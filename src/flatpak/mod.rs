@@ -51,7 +51,7 @@ use crate::{
 };
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// A bitmask representing the "permissions" of a newly created sandbox.
 pub enum SandboxFlags {
@@ -68,7 +68,7 @@ pub enum SandboxFlags {
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpSpawnFlags")]
 /// Flags affecting the created sandbox.
@@ -103,7 +103,7 @@ pub enum SpawnFlags {
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// Flags marking what optional features are available.
 pub enum SupportsFlags {

@@ -55,7 +55,7 @@ use crate::{
 };
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 ///
 pub enum Flags {

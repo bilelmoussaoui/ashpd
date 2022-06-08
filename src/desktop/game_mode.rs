@@ -27,7 +27,7 @@ use crate::{
     Error,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Type)]
 /// The status of the game mode.
 #[repr(i32)]
 pub enum Status {
@@ -41,7 +41,7 @@ pub enum Status {
     Rejected = -1,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Type)]
 #[repr(i32)]
 /// The status of a (un-)register game mode request.
 enum RegisterStatus {

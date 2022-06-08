@@ -55,7 +55,7 @@ use crate::{
 };
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Copy, Clone, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpOutputType")]
 /// A bit flag for the available sources to record.
@@ -72,7 +72,7 @@ pub enum SourceType {
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpCursorMode")]
 /// A bit flag for the possible cursor modes.
@@ -89,7 +89,7 @@ pub enum CursorMode {
     Metadata,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]
 pub enum PersistMode {

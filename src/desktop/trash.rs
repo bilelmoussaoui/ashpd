@@ -40,7 +40,7 @@ use crate::{
     Error,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Hash, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Clone, Copy, Hash, Debug, Type)]
 /// The status of moving a file to the trash.
 #[repr(u32)]
 enum TrashStatus {

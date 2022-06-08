@@ -43,7 +43,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Clone, Copy, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Clone, Copy, Debug, Type)]
 #[doc(alias = "XdpLocationAccuracy")]
 #[repr(u32)]
 /// The accuracy of the location.

@@ -54,7 +54,7 @@ impl NetworkStatus {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 /// Host's network activity
 pub enum Connectivity {

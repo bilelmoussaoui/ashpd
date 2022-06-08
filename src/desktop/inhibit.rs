@@ -82,7 +82,7 @@ impl InhibitOptions {
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpInhibitFlags")]
 /// The actions to inhibit that can end the user's session
@@ -135,7 +135,7 @@ impl InhibitState {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[doc(alias = "XdpLoginSessionState")]
 #[repr(u32)]
 /// The current state of the user's session.
