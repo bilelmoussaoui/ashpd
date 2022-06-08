@@ -108,7 +108,7 @@ use crate::{
 /// pattern.
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
-#[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Eq, Debug, Type)]
 #[repr(u32)]
 enum FilterType {
     GlobPattern = 0,

@@ -50,7 +50,7 @@ use crate::{
 };
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Copy, Clone, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpLauncherType")]
 pub enum LauncherType {

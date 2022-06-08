@@ -113,7 +113,7 @@ impl Debug for BasicResponse {
     }
 }
 
-#[derive(Debug, Copy, PartialEq, Hash, Clone)]
+#[derive(Debug, Copy, PartialEq, Eq, Hash, Clone)]
 /// An error returned a portal request caused by either the user cancelling the
 /// request or something else.
 pub enum ResponseError {
@@ -134,7 +134,7 @@ impl std::fmt::Display for ResponseError {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Type)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Type)]
 #[doc(hidden)]
 enum ResponseType {
     /// Success, the request is carried out.

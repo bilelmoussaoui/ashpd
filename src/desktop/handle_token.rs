@@ -14,7 +14,7 @@ use zbus::{names::OwnedMemberName, zvariant::Type};
 ///
 /// A valid object path element must only contain the ASCII characters
 /// `[A-Z][a-z][0-9]_`
-#[derive(Clone, PartialEq, Hash, Serialize, Deserialize, Type)]
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
 pub struct HandleToken(OwnedMemberName);
 
 impl Display for HandleToken {

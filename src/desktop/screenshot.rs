@@ -123,7 +123,7 @@ struct PickColorOptions {
 /// **Note** the values are normalized.
 #[zvariant(signature = "dict")]
 pub struct Color {
-    color: ([f64; 3]),
+    color: [f64; 3],
 }
 
 impl Color {

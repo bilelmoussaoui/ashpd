@@ -86,7 +86,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Deserialize, Serialize, Debug, Clone, Copy, PartialEq, Hash, Type)]
+#[derive(Deserialize, Serialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
 #[zvariant(signature = "s")]
 /// Where to set the wallpaper on.
 pub enum SetOn {

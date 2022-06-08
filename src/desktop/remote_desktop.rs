@@ -91,7 +91,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Eq, Debug, Type)]
 #[doc(alias = "XdpKeyState")]
 /// The keyboard key state.
 #[repr(u32)]
@@ -105,7 +105,7 @@ pub enum KeyState {
 }
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Clone, Copy, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpDeviceType")]
 /// A bit flag for the available devices.
@@ -121,7 +121,7 @@ pub enum DeviceType {
     Touchscreen,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug, Type)]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Type)]
 #[doc(alias = "XdpDiscreteAxis")]
 #[repr(u32)]
 /// The available axis.
