@@ -27,7 +27,8 @@ use zbus::zvariant::Type;
 ///
 /// ## From a Wayland Surface
 ///
-/// The feature `wayland` must be enabled.
+/// The `wayland` feature must be enabled. The exported surface handle will be
+/// unexported on `Drop`.
 ///
 /// ```text
 /// // let wl_surface = some_surface;
@@ -215,11 +216,16 @@ impl WindowIdentifier {
     #[cfg(feature = "wayland")]
     /// Create an instance of [`WindowIdentifier`] from a Wayland surface.
     ///
-    /// ## Safety
+    /// # Safety
     ///
-    /// The surface has to be a valid Wayland surface pointer.
-    pub unsafe fn from_wayland_raw(surface_ptr: *mut std::ffi::c_void) -> Self {
-        match WaylandWindowIdentifier::from_raw(surface_ptr) {
+    /// Both pointers have to be valid surface and display pointers. You must
+    /// ensure the `display_ptr` lives longer than the returned
+    /// `WindowIdentifier`.
+    pub async unsafe fn from_wayland_raw(
+        surface_ptr: *mut std::ffi::c_void,
+        display_ptr: *mut std::ffi::c_void,
+    ) -> Self {
+        match WaylandWindowIdentifier::from_raw(surface_ptr, display_ptr).await {
             Some(identifier) => Self::Wayland(identifier),
             None => Self::default(),
         }
@@ -227,8 +233,8 @@ impl WindowIdentifier {
 
     #[cfg(feature = "wayland")]
     /// Create an instance of [`WindowIdentifier`] from a Wayland surface.
-    pub fn from_wayland(surface: &wayland_client::protocol::wl_surface::WlSurface) -> Self {
-        match WaylandWindowIdentifier::new(surface) {
+    pub async fn from_wayland(surface: &wayland_client::protocol::wl_surface::WlSurface) -> Self {
+        match WaylandWindowIdentifier::new(surface).await {
             Some(identifier) => Self::Wayland(identifier),
             None => Self::default(),
         }
