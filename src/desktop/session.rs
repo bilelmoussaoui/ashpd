@@ -11,25 +11,26 @@ use crate::{
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
 
-/// The Session interface is shared by all portal interfaces that involve long
-/// lived sessions. When a method that creates a session is called, if
-/// successful, the reply will include a session handle (i.e. object path) for a
-/// Session object, which will stay alive for the duration of the session.
+/// Shared by all portal interfaces that involve long lived sessions.
+///
+/// When a method that creates a session is called, if successful, the reply
+/// will include a session handle (i.e. object path) for a Session object, which
+/// will stay alive for the duration of the session.
 ///
 /// The duration of the session is defined by the interface that creates it.
-/// For convenience, the interface contains a method [`SessionProxy::close`],
-/// and a signal [`SessionProxy::receive_closed`]. Whether it is allowed to
-/// directly call [`SessionProxy::close`] depends on the interface.
+/// For convenience, the interface contains a method [`Session::close`],
+/// and a signal [`Session::receive_closed`]. Whether it is allowed to
+/// directly call [`Session::close`] depends on the interface.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Session).
 #[doc(alias = "org.freedesktop.portal.Session")]
-pub struct SessionProxy<'a>(zbus::Proxy<'a>);
+pub struct Session<'a>(zbus::Proxy<'a>);
 
-impl<'a> SessionProxy<'a> {
-    /// Create a new instance of [`SessionProxy`].
+impl<'a> Session<'a> {
+    /// Create a new instance of [`Session`].
     ///
-    /// **Note** A [`SessionProxy`] is not supposed to be created manually.
-    pub(crate) async fn new(path: ObjectPath<'a>) -> Result<SessionProxy<'a>, Error> {
+    /// **Note** A [`Session`] is not supposed to be created manually.
+    pub(crate) async fn new(path: ObjectPath<'a>) -> Result<Session<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Session")?
@@ -42,7 +43,7 @@ impl<'a> SessionProxy<'a> {
 
     pub(crate) async fn from_unique_name(
         handle_token: &HandleToken,
-    ) -> Result<SessionProxy<'a>, crate::Error> {
+    ) -> Result<Session<'a>, crate::Error> {
         let connection = session_connection().await?;
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
@@ -83,7 +84,7 @@ impl<'a> SessionProxy<'a> {
     }
 }
 
-impl<'a> Serialize for SessionProxy<'a> {
+impl<'a> Serialize for Session<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -92,15 +93,15 @@ impl<'a> Serialize for SessionProxy<'a> {
     }
 }
 
-impl<'a> Type for SessionProxy<'a> {
+impl<'a> Type for Session<'a> {
     fn signature() -> Signature<'static> {
         ObjectPath::signature()
     }
 }
 
-impl<'a> Debug for SessionProxy<'a> {
+impl<'a> Debug for Session<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("SessionProxy")
+        f.debug_tuple("Session")
             .field(&self.inner().path().as_str())
             .finish()
     }

@@ -48,7 +48,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use super::{HandleToken, Session, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method, session_connection},
     Error, WindowIdentifier,
@@ -295,7 +295,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.CreateSession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_screencast_session")]
-    pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default();
         let (session, proxy) = futures_util::try_join!(
             call_request_method::<CreateSession, _>(
@@ -305,7 +305,7 @@ impl<'a> ScreenCastProxy<'a> {
                 &options
             )
             .into_future(),
-            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)
@@ -316,7 +316,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`ScreenCastProxy::create_session`].
     ///
     /// # Returns
@@ -327,7 +327,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
-    pub async fn open_pipe_wire_remote(&self, session: &SessionProxy<'_>) -> Result<RawFd, Error> {
+    pub async fn open_pipe_wire_remote(&self, session: &Session<'_>) -> Result<RawFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
         let options: HashMap<&str, Value<'_>> = HashMap::new();
@@ -345,7 +345,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`ScreenCastProxy::create_session`].
     /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast
     ///   stream.
@@ -358,7 +358,7 @@ impl<'a> ScreenCastProxy<'a> {
     #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         cursor_mode: CursorMode,
         types: BitFlags<SourceType>,
         multiple: bool,
@@ -391,7 +391,7 @@ impl<'a> ScreenCastProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`ScreenCastProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
@@ -405,7 +405,7 @@ impl<'a> ScreenCastProxy<'a> {
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         identifier: &WindowIdentifier,
     ) -> Result<(Vec<Stream>, Option<String>), Error> {
         let options = StartCastOptions::default();
