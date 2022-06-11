@@ -2,10 +2,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::proxy_resolver::ProxyResolverProxy;
+//! use ashpd::desktop::proxy_resolver::ProxyResolver;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ProxyResolverProxy::new().await?;
+//!     let proxy = ProxyResolver::new().await?;
 //!     let url = url::Url::parse("www.google.com").unwrap();
 //!
 //!     println!("{:#?}", proxy.lookup(&url).await?);
@@ -21,6 +21,7 @@ use crate::{
 };
 
 /// The interface provides network proxy information to sandboxed applications.
+///
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib [`gio::ProxyResolver`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.ProxyResolver.html) interface.
@@ -28,11 +29,11 @@ use crate::{
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ProxyResolver`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.ProxyResolver).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ProxyResolver")]
-pub struct ProxyResolverProxy<'a>(zbus::Proxy<'a>);
+pub struct ProxyResolver<'a>(zbus::Proxy<'a>);
 
-impl<'a> ProxyResolverProxy<'a> {
-    /// Create a new instance of [`ProxyResolverProxy`].
-    pub async fn new() -> Result<ProxyResolverProxy<'a>, Error> {
+impl<'a> ProxyResolver<'a> {
+    /// Create a new instance of [`ProxyResolver`].
+    pub async fn new() -> Result<ProxyResolver<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.ProxyResolver")?
