@@ -36,7 +36,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use super::{HandleToken, Session, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, receive_signal, session_connection},
     Error, WindowIdentifier,
@@ -266,7 +266,7 @@ impl<'a> LocationProxy<'a> {
         distance_threshold: Option<u32>,
         time_threshold: Option<u32>,
         accuracy: Option<Accuracy>,
-    ) -> Result<SessionProxy<'a>, Error> {
+    ) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default()
             .distance_threshold(distance_threshold.unwrap_or(0))
             .time_threshold(time_threshold.unwrap_or(0))
@@ -278,7 +278,7 @@ impl<'a> LocationProxy<'a> {
                 &(options)
             )
             .into_future(),
-            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path(), &path.into_inner());
         Ok(proxy)
@@ -289,7 +289,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`LocationProxy::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
@@ -300,7 +300,7 @@ impl<'a> LocationProxy<'a> {
     #[doc(alias = "xdp_portal_location_monitor_start")]
     pub async fn start(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         identifier: &WindowIdentifier,
     ) -> Result<(), Error> {
         let options = SessionStartOptions::default();

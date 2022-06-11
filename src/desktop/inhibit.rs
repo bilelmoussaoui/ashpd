@@ -44,7 +44,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
-use super::{HandleToken, SessionProxy, DESTINATION, PATH};
+use super::{HandleToken, Session, DESTINATION, PATH};
 use crate::{
     helpers::{
         call_basic_response_method, call_method, call_request_method, receive_signal,
@@ -193,13 +193,13 @@ impl<'a> InhibitProxy<'a> {
     pub async fn create_monitor(
         &self,
         identifier: &WindowIdentifier,
-    ) -> Result<SessionProxy<'a>, Error> {
+    ) -> Result<Session<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let body = &(&identifier, &options);
-        let (monitor, proxy): (CreateMonitor, SessionProxy) = futures_util::try_join!(
+        let (monitor, proxy): (CreateMonitor, Session) = futures_util::try_join!(
             call_request_method(self.inner(), &options.handle_token, "CreateMonitor", body)
                 .into_future(),
-            SessionProxy::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
         assert_eq!(proxy.inner().path().as_str(), &monitor.session_handle);
         Ok(proxy)
@@ -252,7 +252,7 @@ impl<'a> InhibitProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_monitor()`][`InhibitProxy::create_monitor`].
     ///
     /// # Specifications
@@ -260,7 +260,7 @@ impl<'a> InhibitProxy<'a> {
     /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.QueryEndResponse).
     #[doc(alias = "QueryEndResponse")]
     #[doc(alias = "xdp_portal_session_monitor_query_end_response")]
-    pub async fn query_end_response(&self, session: &SessionProxy<'_>) -> Result<(), Error> {
+    pub async fn query_end_response(&self, session: &Session<'_>) -> Result<(), Error> {
         call_method(self.inner(), "QueryEndResponse", &(session)).await
     }
 }

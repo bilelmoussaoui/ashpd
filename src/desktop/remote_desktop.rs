@@ -85,7 +85,7 @@ use futures_util::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type, Value};
 
-use super::{screencast::Stream, HandleToken, SessionProxy, DESTINATION, PATH};
+use super::{screencast::Stream, HandleToken, Session, DESTINATION, PATH};
 use crate::{
     helpers::{call_basic_response_method, call_method, call_request_method, session_connection},
     Error, WindowIdentifier,
@@ -224,7 +224,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.CreateSession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_remote_desktop_session")]
-    pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateRemoteOptions::default();
         let (session, proxy) = futures_util::try_join!(
             call_request_method::<CreateSession, _>(
@@ -234,7 +234,7 @@ impl<'a> RemoteDesktopProxy<'a> {
                 &options
             )
             .into_future(),
-            SessionProxy::from_unique_name(&options.session_handle_token).into_future()
+            Session::from_unique_name(&options.session_handle_token).into_future()
         )?;
         assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
         Ok(proxy)
@@ -244,7 +244,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `types` - The device types to request remote controlling of.
     ///
@@ -254,7 +254,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "SelectDevices")]
     pub async fn select_devices(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         types: BitFlags<DeviceType>,
     ) -> Result<(), Error> {
         let options = SelectDevicesOptions::default().types(types);
@@ -275,7 +275,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `identifier` - The application window identifier.
     ///
@@ -285,7 +285,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         identifier: &WindowIdentifier,
     ) -> Result<(BitFlags<DeviceType>, Vec<Stream>), Error> {
         let options = StartRemoteOptions::default();
@@ -306,7 +306,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
@@ -317,7 +317,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyKeyboardKeycode")]
     pub async fn notify_keyboard_keycode(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         keycode: i32,
         state: KeyState,
     ) -> Result<(), Error> {
@@ -339,7 +339,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
@@ -350,7 +350,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyKeyboardKeysym")]
     pub async fn notify_keyboard_keysym(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         keysym: i32,
         state: KeyState,
     ) -> Result<(), Error> {
@@ -372,7 +372,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `slot` - Touch slot where touch point appeared.
     ///
@@ -380,11 +380,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// See also [`NotifyTouchUp`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchUp).
     #[doc(alias = "NotifyTouchUp")]
-    pub async fn notify_touch_up(
-        &self,
-        session: &SessionProxy<'_>,
-        slot: u32,
-    ) -> Result<(), Error> {
+    pub async fn notify_touch_up(&self, session: &Session<'_>, slot: u32) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
@@ -400,7 +396,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
@@ -413,7 +409,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyTouchDown")]
     pub async fn notify_touch_down(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         stream: u32,
         slot: u32,
         x: f64,
@@ -439,7 +435,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
@@ -452,7 +448,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyTouchMotion")]
     pub async fn notify_touch_motion(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         stream: u32,
         slot: u32,
         x: f64,
@@ -475,7 +471,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
@@ -487,7 +483,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyPointerMotionAbsolute")]
     pub async fn notify_pointer_motion_absolute(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         stream: u32,
         x: f64,
         y: f64,
@@ -509,7 +505,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
@@ -520,7 +516,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyPointerMotion")]
     pub async fn notify_pointer_motion(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         dx: f64,
         dy: f64,
     ) -> Result<(), Error> {
@@ -544,7 +540,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
@@ -555,7 +551,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyPointerButton")]
     pub async fn notify_pointer_button(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         button: i32,
         state: KeyState,
     ) -> Result<(), Error> {
@@ -577,7 +573,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `axis` - The axis that was scrolled.
     ///
@@ -587,7 +583,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyPointerAxisDiscrete")]
     pub async fn notify_pointer_axis_discrete(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         axis: Axis,
         steps: i32,
     ) -> Result<(), Error> {
@@ -613,7 +609,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     ///
     /// # Arguments
     ///
-    /// * `session` - A [`SessionProxy`], created with
+    /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
@@ -625,7 +621,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     #[doc(alias = "NotifyPointerAxis")]
     pub async fn notify_pointer_axis(
         &self,
-        session: &SessionProxy<'_>,
+        session: &Session<'_>,
         dx: f64,
         dy: f64,
         finish: bool,
