@@ -3,16 +3,16 @@
 //! ```rust,no_run
 //! use std::io::Read;
 //!
-//! use ashpd::desktop::secret::SecretProxy;
+//! use ashpd::desktop::secret::Secret;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = SecretProxy::new().await?;
+//!     let secret = Secret::new().await?;
 //!
-//!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
-//!     proxy.retrieve_secret(&x2).await?;
+//!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair()?;
+//!     secret.retrieve(&x2).await?;
 //!     drop(x2);
 //!     let mut buf = Vec::new();
-//!     x1.read_to_end(&mut buf);
+//!     x1.read_to_end(&mut buf)?;
 //!
 //!     Ok(())
 //! }
@@ -33,18 +33,18 @@ use crate::{
 };
 
 #[derive(SerializeDict, Type, Debug, Default)]
-/// Specified options for a [`SecretProxy::retrieve_secret`] request.
+/// Specified options for a [`Secret::retrieve`] request.
 #[zvariant(signature = "dict")]
 struct RetrieveOptions {
     handle_token: HandleToken,
-    /// A string returned by a previous call to `retrieve_secret`.
+    /// A string returned by a previous call to `retrieve`.
     /// TODO: seems to not be used by the portal...
     token: Option<String>,
 }
 
 impl RetrieveOptions {
     /// Sets the token received on a previous call to
-    /// [`SecretProxy::retrieve_secret`].
+    /// [`Secret::retrieve`].
     #[must_use]
     #[allow(unused)]
     pub fn token(mut self, token: &str) -> Self {
@@ -54,17 +54,18 @@ impl RetrieveOptions {
 }
 
 /// The interface lets sandboxed applications retrieve a per-application secret.
+///
 /// The secret can then be used for encrypting confidential data inside the
 /// sandbox.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Secret).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Secret")]
-pub struct SecretProxy<'a>(zbus::Proxy<'a>);
+pub struct Secret<'a>(zbus::Proxy<'a>);
 
-impl<'a> SecretProxy<'a> {
-    /// Create a new instance of [`SecretProxy`].
-    pub async fn new() -> Result<SecretProxy<'a>, Error> {
+impl<'a> Secret<'a> {
+    /// Create a new instance of [`Secret`].
+    pub async fn new() -> Result<Secret<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Secret")?
@@ -86,7 +87,7 @@ impl<'a> SecretProxy<'a> {
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve_secret(&self, fd: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<(), Error> {
         let options = RetrieveOptions::default();
         call_basic_response_method(
             self.inner(),
@@ -99,14 +100,14 @@ impl<'a> SecretProxy<'a> {
     }
 }
 
-/// A handy wrapper around [`SecretProxy::retrieve_secret`].
+/// A handy wrapper around [`Secret::retrieve`].
 ///
 /// It crates a UnixStream internally for receiving the secret.
-pub async fn retrieve_secret() -> Result<Vec<u8>, Error> {
-    let proxy = SecretProxy::new().await?;
+pub async fn retrieve() -> Result<Vec<u8>, Error> {
+    let proxy = Secret::new().await?;
 
     let (mut x1, x2) = UnixStream::pair()?;
-    proxy.retrieve_secret(&x2).await?;
+    proxy.retrieve(&x2).await?;
     drop(x2);
     let mut buf = Vec::new();
     x1.read_to_end(&mut buf).await?;
