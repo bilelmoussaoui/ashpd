@@ -26,13 +26,13 @@ async fn run() -> ashpd::Result<()> {
 Start a PipeWire stream from the user's camera
 
 ```rust,no_run
-use ashpd::desktop::camera::CameraProxy;
+use ashpd::desktop::camera::Camera;
 
 pub async fn run() -> ashpd::Result<()> {
-    let proxy = CameraProxy::new().await?;
-    if proxy.is_camera_present().await? {
-        proxy.access_camera().await?;
-        let remote_fd = proxy.open_pipe_wire_remote().await?;
+    let camera = Camera::new().await?;
+    if camera.is_present().await? {
+        camera.request_access().await?;
+        let remote_fd = camera.open_pipe_wire_remote().await?;
         // pass the remote fd to GStreamer for example
     }
     Ok(())
