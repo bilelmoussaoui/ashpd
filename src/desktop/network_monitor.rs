@@ -2,10 +2,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::network_monitor::NetworkMonitorProxy;
+//! use ashpd::desktop::network_monitor::NetworkMonitor;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = NetworkMonitorProxy::new().await?;
+//!     let proxy = NetworkMonitor::new().await?;
 //!
 //!     println!("{}", proxy.can_reach("www.google.com", 80).await?);
 //!     println!("{}", proxy.is_available().await?);
@@ -41,14 +41,17 @@ pub struct NetworkStatus {
 }
 
 impl NetworkStatus {
+    /// Returns whether the network is considered available.
     pub fn is_available(&self) -> bool {
         self.available
     }
 
+    /// Returns whether the network is considered metered.
     pub fn is_metered(&self) -> bool {
         self.metered
     }
 
+    /// Returns more detailed information about the host's network connectivity.
     pub fn connectivity(&self) -> Connectivity {
         self.connectivity
     }
@@ -81,6 +84,7 @@ impl fmt::Display for Connectivity {
 }
 
 /// The interface provides network status information to sandboxed applications.
+///
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction. Applications are expected to use this interface indirectly,
 /// via a library API such as the GLib [`gio::NetworkMonitor`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.NetworkMonitor.html) interface.
@@ -88,11 +92,11 @@ impl fmt::Display for Connectivity {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.NetworkMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.NetworkMonitor")]
-pub struct NetworkMonitorProxy<'a>(zbus::Proxy<'a>);
+pub struct NetworkMonitor<'a>(zbus::Proxy<'a>);
 
-impl<'a> NetworkMonitorProxy<'a> {
-    /// Create a new instance of [`NetworkMonitorProxy`].
-    pub async fn new() -> Result<NetworkMonitorProxy<'a>, Error> {
+impl<'a> NetworkMonitor<'a> {
+    /// Create a new instance of [`NetworkMonitor`].
+    pub async fn new() -> Result<NetworkMonitor<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.NetworkMonitor")?
@@ -136,7 +140,7 @@ impl<'a> NetworkMonitorProxy<'a> {
         call_method(self.inner(), "GetAvailable", &()).await
     }
 
-    /// Returns more detailed information about the host's network connectivity
+    /// Returns more detailed information about the host's network connectivity.
     ///
     /// # Specifications
     ///
