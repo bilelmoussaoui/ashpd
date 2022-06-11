@@ -1,14 +1,13 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::camera::CameraProxy;
+//! use ashpd::desktop::camera::Camera;
 //!
 //! pub async fn run() -> ashpd::Result<()> {
-//!     let proxy = CameraProxy::new().await?;
-//!     if proxy.is_camera_present().await? {
-//!         proxy.access_camera().await?;
-//!
-//!         let remote_fd = proxy.open_pipe_wire_remote().await?;
+//!     let camera = Camera::new().await?;
+//!     if camera.is_present().await? {
+//!         camera.request_access().await?;
+//!         let remote_fd = camera.open_pipe_wire_remote().await?;
 //!         // pass the remote fd to GStreamer for example
 //!     }
 //!     Ok(())
@@ -29,10 +28,8 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`CameraProxy::access_camera`] request.
 #[zvariant(signature = "dict")]
 struct CameraAccessOptions {
-    /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
 }
 
@@ -42,11 +39,11 @@ struct CameraAccessOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Camera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Camera).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Camera")]
-pub struct CameraProxy<'a>(zbus::Proxy<'a>);
+pub struct Camera<'a>(zbus::Proxy<'a>);
 
-impl<'a> CameraProxy<'a> {
-    /// Create a new instance of [`CameraProxy`].
-    pub async fn new() -> Result<CameraProxy<'a>, Error> {
+impl<'a> Camera<'a> {
+    /// Create a new instance of [`Camera`].
+    pub async fn new() -> Result<Camera<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Camera")?
@@ -69,7 +66,7 @@ impl<'a> CameraProxy<'a> {
     /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.AccessCamera).
     #[doc(alias = "AccessCamera")]
     #[doc(alias = "xdp_portal_access_camera")]
-    pub async fn access_camera(&self) -> Result<(), Error> {
+    pub async fn request_access(&self) -> Result<(), Error> {
         let options = CameraAccessOptions::default();
         call_basic_response_method(
             self.inner(),
@@ -107,7 +104,7 @@ impl<'a> CameraProxy<'a> {
     /// See also [`IsCameraPresent`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-Camera.IsCameraPresent).
     #[doc(alias = "IsCameraPresent")]
     #[doc(alias = "xdp_portal_is_camera_present")]
-    pub async fn is_camera_present(&self) -> Result<bool, Error> {
+    pub async fn is_present(&self) -> Result<bool, Error> {
         self.inner()
             .get_property::<bool>("IsCameraPresent")
             .await
