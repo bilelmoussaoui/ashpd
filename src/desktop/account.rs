@@ -1,38 +1,24 @@
+//! The interface lets sandboxed applications query basic information about the
+//! user, like his name and avatar photo.
+//!
+//! The portal backend will present the user with a dialog to confirm which (if
+//! any) information to share.
+//!
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Account).
+//!
 //! # Examples
 //!
 //! ```rust, no_run
-//! use ashpd::{desktop::account, WindowIdentifier};
+//! use ashpd::desktop::account::UserInformationRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let user_info = account::user_information(
-//!         &WindowIdentifier::default(),
-//!         "App would like to access user information",
-//!     )
-//!     .await?;
-//!
-//!     println!("Name: {}", user_info.name());
-//!     println!("ID: {}", user_info.id());
-//!
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use ashpd::{desktop::account::AccountProxy, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let proxy = AccountProxy::new().await?;
-//!     let user_info = proxy
-//!         .user_information(
-//!             &WindowIdentifier::default(),
-//!             "App would like to access user information",
-//!         )
+//!     let response = UserInformationRequest::default()
+//!         .reason("App would like to access user information")
+//!         .build()
 //!         .await?;
 //!
-//!     println!("Name: {}", user_info.name());
-//!     println!("ID: {}", user_info.id());
+//!     println!("Name: {}", response.name());
+//!     println!("ID: {}", response.id());
 //!
 //!     Ok(())
 //! }
@@ -47,27 +33,16 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`AccountProxy::user_information`] request.
 #[zvariant(signature = "dict")]
-struct UserInfoOptions {
-    /// A string that will be used as the last element of the handle.
+struct UserInformationOptions {
     handle_token: HandleToken,
-    /// Shown in the dialog to explain why the information is needed.
     reason: Option<String>,
 }
 
-impl UserInfoOptions {
-    /// Sets a user-visible reason for the request.
-    pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_owned());
-        self
-    }
-}
-
 #[derive(Debug, SerializeDict, DeserializeDict, Clone, Type)]
-/// The response of a [`AccountProxy::user_information`] request.
+/// The response of a [`UserInformationRequest`] request.
 #[zvariant(signature = "dict")]
-pub struct UserInfo {
+pub struct UserInformationResponse {
     /// User identifier.
     id: String,
     /// User name.
@@ -76,7 +51,7 @@ pub struct UserInfo {
     image: String,
 }
 
-impl UserInfo {
+impl UserInformationResponse {
     /// User identifier.
     pub fn id(&self) -> &str {
         &self.id
@@ -91,18 +66,19 @@ impl UserInfo {
     pub fn image(&self) -> &str {
         &self.image
     }
+
+    /// Creates a new builder-pattern struct instance to construct
+    /// [`UserInformationResponse`].
+    ///
+    /// This method returns an instance of [`UserInformationRequest`].
+    pub fn builder() -> UserInformationRequest {
+        UserInformationRequest::default()
+    }
 }
 
-/// The interface lets sandboxed applications query basic information about the
-/// user, like his name and avatar photo.
-///
-/// The portal backend will present the user with a dialog to confirm which (if
-/// any) information to share.
-///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Account).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Account")]
-pub struct AccountProxy<'a>(zbus::Proxy<'a>);
+struct AccountProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> AccountProxy<'a> {
     /// Create a new instance of [`AccountProxy`].
@@ -132,9 +108,8 @@ impl<'a> AccountProxy<'a> {
     pub async fn user_information(
         &self,
         identifier: &WindowIdentifier,
-        reason: &str,
-    ) -> Result<UserInfo, Error> {
-        let options = UserInfoOptions::default().reason(reason);
+        options: UserInformationOptions,
+    ) -> Result<UserInformationResponse, Error> {
         call_request_method(
             self.inner(),
             &options.handle_token,
@@ -147,11 +122,37 @@ impl<'a> AccountProxy<'a> {
 
 #[doc(alias = "xdp_portal_get_user_information")]
 #[doc(alias = "get_user_information")]
-/// A handy wrapper around [`AccountProxy::user_information`].
-pub async fn user_information(
-    identifier: &WindowIdentifier,
-    reason: &str,
-) -> Result<UserInfo, Error> {
-    let proxy = AccountProxy::new().await?;
-    proxy.user_information(identifier, reason).await
+#[derive(Debug, Default)]
+/// A [builder-pattern] type to construct [`UserInformationResponse`].
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
+pub struct UserInformationRequest {
+    reason: Option<String>,
+    identifier: WindowIdentifier,
+}
+
+impl UserInformationRequest {
+    #[must_use]
+    /// Sets a user-visible reason for the request.
+    pub fn reason(mut self, reason: &str) -> Self {
+        self.reason = Some(reason.to_owned());
+        self
+    }
+
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Build the [`UserInformationResponse`].
+    pub async fn build(self) -> Result<UserInformationResponse, Error> {
+        let proxy = AccountProxy::new().await?;
+        let options = UserInformationOptions {
+            reason: self.reason,
+            ..Default::default()
+        };
+        proxy.user_information(&self.identifier, options).await
+    }
 }
