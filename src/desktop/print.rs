@@ -246,7 +246,7 @@ pub struct Settings {
     pub output_file_format: Option<String>,
     /// The uri used for print-to file.
     #[zvariant(rename = "output-uri")]
-    pub output_uri: Option<String>,
+    pub output_uri: Option<url::Url>,
 }
 
 impl Settings {
@@ -442,7 +442,7 @@ impl Settings {
 
     /// Sets the print-to-file output uri.
     #[must_use]
-    pub fn output_uri(mut self, output_uri: &str) -> Self {
+    pub fn output_uri(mut self, output_uri: &url::Url) -> Self {
         self.output_uri = Some(output_uri.to_owned());
         self
     }

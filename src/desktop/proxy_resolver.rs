@@ -6,8 +6,9 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = ProxyResolverProxy::new().await?;
+//!     let url = url::Url::parse("www.google.com").unwrap();
 //!
-//!     println!("{:#?}", proxy.lookup("www.google.com").await?);
+//!     println!("{:#?}", proxy.lookup(&url).await?);
 //!
 //!     Ok(())
 //! }
@@ -59,7 +60,7 @@ impl<'a> ProxyResolverProxy<'a> {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ProxyResolver.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup(&self, uri: &str) -> Result<Vec<String>, Error> {
+    pub async fn lookup(&self, uri: &url::Url) -> Result<Vec<String>, Error> {
         call_method(self.inner(), "Lookup", &(uri)).await
     }
 }
