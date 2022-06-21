@@ -63,10 +63,11 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = WallpaperProxy::new().await?;
+//!     let url = url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
 //!         .set_wallpaper_uri(
 //!             &WindowIdentifier::default(),
-//!             "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg",
+//!             &url,
 //!             true,
 //!             SetOn::Both,
 //!         )
@@ -250,7 +251,7 @@ impl<'a> WallpaperProxy<'a> {
     pub async fn set_wallpaper_uri(
         &self,
         identifier: &WindowIdentifier,
-        uri: &str,
+        uri: &url::Url,
         show_preview: bool,
         set_on: SetOn,
     ) -> Result<(), Error> {
@@ -271,7 +272,7 @@ impl<'a> WallpaperProxy<'a> {
 /// A handy wrapper around [`WallpaperProxy::set_wallpaper_uri`].
 pub async fn set_from_uri(
     identifier: &WindowIdentifier,
-    uri: &str,
+    uri: &url::Url,
     show_preview: bool,
     set_on: SetOn,
 ) -> Result<(), Error> {

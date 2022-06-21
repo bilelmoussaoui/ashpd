@@ -73,7 +73,7 @@
 //! use ashpd::{desktop::open_uri, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
+//!     let uri = url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true).await?;
 //!     Ok(())
 //! }
@@ -86,7 +86,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = OpenURIProxy::new().await?;
-//!     let uri = "https://github.com/bilelmoussaoui/ashpd";
+//!     let uri = url::Url::parse("https://github.com/bilelmoussaoui/ashpd").unwrap();
 //!
 //!     proxy
 //!         .open_uri(&WindowIdentifier::default(), uri, false, true)
@@ -266,7 +266,7 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_uri(
         &self,
         identifier: &WindowIdentifier,
-        uri: &str,
+        uri: &url::Url,
         writeable: bool,
         ask: bool,
     ) -> Result<(), Error> {
@@ -285,7 +285,7 @@ impl<'a> OpenURIProxy<'a> {
 /// A handy wrapper around [`OpenURIProxy::open_uri`].
 pub async fn open_uri(
     identifier: &WindowIdentifier,
-    uri: &str,
+    uri: &url::Url,
     writeable: bool,
     ask: bool,
 ) -> Result<(), Error> {
