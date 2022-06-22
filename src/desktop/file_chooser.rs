@@ -426,13 +426,13 @@ impl SaveFilesOptions {
 /// [`FileChooserProxy::save_files`] request.
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
-    uris: Vec<String>,
+    uris: Vec<url::Url>,
     choices: Option<Vec<(String, String)>>,
 }
 
 impl SelectedFiles {
     /// The selected files uris.
-    pub fn uris(&self) -> &[String] {
+    pub fn uris(&self) -> &[url::Url] {
         self.uris.as_slice()
     }
 

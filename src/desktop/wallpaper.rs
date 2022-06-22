@@ -47,7 +47,7 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let uri = "file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg";
+//!     let uri = url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     wallpaper::set_from_uri(&WindowIdentifier::default(), &uri, true, SetOn::Both).await?;
 //!     Ok(())
 //! }
