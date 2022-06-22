@@ -10,7 +10,7 @@ use crate::Error;
 #[derive(Debug, PartialEq, Eq, Type)]
 #[zvariant(signature = "(sv)")]
 pub enum Icon {
-    Uri(String),
+    Uri(url::Url),
     Names(Vec<String>),
     Bytes(Vec<u8>),
 }
@@ -35,7 +35,7 @@ impl Serialize for Icon {
         match self {
             Self::Uri(uri) => {
                 tuple.serialize_element("file")?;
-                tuple.serialize_element(&zvariant::Value::from(uri))?;
+                tuple.serialize_element(&zvariant::Value::from(uri.as_str()))?;
             }
             Self::Names(names) => {
                 tuple.serialize_element("themed")?;
@@ -67,9 +67,12 @@ impl<'de> Deserialize<'de> for Icon {
     {
         let (type_, data) = <(String, OwnedValue)>::deserialize(deserializer)?;
         match type_.as_str() {
-            "file" => Ok(Self::Uri(data.try_into().map_err(|_| {
-                de::Error::custom("Couldn't deserialize Icon of type 'file'")
-            })?)),
+            "file" => {
+                let uri_str = data.downcast_ref::<zvariant::Str>().unwrap();
+                let uri = url::Url::parse(uri_str.as_str())
+                    .map_err(|_| de::Error::custom("Couldn't deserialize Icon of type 'file'"))?;
+                Ok(Self::Uri(uri))
+            }
             "bytes" => {
                 let array = data.downcast_ref::<zvariant::Array>().unwrap();
                 let mut bytes = Vec::with_capacity(array.len());
@@ -100,8 +103,13 @@ impl TryFrom<OwnedValue> for Icon {
         let type_ = fields[0].downcast_ref::<zvariant::Str>().unwrap();
         match type_.as_str() {
             "file" => {
-                let uri = fields[1].downcast_ref::<zvariant::Str>().unwrap();
-                Ok(Self::Uri(uri.as_str().to_owned()))
+                let uri_str = fields[1]
+                    .downcast_ref::<zvariant::Str>()
+                    .unwrap()
+                    .to_owned();
+                let uri = url::Url::parse(uri_str.as_str())
+                    .map_err(|_| crate::Error::ParseError("Failed to parse uri"))?;
+                Ok(Self::Uri(uri))
             }
             "bytes" => {
                 let array = fields[1].downcast_ref::<zvariant::Array>().unwrap();
@@ -147,7 +155,7 @@ mod test {
         let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
         assert_eq!(decoded, icon);
 
-        let icon = Icon::Uri("file://some/icon.png".to_owned());
+        let icon = Icon::Uri(url::Url::parse("file://some/icon.png").unwrap());
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
         assert_eq!(decoded, icon);

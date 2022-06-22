@@ -101,12 +101,12 @@ impl ScreenshotOptions {
 #[zvariant(signature = "dict")]
 struct Screenshot {
     /// The screenshot uri.
-    uri: String,
+    uri: url::Url,
 }
 
 impl Debug for Screenshot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.uri)
+        f.write_str(self.uri.as_str())
     }
 }
 
@@ -252,7 +252,7 @@ impl<'a> ScreenshotProxy<'a> {
         identifier: &WindowIdentifier,
         interactive: bool,
         modal: bool,
-    ) -> Result<String, Error> {
+    ) -> Result<url::Url, Error> {
         let options = ScreenshotOptions::default()
             .interactive(interactive)
             .modal(modal);
@@ -280,7 +280,7 @@ pub async fn take(
     identifier: &WindowIdentifier,
     interactive: bool,
     modal: bool,
-) -> Result<String, Error> {
+) -> Result<url::Url, Error> {
     let proxy = ScreenshotProxy::new().await?;
     proxy.screenshot(identifier, interactive, modal).await
 }

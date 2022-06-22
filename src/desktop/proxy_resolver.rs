@@ -60,7 +60,7 @@ impl<'a> ProxyResolverProxy<'a> {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ProxyResolver.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup(&self, uri: &url::Url) -> Result<Vec<String>, Error> {
+    pub async fn lookup(&self, uri: &url::Url) -> Result<Vec<url::Url>, Error> {
         call_method(self.inner(), "Lookup", &(uri)).await
     }
 }

@@ -74,7 +74,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri = url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     open_uri::open_uri(&WindowIdentifier::default(), uri, false, true).await?;
+//!     open_uri::open_uri(&WindowIdentifier::default(), &uri, false, true).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -89,7 +89,7 @@
 //!     let uri = url::Url::parse("https://github.com/bilelmoussaoui/ashpd").unwrap();
 //!
 //!     proxy
-//!         .open_uri(&WindowIdentifier::default(), uri, false, true)
+//!         .open_uri(&WindowIdentifier::default(), &uri, false, true)
 //!         .await?;
 //!     Ok(())
 //! }
