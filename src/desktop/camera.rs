@@ -115,20 +115,116 @@ impl<'a> CameraProxy<'a> {
     }
 }
 
-/// A helper to get the PipeWire Node ID to use with the camera file descriptor
-/// returned by [`CameraProxy::open_pipe_wire_remote`].
+#[cfg(feature = "pipewire")]
+fn foreign_dic_to_map<D: pw::prelude::ReadableDict>(foreign: &D) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+    for (key, value) in foreign.iter() {
+        map.insert(key.to_string(), value.to_string());
+    }
+    map
+}
+
+#[cfg(feature = "pipewire")]
+/// A PipeWire camera stream returned by [`pipewire_streams`].
+pub struct Stream {
+    node_id: u32,
+    properties: HashMap<String, String>,
+}
+
+#[cfg(feature = "pipewire")]
+#[derive(Debug)]
+impl Stream {
+    /// The id of the PipeWire node.
+    pub fn node_id(&self) -> u32 {
+        self.node_id
+    }
+
+    /// The node properties.
+    pub fn properties(&self) -> HashMap<String, String> {
+        self.properties.clone()
+    }
+
+    /// The nick of the PipeWire node.
+    pub fn nick(&self) -> Option<String> {
+        self.properties.get("nick").cloned()
+    }
+
+    /// The name of the PipeWire node.
+    pub fn name(&self) -> Option<String> {
+        self.properties.get("name").cloned()
+    }
+
+    /// The description of the PipeWire node.
+    pub fn description(&self) -> Option<String> {
+        self.properties.get("description").cloned()
+    }
+}
+
+#[cfg(feature = "pipewire")]
+fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone + 'static>(
+    fd: RawFd,
+    callback: F,
+    done_callback: G,
+) -> Result<(), pw::Error> {
+    use pw::prelude::ReadableDict;
+
+    let mainloop = pw::MainLoop::new()?;
+    let context = pw::Context::new(&mainloop)?;
+    let core = context.connect_fd(fd, None)?;
+    let registry = core.get_registry()?;
+
+    let pending = core.sync(0).expect("sync failed");
+
+    let loop_clone = mainloop.clone();
+    let _listener_reg = registry
+        .add_listener_local()
+        .global(move |global| {
+            if let Some(props) = &global.props {
+                if props.get("media.role") == Some("Camera") {
+                    #[cfg(feature = "tracing")]
+                    tracing::info!("found camera: {:#?}", props);
+
+                    let properties = foreign_dic_to_map(props);
+                    let node_id = global.id;
+
+                    let stream = Stream {
+                        node_id,
+                        properties,
+                    };
+                    callback.clone()(stream);
+                }
+            }
+        })
+        .register();
+    let _listener_core = core
+        .add_listener_local()
+        .done(move |id, seq| {
+            if id == pw::PW_ID_CORE && seq == pending {
+                loop_clone.quit();
+                done_callback.clone()();
+            }
+        })
+        .register();
+
+    mainloop.run();
+
+    Ok(())
+}
+
+/// A helper to get a list of PipeWire streams to use with the camera file
+/// descriptor returned by [`CameraProxy::open_pipe_wire_remote`].
 ///
 /// Currently, the camera portal only gives us a file descriptor. Not passing a
 /// node id may cause the media session controller to auto-connect the client to
 /// an incorrect node.
 ///
 /// The method looks for the available output streams of a `media.role` type of
-/// `Camera` and return their Node ID if it found any.
+/// `Camera` and return a list of `Stream`s.
 ///
 /// *Note* The socket referenced by `fd` must not be used while this function is
 /// running.
 #[cfg(feature = "pipewire")]
-pub async fn pipewire_node_id(fd: RawFd) -> Result<Option<u32>, pw::Error> {
+pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
     let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
 
     if fd == -1 {
@@ -136,60 +232,45 @@ pub async fn pipewire_node_id(fd: RawFd) -> Result<Option<u32>, pw::Error> {
     }
 
     let (sender, receiver) = futures::channel::oneshot::channel();
+    let (streams_sender, mut streams_receiver) = futures::channel::mpsc::unbounded();
 
     let sender = std::sync::Arc::new(std::sync::Mutex::new(Some(sender)));
+    let streams_sender = std::sync::Arc::new(std::sync::Mutex::new(streams_sender));
+
     std::thread::spawn(move || {
         let inner_sender = sender.clone();
-        if let Err(err) = pipewire_node_id_inner(fd, move |node_id| {
-            if let Ok(mut guard) = inner_sender.lock() {
-                if let Some(inner_sender) = guard.take() {
-                    let _result = inner_sender.send(Ok(Some(node_id)));
+
+        if let Err(err) = pipewire_streams_inner(
+            fd,
+            move |stream| {
+                let inner_streams_sender = streams_sender.clone();
+                if let Ok(mut sender) = inner_streams_sender.lock() {
+                    let _result = sender.start_send(stream);
+                };
+            },
+            move || {
+                if let Ok(mut guard) = inner_sender.lock() {
+                    if let Some(inner_sender) = guard.take() {
+                        let _result = inner_sender.send(Ok(()));
+                    }
                 }
-            }
-        }) {
+            },
+        ) {
             #[cfg(feature = "tracing")]
-            tracing::error!("Failed to get pipewire node id {:#?}", err);
+            tracing::error!("Failed to get pipewire streams {:#?}", err);
             let mut guard = sender.lock().unwrap();
             if let Some(sender) = guard.take() {
                 let _ = sender.send(Err(err));
             }
-        } else {
-            #[cfg(feature = "tracing")]
-            tracing::info!("Couldn't find any Node ID");
-            let mut guard = sender.lock().unwrap();
-            if let Some(sender) = guard.take() {
-                let _ = sender.send(Ok(None));
-            }
         }
     });
-    receiver.await.unwrap()
-}
 
-#[cfg(feature = "pipewire")]
-fn pipewire_node_id_inner<F: FnOnce(u32) + Clone + 'static>(
-    fd: RawFd,
-    callback: F,
-) -> Result<(), pw::Error> {
-    use pw::prelude::*;
-    let mainloop = pw::MainLoop::new()?;
-    let context = pw::Context::new(&mainloop)?;
-    let core = context.connect_fd(fd, None)?;
-    let registry = core.get_registry()?;
+    receiver.await.unwrap()?;
 
-    let loop_clone = mainloop.clone();
-    let _listener_reg = registry
-        .add_listener_local()
-        .global(move |global| {
-            if let Some(props) = &global.props {
-                #[cfg(feature = "tracing")]
-                tracing::info!("found properties: {:#?}", props);
-                if props.get("media.role") == Some("Camera") {
-                    callback.clone()(global.id);
-                    loop_clone.quit();
-                }
-            }
-        })
-        .register();
-    mainloop.run();
-    Ok(())
+    let mut streams = vec![];
+    while let Ok(Some(stream)) = streams_receiver.try_next() {
+        streams.push(stream);
+    }
+
+    Ok(streams)
 }
