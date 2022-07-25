@@ -126,13 +126,13 @@ fn foreign_dic_to_map<D: pw::prelude::ReadableDict>(foreign: &D) -> HashMap<Stri
 
 #[cfg(feature = "pipewire")]
 /// A PipeWire camera stream returned by [`pipewire_streams`].
+#[derive(Debug)]
 pub struct Stream {
     node_id: u32,
     properties: HashMap<String, String>,
 }
 
 #[cfg(feature = "pipewire")]
-#[derive(Debug)]
 impl Stream {
     /// The id of the PipeWire node.
     pub fn node_id(&self) -> u32 {
