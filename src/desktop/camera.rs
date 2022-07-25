@@ -143,21 +143,6 @@ impl Stream {
     pub fn properties(&self) -> HashMap<String, String> {
         self.properties.clone()
     }
-
-    /// The nick of the PipeWire node.
-    pub fn nick(&self) -> Option<String> {
-        self.properties.get("nick").cloned()
-    }
-
-    /// The name of the PipeWire node.
-    pub fn name(&self) -> Option<String> {
-        self.properties.get("name").cloned()
-    }
-
-    /// The description of the PipeWire node.
-    pub fn description(&self) -> Option<String> {
-        self.properties.get("description").cloned()
-    }
 }
 
 #[cfg(feature = "pipewire")]
