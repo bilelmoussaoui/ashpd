@@ -149,7 +149,7 @@ impl FileChooserPage {
 
                 for uri in files.uris() {
                     imp.open_response_group
-                        .add(&adw::ActionRow::builder().title(uri).build());
+                        .add(&adw::ActionRow::builder().title(uri.as_str()).build());
                 }
                 self.send_notification(
                     "Open file request was successful",
@@ -189,7 +189,7 @@ impl FileChooserPage {
 
                 for uri in files.uris() {
                     imp.save_file_response_group
-                        .add(&adw::ActionRow::builder().title(uri).build());
+                        .add(&adw::ActionRow::builder().title(uri.as_str()).build());
                 }
 
                 self.send_notification(
@@ -228,7 +228,7 @@ impl FileChooserPage {
 
                 for uri in files.uris() {
                     imp.save_files_response_group
-                        .add(&adw::ActionRow::builder().title(uri).build());
+                        .add(&adw::ActionRow::builder().title(uri.as_str()).build());
                 }
                 self.send_notification(
                     "Save files request was successful",
