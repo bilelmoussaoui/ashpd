@@ -68,8 +68,19 @@
             <property name="transition-type">crossfade</property>
             <property name="vexpand">True</property>
             <child>
-              <object class="GtkPicture" id="picture">
-                <property name="vexpand">True</property>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">12</property>
+                <child>
+                  <object class="GtkStackSwitcher" id="picture_stack_switcher">
+                    <property name="stack">picture_stack</property>
+                    <property name="hexpand">True</property>
+                    <property name="halign">center</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkStack" id="picture_stack" />
+                </child>
               </object>
             </child>
           </object>
