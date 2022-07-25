@@ -82,21 +82,28 @@ impl WallpaperPage {
             _ => unimplemented!(),
         };
         if file_chooser.run_future().await == gtk::ResponseType::Accept {
-            let wallpaper_uri = file_chooser.file().unwrap().uri();
-
             let identifier = WindowIdentifier::from_native(&root).await;
-            match wallpaper::set_from_uri(&identifier, &wallpaper_uri, show_preview, set_on).await {
-                Err(err) => {
-                    tracing::error!("Failed to set wallpaper {}", err);
-                    self.send_notification(
-                        "Request to set a wallpaper failed",
-                        NotificationKind::Error,
-                    );
+            match url::Url::parse(&file_chooser.file().unwrap().uri()) {
+                Ok(wallpaper_uri) => {
+                    match wallpaper::set_from_uri(&identifier, &wallpaper_uri, show_preview, set_on)
+                        .await
+                    {
+                        Err(err) => {
+                            tracing::error!("Failed to set wallpaper {}", err);
+                            self.send_notification(
+                                "Request to set a wallpaper failed",
+                                NotificationKind::Error,
+                            );
+                        }
+                        Ok(_) => self.send_notification(
+                            "Set a wallpaper request was successful",
+                            NotificationKind::Success,
+                        ),
+                    }
                 }
-                Ok(_) => self.send_notification(
-                    "Set a wallpaper request was successful",
-                    NotificationKind::Success,
-                ),
+                Err(_err) => {
+                    self.send_notification("Wallpaper URI malformed", NotificationKind::Error);
+                }
             }
         };
         file_chooser.destroy();

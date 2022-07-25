@@ -66,24 +66,32 @@ impl ProxyResolverPage {
 
     async fn resolve(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let uri = imp.uri.text();
-
         let proxy = ProxyResolverProxy::new().await?;
 
-        match proxy.lookup(&uri).await {
-            Ok(resolved_uris) => {
-                resolved_uris.iter().for_each(|uri| {
-                    let row = adw::ActionRow::builder().title(uri).build();
-                    imp.response_group.add(&row);
-                });
-
-                imp.response_group.show();
-                self.send_notification("Lookup request was successful", NotificationKind::Success);
-            }
+        match url::Url::parse(&imp.uri.text()) {
+            Ok(uri) => match proxy.lookup(&uri).await {
+                Ok(resolved_uris) => {
+                    resolved_uris.iter().for_each(|uri| {
+                        let row = adw::ActionRow::builder().title(uri.as_str()).build();
+                        imp.response_group.add(&row);
+                    });
+                    imp.response_group.show();
+                    self.send_notification(
+                        "Lookup request was successful",
+                        NotificationKind::Success,
+                    );
+                }
+                Err(_err) => {
+                    self.send_notification(
+                        "Request to lookup a URI failed",
+                        NotificationKind::Error,
+                    );
+                }
+            },
             Err(_err) => {
                 self.send_notification("Request to lookup a URI failed", NotificationKind::Error);
             }
-        }
+        };
 
         Ok(())
     }

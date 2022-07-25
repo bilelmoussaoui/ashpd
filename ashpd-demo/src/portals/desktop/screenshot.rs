@@ -108,7 +108,7 @@ impl ScreenshotPage {
 
         match screenshot::take(&identifier, interactive, modal).await {
             Ok(uri) => {
-                let file = gio::File::for_uri(&uri);
+                let file = gio::File::for_uri(&uri.as_str());
                 imp.screenshot_photo.set_file(Some(&file));
                 imp.revealer.show(); // Revealer has a weird issue where it still
                                      // takes space even if it's child is hidden

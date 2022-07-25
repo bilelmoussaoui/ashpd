@@ -66,16 +66,20 @@ impl OpenUriPage {
         let ask = imp.ask_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let uri = imp.uri_entry.text();
-        match open_uri::open_uri(&identifier, &uri, writable, ask).await {
-            Ok(_) => {
-                self.send_notification(
-                    "Open URI request was successful",
-                    NotificationKind::Success,
-                );
-            }
+        match url::Url::parse(&imp.uri_entry.text()) {
+            Ok(uri) => match open_uri::open_uri(&identifier, &uri, writable, ask).await {
+                Ok(_) => {
+                    self.send_notification(
+                        "Open URI request was successful",
+                        NotificationKind::Success,
+                    );
+                }
+                Err(_err) => {
+                    self.send_notification("Request to open URI failed", NotificationKind::Error);
+                }
+            },
             Err(_err) => {
-                self.send_notification("Request to open URI failed", NotificationKind::Error);
+                self.send_notification("Malformed URI", NotificationKind::Error);
             }
         }
     }
