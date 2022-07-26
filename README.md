@@ -52,7 +52,7 @@ pub async fn run() -> ashpd::Result<()> {
 | gtk4 | Implement `From<Color>` for [`gdk4::RGBA`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gdk4/struct.RGBA.html) Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) | No |
 | gtk4_wayland |Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) with Wayland backend support only | No |
 | gtk4_x11 |Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) with X11 backend support only | No |
-| pipewire | Provides `ashpd::desktop::camera::pipewire_node_id` that helps you retrieve the PipeWire Node ID to use with the file descriptor returned by the camera portal | No |
+| pipewire | Provides `ashpd::desktop::camera::pipewire_streams` that helps you retrieve the various camera streams associated with the retrieved file descriptor| No |
 | raw_handle | Provides `WindowIdentifier::from_raw_handle` and `WindowIdentifier::as_raw_handle` for [raw-window-handle](https://lib.rs/crates/raw-window-handle) crate | No |
 | wayland | Provides `WindowIdentifier::from_wayland` for [wayland-client](https://lib.rs/crates/wayland-client) crate | No |
 
