@@ -24,6 +24,7 @@ pub struct Gtk3WindowIdentifier {
 impl Gtk3WindowIdentifier {
     pub async fn new(window: &impl glib::IsA<gdk::Window>) -> Option<Self> {
         match window.as_ref().display().backend() {
+            #[cfg(feature = "gtk3_wayland")]
             Backend::Wayland => {
                 let wayland_win = window
                     .as_ref()
@@ -58,6 +59,7 @@ impl Gtk3WindowIdentifier {
                     type_: WindowIdentifierType::Wayland(handle.unwrap_or_default()),
                 })
             }
+            #[cfg(feature = "gtk3_x11")]
             Backend::X11 => {
                 let xid = window
                     .as_ref()
@@ -77,6 +79,7 @@ impl Gtk3WindowIdentifier {
         let display = self.window.display();
         unsafe {
             match self.type_ {
+                #[cfg(feature = "gtk3_wayland")]
                 WindowIdentifierType::Wayland(_) => {
                     let mut wayland_handle = WaylandHandle::empty();
                     wayland_handle.surface = gdk3wayland::ffi::gdk_wayland_window_get_wl_surface(
@@ -95,6 +98,7 @@ impl Gtk3WindowIdentifier {
                     );
                     RawWindowHandle::Wayland(wayland_handle)
                 }
+                #[cfg(feature = "gtk3_x11")]
                 WindowIdentifierType::X11(xid) => {
                     let mut x11_handle = XlibHandle::empty();
                     x11_handle.window = xid;
@@ -121,6 +125,7 @@ impl fmt::Display for Gtk3WindowIdentifier {
 impl Drop for Gtk3WindowIdentifier {
     fn drop(&mut self) {
         match self.type_ {
+            #[cfg(feature = "gtk3_wayland")]
             WindowIdentifierType::Wayland(_) => unsafe {
                 let wayland_win = self
                     .window

@@ -25,6 +25,7 @@ impl Gtk4WindowIdentifier {
     pub async fn new(native: &impl glib::IsA<gtk4::Native>) -> Option<Self> {
         let surface = native.surface();
         match surface.display().backend() {
+            #[cfg(feature = "gtk4_wayland")]
             Backend::Wayland => {
                 let top_level = surface
                     .downcast_ref::<gdk4wayland::WaylandToplevel>()
@@ -57,6 +58,7 @@ impl Gtk4WindowIdentifier {
                     type_: WindowIdentifierType::Wayland(handle.unwrap_or_default()),
                 })
             }
+            #[cfg(feature = "gtk4_x11")]
             Backend::X11 => {
                 let xid = surface
                     .downcast_ref::<gdk4x11::X11Surface>()
@@ -76,6 +78,7 @@ impl Gtk4WindowIdentifier {
         let display = surface.display();
         unsafe {
             match self.type_ {
+                #[cfg(feature = "gtk4_wayland")]
                 WindowIdentifierType::Wayland(_) => {
                     let mut wayland_handle = WaylandHandle::empty();
                     wayland_handle.surface = gdk4wayland::ffi::gdk_wayland_surface_get_wl_surface(
@@ -94,6 +97,7 @@ impl Gtk4WindowIdentifier {
                     );
                     RawWindowHandle::Wayland(wayland_handle)
                 }
+                #[cfg(feature = "gtk4_x11")]
                 WindowIdentifierType::X11(xid) => {
                     let mut x11_handle = XlibHandle::empty();
                     x11_handle.window = xid;
@@ -120,6 +124,7 @@ impl fmt::Display for Gtk4WindowIdentifier {
 impl Drop for Gtk4WindowIdentifier {
     fn drop(&mut self) {
         match self.type_ {
+            #[cfg(feature = "gtk4_wayland")]
             WindowIdentifierType::Wayland(_) => {
                 let surface = self.native.surface();
                 let top_level = surface
