@@ -73,7 +73,8 @@
 //! use ashpd::{desktop::open_uri, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let uri = url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     let uri =
+//!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     open_uri::open_uri(&WindowIdentifier::default(), &uri, false, true).await?;
 //!     Ok(())
 //! }

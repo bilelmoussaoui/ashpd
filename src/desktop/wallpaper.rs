@@ -47,7 +47,8 @@
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let uri = url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     let uri =
+//!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     wallpaper::set_from_uri(&WindowIdentifier::default(), &uri, true, SetOn::Both).await?;
 //!     Ok(())
 //! }
@@ -63,14 +64,10 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = WallpaperProxy::new().await?;
-//!     let url = url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     let url =
+//!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     proxy
-//!         .set_wallpaper_uri(
-//!             &WindowIdentifier::default(),
-//!             &url,
-//!             true,
-//!             SetOn::Both,
-//!         )
+//!         .set_wallpaper_uri(&WindowIdentifier::default(), &url, true, SetOn::Both)
 //!         .await?;
 //!     Ok(())
 //! }
