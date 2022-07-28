@@ -1,6 +1,5 @@
 use std::{fmt, sync::Arc};
 
-use super::WindowIdentifierType;
 use futures::lock::Mutex;
 use gdk::Backend;
 #[cfg(feature = "raw_handle")]
@@ -15,6 +14,8 @@ use raw_window_handle::{
     RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle,
     XlibDisplayHandle, XlibWindowHandle,
 };
+
+use super::WindowIdentifierType;
 
 static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk4-window-handle";
 
