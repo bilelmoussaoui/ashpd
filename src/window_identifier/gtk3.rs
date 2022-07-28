@@ -19,6 +19,7 @@ static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk3-window-handle";
 pub struct Gtk3WindowIdentifier {
     window: gdk::Window,
     type_: WindowIdentifierType,
+    exported: bool,
 }
 
 impl Gtk3WindowIdentifier {
@@ -39,7 +40,7 @@ impl Gtk3WindowIdentifier {
                         let (sender, receiver) = futures::channel::oneshot::channel::<String>();
                         let sender = Arc::new(Mutex::new(Some(sender)));
 
-                        wayland_win.export_handle(clone!(@strong sender => move |_, handle| {
+                        let result = wayland_win.export_handle(clone!(@strong sender => move |_, handle| {
                             let ctx = glib::MainContext::default();
                             let handle = handle.to_owned();
                             ctx.spawn_local(clone!(@strong sender, @strong handle => async move {
@@ -48,6 +49,9 @@ impl Gtk3WindowIdentifier {
                                 }
                             }));
                         }));
+                        if !result {
+                            return None;
+                        }
 
                         let handle = receiver.await.ok();
                         wayland_win.set_data(WINDOW_HANDLE_KEY, (handle.clone(), 1));
@@ -56,6 +60,7 @@ impl Gtk3WindowIdentifier {
                 };
                 Some(Self {
                     window: window.clone().upcast(),
+                    exported: handle.is_some(),
                     type_: WindowIdentifierType::Wayland(handle.unwrap_or_default()),
                 })
             }
@@ -67,6 +72,7 @@ impl Gtk3WindowIdentifier {
                     .map(|w| w.xid())?;
                 Some(Self {
                     window: window.clone().upcast(),
+                    exported: false,
                     type_: WindowIdentifierType::X11(xid),
                 })
             }
@@ -124,6 +130,9 @@ impl fmt::Display for Gtk3WindowIdentifier {
 
 impl Drop for Gtk3WindowIdentifier {
     fn drop(&mut self) {
+        if !self.exported {
+            return;
+        }
         match self.type_ {
             #[cfg(feature = "gtk3_wayland")]
             WindowIdentifierType::Wayland(_) => unsafe {

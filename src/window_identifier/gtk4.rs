@@ -19,6 +19,7 @@ static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk4-window-handle";
 pub struct Gtk4WindowIdentifier {
     native: gtk4::Native,
     type_: WindowIdentifierType,
+    exported: bool,
 }
 
 impl Gtk4WindowIdentifier {
@@ -39,7 +40,7 @@ impl Gtk4WindowIdentifier {
                         let (sender, receiver) = futures::channel::oneshot::channel::<String>();
                         let sender = Arc::new(Mutex::new(Some(sender)));
 
-                        top_level.export_handle(clone!(@strong sender => move |_, handle| {
+                        let result = top_level.export_handle(clone!(@strong sender => move |_, handle| {
                             let ctx = glib::MainContext::default();
                             let handle = handle.to_owned();
                             ctx.spawn_local(clone!(@strong sender, @strong handle => async move {
@@ -48,6 +49,10 @@ impl Gtk4WindowIdentifier {
                                 }
                             }));
                         }));
+
+                        if !result {
+                            return None;
+                        }
                         let handle = receiver.await.ok();
                         top_level.set_data(WINDOW_HANDLE_KEY, (handle.clone(), 1));
                         handle
@@ -55,6 +60,7 @@ impl Gtk4WindowIdentifier {
                 };
                 Some(Gtk4WindowIdentifier {
                     native: native.clone().upcast(),
+                    exported: handle.is_some(),
                     type_: WindowIdentifierType::Wayland(handle.unwrap_or_default()),
                 })
             }
@@ -65,6 +71,7 @@ impl Gtk4WindowIdentifier {
                     .map(|w| w.xid())?;
                 Some(Gtk4WindowIdentifier {
                     native: native.clone().upcast(),
+                    exported: false,
                     type_: WindowIdentifierType::X11(xid),
                 })
             }
@@ -123,6 +130,9 @@ impl fmt::Display for Gtk4WindowIdentifier {
 
 impl Drop for Gtk4WindowIdentifier {
     fn drop(&mut self) {
+        if !self.exported {
+            return;
+        }
         match self.type_ {
             #[cfg(feature = "gtk4_wayland")]
             WindowIdentifierType::Wayland(_) => {
