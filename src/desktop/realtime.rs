@@ -49,7 +49,7 @@ impl<'a> RealtimeProxy<'a> {
         &self,
         process: u64,
         thread: u64,
-        priority: u32,
+        priority: i32,
     ) -> Result<(), Error> {
         call_method(
             self.inner(),
