@@ -198,12 +198,20 @@ impl WindowIdentifier {
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
     ///
     /// The constructor returns a valid handle under both Wayland & X11.
-    pub fn from_raw_handle(handle: &raw_window_handle::RawWindowHandle) -> Self {
+    ///
+    /// This method is only async and requires a `RawDisplayHandle` only for Wayland handles.
+    pub async fn from_raw_handle(
+        window_handle: &raw_window_handle::RawWindowHandle,
+        display_handle: Option<&raw_window_handle::RawDisplayHandle>,
+    ) -> Self {
+        use raw_window_handle::RawDisplayHandle::Wayland as DisplayHandle;
         use raw_window_handle::RawWindowHandle::{Wayland, Xcb, Xlib};
-        match handle {
-            Wayland(wl_handle) => unsafe { Self::from_wayland_raw(wl_handle.surface) },
-            Xlib(x_handle) => Self::from_xid(x_handle.window),
-            Xcb(x_handle) => Self::from_xid(x_handle.window.into()),
+        match (window_handle, display_handle) {
+            (Wayland(wl_handle), Some(DisplayHandle(wl_display))) => unsafe {
+                Self::from_wayland_raw(wl_handle.surface, wl_display.display).await
+            },
+            (Xlib(x_handle), _) => Self::from_xid(x_handle.window),
+            (Xcb(x_handle), _) => Self::from_xid(x_handle.window.into()),
             _ => Self::default(), // Fallback to default
         }
     }
