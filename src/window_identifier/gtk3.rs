@@ -10,7 +10,10 @@ use gtk3::{
     prelude::*,
 };
 #[cfg(feature = "raw_handle")]
-use raw_window_handle::{RawWindowHandle, WaylandHandle, XlibHandle};
+use raw_window_handle::{
+    RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle,
+    XlibDisplayHandle, XlibWindowHandle,
+};
 
 use super::WindowIdentifierType;
 
@@ -81,13 +84,12 @@ impl Gtk3WindowIdentifier {
     }
 
     #[cfg(feature = "raw_handle")]
-    pub fn as_raw_handle(&self) -> RawWindowHandle {
-        let display = self.window.display();
+    pub fn as_raw_window_handle(&self) -> RawWindowHandle {
         unsafe {
             match self.type_ {
                 #[cfg(feature = "gtk3_wayland")]
                 WindowIdentifierType::Wayland(_) => {
-                    let mut wayland_handle = WaylandHandle::empty();
+                    let mut wayland_handle = WaylandWindowHandle::empty();
                     wayland_handle.surface = gdk3wayland::ffi::gdk_wayland_window_get_wl_surface(
                         self.window
                             .downcast_ref::<gdk3wayland::WaylandWindow>()
@@ -95,6 +97,28 @@ impl Gtk3WindowIdentifier {
                             .to_glib_none()
                             .0,
                     );
+
+                    RawWindowHandle::Wayland(wayland_handle)
+                }
+                #[cfg(feature = "gtk3_x11")]
+                WindowIdentifierType::X11(xid) => {
+                    let mut x11_window_handle = XlibWindowHandle::empty();
+                    x11_window_handle.window = xid;
+
+                    RawWindowHandle::Xlib(x11_window_handle)
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "raw_handle")]
+    pub fn as_raw_display_handle(&self) -> RawDisplayHandle {
+        let display = self.window.display();
+        unsafe {
+            match self.type_ {
+                #[cfg(feature = "gtk3_wayland")]
+                WindowIdentifierType::Wayland(_) => {
+                    let mut wayland_handle = WaylandDisplayHandle::empty();
                     wayland_handle.display = gdk3wayland::ffi::gdk_wayland_display_get_wl_display(
                         display
                             .downcast_ref::<gdk3wayland::WaylandDisplay>()
@@ -102,20 +126,22 @@ impl Gtk3WindowIdentifier {
                             .to_glib_none()
                             .0,
                     );
-                    RawWindowHandle::Wayland(wayland_handle)
+
+                    RawDisplayHandle::Wayland(wayland_handle)
                 }
                 #[cfg(feature = "gtk3_x11")]
-                WindowIdentifierType::X11(xid) => {
-                    let mut x11_handle = XlibHandle::empty();
-                    x11_handle.window = xid;
-                    x11_handle.display = gdk3x11::ffi::gdk_x11_display_get_xdisplay(
+                WindowIdentifierType::X11(_xid) => {
+                    let mut x11_display_handle = XlibDisplayHandle::empty();
+
+                    x11_display_handle.display = gdk3x11::ffi::gdk_x11_display_get_xdisplay(
                         display
                             .downcast_ref::<gdk3x11::X11Display>()
                             .unwrap()
                             .to_glib_none()
                             .0,
                     ) as *mut _;
-                    RawWindowHandle::Xlib(x11_handle)
+
+                    RawDisplayHandle::Xlib(x11_display_handle)
                 }
             }
         }

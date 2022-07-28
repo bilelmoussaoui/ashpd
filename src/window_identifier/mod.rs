@@ -1,5 +1,10 @@
 use std::fmt;
 
+#[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
+use raw_window_handle::{
+    HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
+};
+
 use serde::{ser::Serializer, Serialize};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
@@ -247,8 +252,31 @@ impl WindowIdentifier {
             None => Self::default(),
         }
     }
+}
 
-    #[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
+#[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
+unsafe impl HasRawDisplayHandle for WindowIdentifier {
+    /// Convert a [`WindowIdentifier`] to
+    /// [`RawDisplayHandle`](raw_window_handle::RawDisplayHandle`).
+    ///
+    /// # Panics
+    ///
+    /// If you attempt to convert a [`WindowIdentifier`] created from a
+    /// [`RawDisplayHandle`](raw_window_handle::RawDisplayHandle`) instead of
+    /// the gtk3 / gtk4 constructors.
+    fn raw_display_handle(&self) -> RawDisplayHandle {
+        match self {
+            #[cfg(feature = "gtk4")]
+            Self::Gtk4(identifier) => identifier.as_raw_display_handle(),
+            #[cfg(feature = "gtk3")]
+            Self::Gtk3(identifier) => identifier.as_raw_display_handle(),
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
+unsafe impl HasRawWindowHandle for WindowIdentifier {
     /// Convert a [`WindowIdentifier`] to
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
     ///
@@ -257,12 +285,12 @@ impl WindowIdentifier {
     /// If you attempt to convert a [`WindowIdentifier`] created from a
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`) instead of
     /// the gtk3 / gtk4 constructors.
-    pub fn as_raw_handle(&self) -> raw_window_handle::RawWindowHandle {
+    fn raw_window_handle(&self) -> RawWindowHandle {
         match self {
             #[cfg(feature = "gtk4")]
-            Self::Gtk4(identifier) => identifier.as_raw_handle(),
+            Self::Gtk4(identifier) => identifier.as_raw_window_handle(),
             #[cfg(feature = "gtk3")]
-            Self::Gtk3(identifier) => identifier.as_raw_handle(),
+            Self::Gtk3(identifier) => identifier.as_raw_window_handle(),
             _ => unreachable!(),
         }
     }

@@ -1,5 +1,6 @@
 use std::{fmt, sync::Arc};
 
+use super::WindowIdentifierType;
 use futures::lock::Mutex;
 use gdk::Backend;
 #[cfg(feature = "raw_handle")]
@@ -10,9 +11,10 @@ use gtk4::{
     prelude::*,
 };
 #[cfg(feature = "raw_handle")]
-use raw_window_handle::{RawWindowHandle, WaylandHandle, XlibHandle};
-
-use super::WindowIdentifierType;
+use raw_window_handle::{
+    RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle,
+    XlibDisplayHandle, XlibWindowHandle,
+};
 
 static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk4-window-handle";
 
@@ -80,14 +82,13 @@ impl Gtk4WindowIdentifier {
     }
 
     #[cfg(feature = "raw_handle")]
-    pub fn as_raw_handle(&self) -> RawWindowHandle {
-        let surface = self.native.surface();
-        let display = surface.display();
+    pub fn as_raw_window_handle(&self) -> RawWindowHandle {
         unsafe {
             match self.type_ {
                 #[cfg(feature = "gtk4_wayland")]
                 WindowIdentifierType::Wayland(_) => {
-                    let mut wayland_handle = WaylandHandle::empty();
+                    let surface = self.native.surface();
+                    let mut wayland_handle = WaylandWindowHandle::empty();
                     wayland_handle.surface = gdk4wayland::ffi::gdk_wayland_surface_get_wl_surface(
                         surface
                             .downcast_ref::<gdk4wayland::WaylandSurface>()
@@ -95,6 +96,29 @@ impl Gtk4WindowIdentifier {
                             .to_glib_none()
                             .0,
                     );
+
+                    RawWindowHandle::Wayland(wayland_handle)
+                }
+                #[cfg(feature = "gtk4_x11")]
+                WindowIdentifierType::X11(xid) => {
+                    let mut x11_handle = XlibWindowHandle::empty();
+                    x11_handle.window = xid;
+
+                    RawWindowHandle::Xlib(x11_handle)
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "raw_handle")]
+    pub fn as_raw_display_handle(&self) -> RawDisplayHandle {
+        let surface = self.native.surface();
+        let display = surface.display();
+        unsafe {
+            match self.type_ {
+                #[cfg(feature = "gtk4_wayland")]
+                WindowIdentifierType::Wayland(_) => {
+                    let mut wayland_handle = WaylandDisplayHandle::empty();
                     wayland_handle.display = gdk4wayland::ffi::gdk_wayland_display_get_wl_display(
                         display
                             .downcast_ref::<gdk4wayland::WaylandDisplay>()
@@ -102,12 +126,11 @@ impl Gtk4WindowIdentifier {
                             .to_glib_none()
                             .0,
                     );
-                    RawWindowHandle::Wayland(wayland_handle)
+                    RawDisplayHandle::Wayland(wayland_handle)
                 }
                 #[cfg(feature = "gtk4_x11")]
-                WindowIdentifierType::X11(xid) => {
-                    let mut x11_handle = XlibHandle::empty();
-                    x11_handle.window = xid;
+                WindowIdentifierType::X11(_xid) => {
+                    let mut x11_handle = XlibDisplayHandle::empty();
                     x11_handle.display = gdk4x11::ffi::gdk_x11_display_get_xdisplay(
                         display
                             .downcast_ref::<gdk4x11::X11Display>()
@@ -115,7 +138,7 @@ impl Gtk4WindowIdentifier {
                             .to_glib_none()
                             .0,
                     );
-                    RawWindowHandle::Xlib(x11_handle)
+                    RawDisplayHandle::Xlib(x11_handle)
                 }
             }
         }
