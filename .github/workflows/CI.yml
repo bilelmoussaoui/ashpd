@@ -8,9 +8,13 @@ name: CI
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -19,12 +23,21 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
+          args: --features "gtk4,pipewire,wayland,raw_handle"
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --features "gtk3,pipewire,wayland,raw_handle"
 
   test:
     name: Test Suite
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -33,12 +46,21 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
+          args: --features "gtk4,pipewire,wayland,raw_handle"
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --features "gtk3,pipewire,wayland,raw_handle"
 
   fmt:
     name: Rustfmt
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -52,9 +74,13 @@ jobs:
 
   clippy:
     name: Clippy
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -64,4 +90,8 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          args: --features "gtk4,pipewire,wayland,raw_handle" -- -D warnings
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --features "gtk3,pipewire,wayland,raw_handle" -- -D warnings
