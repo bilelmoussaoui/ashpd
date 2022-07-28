@@ -4,7 +4,6 @@ use std::fmt;
 use raw_window_handle::{
     HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
 };
-
 use serde::{ser::Serializer, Serialize};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
@@ -37,7 +36,7 @@ use zbus::zvariant::Type;
 ///
 /// ```text
 /// // let wl_surface = some_surface;
-/// // let identifier = WindowIdentifier::from_wayland(wl_surface);
+/// // let identifier = WindowIdentifier::from_wayland(wl_surface).await;
 ///
 /// /// Open some portals
 /// ```
@@ -46,7 +45,8 @@ use zbus::zvariant::Type;
 ///
 /// ```text
 /// // let wl_surface_ptr = some_surface;
-/// // let identifier = WindowIdentifier::from_wayland_raw(wl_surface_ptr);
+/// // let wl_display_ptr = corresponding_display;
+/// // let identifier = WindowIdentifier::from_wayland_raw(wl_surface_ptr, wl_display_ptr).await;
 ///
 /// /// Open some portals
 /// ```
@@ -94,7 +94,7 @@ use zbus::zvariant::Type;
 ///
 /// ```rust, ignore
 /// let handle = RawWindowHandle::Xlib(XlibHandle::empty());
-/// let identifier = WindowIdentifier::from_raw_handle(handle);
+/// let identifier = WindowIdentifier::from_raw_handle(handle, None);
 ///
 /// /// Open some portals
 /// ```
@@ -204,13 +204,16 @@ impl WindowIdentifier {
     ///
     /// The constructor returns a valid handle under both Wayland & X11.
     ///
-    /// This method is only async and requires a `RawDisplayHandle` only for Wayland handles.
+    /// This method is only async and requires a `RawDisplayHandle` only for
+    /// Wayland handles.
     pub async fn from_raw_handle(
         window_handle: &raw_window_handle::RawWindowHandle,
         display_handle: Option<&raw_window_handle::RawDisplayHandle>,
     ) -> Self {
-        use raw_window_handle::RawDisplayHandle::Wayland as DisplayHandle;
-        use raw_window_handle::RawWindowHandle::{Wayland, Xcb, Xlib};
+        use raw_window_handle::{
+            RawDisplayHandle::Wayland as DisplayHandle,
+            RawWindowHandle::{Wayland, Xcb, Xlib},
+        };
         match (window_handle, display_handle) {
             (Wayland(wl_handle), Some(DisplayHandle(wl_display))) => unsafe {
                 Self::from_wayland_raw(wl_handle.surface, wl_display.display).await
