@@ -6,6 +6,7 @@ use std::{
 
 use serde::{
     de::{self, Error as SeError, Visitor},
+    ser::SerializeTuple,
     Deserialize, Deserializer, Serialize,
 };
 use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
@@ -86,6 +87,29 @@ where
     }
 }
 
+impl<T> Serialize for Response<T>
+where
+    T: for<'de> Deserialize<'de> + Serialize + Type,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_tuple(2)?;
+        match self {
+            Self::Err(err) => {
+                map.serialize_element(&ResponseType::from(*err))?;
+                map.serialize_element(&BasicResponse::default())?;
+            }
+            Self::Ok(response) => {
+                map.serialize_element(&ResponseType::Success)?;
+                map.serialize_element(response)?;
+            }
+        };
+        map.end()
+    }
+}
+
 #[doc(hidden)]
 impl<T> From<(ResponseType, Option<T>)> for Response<T>
 where
@@ -102,7 +126,7 @@ where
     }
 }
 
-#[derive(Serialize, Deserialize, Type)]
+#[derive(Default, Serialize, Deserialize, Type)]
 /// The most basic response. Used when only the status of the request is what we
 /// receive as a response.
 pub(crate) struct BasicResponse(HashMap<String, OwnedValue>);
