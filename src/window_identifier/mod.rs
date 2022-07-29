@@ -1,10 +1,10 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 #[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
 use raw_window_handle::{
     HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
 };
-use serde::{ser::Serializer, Serialize};
+use serde::{ser::Serializer, Deserialize, Serialize};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
 /// These dialogs should generally be placed on top of the application window
@@ -300,7 +300,8 @@ unsafe impl HasRawWindowHandle for WindowIdentifier {
 }
 
 /// Supported WindowIdentifier kinds
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, zvariant::Type)]
+#[zvariant(signature = "s")]
 pub enum WindowIdentifierType {
     X11(std::os::raw::c_ulong),
     #[allow(dead_code)]
@@ -316,11 +317,47 @@ impl fmt::Display for WindowIdentifierType {
     }
 }
 
+impl FromStr for WindowIdentifierType {
+    type Err = PortalError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (kind, handle) = s
+            .split_once(':')
+            .ok_or_else(|| PortalError::InvalidArgument("Invalid Window Identifier".to_owned()))?;
+        match kind {
+            "x11" => {
+                let handle = handle.trim_start_matches("0x");
+                Ok(Self::X11(
+                    std::os::raw::c_ulong::from_str_radix(handle, 16).map_err(|_| {
+                        PortalError::InvalidArgument(format!("Wrong XID {}", handle))
+                    })?,
+                ))
+            }
+            "wayland" => Ok(Self::Wayland(handle.to_owned())),
+            t => Err(PortalError::InvalidArgument(format!(
+                "Invalid Window Identifier type {}",
+                t
+            ))),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for WindowIdentifierType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let handle = String::deserialize(deserializer)?;
+        Self::from_str(&handle)
+            .map_err(|e| serde::de::Error::custom(format!("Invalid Window identifier {}", e)))
+    }
+}
+
 #[cfg(feature = "gtk4")]
 mod gtk4;
 
 #[cfg(feature = "gtk4")]
 pub use self::gtk4::Gtk4WindowIdentifier;
+use crate::PortalError;
 
 #[cfg(feature = "gtk3")]
 mod gtk3;
@@ -336,7 +373,10 @@ pub use self::wayland::WaylandWindowIdentifier;
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::WindowIdentifier;
+    use crate::window_identifier::WindowIdentifierType;
 
     #[test]
     fn test_serialize() {
@@ -344,5 +384,17 @@ mod tests {
         assert_eq!(x11.to_string(), "x11:0x400");
 
         assert_eq!(WindowIdentifier::default().to_string(), "");
+
+        assert_eq!(
+            WindowIdentifierType::from_str("x11:0x11432").unwrap(),
+            WindowIdentifierType::X11(70706)
+        );
+
+        assert_eq!(
+            WindowIdentifierType::from_str("wayland:Somerandomchars").unwrap(),
+            WindowIdentifierType::Wayland("Somerandomchars".to_owned())
+        );
+        assert!(WindowIdentifierType::from_str("some_handle").is_err());
+        assert!(WindowIdentifierType::from_str("some_type:some_handle").is_err());
     }
 }
