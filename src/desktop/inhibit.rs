@@ -39,7 +39,7 @@
 //! ```
 
 use enumflags2::{bitflags, BitFlags};
-use futures::TryFutureExt;
+use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
@@ -196,7 +196,7 @@ impl<'a> InhibitProxy<'a> {
     ) -> Result<SessionProxy<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let body = &(&identifier, &options);
-        let (monitor, proxy): (CreateMonitor, SessionProxy) = futures::try_join!(
+        let (monitor, proxy): (CreateMonitor, SessionProxy) = futures_util::try_join!(
             call_request_method(self.inner(), &options.handle_token, "CreateMonitor", body)
                 .into_future(),
             SessionProxy::from_unique_name(&options.session_handle_token).into_future(),

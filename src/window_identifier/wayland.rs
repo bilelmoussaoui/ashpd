@@ -80,7 +80,7 @@ impl WaylandWindowIdentifier {
 
     async fn new_inner(conn: wayland_client::Connection, surface: &WlSurface) -> Option<Self> {
         let (sender, receiver) =
-            futures::channel::oneshot::channel::<Option<WaylandWindowIdentifier>>();
+            futures_channel::oneshot::channel::<Option<WaylandWindowIdentifier>>();
 
         // Cheap clone, protocol objects are essentially smart pointers
         let surface = surface.clone();
