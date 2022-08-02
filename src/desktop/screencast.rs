@@ -43,7 +43,7 @@ use std::{
 };
 
 use enumflags2::{bitflags, BitFlags};
-use futures::TryFutureExt;
+use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
@@ -297,7 +297,7 @@ impl<'a> ScreenCastProxy<'a> {
     #[doc(alias = "xdp_portal_create_screencast_session")]
     pub async fn create_session(&self) -> Result<SessionProxy<'a>, Error> {
         let options = CreateSessionOptions::default();
-        let (session, proxy) = futures::try_join!(
+        let (session, proxy) = futures_util::try_join!(
             call_request_method::<CreateSession, _>(
                 self.inner(),
                 &options.handle_token,

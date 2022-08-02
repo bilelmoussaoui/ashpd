@@ -7,7 +7,7 @@ use std::{
 
 #[cfg(feature = "async-std")]
 use async_std::{fs::File, prelude::*};
-use futures::StreamExt;
+use futures_util::StreamExt;
 use serde::Deserialize;
 #[cfg(feature = "tokio")]
 use tokio::{fs::File, io::AsyncReadExt};
@@ -52,7 +52,7 @@ where
         .await
         .map_err::<PortalError, _>(From::from)?;
 
-    let (response, path) = futures::try_join!(
+    let (response, path) = futures_util::try_join!(
         async {
             let message = stream.next().await.ok_or(Error::NoResponse)?;
             #[cfg(feature = "tracing")]

@@ -1,6 +1,6 @@
 use std::{fmt, sync::Arc};
 
-use futures::lock::Mutex;
+use futures_util::lock::Mutex;
 use gdk::Backend;
 #[cfg(feature = "raw_handle")]
 use glib::translate::ToGlibPtr;
@@ -40,7 +40,7 @@ impl Gtk3WindowIdentifier {
                         *ref_count += 1;
                         handle.clone()
                     } else {
-                        let (sender, receiver) = futures::channel::oneshot::channel::<String>();
+                        let (sender, receiver) = futures_channel::oneshot::channel::<String>();
                         let sender = Arc::new(Mutex::new(Some(sender)));
 
                         let result = wayland_win.export_handle(clone!(@strong sender => move |_, handle| {

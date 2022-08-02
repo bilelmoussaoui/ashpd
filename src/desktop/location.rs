@@ -5,7 +5,7 @@
 //!     desktop::location::{Accuracy, LocationProxy},
 //!     WindowIdentifier,
 //! };
-//! use futures::TryFutureExt;
+//! use futures_util::TryFutureExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = LocationProxy::new().await?;
@@ -15,7 +15,7 @@
 //!         .create_session(None, None, Some(Accuracy::Street))
 //!         .await?;
 //!
-//!     let (_, location) = futures::try_join!(
+//!     let (_, location) = futures_util::try_join!(
 //!         proxy.start(&session, &identifier).into_future(),
 //!         proxy.receive_location_updated().into_future()
 //!     )?;
@@ -31,7 +31,7 @@
 
 use std::fmt::Debug;
 
-use futures::TryFutureExt;
+use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
@@ -271,7 +271,7 @@ impl<'a> LocationProxy<'a> {
             .distance_threshold(distance_threshold.unwrap_or(0))
             .time_threshold(time_threshold.unwrap_or(0))
             .accuracy(accuracy.unwrap_or(Accuracy::Exact));
-        let (path, proxy) = futures::try_join!(
+        let (path, proxy) = futures_util::try_join!(
             call_method::<OwnedObjectPath, CreateSessionOptions>(
                 &self.0,
                 "CreateSession",

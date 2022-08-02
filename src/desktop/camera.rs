@@ -216,8 +216,8 @@ pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
         return Err(pw::Error::CreationFailed);
     }
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
-    let (streams_sender, mut streams_receiver) = futures::channel::mpsc::unbounded();
+    let (sender, receiver) = futures_channel::oneshot::channel();
+    let (streams_sender, mut streams_receiver) = futures_channel::mpsc::unbounded();
 
     let sender = std::sync::Arc::new(std::sync::Mutex::new(Some(sender)));
     let streams_sender = std::sync::Arc::new(std::sync::Mutex::new(streams_sender));
