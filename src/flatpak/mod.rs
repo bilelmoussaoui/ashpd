@@ -5,11 +5,10 @@
 //! ```rust,no_run
 //! use std::collections::HashMap;
 //!
-//! use ashpd::flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions};
-//! use enumflags2::BitFlags;
+//! use ashpd::flatpak::{Flatpak, SpawnFlags, SpawnOptions};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FlatpakProxy::new().await?;
+//!     let proxy = Flatpak::new().await?;
 //!
 //!     proxy
 //!         .spawn(
@@ -112,7 +111,7 @@ pub enum SupportsFlags {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`FlatpakProxy::spawn`] request.
+/// Specified options for a [`Flatpak::spawn`] request.
 #[zvariant(signature = "dict")]
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
@@ -235,7 +234,7 @@ impl SpawnOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`FlatpakProxy::create_update_monitor`] request.
+/// Specified options for a [`Flatpak::create_update_monitor`] request.
 ///
 /// Currently there are no possible options yet.
 #[zvariant(signature = "dict")]
@@ -248,11 +247,11 @@ struct CreateMonitorOptions {}
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Flatpak).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak")]
-pub struct FlatpakProxy<'a>(zbus::Proxy<'a>);
+pub struct Flatpak<'a>(zbus::Proxy<'a>);
 
-impl<'a> FlatpakProxy<'a> {
-    /// Create a new instance of [`FlatpakProxy`].
-    pub async fn new() -> Result<FlatpakProxy<'a>, Error> {
+impl<'a> Flatpak<'a> {
+    /// Create a new instance of [`Flatpak`].
+    pub async fn new() -> Result<Flatpak<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Flatpak")?
@@ -277,21 +276,21 @@ impl<'a> FlatpakProxy<'a> {
     /// See also [`CreateUpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).
     #[doc(alias = "CreateUpdateMonitor")]
     #[doc(alias = "xdp_portal_update_monitor_start")]
-    pub async fn create_update_monitor(&self) -> Result<UpdateMonitorProxy<'a>, Error> {
+    pub async fn create_update_monitor(&self) -> Result<UpdateMonitor<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let path: OwnedObjectPath =
             call_method(self.inner(), "CreateUpdateMonitor", &(options)).await?;
 
-        UpdateMonitorProxy::new(path.into_inner()).await
+        UpdateMonitor::new(path.into_inner()).await
     }
 
-    /// Emitted when a process starts by [`spawn()`][`FlatpakProxy::spawn`].
+    /// Emitted when a process starts by [`spawn()`][`Flatpak::spawn`].
     #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
         receive_signal(self.inner(), "SpawnStarted").await
     }
 
-    /// Emitted when a process started by [`spawn()`][`FlatpakProxy::spawn`]
+    /// Emitted when a process started by [`spawn()`][`Flatpak::spawn`]
     /// exits.
     ///
     /// # Specifications
@@ -362,7 +361,7 @@ impl<'a> FlatpakProxy<'a> {
     }
 
     /// This methods let you send a Unix signal to a process that was started
-    /// [`spawn()`][`FlatpakProxy::spawn`].
+    /// [`spawn()`][`Flatpak::spawn`].
     ///
     /// # Arguments
     ///
@@ -404,4 +403,4 @@ impl<'a> FlatpakProxy<'a> {
 
 /// Monitor if there's an update it and install it.
 mod update_monitor;
-pub use update_monitor::{UpdateInfo, UpdateMonitorProxy, UpdateProgress, UpdateStatus};
+pub use update_monitor::{UpdateInfo, UpdateMonitor, UpdateProgress, UpdateStatus};

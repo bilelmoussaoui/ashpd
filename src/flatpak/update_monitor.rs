@@ -4,10 +4,10 @@
 //! Only available for Flatpak applications.
 //!
 //! ```rust,no_run
-//! use ashpd::{flatpak::FlatpakProxy, WindowIdentifier};
+//! use ashpd::{flatpak::Flatpak, WindowIdentifier};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FlatpakProxy::new().await?;
+//!     let proxy = Flatpak::new().await?;
 //!
 //!     let monitor = proxy.create_update_monitor().await?;
 //!     let info = monitor.receive_update_available().await?;
@@ -30,7 +30,7 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`UpdateMonitorProxy::update`] request.
+/// Specified options for a [`UpdateMonitor::update`] request.
 ///
 /// Currently there are no possible options yet.
 #[zvariant(signature = "dict")]
@@ -109,14 +109,14 @@ pub struct UpdateProgress {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak.UpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Flatpak.UpdateMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak.UpdateMonitor")]
-pub struct UpdateMonitorProxy<'a>(zbus::Proxy<'a>);
+pub struct UpdateMonitor<'a>(zbus::Proxy<'a>);
 
-impl<'a> UpdateMonitorProxy<'a> {
-    /// Create a new instance of [`UpdateMonitorProxy`].
+impl<'a> UpdateMonitor<'a> {
+    /// Create a new instance of [`UpdateMonitor`].
     ///
-    /// **Note** A [`UpdateMonitorProxy`] is not supposed to be created
+    /// **Note** A [`UpdateMonitor`] is not supposed to be created
     /// manually.
-    pub(crate) async fn new(path: ObjectPath<'a>) -> Result<UpdateMonitorProxy<'a>, Error> {
+    pub(crate) async fn new(path: ObjectPath<'a>) -> Result<UpdateMonitor<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Flatpak.UpdateMonitor")?
