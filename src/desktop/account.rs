@@ -48,7 +48,7 @@ pub struct UserInformationResponse {
     /// User name.
     name: String,
     /// User image uri.
-    image: String,
+    image: url::Url,
 }
 
 impl UserInformationResponse {
@@ -63,7 +63,7 @@ impl UserInformationResponse {
     }
 
     /// User image uri.
-    pub fn image(&self) -> &str {
+    pub fn image(&self) -> &url::Url {
         &self.image
     }
 
