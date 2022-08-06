@@ -5,15 +5,13 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType},
+//!     desktop::screencast::{CursorMode, PersistMode, Screencast, SourceType},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ScreenCastProxy::new().await?;
-//!
+//!     let proxy = Screencast::new().await?;
 //!     let session = proxy.create_session().await?;
-//!
 //!     proxy
 //!         .select_sources(
 //!             &session,
@@ -111,7 +109,7 @@ impl Default for PersistMode {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`ScreenCastProxy::create_session`] request.
+/// Specified options for a [`Screencast::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
@@ -121,7 +119,7 @@ struct CreateSessionOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`ScreenCastProxy::select_sources`] request.
+/// Specified options for a [`Screencast::select_sources`] request.
 #[zvariant(signature = "dict")]
 struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
@@ -170,7 +168,7 @@ impl SelectSourcesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`ScreenCastProxy::start`] request.
+/// Specified options for a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
@@ -178,7 +176,7 @@ struct StartCastOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug)]
-/// A response to a [`ScreenCastProxy::create_session`] request.
+/// A response to a [`Screencast::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSession {
     // TODO: investigate why this doesn't return an ObjectPath
@@ -188,7 +186,7 @@ struct CreateSession {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type)]
-/// A response to a [`ScreenCastProxy::start`] request.
+/// A response to a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 struct Streams {
     streams: Vec<Stream>,
@@ -268,11 +266,11 @@ struct StreamProperties {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.ScreenCast).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ScreenCast")]
-pub struct ScreenCastProxy<'a>(zbus::Proxy<'a>);
+pub struct Screencast<'a>(zbus::Proxy<'a>);
 
-impl<'a> ScreenCastProxy<'a> {
-    /// Create a new instance of [`ScreenCastProxy`].
-    pub async fn new() -> Result<ScreenCastProxy<'a>, Error> {
+impl<'a> Screencast<'a> {
+    /// Create a new instance of [`Screencast`].
+    pub async fn new() -> Result<Screencast<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.ScreenCast")?
@@ -317,7 +315,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`ScreenCastProxy::create_session`].
+    ///   [`create_session()`][`Screencast::create_session`].
     ///
     /// # Returns
     ///
@@ -346,7 +344,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`ScreenCastProxy::create_session`].
+    ///   [`create_session()`][`Screencast::create_session`].
     /// * `cursor_mode` - Sets how the cursor will be drawn on the screen cast
     ///   stream.
     /// * `types` - Sets the types of content to record.
@@ -392,7 +390,7 @@ impl<'a> ScreenCastProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`ScreenCastProxy::create_session`].
+    ///   [`create_session()`][`Screencast::create_session`].
     /// * `identifier` - Identifier for the application window.
     ///
     /// # Return

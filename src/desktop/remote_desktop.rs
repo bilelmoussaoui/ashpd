@@ -2,15 +2,13 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy},
+//!     desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktop},
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = RemoteDesktopProxy::new().await?;
-//!
+//!     let proxy = RemoteDesktop::new().await?;
 //!     let session = proxy.create_session().await?;
-//!
 //!     proxy
 //!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
 //!         .await?;
@@ -29,33 +27,32 @@
 //!
 //! You can also use the Remote Desktop portal with the ScreenCast one. In order
 //! to do so, you need to call
-//! [`ScreenCastProxy::select_sources()`][select_sources]
+//! [`Screencast::select_sources()`][select_sources]
 //! on the session created with
-//! [`RemoteDesktopProxy::create_session()`][create_session]
+//! [`RemoteDesktop::create_session()`][create_session]
 //!
 //! ```rust,no_run
 //! use ashpd::{
 //!     desktop::{
-//!         remote_desktop::{DeviceType, KeyState, RemoteDesktopProxy},
-//!         screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType},
+//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!         screencast::{CursorMode, PersistMode, Screencast, SourceType},
 //!     },
 //!     WindowIdentifier,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = RemoteDesktopProxy::new().await?;
-//!     let screencast = ScreenCastProxy::new().await?;
+//!     let remote_desktop = RemoteDesktop::new().await?;
+//!     let screencast = Screencast::new().await?;
 //!     let identifier = WindowIdentifier::default();
+//!     let session = remote_desktop.create_session().await?;
 //!
-//!     let session = proxy.create_session().await?;
-//!
-//!     proxy
+//!     remote_desktop
 //!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
 //!         .await?;
 //!     screencast
 //!         .select_sources(
 //!             &session,
-//!             CursorMode::Metadata.into(),
+//!             CursorMode::Metadata,
 //!             SourceType::Monitor | SourceType::Window,
 //!             true,
 //!             None,
@@ -63,20 +60,20 @@
 //!         )
 //!         .await?;
 //!
-//!     let (devices, streams) = proxy.start(&session, &identifier).await?;
+//!     let (devices, streams) = remote_desktop.start(&session, &identifier).await?;
 //!     println!("{:#?}", devices);
 //!     println!("{:#?}", streams);
 //!
 //!     // 13 for Enter key code
-//!     proxy
+//!     remote_desktop
 //!         .notify_keyboard_keycode(&session, 13, KeyState::Pressed)
 //!         .await?;
 //!
 //!     Ok(())
 //! }
 //! ```
-//! [select_sources]: crate::desktop::screencast::ScreenCastProxy::select_sources
-//! [create_session]: crate::desktop::remote_desktop::RemoteDesktopProxy::create_session
+//! [select_sources]: crate::desktop::screencast::Screencast::select_sources
+//! [create_session]: crate::desktop::remote_desktop::RemoteDesktop::create_session
 
 use std::collections::HashMap;
 
@@ -135,7 +132,7 @@ pub enum Axis {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`RemoteDesktopProxy::create_session`] request.
+/// Specified options for a [`RemoteDesktop::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
@@ -145,7 +142,7 @@ struct CreateRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug)]
-/// A response to a [`RemoteDesktopProxy::create_session`] request.
+/// A response to a [`RemoteDesktop::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSession {
     // TODO: investigate why this doesn't return an ObjectPath
@@ -155,7 +152,7 @@ struct CreateSession {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`RemoteDesktopProxy::select_devices`] request.
+/// Specified options for a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
 struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
@@ -173,7 +170,7 @@ impl SelectDevicesOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`RemoteDesktopProxy::start`] request.
+/// Specified options for a [`RemoteDesktop::start`] request.
 #[zvariant(signature = "dict")]
 struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle.
@@ -181,7 +178,7 @@ struct StartRemoteOptions {
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// A response to a [`RemoteDesktopProxy::select_devices`] request.
+/// A response to a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
 struct SelectedDevices {
     /// The selected devices.
@@ -195,11 +192,11 @@ struct SelectedDevices {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.RemoteDesktop).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.RemoteDesktop")]
-pub struct RemoteDesktopProxy<'a>(zbus::Proxy<'a>);
+pub struct RemoteDesktop<'a>(zbus::Proxy<'a>);
 
-impl<'a> RemoteDesktopProxy<'a> {
-    /// Create a new instance of [`RemoteDesktopProxy`].
-    pub async fn new() -> Result<RemoteDesktopProxy<'a>, Error> {
+impl<'a> RemoteDesktop<'a> {
+    /// Create a new instance of [`RemoteDesktop`].
+    pub async fn new() -> Result<RemoteDesktop<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.RemoteDesktop")?
@@ -245,7 +242,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `types` - The device types to request remote controlling of.
     ///
     /// # Specifications
@@ -276,7 +273,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `identifier` - The application window identifier.
     ///
     /// # Specifications
@@ -307,7 +304,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `keycode` - Keyboard code that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -340,7 +337,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `keysym` - Keyboard symbol that was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -373,7 +370,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `slot` - Touch slot where touch point appeared.
     ///
     /// # Specifications
@@ -397,7 +394,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch down x coordinate.
@@ -436,7 +433,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `slot` - Touch slot where touch point appeared.
     /// * `x` - Touch motion x coordinate.
@@ -472,7 +469,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `stream` - The PipeWire stream node the coordinate is relative to.
     /// * `x` - Pointer motion x coordinate.
     /// * `y` - Pointer motion y coordinate.
@@ -506,7 +503,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `dx` - Relative movement on the x axis.
     /// * `dy` - Relative movement on the y axis.
     ///
@@ -541,7 +538,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `button` - The pointer button was pressed or released.
     /// * `state` - The new state of the keyboard code.
     ///
@@ -574,7 +571,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `axis` - The axis that was scrolled.
     ///
     /// # Specifications
@@ -610,7 +607,7 @@ impl<'a> RemoteDesktopProxy<'a> {
     /// # Arguments
     ///
     /// * `session` - A [`Session`], created with
-    ///   [`create_session()`][`RemoteDesktopProxy::create_session`].
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
     /// * `dx` - Relative axis movement on the x axis.
     /// * `dy` - Relative axis movement on the y axis.
     /// * `finish` - Whether it is the last axis event.
