@@ -1,19 +1,24 @@
+//! The interface lets sandboxed applications request that the application
+//! is allowed to run in the background or started automatically when the user
+//! logs in.
+//!
 //! **Note** This portal only works for sandboxed applications.
+//!
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
 //!
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::background, WindowIdentifier};
+//! use ashpd::desktop::background::BackgroundRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = background::request(
-//!         &WindowIdentifier::default(),
-//!         "Automatically fetch your latest mails",
-//!         true,
-//!         Some(&["geary"]),
-//!         false,
-//!     )
-//!     .await?;
+//!     let response = BackgroundRequest::default()
+//!         .reason("Automatically fetch your latest mails")
+//!         .auto_start(true)
+//!         .command_line(&["geary"])
+//!         .dbus_activatable(false)
+//!         .build()
+//!         .await?;
 //!
 //!     println!("{}", response.auto_start());
 //!     println!("{}", response.run_in_background());
@@ -26,17 +31,14 @@
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::background, WindowIdentifier};
+//! use ashpd::desktop::background::BackgroundRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = background::request(
-//!         &WindowIdentifier::default(),
-//!         "Automatically fetch your latest mails",
-//!         true,
-//!         None::<&[&str]>,
-//!         false,
-//!     )
-//!     .await?;
+//!     let response = BackgroundRequest::default()
+//!         .reason("Automatically fetch your latest mails")
+//!         .auto_start(true)
+//!         .build()
+//!         .await?;
 //!
 //!     println!("{}", response.auto_start());
 //!     println!("{}", response.run_in_background());
@@ -45,7 +47,6 @@
 //! }
 //! ```
 
-use serde::Serialize;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -74,45 +75,23 @@ struct BackgroundOptions {
     command: Option<Vec<String>>,
 }
 
-impl BackgroundOptions {
-    /// Sets a user-visible reason for the request.
-    pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_owned());
-        self
-    }
-
-    /// Sets whether to auto start the application or not.
-    pub fn autostart(mut self, autostart: bool) -> Self {
-        self.autostart = Some(autostart);
-        self
-    }
-
-    /// Sets whether the application is dbus activatable.
-    pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
-        self.dbus_activatable = Some(dbus_activatable);
-        self
-    }
-
-    /// Specifies the command line to execute.
-    /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
-    /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    pub fn command(mut self, command: Option<&[impl AsRef<str> + Type + Serialize]>) -> Self {
-        self.command = command.map(|s| s.iter().map(|s| s.as_ref().to_owned()).collect());
-        self
-    }
-}
-
 #[derive(SerializeDict, DeserializeDict, Type, Debug)]
-/// The response of a [`BackgroundProxy::request_background`] request.
+/// The response of a [`BackgroundRequest`] request.
 #[zvariant(signature = "dict")]
-pub struct Background {
-    /// If the application is allowed to run in the background.
+pub struct BackgroundResponse {
     background: bool,
-    /// If the application is will be auto-started.
     autostart: bool,
 }
 
-impl Background {
+impl BackgroundResponse {
+    /// Creates a new builder-pattern struct instance to construct
+    /// [`BackgroundResponse`].
+    ///
+    /// This method returns an instance of [`BackgroundRequest`].
+    pub fn builder() -> BackgroundRequest {
+        BackgroundRequest::default()
+    }
+
     /// If the application is allowed to run in the background.
     pub fn run_in_background(&self) -> bool {
         self.background
@@ -124,14 +103,9 @@ impl Background {
     }
 }
 
-/// The interface lets sandboxed applications request that the application
-/// is allowed to run in the background or started automatically when the user
-/// logs in.
-///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Background")]
-pub struct BackgroundProxy<'a>(zbus::Proxy<'a>);
+struct BackgroundProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
     /// Create a new instance of [`BackgroundProxy`].
@@ -171,16 +145,8 @@ impl<'a> BackgroundProxy<'a> {
     pub async fn request_background(
         &self,
         identifier: &WindowIdentifier,
-        reason: &str,
-        auto_start: bool,
-        command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
-        dbus_activatable: bool,
-    ) -> Result<Background, Error> {
-        let options = BackgroundOptions::default()
-            .reason(reason)
-            .autostart(auto_start)
-            .dbus_activatable(dbus_activatable)
-            .command(command_line);
+        options: BackgroundOptions,
+    ) -> Result<BackgroundResponse, Error> {
         call_request_method(
             self.inner(),
             &options.handle_token,
@@ -192,22 +158,71 @@ impl<'a> BackgroundProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_request_background")]
-/// A handy wrapper around [`BackgroundProxy::request_background`].
-pub async fn request(
-    identifier: &WindowIdentifier,
-    reason: &str,
-    auto_start: bool,
-    command_line: Option<&[impl AsRef<str> + Type + Serialize]>,
-    dbus_activatable: bool,
-) -> Result<Background, Error> {
-    let proxy = BackgroundProxy::new().await?;
-    proxy
-        .request_background(
-            identifier,
-            reason,
-            auto_start,
-            command_line,
-            dbus_activatable,
-        )
-        .await
+/// A [builder-pattern] type to construct [`BackgroundResponse`].
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
+#[derive(Debug, Default)]
+pub struct BackgroundRequest {
+    identifier: WindowIdentifier,
+    reason: Option<String>,
+    auto_start: Option<bool>,
+    dbus_activatable: Option<bool>,
+    command_line: Option<Vec<String>>,
+}
+
+impl BackgroundRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    #[must_use]
+    /// Sets whether to auto start the application or not.
+    pub fn auto_start(mut self, auto_start: bool) -> Self {
+        self.auto_start = Some(auto_start);
+        self
+    }
+
+    #[must_use]
+    /// Sets whether the application is dbus activatable.
+    pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
+        self.dbus_activatable = Some(dbus_activatable);
+        self
+    }
+
+    #[must_use]
+    /// Specifies the command line to execute.
+    /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+    /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
+    pub fn command_line(mut self, command_line: &[&str]) -> Self {
+        self.command_line = Some(
+            command_line
+                .iter()
+                .map(|s| s.to_owned().to_owned())
+                .collect(),
+        );
+        self
+    }
+
+    #[must_use]
+    /// Sets a user-visible reason for the request.
+    pub fn reason(mut self, reason: &str) -> Self {
+        self.reason = Some(reason.to_owned());
+        self
+    }
+
+    /// Build the [`BackgroundResponse`].
+    pub async fn build(self) -> Result<BackgroundResponse, Error> {
+        let proxy = BackgroundProxy::new().await?;
+        let options = BackgroundOptions {
+            handle_token: Default::default(),
+            reason: self.reason,
+            autostart: self.auto_start,
+            command: self.command_line,
+            dbus_activatable: self.dbus_activatable,
+        };
+        proxy.request_background(&self.identifier, options).await
+    }
 }
