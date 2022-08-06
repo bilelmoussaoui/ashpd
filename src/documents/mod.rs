@@ -1,10 +1,10 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::documents::{DocumentsProxy, Permission};
+//! use ashpd::documents::{Documents, Permission};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = DocumentsProxy::new().await?;
+//!     let proxy = Documents::new().await?;
 //!
 //!     println!("{:#?}", proxy.mount_point().await?);
 //!
@@ -58,7 +58,7 @@ use crate::{
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 ///
-pub enum Flags {
+pub enum DocumentFlags {
     /// Reuse the existing document store entry for the file.
     ReuseExisting,
     /// Persistent file.
@@ -151,21 +151,21 @@ impl FromStr for Permission {
 ///
 /// Individual files will appear at `/run/user/$UID/doc/$DOC_ID/filename`,
 /// where `$DOC_ID` is the ID of the file in the document store.
-/// It is returned by the [`DocumentsProxy::add`] and
-/// [`DocumentsProxy::add_named`] calls.
+/// It is returned by the [`Documents::add`] and
+/// [`Documents::add_named`] calls.
 ///
 /// The permissions that the application has for a document store entry (see
-/// [`DocumentsProxy::grant_permissions`]) are reflected in the POSIX mode bits
+/// [`Documents::grant_permissions`]) are reflected in the POSIX mode bits
 /// in the fuse filesystem.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Documents).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
-pub struct DocumentsProxy<'a>(zbus::Proxy<'a>);
+pub struct Documents<'a>(zbus::Proxy<'a>);
 
-impl<'a> DocumentsProxy<'a> {
-    /// Create a new instance of [`DocumentsProxy`].
-    pub async fn new() -> Result<DocumentsProxy<'a>, Error> {
+impl<'a> Documents<'a> {
+    /// Create a new instance of [`Documents`].
+    pub async fn new() -> Result<Documents<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Documents")?
@@ -222,7 +222,7 @@ impl<'a> DocumentsProxy<'a> {
     /// # Arguments
     ///
     /// * `o_path_fds` - Open file descriptors for the files to export.
-    /// * `flags` - A [`Flags`].
+    /// * `flags` - A [`DocumentFlags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
     ///
@@ -237,7 +237,7 @@ impl<'a> DocumentsProxy<'a> {
     pub async fn add_full(
         &self,
         o_path_fds: &[&impl AsRawFd],
-        flags: BitFlags<Flags>,
+        flags: BitFlags<DocumentFlags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, OwnedValue>), Error> {
@@ -299,7 +299,7 @@ impl<'a> DocumentsProxy<'a> {
     ///
     /// * `o_path_fd` - Open file descriptor for the parent directory.
     /// * `filename` - The basename for the file.
-    /// * `flags` - A [`Flags`].
+    /// * `flags` - A [`DocumentFlags`].
     /// * `app_id` - An application ID, or empty string.
     /// * `permissions` - The permissions to grant.
     ///
@@ -315,7 +315,7 @@ impl<'a> DocumentsProxy<'a> {
         &self,
         o_path_fd: &(impl AsRawFd + fmt::Debug),
         filename: impl AsRef<Path>,
-        flags: BitFlags<Flags>,
+        flags: BitFlags<DocumentFlags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(OwnedDocumentID, HashMap<String, OwnedValue>), Error> {
@@ -520,7 +520,7 @@ impl<'a> DocumentsProxy<'a> {
 /// Interact with `org.freedesktop.portal.FileTransfer` interface.
 mod file_transfer;
 
-pub use file_transfer::FileTransferProxy;
+pub use file_transfer::FileTransfer;
 
 #[cfg(test)]
 mod tests {
