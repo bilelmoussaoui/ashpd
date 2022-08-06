@@ -3,10 +3,10 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::documents::FileTransferProxy;
+//! use ashpd::documents::FileTransfer;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FileTransferProxy::new().await?;
+//!     let proxy = FileTransfer::new().await?;
 //!
 //!     let key = proxy.start_transfer(true, true).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
@@ -33,13 +33,13 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Debug, Type, Default)]
-/// Specified options for a [`FileTransferProxy::start_transfer`] request.
+/// Specified options for a [`FileTransfer::start_transfer`] request.
 #[zvariant(signature = "dict")]
 struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
     writeable: Option<bool>,
     /// Whether to stop the transfer automatically after the first
-    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
+    /// [`retrieve_files()`][`FileTransfer::retrieve_files`] call.
     #[zvariant(rename = "autostop")]
     auto_stop: Option<bool>,
 }
@@ -53,7 +53,7 @@ impl TransferOptions {
     }
 
     /// Whether to stop the transfer automatically after the first
-    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
+    /// [`retrieve_files()`][`FileTransfer::retrieve_files`] call.
     #[must_use]
     pub fn auto_stop(mut self, auto_stop: bool) -> Self {
         self.auto_stop = Some(auto_stop);
@@ -78,11 +78,11 @@ impl TransferOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.FileTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileTransfer).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileTransfer")]
-pub struct FileTransferProxy<'a>(zbus::Proxy<'a>);
+pub struct FileTransfer<'a>(zbus::Proxy<'a>);
 
-impl<'a> FileTransferProxy<'a> {
-    /// Create a new instance of [`FileTransferProxy`].
-    pub async fn new() -> Result<FileTransferProxy<'a>, Error> {
+impl<'a> FileTransfer<'a> {
+    /// Create a new instance of [`FileTransfer`].
+    pub async fn new() -> Result<FileTransfer<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.FileTransfer")?
@@ -105,7 +105,7 @@ impl<'a> FileTransferProxy<'a> {
     /// # Arguments
     ///
     /// * `key` - A key returned by
-    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    ///   [`start_transfer()`][`FileTransfer::start_transfer`].
     /// * `fds` - A list of file descriptors of the files to register.
     ///
     /// # Specifications
@@ -121,14 +121,14 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Retrieves files that were previously added to the session with
-    /// [`add_files()`][`FileTransferProxy::add_files`]. The files will be
+    /// [`add_files()`][`FileTransfer::add_files`]. The files will be
     /// exported in the document portal as-needed for the caller, and they
     /// will be writable if the owner of the session allowed it.
     ///
     /// # Arguments
     ///
     /// * `key` - A key returned by
-    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    ///   [`start_transfer()`][`FileTransfer::start_transfer`].
     ///
     /// # Returns
     ///
@@ -147,7 +147,7 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Starts a session for a file transfer.
-    /// The caller should call [`add_files()`][`FileTransferProxy::add_files`]
+    /// The caller should call [`add_files()`][`FileTransfer::add_files`]
     /// at least once, to add files to this session.
     ///
     /// # Arguments
@@ -155,12 +155,12 @@ impl<'a> FileTransferProxy<'a> {
     /// * `writeable` - Sets whether the chosen application can write to the
     ///   files or not.
     /// * `auto_stop` - Whether to stop the transfer automatically after the
-    ///   first [`retrieve_files()`][`FileTransferProxy::retrieve_files`] call.
+    ///   first [`retrieve_files()`][`FileTransfer::retrieve_files`] call.
     ///
     /// # Returns
     ///
     /// Key that can be passed to
-    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] to obtain the
+    /// [`retrieve_files()`][`FileTransfer::retrieve_files`] to obtain the
     /// files.
     ///
     /// # Specifications
@@ -174,14 +174,14 @@ impl<'a> FileTransferProxy<'a> {
     }
 
     /// Ends the transfer.
-    /// Further calls to [`add_files()`][`FileTransferProxy::add_files`] or
-    /// [`retrieve_files()`][`FileTransferProxy::retrieve_files`] for this key
+    /// Further calls to [`add_files()`][`FileTransfer::add_files`] or
+    /// [`retrieve_files()`][`FileTransfer::retrieve_files`] for this key
     /// will return an error.
     ///
     /// # Arguments
     ///
     /// * `key` - A key returned by
-    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    ///   [`start_transfer()`][`FileTransfer::start_transfer`].
     ///
     /// # Specifications
     ///
@@ -196,7 +196,7 @@ impl<'a> FileTransferProxy<'a> {
     /// # Returns
     ///
     /// * The key returned by
-    ///   [`start_transfer()`][`FileTransferProxy::start_transfer`].
+    ///   [`start_transfer()`][`FileTransfer::start_transfer`].
     ///
     /// # Specifications
     ///
