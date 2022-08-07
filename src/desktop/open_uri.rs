@@ -1,3 +1,9 @@
+//! The interface lets sandboxed applications open URIs
+//! (e.g. a http: link to the applications homepage) under the control of the
+//! user.
+//!
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.OpenURI).
+//!
 //! # Examples
 //!
 //! ## Open a file
@@ -5,62 +11,13 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::{desktop::open_uri, WindowIdentifier};
+//! use ashpd::desktop::open_uri::OpenFileRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
-//!     open_uri::open_file(&WindowIdentifier::default(), &file, false, true).await?;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use std::fs::File;
-//!
-//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!
-//!     let proxy = OpenURIProxy::new().await?;
-//!
-//!     proxy
-//!         .open_file(&WindowIdentifier::default(), &file, false, true)
-//!         .await?;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! ## Open a directory
-//!
-//! ```rust,no_run
-//! use std::fs::File;
-//!
-//! use ashpd::{desktop::open_uri, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
-//!     open_uri::open_directory(&WindowIdentifier::default(), &directory).await?;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use std::fs::File;
-//!
-//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
-//!
-//!     let proxy = OpenURIProxy::new().await?;
-//!
-//!     proxy
-//!         .open_directory(&WindowIdentifier::default(), &directory)
+//!     OpenFileRequest::default()
+//!         .ask(true)
+//!         .build_file(&file)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -70,34 +27,33 @@
 //!
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::open_uri, WindowIdentifier};
+//! use ashpd::desktop::open_uri::OpenFileRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri =
 //!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     open_uri::open_uri(&WindowIdentifier::default(), &uri, false, true).await?;
+//!     OpenFileRequest::default().ask(true).build_uri(&uri).await?;
 //!     Ok(())
 //! }
 //! ```
 //!
-//! Or by using the Proxy directly
+//! ## Open a directory
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::open_uri::OpenURIProxy, WindowIdentifier};
+//! use std::fs::File;
+//!
+//! use ashpd::desktop::open_uri::OpenDirectoryRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = OpenURIProxy::new().await?;
-//!     let uri = url::Url::parse("https://github.com/bilelmoussaoui/ashpd").unwrap();
-//!
-//!     proxy
-//!         .open_uri(&WindowIdentifier::default(), &uri, false, true)
-//!         .await?;
+//!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
+//!     OpenDirectoryRequest::default().build(&directory).await?;
 //!     Ok(())
 //! }
 //! ```
 
 use std::os::unix::prelude::AsRawFd;
 
+use url::Url;
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -107,68 +63,24 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`OpenURIProxy::open_directory`] request.
 #[zvariant(signature = "dict")]
 struct OpenDirOptions {
-    /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-    // Token to activate the chosen application.
     activation_token: Option<String>,
-}
-
-impl OpenDirOptions {
-    #[allow(dead_code)]
-    pub fn set_activation_token(&mut self, activation_token: &str) {
-        self.activation_token = Some(activation_token.to_owned());
-    }
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`OpenURIProxy::open_file`] or
-/// [`OpenURIProxy::open_uri`] request.
 #[zvariant(signature = "dict")]
 struct OpenFileOptions {
-    /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-    /// Whether to allow the chosen application to write to the file.
-    /// This key only takes effect the uri points to a local file that is
-    /// exported in the document portal, and the chosen application is sandboxed
-    /// itself.
     writeable: Option<bool>,
-    /// Whether to ask the user to choose an app. If this is not passed, or
-    /// false, the portal may use a default or pick the last choice.
     ask: Option<bool>,
-    // Token to activate the chosen application.
     activation_token: Option<String>,
 }
 
-impl OpenFileOptions {
-    /// Whether the file should be writeable or not.
-    pub fn writeable(mut self, writeable: bool) -> Self {
-        self.writeable = Some(writeable);
-        self
-    }
-
-    /// Whether to always ask the user which application to use or not.
-    pub fn ask(mut self, ask: bool) -> Self {
-        self.ask = Some(ask);
-        self
-    }
-
-    #[allow(dead_code)]
-    pub fn set_activation_token(&mut self, activation_token: &str) {
-        self.activation_token = Some(activation_token.to_owned());
-    }
-}
-
-/// The interface lets sandboxed applications open URIs
-/// (e.g. a http: link to the applications homepage) under the control of the
-/// user.
-///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.OpenURI).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
-pub struct OpenURIProxy<'a>(zbus::Proxy<'a>);
+struct OpenURIProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {
     /// Create a new instance of [`OpenURIProxy`].
@@ -204,8 +116,8 @@ impl<'a> OpenURIProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         directory: &impl AsRawFd,
+        options: OpenDirOptions,
     ) -> Result<(), Error> {
-        let options = OpenDirOptions::default();
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
@@ -233,10 +145,8 @@ impl<'a> OpenURIProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         file: &impl AsRawFd,
-        writeable: bool,
-        ask: bool,
+        options: OpenFileOptions,
     ) -> Result<(), Error> {
-        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
@@ -268,10 +178,8 @@ impl<'a> OpenURIProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         uri: &url::Url,
-        writeable: bool,
-        ask: bool,
+        options: OpenFileOptions,
     ) -> Result<(), Error> {
-        let options = OpenFileOptions::default().ask(ask).writeable(writeable);
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
@@ -282,38 +190,76 @@ impl<'a> OpenURIProxy<'a> {
     }
 }
 
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_open_uri")]
-/// A handy wrapper around [`OpenURIProxy::open_uri`].
-pub async fn open_uri(
-    identifier: &WindowIdentifier,
-    uri: &url::Url,
-    writeable: bool,
-    ask: bool,
-) -> Result<(), Error> {
-    let proxy = OpenURIProxy::new().await?;
-    proxy.open_uri(identifier, uri, writeable, ask).await?;
-    Ok(())
+pub struct OpenFileRequest {
+    identifier: WindowIdentifier,
+    writeable: Option<bool>,
+    ask: Option<bool>,
 }
 
-/// A handy wrapper around [`OpenURIProxy::open_file`].
-pub async fn open_file(
-    identifier: &WindowIdentifier,
-    file: &impl AsRawFd,
-    writeable: bool,
-    ask: bool,
-) -> Result<(), Error> {
-    let proxy = OpenURIProxy::new().await?;
-    proxy.open_file(identifier, file, writeable, ask).await?;
-    Ok(())
+impl OpenFileRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    #[must_use]
+    /// Whether the file should be writeable or not.
+    pub fn writeable(mut self, writeable: bool) -> Self {
+        self.writeable = Some(writeable);
+        self
+    }
+
+    #[must_use]
+    /// Whether to always ask the user which application to use or not.
+    pub fn ask(mut self, ask: bool) -> Self {
+        self.ask = Some(ask);
+        self
+    }
+
+    pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
+        let proxy = OpenURIProxy::new().await?;
+        let options = OpenFileOptions {
+            writeable: self.writeable,
+            ask: self.ask,
+            ..Default::default()
+        };
+        proxy.open_file(&self.identifier, file, options).await
+    }
+
+    pub async fn build_uri(self, uri: &Url) -> Result<(), Error> {
+        let proxy = OpenURIProxy::new().await?;
+        let options = OpenFileOptions {
+            writeable: self.writeable,
+            ask: self.ask,
+            ..Default::default()
+        };
+        proxy.open_uri(&self.identifier, uri, options).await
+    }
 }
 
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_open_directory")]
-/// A handy wrapper around [`OpenURIProxy::open_directory`].
-pub async fn open_directory(
-    identifier: &WindowIdentifier,
-    directory: &impl AsRawFd,
-) -> Result<(), Error> {
-    let proxy = OpenURIProxy::new().await?;
-    proxy.open_directory(identifier, directory).await?;
-    Ok(())
+pub struct OpenDirectoryRequest {
+    identifier: WindowIdentifier,
+}
+
+impl OpenDirectoryRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    pub async fn build(self, directory: &impl AsRawFd) -> Result<(), Error> {
+        let proxy = OpenURIProxy::new().await?;
+        let options = OpenDirOptions::default();
+        proxy
+            .open_directory(&self.identifier, directory, options)
+            .await
+    }
 }
