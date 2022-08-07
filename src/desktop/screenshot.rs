@@ -1,27 +1,19 @@
+//! The interface lets sandboxed applications request a screenshot.
+//!
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Screenshot).
+//!
 //! # Examples
 //!
 //! ## Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, WindowIdentifier};
+//! use ashpd::desktop::screenshot::ScreenshotRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let uri = screenshot::take(&WindowIdentifier::default(), true, true).await?;
-//!     println!("URI: {}", uri);
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use ashpd::{desktop::screenshot::ScreenshotProxy, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ScreenshotProxy::new().await?;
-//!
-//!     let uri = proxy
-//!         .screenshot(&WindowIdentifier::default(), true, true)
+//!     let uri = ScreenshotRequest::default()
+//!         .interactive(true)
+//!         .modal(true)
+//!         .build()
 //!         .await?;
 //!     println!("URI: {}", uri);
 //!     Ok(())
@@ -31,33 +23,18 @@
 //! ## Picking a color
 //!
 //! ```rust,no_run
-//! use ashpd::{desktop::screenshot, WindowIdentifier};
+//! use ashpd::desktop::screenshot::ColorResponse;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let color = screenshot::pick_color(&WindowIdentifier::default()).await?;
+//!     let color = ColorResponse::builder().build().await?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
 //! }
 //! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use ashpd::{desktop::screenshot::ScreenshotProxy, WindowIdentifier};
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let proxy = ScreenshotProxy::new().await?;
-//!
-//!     let color = proxy.pick_color(&WindowIdentifier::default()).await?;
-//!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
-//!
-//!     Ok(())
-//! }
-//! ```
-
 use std::fmt::Debug;
 
+use url::Url;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -67,66 +44,41 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`ScreenshotProxy::screenshot`] request.
 #[zvariant(signature = "dict")]
 struct ScreenshotOptions {
-    /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-    /// Whether the dialog should be modal.
     modal: Option<bool>,
-    /// Hint whether the dialog should offer customization before taking a
-    /// screenshot.
     interactive: Option<bool>,
 }
 
-impl ScreenshotOptions {
-    /// Sets whether the dialog should be a modal.
-    #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
-        self
-    }
-
-    /// Sets whether the dialog should offer customization before a screenshot
-    /// or not.
-    #[must_use]
-    pub fn interactive(mut self, interactive: bool) -> Self {
-        self.interactive = Some(interactive);
-        self
-    }
-}
-
 #[derive(DeserializeDict, SerializeDict, Clone, Type)]
-/// A response to a [`ScreenshotProxy::screenshot`] request.
 #[zvariant(signature = "dict")]
-struct Screenshot {
-    /// The screenshot uri.
+struct ScreenshotResponse {
     uri: url::Url,
 }
 
-impl Debug for Screenshot {
+impl Debug for ScreenshotResponse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.uri.as_str())
     }
 }
 
 #[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
-/// Specified options for a [`ScreenshotProxy::pick_color`] request.
 #[zvariant(signature = "dict")]
 struct PickColorOptions {
-    /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
 }
 
 #[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, Type)]
-/// A response to a [`ScreenshotProxy::pick_color`] request.
+/// The response of a [`ColorRequest`] request.
+///
 /// **Note** the values are normalized.
 #[zvariant(signature = "dict")]
-pub struct Color {
+pub struct ColorResponse {
     color: [f64; 3],
 }
 
-impl Color {
+impl ColorResponse {
     /// Red.
     pub fn red(&self) -> f64 {
         self.color[0]
@@ -141,18 +93,26 @@ impl Color {
     pub fn blue(&self) -> f64 {
         self.color[2]
     }
+
+    /// Creates a new builder-pattern struct instance to construct
+    /// [`ColorResponse`].
+    ///
+    /// This method returns an instance of [`ColorRequest`].
+    pub fn builder() -> ColorRequest {
+        ColorRequest::default()
+    }
 }
 
 #[cfg(feature = "gtk3")]
-impl From<Color> for gtk3::gdk::RGBA {
-    fn from(color: Color) -> Self {
+impl From<ColorResponse> for gtk3::gdk::RGBA {
+    fn from(color: ColorResponse) -> Self {
         gtk3::gdk::RGBA::new(color.red(), color.green(), color.blue(), 1.0)
     }
 }
 
 #[cfg(feature = "gtk4")]
-impl From<Color> for gtk4::gdk::RGBA {
-    fn from(color: Color) -> Self {
+impl From<ColorResponse> for gtk4::gdk::RGBA {
+    fn from(color: ColorResponse) -> Self {
         gtk4::gdk::RGBA::builder()
             .red(color.red() as f32)
             .green(color.green() as f32)
@@ -161,9 +121,9 @@ impl From<Color> for gtk4::gdk::RGBA {
     }
 }
 
-impl std::fmt::Debug for Color {
+impl std::fmt::Debug for ColorResponse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Color")
+        f.debug_struct("ColorResponse")
             .field("red", &self.red())
             .field("green", &self.green())
             .field("blue", &self.blue())
@@ -171,7 +131,7 @@ impl std::fmt::Debug for Color {
     }
 }
 
-impl std::fmt::Display for Color {
+impl std::fmt::Display for ColorResponse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!(
             "({}, {}, {})",
@@ -182,12 +142,9 @@ impl std::fmt::Display for Color {
     }
 }
 
-/// The interface lets sandboxed applications request a screenshot.
-///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Screenshot).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
-pub struct ScreenshotProxy<'a>(zbus::Proxy<'a>);
+struct ScreenshotProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> ScreenshotProxy<'a> {
     /// Create a new instance of [`ScreenshotProxy`].
@@ -218,7 +175,7 @@ impl<'a> ScreenshotProxy<'a> {
     /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
     #[doc(alias = "PickColor")]
     #[doc(alias = "xdp_portal_pick_color")]
-    pub async fn pick_color(&self, identifier: &WindowIdentifier) -> Result<Color, Error> {
+    pub async fn pick_color(&self, identifier: &WindowIdentifier) -> Result<ColorResponse, Error> {
         let options = PickColorOptions::default();
         call_request_method(
             self.inner(),
@@ -250,13 +207,9 @@ impl<'a> ScreenshotProxy<'a> {
     pub async fn screenshot(
         &self,
         identifier: &WindowIdentifier,
-        interactive: bool,
-        modal: bool,
+        options: ScreenshotOptions,
     ) -> Result<url::Url, Error> {
-        let options = ScreenshotOptions::default()
-            .interactive(interactive)
-            .modal(modal);
-        let response: Screenshot = call_request_method(
+        let response: ScreenshotResponse = call_request_method(
             self.inner(),
             &options.handle_token,
             "Screenshot",
@@ -267,20 +220,72 @@ impl<'a> ScreenshotProxy<'a> {
     }
 }
 
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_pick_color")]
-/// A handy wrapper around [`ScreenshotProxy::pick_color`].
-pub async fn pick_color(identifier: &WindowIdentifier) -> Result<Color, Error> {
-    let proxy = ScreenshotProxy::new().await?;
-    proxy.pick_color(identifier).await
+/// A [builder-pattern] type to construct [`ColorResponse`].
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
+pub struct ColorRequest {
+    identifier: WindowIdentifier,
 }
 
+impl ColorRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Build the [`ColorResponse`].
+    pub async fn build(self) -> Result<ColorResponse, Error> {
+        let proxy = ScreenshotProxy::new().await?;
+        proxy.pick_color(&self.identifier).await
+    }
+}
+
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_take_screenshot")]
-/// A handy wrapper around [`ScreenshotProxy::screenshot`].
-pub async fn take(
-    identifier: &WindowIdentifier,
-    interactive: bool,
-    modal: bool,
-) -> Result<url::Url, Error> {
-    let proxy = ScreenshotProxy::new().await?;
-    proxy.screenshot(identifier, interactive, modal).await
+/// A [builder-pattern] type to construct a screenshot [`Url`].
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
+pub struct ScreenshotRequest {
+    modal: Option<bool>,
+    interactive: Option<bool>,
+    identifier: WindowIdentifier,
+}
+
+impl ScreenshotRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Sets whether the dialog should be a modal.
+    #[must_use]
+    pub fn modal(mut self, modal: bool) -> Self {
+        self.modal = Some(modal);
+        self
+    }
+
+    /// Sets whether the dialog should offer customization before a screenshot
+    /// or not.
+    #[must_use]
+    pub fn interactive(mut self, interactive: bool) -> Self {
+        self.interactive = Some(interactive);
+        self
+    }
+
+    /// Build the [`Url`].
+    pub async fn build(self) -> Result<Url, Error> {
+        let proxy = ScreenshotProxy::new().await?;
+        let options = ScreenshotOptions {
+            interactive: self.interactive,
+            modal: self.modal,
+            ..Default::default()
+        };
+        proxy.screenshot(&self.identifier, options).await
+    }
 }
