@@ -1,3 +1,8 @@
+//! The interface lets sandboxed applications set the user's desktop background
+//! picture.
+//!
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Wallpaper).
+//!
 //! # Examples
 //!
 //! ## Sets a wallpaper from a file:
@@ -5,34 +10,14 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::{
-//!     desktop::wallpaper::{self, SetOn},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::wallpaper::{SetOn, WallpaperRequest};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
-//!     wallpaper::set_from_file(&WindowIdentifier::default(), &file, true, SetOn::Both).await?;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use std::fs::File;
-//!
-//! use ashpd::{
-//!     desktop::wallpaper::{SetOn, WallpaperProxy},
-//!     WindowIdentifier,
-//! };
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let wallpaper = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
-//!
-//!     let proxy = WallpaperProxy::new().await?;
-//!     proxy
-//!         .set_wallpaper_file(&WindowIdentifier::default(), &wallpaper, true, SetOn::Both)
+//!     WallpaperRequest::default()
+//!         .set_on(SetOn::Both)
+//!         .show_preview(true)
+//!         .build_file(&file)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -41,33 +26,15 @@
 //! ## Sets a wallpaper from a URI:
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::wallpaper::{self, SetOn},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::wallpaper::{SetOn, WallpaperRequest};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri =
 //!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     wallpaper::set_from_uri(&WindowIdentifier::default(), &uri, true, SetOn::Both).await?;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use ashpd::{
-//!     desktop::wallpaper::{SetOn, WallpaperProxy},
-//!     WindowIdentifier,
-//! };
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let proxy = WallpaperProxy::new().await?;
-//!     let url =
-//!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy
-//!         .set_wallpaper_uri(&WindowIdentifier::default(), &url, true, SetOn::Both)
+//!     WallpaperRequest::default()
+//!         .set_on(SetOn::Both)
+//!         .show_preview(true)
+//!         .build_uri(&uri)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -154,30 +121,9 @@ struct WallpaperOptions {
     set_on: Option<SetOn>,
 }
 
-impl WallpaperOptions {
-    /// Whether to show a preview of the picture.
-    /// **Note** the portal may decide to show a preview even if this option is
-    /// not set.
-    #[must_use]
-    pub fn show_preview(mut self, show_preview: bool) -> Self {
-        self.show_preview = Some(show_preview);
-        self
-    }
-
-    /// Sets where to set the wallpaper on.
-    #[must_use]
-    pub fn set_on(mut self, set_on: SetOn) -> Self {
-        self.set_on = Some(set_on);
-        self
-    }
-}
-/// The interface lets sandboxed applications set the user's desktop background
-/// picture.
-///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Wallpaper).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Wallpaper")]
-pub struct WallpaperProxy<'a>(zbus::Proxy<'a>);
+struct WallpaperProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> WallpaperProxy<'a> {
     /// Create a new instance of [`WallpaperProxy`].
@@ -216,12 +162,8 @@ impl<'a> WallpaperProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         file: &impl AsRawFd,
-        show_preview: bool,
-        set_on: SetOn,
+        options: WallpaperOptions,
     ) -> Result<(), Error> {
-        let options = WallpaperOptions::default()
-            .show_preview(show_preview)
-            .set_on(set_on);
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
@@ -249,12 +191,8 @@ impl<'a> WallpaperProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         uri: &url::Url,
-        show_preview: bool,
-        set_on: SetOn,
+        options: WallpaperOptions,
     ) -> Result<(), Error> {
-        let options = WallpaperOptions::default()
-            .show_preview(show_preview)
-            .set_on(set_on);
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
@@ -265,36 +203,67 @@ impl<'a> WallpaperProxy<'a> {
     }
 }
 
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_set_wallpaper")]
-/// A handy wrapper around [`WallpaperProxy::set_wallpaper_uri`].
-pub async fn set_from_uri(
-    identifier: &WindowIdentifier,
-    uri: &url::Url,
-    show_preview: bool,
-    set_on: SetOn,
-) -> Result<(), Error> {
-    let proxy = WallpaperProxy::new().await?;
-    proxy
-        .set_wallpaper_uri(identifier, uri, show_preview, set_on)
-        .await?;
-    Ok(())
+/// A [builder-pattern] type to set the wallpaper.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
+pub struct WallpaperRequest {
+    identifier: WindowIdentifier,
+    show_preview: Option<bool>,
+    set_on: Option<SetOn>,
 }
 
-#[doc(alias = "xdp_portal_set_wallpaper")]
-/// A handy wrapper around [`WallpaperProxy::set_wallpaper_file`].
-pub async fn set_from_file(
-    identifier: &WindowIdentifier,
-    file: &impl AsRawFd,
-    show_preview: bool,
-    set_on: SetOn,
-) -> Result<(), Error> {
-    let proxy = WallpaperProxy::new().await?;
-    proxy
-        .set_wallpaper_file(identifier, file, show_preview, set_on)
-        .await?;
-    Ok(())
-}
+impl WallpaperRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
 
+    /// Whether to show a preview of the picture.
+    /// **Note** the portal may decide to show a preview even if this option is
+    /// not set.
+    #[must_use]
+    pub fn show_preview(mut self, show_preview: bool) -> Self {
+        self.show_preview = Some(show_preview);
+        self
+    }
+
+    /// Sets where to set the wallpaper on.
+    #[must_use]
+    pub fn set_on(mut self, set_on: SetOn) -> Self {
+        self.set_on = Some(set_on);
+        self
+    }
+
+    /// Build using a URI.
+    pub async fn build_uri(self, uri: &url::Url) -> Result<(), Error> {
+        let proxy = WallpaperProxy::new().await?;
+        let options = WallpaperOptions {
+            show_preview: self.show_preview,
+            set_on: self.set_on,
+            ..Default::default()
+        };
+        proxy
+            .set_wallpaper_uri(&self.identifier, uri, options)
+            .await
+    }
+
+    /// Build using a file.
+    pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
+        let proxy = WallpaperProxy::new().await?;
+        let options = WallpaperOptions {
+            show_preview: self.show_preview,
+            set_on: self.set_on,
+            ..Default::default()
+        };
+        proxy
+            .set_wallpaper_file(&self.identifier, file, options)
+            .await
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::SetOn;
