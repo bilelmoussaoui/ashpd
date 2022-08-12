@@ -42,17 +42,6 @@ struct RetrieveOptions {
     token: Option<String>,
 }
 
-impl RetrieveOptions {
-    /// Sets the token received on a previous call to
-    /// [`Secret::retrieve`].
-    #[must_use]
-    #[allow(unused)]
-    pub fn token(mut self, token: &str) -> Self {
-        self.token = Some(token.to_owned());
-        self
-    }
-}
-
 /// The interface lets sandboxed applications retrieve a per-application secret.
 ///
 /// The secret can then be used for encrypting confidential data inside the

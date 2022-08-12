@@ -54,7 +54,7 @@
 use std::os::unix::prelude::AsRawFd;
 
 use url::Url;
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
@@ -62,14 +62,14 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct OpenDirOptions {
     handle_token: HandleToken,
     activation_token: Option<String>,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct OpenFileOptions {
     handle_token: HandleToken,

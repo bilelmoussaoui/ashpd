@@ -43,7 +43,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct ScreenshotOptions {
     handle_token: HandleToken,
@@ -51,7 +51,7 @@ struct ScreenshotOptions {
     interactive: Option<bool>,
 }
 
-#[derive(DeserializeDict, SerializeDict, Clone, Type)]
+#[derive(DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct ScreenshotResponse {
     uri: url::Url,
@@ -63,13 +63,13 @@ impl Debug for ScreenshotResponse {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct PickColorOptions {
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, Type)]
+#[derive(DeserializeDict, Clone, Copy, PartialEq, Type)]
 /// The response of a [`ColorRequest`] request.
 ///
 /// **Note** the values are normalized.

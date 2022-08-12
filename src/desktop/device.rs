@@ -16,7 +16,7 @@
 use std::{fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
+use zbus::zvariant::{SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
@@ -24,7 +24,7 @@ use crate::{
     Error,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
 #[zvariant(signature = "dict")]
 struct AccessDeviceOptions {

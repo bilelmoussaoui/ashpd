@@ -547,7 +547,7 @@ impl PageSetup {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::prepare_print`] request.
 #[zvariant(signature = "dict")]
 struct PreparePrintOptions {
@@ -565,7 +565,7 @@ impl PreparePrintOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::print`] request.
 #[zvariant(signature = "dict")]
 struct PrintOptions {
@@ -592,7 +592,7 @@ impl PrintOptions {
     }
 }
 
-#[derive(DeserializeDict, SerializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response to a [`PrintProxy::prepare_print`] request.
 #[zvariant(signature = "dict")]
 pub struct PreparePrint {

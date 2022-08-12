@@ -43,7 +43,7 @@
 use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
@@ -51,7 +51,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Deserialize, Serialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
 #[zvariant(signature = "s")]
 /// Where to set the wallpaper on.
 pub enum SetOn {
@@ -106,7 +106,7 @@ impl FromStr for SetOn {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Clone, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a
 /// [`WallpaperProxy::set_wallpaper_uri`] request.
 #[zvariant(signature = "dict")]
@@ -121,7 +121,6 @@ struct WallpaperOptions {
     set_on: Option<SetOn>,
 }
 
-#[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Wallpaper")]
 struct WallpaperProxy<'a>(zbus::Proxy<'a>);
 

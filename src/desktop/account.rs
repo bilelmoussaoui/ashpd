@@ -32,14 +32,14 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct UserInformationOptions {
     handle_token: HandleToken,
     reason: Option<String>,
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, Clone, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 /// The response of a [`UserInformationRequest`] request.
 #[zvariant(signature = "dict")]
 pub struct UserInformationResponse {
@@ -76,7 +76,6 @@ impl UserInformationResponse {
     }
 }
 
-#[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Account")]
 struct AccountProxy<'a>(zbus::Proxy<'a>);
 
