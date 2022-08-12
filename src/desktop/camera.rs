@@ -194,7 +194,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 }
 
 /// A helper to get a list of PipeWire streams to use with the camera file
-/// descriptor returned by [`CameraProxy::open_pipe_wire_remote`].
+/// descriptor returned by [`Camera::open_pipe_wire_remote`].
 ///
 /// Currently, the camera portal only gives us a file descriptor. Not passing a
 /// node id may cause the media session controller to auto-connect the client to
@@ -255,4 +255,28 @@ pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
     }
 
     Ok(streams)
+}
+
+#[cfg(not(feature = "pipewire"))]
+pub async fn request() -> Result<Option<RawFd>, Error> {
+    let proxy = Camera::new().await?;
+    proxy.request_access().await?;
+    if proxy.is_present().await? {
+        Ok(Some(proxy.open_pipe_wire_remote().await?))
+    } else {
+        Ok(None)
+    }
+}
+
+#[cfg(feature = "pipewire")]
+pub async fn request() -> Result<Option<(RawFd, Vec<Stream>)>, Error> {
+    let proxy = Camera::new().await?;
+    proxy.request_access().await?;
+    if proxy.is_present().await? {
+        let fd = proxy.open_pipe_wire_remote().await?;
+        let streams = pipewire_streams(fd).await?;
+        Ok(Some((fd, streams)))
+    } else {
+        Ok(None)
+    }
 }
