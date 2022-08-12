@@ -9,11 +9,11 @@ use crate::{
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Realtime).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Realtime")]
-pub struct RealtimeProxy<'a>(zbus::Proxy<'a>);
+pub struct Realtime<'a>(zbus::Proxy<'a>);
 
-impl<'a> RealtimeProxy<'a> {
-    /// Create a new instance of [`RealtimeProxy`].
-    pub async fn new() -> Result<RealtimeProxy<'a>, Error> {
+impl<'a> Realtime<'a> {
+    /// Create a new instance of [`Realtime`].
+    pub async fn new() -> Result<Realtime<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface("org.freedesktop.portal.Realtime")?
