@@ -35,7 +35,7 @@ use crate::{
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
 
-#[derive(Serialize, Clone, Deserialize, Type)]
+#[derive(Clone, Deserialize, Type)]
 /// A specific `namespace.key = value` setting.
 pub struct Setting(String, String, OwnedValue);
 

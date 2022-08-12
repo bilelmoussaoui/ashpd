@@ -42,7 +42,7 @@ use std::{
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::TryFutureExt;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
@@ -87,7 +87,7 @@ pub enum CursorMode {
     Metadata,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
+#[derive(Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]
 pub enum PersistMode {
@@ -108,7 +108,7 @@ impl Default for PersistMode {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Screencast::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
@@ -118,7 +118,7 @@ struct CreateSessionOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Screencast::select_sources`] request.
 #[zvariant(signature = "dict")]
 struct SelectSourcesOptions {
@@ -167,7 +167,7 @@ impl SelectSourcesOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 struct StartCastOptions {
@@ -175,7 +175,7 @@ struct StartCastOptions {
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response to a [`Screencast::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSession {
@@ -185,7 +185,7 @@ struct CreateSession {
     session_handle: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type)]
+#[derive(DeserializeDict, Type)]
 /// A response to a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 struct Streams {
@@ -202,7 +202,7 @@ impl Debug for Streams {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Clone)]
+#[derive(Clone, Deserialize, Type)]
 /// A PipeWire stream.
 pub struct Stream(u32, StreamProperties);
 
@@ -251,7 +251,7 @@ impl Debug for Stream {
             .finish()
     }
 }
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Clone)]
+#[derive(Clone, DeserializeDict, Type, Debug)]
 /// The stream properties.
 #[zvariant(signature = "dict")]
 struct StreamProperties {

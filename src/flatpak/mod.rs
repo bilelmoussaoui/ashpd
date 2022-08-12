@@ -42,7 +42,7 @@ use std::{
 use enumflags2::{bitflags, BitFlags};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, Fd, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{Fd, OwnedObjectPath, SerializeDict, Type};
 
 use crate::{
     helpers::{call_method, receive_signal, session_connection},
@@ -110,7 +110,7 @@ pub enum SupportsFlags {
     ExposePids,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::spawn`] request.
 #[zvariant(signature = "dict")]
 pub struct SpawnOptions {
@@ -233,7 +233,7 @@ impl SpawnOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::create_update_monitor`] request.
 ///
 /// Currently there are no possible options yet.

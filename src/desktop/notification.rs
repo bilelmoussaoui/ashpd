@@ -47,7 +47,7 @@
 use std::{fmt, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Type};
+use zbus::zvariant::{OwnedValue, SerializeDict, Type};
 
 use super::{Icon, DESTINATION, PATH};
 use crate::{
@@ -55,7 +55,7 @@ use crate::{
     Error,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// The notification priority
@@ -206,7 +206,7 @@ impl Notification {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(SerializeDict, Type, Debug)]
 /// A notification button
 #[zvariant(signature = "dict")]
 pub struct Button {
@@ -243,7 +243,7 @@ impl Button {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Debug, Deserialize, Type)]
 /// An invoked action.
 pub struct Action(String, String, Vec<OwnedValue>);
 

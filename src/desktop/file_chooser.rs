@@ -94,7 +94,7 @@
 use std::{ffi::CString, os::unix::ffi::OsStrExt, path::Path};
 
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -103,12 +103,12 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize, Deserialize, Type, Clone, Debug)]
+#[derive(Serialize, Type, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
 /// pattern.
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
-#[derive(Serialize_repr, Clone, Deserialize_repr, PartialEq, Eq, Debug, Type)]
+#[derive(Serialize_repr, Debug, Type)]
 #[repr(u32)]
 enum FilterType {
     GlobPattern = 0,
@@ -140,7 +140,7 @@ impl FileFilter {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Clone, Debug)]
+#[derive(Serialize, Deserialize, Type, Debug)]
 /// Presents the user with a choice to select from or as a checkbox.
 pub struct Choice(String, String, Vec<(String, String)>, String);
 
@@ -195,7 +195,7 @@ impl Choice {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Clone, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FileChooserProxy::open_file`] request.
 #[zvariant(signature = "dict")]
 pub struct OpenFileOptions {
@@ -268,7 +268,7 @@ impl OpenFileOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FileChooserProxy::save_file`] request.
 #[zvariant(signature = "dict")]
 pub struct SaveFileOptions {
@@ -354,7 +354,7 @@ impl SaveFileOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`FileChooserProxy::save_files`] request.
 #[zvariant(signature = "dict")]
 pub struct SaveFilesOptions {
@@ -420,7 +420,7 @@ impl SaveFilesOptions {
     }
 }
 
-#[derive(Debug, Type, SerializeDict, Clone, DeserializeDict)]
+#[derive(Debug, Type, DeserializeDict)]
 /// A response to a
 /// [`FileChooserProxy::open_file`]/[`FileChooserProxy::save_file`]/
 /// [`FileChooserProxy::save_files`] request.

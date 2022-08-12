@@ -27,7 +27,7 @@
 use std::os::unix::prelude::AsRawFd;
 
 use serde::Serialize;
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
@@ -35,7 +35,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct EmailOptions {
     handle_token: HandleToken,

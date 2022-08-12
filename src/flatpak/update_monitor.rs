@@ -29,14 +29,14 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.
 ///
 /// Currently there are no possible options yet.
 #[zvariant(signature = "dict")]
 struct UpdateOptions {}
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response containing the update information when an update is available.
 #[zvariant(signature = "dict")]
 pub struct UpdateInfo {
@@ -83,7 +83,7 @@ pub enum UpdateStatus {
     Failed = 3,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response of the update progress signal.
 #[zvariant(signature = "dict")]
 pub struct UpdateProgress {

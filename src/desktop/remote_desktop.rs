@@ -131,7 +131,7 @@ pub enum Axis {
     Horizontal = 1,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateRemoteOptions {
@@ -141,7 +141,7 @@ struct CreateRemoteOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// A response to a [`RemoteDesktop::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSession {
@@ -151,7 +151,7 @@ struct CreateSession {
     session_handle: String,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
 struct SelectDevicesOptions {
@@ -169,7 +169,7 @@ impl SelectDevicesOptions {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::start`] request.
 #[zvariant(signature = "dict")]
 struct StartRemoteOptions {
@@ -177,7 +177,7 @@ struct StartRemoteOptions {
     handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(DeserializeDict, Type, Debug, Default)]
 /// A response to a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
 struct SelectedDevices {

@@ -40,7 +40,7 @@ use crate::{
     Error,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Clone, Copy, Hash, Debug, Type)]
+#[derive(Debug, Deserialize_repr, Serialize_repr, PartialEq, Type)]
 /// The status of moving a file to the trash.
 #[repr(u32)]
 enum TrashStatus {
@@ -110,7 +110,7 @@ mod test {
 
     #[test]
     fn status_serde() {
-        #[derive(Debug, serde::Serialize, serde::Deserialize)]
+        #[derive(serde::Serialize, serde::Deserialize)]
         struct Test {
             status: TrashStatus,
         }

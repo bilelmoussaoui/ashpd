@@ -55,7 +55,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Clone, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
 #[zvariant(signature = "dict")]
 struct BackgroundOptions {
@@ -75,7 +75,7 @@ struct BackgroundOptions {
     command: Option<Vec<String>>,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// The response of a [`BackgroundRequest`] request.
 #[zvariant(signature = "dict")]
 pub struct BackgroundResponse {
@@ -103,7 +103,6 @@ impl BackgroundResponse {
     }
 }
 
-#[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Background")]
 struct BackgroundProxy<'a>(zbus::Proxy<'a>);
 

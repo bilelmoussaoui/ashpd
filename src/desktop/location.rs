@@ -32,8 +32,8 @@
 use std::fmt::Debug;
 
 use futures_util::TryFutureExt;
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::Deserialize;
+use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, Session, DESTINATION, PATH};
@@ -42,7 +42,7 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Clone, Copy, Debug, Type)]
+#[derive(Serialize_repr, PartialEq, Eq, Clone, Copy, Debug, Type)]
 #[doc(alias = "XdpLocationAccuracy")]
 #[repr(u32)]
 /// The accuracy of the location.
@@ -67,7 +67,7 @@ pub enum Accuracy {
     Exact = 5,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
@@ -83,27 +83,7 @@ struct CreateSessionOptions {
     accuracy: Option<Accuracy>,
 }
 
-impl CreateSessionOptions {
-    /// Sets the distance threshold in meters.
-    pub fn distance_threshold(mut self, distance_threshold: u32) -> Self {
-        self.distance_threshold = Some(distance_threshold);
-        self
-    }
-
-    /// Sets the time threshold in seconds.
-    pub fn time_threshold(mut self, time_threshold: u32) -> Self {
-        self.time_threshold = Some(time_threshold);
-        self
-    }
-
-    /// Sets the location accuracy.
-    pub fn accuracy(mut self, accuracy: Accuracy) -> Self {
-        self.accuracy = Some(accuracy);
-        self
-    }
-}
-
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::start`] request.
 #[zvariant(signature = "dict")]
 struct SessionStartOptions {
@@ -111,7 +91,7 @@ struct SessionStartOptions {
     handle_token: HandleToken,
 }
 
-#[derive(Serialize, Deserialize, Type)]
+#[derive(Deserialize, Type)]
 /// The response received on a `location_updated` signal.
 pub struct Location(OwnedObjectPath, LocationInner);
 
@@ -267,10 +247,12 @@ impl<'a> LocationProxy<'a> {
         time_threshold: Option<u32>,
         accuracy: Option<Accuracy>,
     ) -> Result<Session<'a>, Error> {
-        let options = CreateSessionOptions::default()
-            .distance_threshold(distance_threshold.unwrap_or(0))
-            .time_threshold(time_threshold.unwrap_or(0))
-            .accuracy(accuracy.unwrap_or(Accuracy::Exact));
+        let options = CreateSessionOptions {
+            distance_threshold,
+            time_threshold,
+            accuracy,
+            ..Default::default()
+        };
         let (path, proxy) = futures_util::try_join!(
             call_method::<OwnedObjectPath, CreateSessionOptions>(
                 &self.0,

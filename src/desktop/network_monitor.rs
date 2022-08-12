@@ -19,8 +19,8 @@
 
 use std::fmt;
 
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
+use serde_repr::Deserialize_repr;
+use zbus::zvariant::{DeserializeDict, Type};
 
 use super::{DESTINATION, PATH};
 use crate::{
@@ -28,7 +28,7 @@ use crate::{
     Error,
 };
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, Type, Debug)]
 /// The network status, composed of the availability, metered & connectivity
 #[zvariant(signature = "dict")]
 pub struct NetworkStatus {
@@ -57,7 +57,7 @@ impl NetworkStatus {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
+#[derive(Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 /// Host's network activity
 pub enum Connectivity {
