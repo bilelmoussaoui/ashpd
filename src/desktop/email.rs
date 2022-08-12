@@ -1,3 +1,7 @@
+//! The interface lets sandboxed applications request sending an email.
+//!
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Email).
+//!
 //! # Examples
 //!
 //! Compose an email
@@ -5,50 +9,17 @@
 //! ```rust,no_run
 //! use std::fs::File;
 //!
-//! use ashpd::{
-//!     desktop::email::{self, Email},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::email::EmailRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     email::compose(
-//!         &WindowIdentifier::default(),
-//!         Email::new()
-//!             .address("test@gmail.com")
-//!             .subject("email subject")
-//!             .body("the pre-filled email body")
-//!             .attach(&file),
-//!     )
-//!     .await;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! Or by using the Proxy directly
-//!
-//! ```rust,no_run
-//! use std::fs::File;
-//!
-//! use ashpd::{
-//!     desktop::email::{Email, EmailProxy},
-//!     WindowIdentifier,
-//! };
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let proxy = EmailProxy::new().await?;
-//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy
-//!         .compose_email(
-//!             &WindowIdentifier::default(),
-//!             Email::new()
-//!                 .address("test@gmail.com")
-//!                 .subject("email subject")
-//!                 .body("the pre-filled email body")
-//!                 .attach(&file),
-//!         )
-//!         .await?;
-//!
+//!     EmailRequest::default()
+//!         .address("test@gmail.com")
+//!         .subject("email subject")
+//!         .body("the pre-filled email body")
+//!         .attach(&file)
+//!         .build()
+//!         .await;
 //!     Ok(())
 //! }
 //! ```
@@ -65,125 +36,21 @@ use crate::{
 };
 
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
-/// Specified options for a [`EmailProxy::compose_email`] request.
 #[zvariant(signature = "dict")]
-pub struct Email {
-    /// A string that will be used as the last element of the handle.
+struct EmailOptions {
     handle_token: HandleToken,
-    /// The email address to send to.
     address: Option<String>,
-    /// The email addresses to send to.
     addresses: Option<Vec<String>>,
-    /// The email addresses to CC.
     cc: Option<Vec<String>>,
-    /// The email addresses to BCC.
     bcc: Option<Vec<String>>,
-    /// The subject of the email.
     subject: Option<String>,
-    /// The body of the email.
     body: Option<String>,
-    /// A list of file descriptors of files to attach.
     attachment_fds: Option<Vec<Fd>>,
 }
 
-impl Email {
-    /// Create a new instance of [`Email`].
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Similar to `set_address`.
-    #[must_use]
-    pub fn address(mut self, address: &str) -> Self {
-        self.address = Some(address.to_owned());
-        self
-    }
-
-    /// Sets the email address to send the email to.
-    pub fn set_address(&mut self, address: &str) {
-        self.address = Some(address.to_owned());
-    }
-
-    /// Similar to `set_addresses`.
-    #[must_use]
-    pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
-        self
-    }
-
-    /// Sets a list of email addresses to send the email to.
-    pub fn set_addresses(&mut self, addresses: &[impl AsRef<str> + Type + Serialize]) {
-        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
-    }
-
-    /// Sets a list of email addresses to BCC.
-    #[must_use]
-    pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
-        self
-    }
-
-    /// Sets a list of email addresses to BCC.
-    pub fn set_bcc(&mut self, bcc: &[impl AsRef<str> + Type + Serialize]) {
-        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
-    }
-
-    /// Sets a list of email addresses to CC.
-    #[must_use]
-    pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
-        self
-    }
-
-    /// Sets a list of email addresses to CC.
-    pub fn set_cc(&mut self, cc: &[impl AsRef<str> + Type + Serialize]) {
-        self.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
-    }
-
-    /// Similar to `set_subject`.
-    #[must_use]
-    pub fn subject(mut self, subject: &str) -> Self {
-        self.subject = Some(subject.to_owned());
-        self
-    }
-
-    /// Sets the email subject.
-    pub fn set_subject(&mut self, subject: &str) {
-        self.subject = Some(subject.to_owned());
-    }
-
-    /// Similar to `set_body`.
-    #[must_use]
-    pub fn body(mut self, body: &str) -> Self {
-        self.body = Some(body.to_owned());
-        self
-    }
-
-    /// Sets the email body.
-    pub fn set_body(&mut self, body: &str) {
-        self.body = Some(body.to_owned());
-    }
-
-    /// Attaches a file to the email.
-    #[must_use]
-    pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
-        let attachment = Fd::from(attachment.as_raw_fd());
-        match self.attachment_fds {
-            Some(ref mut attachments) => attachments.push(attachment),
-            None => {
-                self.attachment_fds.replace(vec![attachment]);
-            }
-        };
-        self
-    }
-}
-
-/// The interface lets sandboxed applications request sending an email.
-///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Email).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Email")]
-pub struct EmailProxy<'a>(zbus::Proxy<'a>);
+struct EmailProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> EmailProxy<'a> {
     /// Create a new instance of [`EmailProxy`].
@@ -211,32 +78,115 @@ impl<'a> EmailProxy<'a> {
     /// # Arguments
     ///
     /// * `identifier` - Identifier for the application window.
-    /// * `email` - An [`Email`].
+    /// * `options` - An [`EmailOptions`].
     ///
     /// # Specifications
     ///
     /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
     #[doc(alias = "ComposeEmail")]
-    pub async fn compose_email(
+    pub async fn compose(
         &self,
         identifier: &WindowIdentifier,
-        email: Email,
+        options: EmailOptions,
     ) -> Result<(), Error> {
         call_basic_response_method(
             self.inner(),
-            &email.handle_token,
+            &options.handle_token,
             "ComposeEmail",
-            &(&identifier, &email),
+            &(&identifier, &options),
         )
         .await
     }
 }
 
-/// A handy wrapper around [`EmailProxy::compose_email`]
+#[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_compose_email")]
-pub async fn compose(identifier: &WindowIdentifier, email: Email) -> Result<(), Error> {
-    let proxy = EmailProxy::new().await?;
-    proxy.compose_email(identifier, email).await?;
+pub struct EmailRequest {
+    identifier: WindowIdentifier,
+    address: Option<String>,
+    addresses: Option<Vec<String>>,
+    cc: Option<Vec<String>>,
+    bcc: Option<Vec<String>>,
+    subject: Option<String>,
+    body: Option<String>,
+    attachment_fds: Option<Vec<Fd>>,
+}
 
-    Ok(())
+impl EmailRequest {
+    /// Sets a window identifier.
+    #[must_use]
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Sets the email address to send the email to.
+    #[must_use]
+    pub fn address(mut self, address: &str) -> Self {
+        self.address = Some(address.to_owned());
+        self
+    }
+
+    /// Sets a list of email addresses to send the email to.
+    #[must_use]
+    pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
+        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
+        self
+    }
+
+    /// Sets a list of email addresses to BCC.
+    #[must_use]
+    pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
+        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
+        self
+    }
+
+    /// Sets a list of email addresses to CC.
+    #[must_use]
+    pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
+        self.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
+        self
+    }
+
+    /// Sets the email subject.
+    #[must_use]
+    pub fn subject(mut self, subject: &str) -> Self {
+        self.subject = Some(subject.to_owned());
+        self
+    }
+
+    /// Sets the email body.
+    #[must_use]
+    pub fn body(mut self, body: &str) -> Self {
+        self.body = Some(body.to_owned());
+        self
+    }
+
+    /// Attaches a file to the email.
+    #[must_use]
+    pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
+        let attachment = Fd::from(attachment.as_raw_fd());
+        match self.attachment_fds {
+            Some(ref mut attachments) => attachments.push(attachment),
+            None => {
+                self.attachment_fds.replace(vec![attachment]);
+            }
+        };
+        self
+    }
+
+    pub async fn build(self) -> Result<(), Error> {
+        let proxy = EmailProxy::new().await?;
+        let options = EmailOptions {
+            address: self.address,
+            addresses: self.addresses,
+            cc: self.cc,
+            bcc: self.bcc,
+            subject: self.subject,
+            body: self.body,
+            attachment_fds: self.attachment_fds,
+            ..Default::default()
+        };
+        proxy.compose(&self.identifier, options).await
+    }
 }
