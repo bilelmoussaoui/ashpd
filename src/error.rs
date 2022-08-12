@@ -44,6 +44,9 @@ pub enum Error {
     ParseError(&'static str),
     /// Input/Output
     IO(std::io::Error),
+    /// A pipewire error
+    #[cfg(feature = "pipewire")]
+    Pipewire(pw::Error),
 }
 
 impl std::error::Error for Error {}
@@ -56,6 +59,8 @@ impl std::fmt::Display for Error {
             Self::Portal(e) => f.write_str(&format!("Portal request failed: {}", e)),
             Self::NoResponse => f.write_str("Portal error: no response"),
             Self::IO(e) => f.write_str(&format!("IO: {e}")),
+            #[cfg(feature = "pipewire")]
+            Self::Pipewire(e) => f.write_str(&format!("Pipewire: {e}")),
             Self::ParseError(e) => f.write_str(e),
         }
     }
@@ -70,6 +75,13 @@ impl From<ResponseError> for Error {
 impl From<PortalError> for Error {
     fn from(e: PortalError) -> Self {
         Self::Portal(e)
+    }
+}
+
+#[cfg(feature = "pipewire")]
+impl From<pw::Error> for Error {
+    fn from(e: pw::Error) -> Self {
+        Self::Pipewire(e)
     }
 }
 
