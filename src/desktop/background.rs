@@ -14,7 +14,7 @@
 //!     let response = BackgroundRequest::default()
 //!         .reason("Automatically fetch your latest mails")
 //!         .auto_start(true)
-//!         .command_line(&["geary"])
+//!         .command(&["geary"])
 //!         .dbus_activatable(false)
 //!         .build()
 //!         .await?;
@@ -26,7 +26,7 @@
 //! }
 //! ```
 //!
-//! If no `command_line` is provided, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+//! If no `command` is provided, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
 
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
@@ -118,10 +118,7 @@ impl<'a> BackgroundProxy<'a> {
 #[derive(Debug, Default)]
 pub struct BackgroundRequest {
     identifier: WindowIdentifier,
-    reason: Option<String>,
-    auto_start: Option<bool>,
-    dbus_activatable: Option<bool>,
-    command_line: Option<Vec<String>>,
+    options: BackgroundOptions,
 }
 
 impl BackgroundRequest {
@@ -135,14 +132,14 @@ impl BackgroundRequest {
     #[must_use]
     /// Sets whether to auto start the application or not.
     pub fn auto_start(mut self, auto_start: bool) -> Self {
-        self.auto_start = Some(auto_start);
+        self.options.autostart = Some(auto_start);
         self
     }
 
     #[must_use]
     /// Sets whether the application is dbus activatable.
     pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
-        self.dbus_activatable = Some(dbus_activatable);
+        self.options.dbus_activatable = Some(dbus_activatable);
         self
     }
 
@@ -150,33 +147,23 @@ impl BackgroundRequest {
     /// Specifies the command line to execute.
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    pub fn command_line(mut self, command_line: &[&str]) -> Self {
-        self.command_line = Some(
-            command_line
-                .iter()
-                .map(|s| s.to_owned().to_owned())
-                .collect(),
-        );
+    pub fn command(mut self, command: &[&str]) -> Self {
+        self.options.command = Some(command.iter().map(|s| s.to_owned().to_owned()).collect());
         self
     }
 
     #[must_use]
     /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_owned());
+        self.options.reason = Some(reason.to_owned());
         self
     }
 
     /// Build the [`BackgroundResponse`].
     pub async fn build(self) -> Result<BackgroundResponse, Error> {
         let proxy = BackgroundProxy::new().await?;
-        let options = BackgroundOptions {
-            handle_token: Default::default(),
-            reason: self.reason,
-            autostart: self.auto_start,
-            command: self.command_line,
-            dbus_activatable: self.dbus_activatable,
-        };
-        proxy.request_background(&self.identifier, options).await
+        proxy
+            .request_background(&self.identifier, self.options)
+            .await
     }
 }

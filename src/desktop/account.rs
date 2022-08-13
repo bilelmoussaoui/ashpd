@@ -110,7 +110,7 @@ impl<'a> AccountProxy<'a> {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct UserInformationRequest {
-    reason: Option<String>,
+    options: UserInformationOptions,
     identifier: WindowIdentifier,
 }
 
@@ -118,7 +118,7 @@ impl UserInformationRequest {
     #[must_use]
     /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
-        self.reason = Some(reason.to_owned());
+        self.options.reason = Some(reason.to_owned());
         self
     }
 
@@ -132,10 +132,6 @@ impl UserInformationRequest {
     /// Build the [`UserInformationResponse`].
     pub async fn build(self) -> Result<UserInformationResponse, Error> {
         let proxy = AccountProxy::new().await?;
-        let options = UserInformationOptions {
-            reason: self.reason,
-            ..Default::default()
-        };
-        proxy.user_information(&self.identifier, options).await
+        proxy.user_information(&self.identifier, self.options).await
     }
 }

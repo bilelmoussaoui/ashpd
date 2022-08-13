@@ -103,13 +103,7 @@ impl<'a> EmailProxy<'a> {
 #[doc(alias = "xdp_portal_compose_email")]
 pub struct EmailRequest {
     identifier: WindowIdentifier,
-    address: Option<String>,
-    addresses: Option<Vec<String>>,
-    cc: Option<Vec<String>>,
-    bcc: Option<Vec<String>>,
-    subject: Option<String>,
-    body: Option<String>,
-    attachment_fds: Option<Vec<Fd>>,
+    options: EmailOptions,
 }
 
 impl EmailRequest {
@@ -123,42 +117,42 @@ impl EmailRequest {
     /// Sets the email address to send the email to.
     #[must_use]
     pub fn address(mut self, address: &str) -> Self {
-        self.address = Some(address.to_owned());
+        self.options.address = Some(address.to_owned());
         self
     }
 
     /// Sets a list of email addresses to send the email to.
     #[must_use]
     pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
+        self.options.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
         self
     }
 
     /// Sets a list of email addresses to BCC.
     #[must_use]
     pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
+        self.options.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
         self
     }
 
     /// Sets a list of email addresses to CC.
     #[must_use]
     pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
+        self.options.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
         self
     }
 
     /// Sets the email subject.
     #[must_use]
     pub fn subject(mut self, subject: &str) -> Self {
-        self.subject = Some(subject.to_owned());
+        self.options.subject = Some(subject.to_owned());
         self
     }
 
     /// Sets the email body.
     #[must_use]
     pub fn body(mut self, body: &str) -> Self {
-        self.body = Some(body.to_owned());
+        self.options.body = Some(body.to_owned());
         self
     }
 
@@ -166,10 +160,10 @@ impl EmailRequest {
     #[must_use]
     pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
         let attachment = Fd::from(attachment.as_raw_fd());
-        match self.attachment_fds {
+        match self.options.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),
             None => {
-                self.attachment_fds.replace(vec![attachment]);
+                self.options.attachment_fds.replace(vec![attachment]);
             }
         };
         self
@@ -177,16 +171,6 @@ impl EmailRequest {
 
     pub async fn build(self) -> Result<(), Error> {
         let proxy = EmailProxy::new().await?;
-        let options = EmailOptions {
-            address: self.address,
-            addresses: self.addresses,
-            cc: self.cc,
-            bcc: self.bcc,
-            subject: self.subject,
-            body: self.body,
-            attachment_fds: self.attachment_fds,
-            ..Default::default()
-        };
-        proxy.compose(&self.identifier, options).await
+        proxy.compose(&self.identifier, self.options).await
     }
 }
