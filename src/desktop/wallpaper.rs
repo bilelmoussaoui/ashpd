@@ -172,8 +172,7 @@ impl<'a> WallpaperProxy<'a> {
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct WallpaperRequest {
     identifier: WindowIdentifier,
-    show_preview: Option<bool>,
-    set_on: Option<SetOn>,
+    options: WallpaperOptions,
 }
 
 impl WallpaperRequest {
@@ -189,40 +188,30 @@ impl WallpaperRequest {
     /// not set.
     #[must_use]
     pub fn show_preview(mut self, show_preview: bool) -> Self {
-        self.show_preview = Some(show_preview);
+        self.options.show_preview = Some(show_preview);
         self
     }
 
     /// Sets where to set the wallpaper on.
     #[must_use]
     pub fn set_on(mut self, set_on: SetOn) -> Self {
-        self.set_on = Some(set_on);
+        self.options.set_on = Some(set_on);
         self
     }
 
     /// Build using a URI.
     pub async fn build_uri(self, uri: &url::Url) -> Result<(), Error> {
         let proxy = WallpaperProxy::new().await?;
-        let options = WallpaperOptions {
-            show_preview: self.show_preview,
-            set_on: self.set_on,
-            ..Default::default()
-        };
         proxy
-            .set_wallpaper_uri(&self.identifier, uri, options)
+            .set_wallpaper_uri(&self.identifier, uri, self.options)
             .await
     }
 
     /// Build using a file.
     pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
         let proxy = WallpaperProxy::new().await?;
-        let options = WallpaperOptions {
-            show_preview: self.show_preview,
-            set_on: self.set_on,
-            ..Default::default()
-        };
         proxy
-            .set_wallpaper_file(&self.identifier, file, options)
+            .set_wallpaper_file(&self.identifier, file, self.options)
             .await
     }
 }

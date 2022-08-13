@@ -146,8 +146,7 @@ impl<'a> OpenURIProxy<'a> {
 #[doc(alias = "xdp_portal_open_uri")]
 pub struct OpenFileRequest {
     identifier: WindowIdentifier,
-    writeable: Option<bool>,
-    ask: Option<bool>,
+    options: OpenFileOptions,
 }
 
 impl OpenFileRequest {
@@ -161,35 +160,25 @@ impl OpenFileRequest {
     #[must_use]
     /// Whether the file should be writeable or not.
     pub fn writeable(mut self, writeable: bool) -> Self {
-        self.writeable = Some(writeable);
+        self.options.writeable = Some(writeable);
         self
     }
 
     #[must_use]
     /// Whether to always ask the user which application to use or not.
     pub fn ask(mut self, ask: bool) -> Self {
-        self.ask = Some(ask);
+        self.options.ask = Some(ask);
         self
     }
 
     pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
         let proxy = OpenURIProxy::new().await?;
-        let options = OpenFileOptions {
-            writeable: self.writeable,
-            ask: self.ask,
-            ..Default::default()
-        };
-        proxy.open_file(&self.identifier, file, options).await
+        proxy.open_file(&self.identifier, file, self.options).await
     }
 
     pub async fn build_uri(self, uri: &Url) -> Result<(), Error> {
         let proxy = OpenURIProxy::new().await?;
-        let options = OpenFileOptions {
-            writeable: self.writeable,
-            ask: self.ask,
-            ..Default::default()
-        };
-        proxy.open_uri(&self.identifier, uri, options).await
+        proxy.open_uri(&self.identifier, uri, self.options).await
     }
 }
 
@@ -198,6 +187,7 @@ impl OpenFileRequest {
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
 pub struct OpenDirectoryRequest {
     identifier: WindowIdentifier,
+    options: OpenDirOptions,
 }
 
 impl OpenDirectoryRequest {
@@ -210,9 +200,8 @@ impl OpenDirectoryRequest {
 
     pub async fn build(self, directory: &impl AsRawFd) -> Result<(), Error> {
         let proxy = OpenURIProxy::new().await?;
-        let options = OpenDirOptions::default();
         proxy
-            .open_directory(&self.identifier, directory, options)
+            .open_directory(&self.identifier, directory, self.options)
             .await
     }
 }

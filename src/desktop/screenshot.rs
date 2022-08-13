@@ -65,7 +65,7 @@ impl Debug for ScreenshotResponse {
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct PickColorOptions {
+struct ColorOptions {
     handle_token: HandleToken,
 }
 
@@ -175,8 +175,11 @@ impl<'a> ScreenshotProxy<'a> {
     /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
     #[doc(alias = "PickColor")]
     #[doc(alias = "xdp_portal_pick_color")]
-    pub async fn pick_color(&self, identifier: &WindowIdentifier) -> Result<ColorResponse, Error> {
-        let options = PickColorOptions::default();
+    pub async fn pick_color(
+        &self,
+        identifier: &WindowIdentifier,
+        options: ColorOptions,
+    ) -> Result<ColorResponse, Error> {
         call_request_method(
             self.inner(),
             &options.handle_token,
@@ -227,6 +230,7 @@ impl<'a> ScreenshotProxy<'a> {
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct ColorRequest {
     identifier: WindowIdentifier,
+    options: ColorOptions,
 }
 
 impl ColorRequest {
@@ -240,7 +244,7 @@ impl ColorRequest {
     /// Build the [`ColorResponse`].
     pub async fn build(self) -> Result<ColorResponse, Error> {
         let proxy = ScreenshotProxy::new().await?;
-        proxy.pick_color(&self.identifier).await
+        proxy.pick_color(&self.identifier, self.options).await
     }
 }
 
@@ -250,8 +254,7 @@ impl ColorRequest {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct ScreenshotRequest {
-    modal: Option<bool>,
-    interactive: Option<bool>,
+    options: ScreenshotOptions,
     identifier: WindowIdentifier,
 }
 
@@ -266,7 +269,7 @@ impl ScreenshotRequest {
     /// Sets whether the dialog should be a modal.
     #[must_use]
     pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
+        self.options.modal = Some(modal);
         self
     }
 
@@ -274,18 +277,13 @@ impl ScreenshotRequest {
     /// or not.
     #[must_use]
     pub fn interactive(mut self, interactive: bool) -> Self {
-        self.interactive = Some(interactive);
+        self.options.interactive = Some(interactive);
         self
     }
 
     /// Build the [`Url`].
     pub async fn build(self) -> Result<Url, Error> {
         let proxy = ScreenshotProxy::new().await?;
-        let options = ScreenshotOptions {
-            interactive: self.interactive,
-            modal: self.modal,
-            ..Default::default()
-        };
-        proxy.screenshot(&self.identifier, options).await
+        proxy.screenshot(&self.identifier, self.options).await
     }
 }
