@@ -1,5 +1,4 @@
-//! The interface lets sandboxed applications set the user's desktop background
-//! picture.
+//! Set a wallpaper on lockscreen, background or both.
 //!
 //! Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Wallpaper).
 //!
@@ -107,25 +106,18 @@ impl FromStr for SetOn {
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
-/// Specified options for a [`WallpaperProxy::set_wallpaper_file`] or a
-/// [`WallpaperProxy::set_wallpaper_uri`] request.
 #[zvariant(signature = "dict")]
 struct WallpaperOptions {
-    /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-    /// Whether to show a preview of the picture
     #[zvariant(rename = "show-preview")]
     show_preview: Option<bool>,
-    /// Where to set the wallpaper on
     #[zvariant(rename = "set-on")]
     set_on: Option<SetOn>,
 }
 
-#[doc(alias = "org.freedesktop.portal.Wallpaper")]
 struct WallpaperProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> WallpaperProxy<'a> {
-    /// Create a new instance of [`WallpaperProxy`].
     pub async fn new() -> Result<WallpaperProxy<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
@@ -137,26 +129,10 @@ impl<'a> WallpaperProxy<'a> {
         Ok(Self(proxy))
     }
 
-    /// Get a reference to the underlying Proxy.
     pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
-    /// Sets the lock-screen, background or both wallpaper's from a file
-    /// descriptor.
-    ///
-    /// # Arguments
-    ///
-    /// * `identifier` - Identifier for the application window.
-    /// * `file` - The wallpaper file descriptor.
-    /// * `show_preview` - Whether to show a preview of the picture.
-    /// * `set_on` - Where to set the wallpaper on.
-    ///
-    /// # Specifications
-    ///
-    /// See also [`SetWallpaperFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperFile).
-    #[doc(alias = "SetWallpaperFile")]
-    #[doc(alias = "xdp_portal_set_wallpaper")]
     pub async fn set_wallpaper_file(
         &self,
         identifier: &WindowIdentifier,
@@ -172,20 +148,6 @@ impl<'a> WallpaperProxy<'a> {
         .await
     }
 
-    /// Sets the lock-screen, background or both wallpaper's from an URI.
-    ///
-    /// # Arguments
-    ///
-    /// * `identifier` - Identifier for the application window.
-    /// * `uri` - The wallpaper URI.
-    /// * `show_preview` - Whether to show a preview of the picture.
-    /// * `set_on` - Where to set the wallpaper on.
-    ///
-    /// # Specifications
-    ///
-    /// See also [`SetWallpaperURI`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Wallpaper.SetWallpaperURI).
-    #[doc(alias = "SetWallpaperURI")]
-    #[doc(alias = "xdp_portal_set_wallpaper")]
     pub async fn set_wallpaper_uri(
         &self,
         identifier: &WindowIdentifier,
@@ -204,6 +166,7 @@ impl<'a> WallpaperProxy<'a> {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_set_wallpaper")]
+#[doc(alias = "org.freedesktop.portal.Wallpaper")]
 /// A [builder-pattern] type to set the wallpaper.
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html

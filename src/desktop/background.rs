@@ -1,12 +1,11 @@
-//! The interface lets sandboxed applications request that the application
-//! is allowed to run in the background or started automatically when the user
+//! Request to run in the background or started automatically when the user
 //! logs in.
 //!
 //! **Note** This portal only works for sandboxed applications.
 //!
 //! Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
 //!
-//! # Examples
+//! ### Examples
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::background::BackgroundRequest;
@@ -27,25 +26,8 @@
 //! }
 //! ```
 //!
-//! If the [`None`] is provided as an argument for `command_line`, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+//! If no `command_line` is provided, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
-//!
-//! ```rust,no_run
-//! use ashpd::desktop::background::BackgroundRequest;
-//!
-//! async fn run() -> ashpd::Result<()> {
-//!     let response = BackgroundRequest::default()
-//!         .reason("Automatically fetch your latest mails")
-//!         .auto_start(true)
-//!         .build()
-//!         .await?;
-//!
-//!     println!("{}", response.auto_start());
-//!     println!("{}", response.run_in_background());
-//!
-//!     Ok(())
-//! }
-//! ```
 
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
@@ -56,21 +38,13 @@ use crate::{
 };
 
 #[derive(SerializeDict, Type, Debug, Default)]
-/// Specified options for a [`BackgroundProxy::request_background`] request.
 #[zvariant(signature = "dict")]
 struct BackgroundOptions {
-    /// A string that will be used as the last element of the handle.
     handle_token: HandleToken,
-    /// User-visible reason for the request.
     reason: Option<String>,
-    /// [`true`] if the app also wants to be started automatically at login.
     autostart: Option<bool>,
-    /// if [`true`], use D-Bus activation for autostart.
     #[zvariant(rename = "dbus-activatable")]
     dbus_activatable: Option<bool>,
-    /// Command to use when auto-starting at login.
-    /// If this is not specified, the Exec line from the desktop file will be
-    /// used.
     #[zvariant(rename = "commandline")]
     command: Option<Vec<String>>,
 }
@@ -107,7 +81,6 @@ impl BackgroundResponse {
 struct BackgroundProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
-    /// Create a new instance of [`BackgroundProxy`].
     pub async fn new() -> Result<BackgroundProxy<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
@@ -119,28 +92,10 @@ impl<'a> BackgroundProxy<'a> {
         Ok(Self(proxy))
     }
 
-    /// Get a reference to the underlying Proxy.
     pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
-    /// Requests that the application is allowed to run in the background.
-    ///
-    /// # Arguments
-    ///
-    /// * `identifier` - Identifier for the application window.
-    /// * `reason` - Sets a user-visible reason for the request.
-    /// * `auto_start` - Sets whether to auto start the application or not.
-    /// * `command_line` - Specifies the command line to execute. If this is not
-    ///   specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables)
-    ///   line from the [desktop
-    /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    /// * `dbus_activatable` - Sets whether the application is dbus activatable.
-    ///
-    /// # Specifications
-    ///
-    /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Background.RequestBackground).
-    #[doc(alias = "RequestBackground")]
     pub async fn request_background(
         &self,
         identifier: &WindowIdentifier,

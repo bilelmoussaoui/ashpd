@@ -1,4 +1,4 @@
-//! The interface lets sandboxed applications request a screenshot.
+//! Take a screenshot or pick a color.
 //!
 //! Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Screenshot).
 //!
