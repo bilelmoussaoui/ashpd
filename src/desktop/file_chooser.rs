@@ -1,32 +1,31 @@
-//! # Examples
+//! The interface lets sandboxed applications ask the user for access to files
+//! outside the sandbox. The portal backend will present the user with a file
+//! chooser dialog.
 //!
-//! ## Opening a file
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileChooser).
+//!
+//! ### Examples
+//!
+//! #### Opening a file
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::file_chooser::{Choice, FileChooserProxy, FileFilter, OpenFileOptions},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::file_chooser::{Choice, FileFilter, OpenFileRequest};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FileChooserProxy::new().await?;
-//!     let files = proxy
-//!         .open_file(
-//!             &WindowIdentifier::default(),
-//!             "open a file to read",
-//!             OpenFileOptions::default()
-//!                 .accept_label("read")
-//!                 .modal(true)
-//!                 .multiple(true)
-//!                 .add_choice(
-//!                     Choice::new("encoding", "Encoding", "latin15")
-//!                         .insert("utf8", "Unicode (UTF-8)")
-//!                         .insert("latin15", "Western"),
-//!                 )
-//!                 // A trick to have a checkbox
-//!                 .add_choice(Choice::boolean("re-encode", "Re-encode", false))
-//!                 .add_filter(FileFilter::new("SVG Image").mimetype("image/svg+xml")),
+//!     let files = OpenFileRequest::default()
+//!         .title("open a file to read")
+//!         .accept_label("read")
+//!         .modal(true)
+//!         .multiple(true)
+//!         .choice(
+//!             Choice::new("encoding", "Encoding", "latin15")
+//!                 .insert("utf8", "Unicode (UTF-8)")
+//!                 .insert("latin15", "Western"),
 //!         )
+//!         // A trick to have a checkbox
+//!         .choice(Choice::boolean("re-encode", "Re-encode", false))
+//!         .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml"))
+//!         .build()
 //!         .await?;
 //!
 //!     println!("{:#?}", files);
@@ -35,26 +34,19 @@
 //! }
 //! ```
 //!
-//! ## Ask to save a file
+//! #### Ask to save a file
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::file_chooser::{FileChooserProxy, FileFilter, SaveFileOptions},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::file_chooser::{FileFilter, SaveFileRequest};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FileChooserProxy::new().await?;
-//!     let files = proxy
-//!         .save_file(
-//!             &WindowIdentifier::default(),
-//!             "open a file to write",
-//!             SaveFileOptions::default()
-//!                 .accept_label("write")
-//!                 .current_name("image.jpg")
-//!                 .modal(true)
-//!                 .add_filter(FileFilter::new("JPEG Image").glob("*.jpg")),
-//!         )
+//!     let files = SaveFileRequest::default()
+//!         .title("open a file to write")
+//!         .accept_label("write")
+//!         .current_name("image.jpg")
+//!         .modal(true)
+//!         .filter(FileFilter::new("JPEG Image").glob("*.jpg"))
+//!         .build()
 //!         .await?;
 //!
 //!     println!("{:#?}", files);
@@ -63,26 +55,19 @@
 //! }
 //! ```
 //!
-//! ## Ask to save multiple files
+//! #### Ask to save multiple files
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::file_chooser::{FileChooserProxy, SaveFilesOptions},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::file_chooser::SaveFilesRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let proxy = FileChooserProxy::new().await?;
-//!     let files = proxy
-//!         .save_files(
-//!             &WindowIdentifier::default(),
-//!             "open files to write",
-//!             SaveFilesOptions::default()
-//!                 .accept_label("write files")
-//!                 .modal(true)
-//!                 .current_folder("/home/bilelmoussaoui/Pictures")
-//!                 .files(&["test.jpg", "awesome.png"]),
-//!         )
+//!     let files = SaveFilesRequest::default()
+//!         .title("open files to write")
+//!         .accept_label("write files")
+//!         .modal(true)
+//!         .current_folder("/home/bilelmoussaoui/Pictures")
+//!         .files(&["test.jpg", "awesome.png"])
+//!         .build()
 //!         .await?;
 //!
 //!     println!("{:#?}", files);
@@ -196,234 +181,46 @@ impl Choice {
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
-/// Specified options for a [`FileChooserProxy::open_file`] request.
 #[zvariant(signature = "dict")]
-pub struct OpenFileOptions {
-    /// A string that will be used as the last element of the handle.
+struct OpenFileOptions {
     handle_token: HandleToken,
-    /// Label for the accept button. Mnemonic underlines are allowed.
     accept_label: Option<String>,
-    /// Whether the dialog should be modal.
     modal: Option<bool>,
-    /// Whether multiple files can be selected or not.
     multiple: Option<bool>,
-    /// Whether to select for folders instead of files.
     directory: Option<bool>,
-    /// List of serialized file filters.
     filters: Vec<FileFilter>,
-    /// Request that this filter be set by default at dialog creation.
     current_filter: Option<FileFilter>,
-    /// List of serialized combo boxes to add to the file chooser
     choices: Vec<Choice>,
 }
 
-impl OpenFileOptions {
-    /// Sets a user-visible string to the "accept" button.
-    #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_owned());
-        self
-    }
-
-    /// Sets whether the dialog should be a modal.
-    #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
-        self
-    }
-
-    /// Sets whether to allow multiple files selection.
-    #[must_use]
-    pub fn multiple(mut self, multiple: bool) -> Self {
-        self.multiple = Some(multiple);
-        self
-    }
-
-    /// Sets whether to select directories or not.
-    #[must_use]
-    pub fn directory(mut self, directory: bool) -> Self {
-        self.directory = Some(directory);
-        self
-    }
-
-    /// Adds a files filter.
-    #[must_use]
-    pub fn add_filter(mut self, filter: FileFilter) -> Self {
-        self.filters.push(filter);
-        self
-    }
-
-    /// Specifies the default filter.
-    #[must_use]
-    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
-        self.current_filter = Some(current_filter);
-        self
-    }
-
-    /// Adds a choice.
-    #[must_use]
-    pub fn add_choice(mut self, choice: Choice) -> Self {
-        self.choices.push(choice);
-        self
-    }
-}
-
 #[derive(SerializeDict, Type, Debug, Default)]
-/// Specified options for a [`FileChooserProxy::save_file`] request.
 #[zvariant(signature = "dict")]
-pub struct SaveFileOptions {
-    /// A string that will be used as the last element of the handle.
+struct SaveFileOptions {
     handle_token: HandleToken,
-    /// Label for the accept button. Mnemonic underlines are allowed.
     accept_label: Option<String>,
-    /// Whether the dialog should be modal.
     modal: Option<bool>,
-    /// Suggested filename.
     current_name: Option<String>,
-    /// Suggested folder to save the file in.
     current_folder: Option<Vec<u8>>,
-    /// The current file (when saving an existing file).
     current_file: Option<Vec<u8>>,
-    /// List of serialized file filters.
     filters: Vec<FileFilter>,
-    /// Request that this filter be set by default at dialog creation.
     current_filter: Option<FileFilter>,
-    /// List of serialized combo boxes to add to the file chooser
     choices: Vec<Choice>,
-}
-
-impl SaveFileOptions {
-    /// Sets a user-visible string to the "accept" button.
-    #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_owned());
-        self
-    }
-
-    /// Sets the current file name.
-    #[must_use]
-    pub fn current_name(mut self, current_name: &str) -> Self {
-        self.current_name = Some(current_name.to_owned());
-        self
-    }
-
-    /// Sets the current folder.
-    #[must_use]
-    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
-        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
-            .expect("`current_folder` should not be null terminated");
-        self.current_folder = Some(cstr.into_bytes_with_nul());
-        self
-    }
-
-    /// Sets the absolute path of the file.
-    #[must_use]
-    pub fn current_file(mut self, current_file: impl AsRef<Path>) -> Self {
-        let cstr = CString::new(current_file.as_ref().as_os_str().as_bytes())
-            .expect("`current_file` should not be null terminated");
-        self.current_file = Some(cstr.into_bytes_with_nul());
-        self
-    }
-
-    /// Sets whether the dialog should be a modal.
-    #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
-        self
-    }
-
-    /// Adds a files filter.
-    #[must_use]
-    pub fn add_filter(mut self, filter: FileFilter) -> Self {
-        self.filters.push(filter);
-        self
-    }
-
-    /// Sets the default filter.
-    #[must_use]
-    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
-        self.current_filter = Some(current_filter);
-        self
-    }
-
-    /// Adds a choice.
-    #[must_use]
-    pub fn add_choice(mut self, choice: Choice) -> Self {
-        self.choices.push(choice);
-        self
-    }
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
-/// Specified options for a [`FileChooserProxy::save_files`] request.
 #[zvariant(signature = "dict")]
-pub struct SaveFilesOptions {
-    /// A string that will be used as the last element of the handle.
+struct SaveFilesOptions {
     handle_token: HandleToken,
-    /// Label for the accept button. Mnemonic underlines are allowed.
     accept_label: Option<String>,
-    /// Whether the dialog should be modal.
     modal: Option<bool>,
-    /// List of serialized combo boxes to add to the file chooser
     choices: Vec<Choice>,
-    /// Suggested folder to save the file in.
     current_folder: Option<Vec<u8>>,
-    /// An array of file names to be saved.
     files: Option<Vec<Vec<u8>>>,
 }
 
-impl SaveFilesOptions {
-    /// Sets a user-visible string to the "accept" button.
-    #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.accept_label = Some(accept_label.to_owned());
-        self
-    }
-
-    /// Sets whether the dialog should be a modal.
-    #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
-        self
-    }
-
-    /// Adds a choice.
-    #[must_use]
-    pub fn add_choice(mut self, choice: Choice) -> Self {
-        self.choices.push(choice);
-        self
-    }
-
-    /// Specifies the current folder path.
-    #[must_use]
-    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
-        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
-            .expect("`current_folder` should not be null terminated");
-        self.current_folder = Some(cstr.into_bytes_with_nul());
-        self
-    }
-
-    /// Sets a list of files to save.
-    #[must_use]
-    pub fn files(mut self, files: &[impl AsRef<Path>]) -> Self {
-        self.files = Some(
-            files
-                .iter()
-                .map(|s| {
-                    let cstr = CString::new(s.as_ref().as_os_str().as_bytes())
-                        .expect("`files` should not be null terminated");
-                    cstr.into_bytes_with_nul()
-                })
-                .collect(),
-        );
-        self
-    }
-}
-
 #[derive(Debug, Type, DeserializeDict)]
-/// A response to a
-/// [`FileChooserProxy::open_file`]/[`FileChooserProxy::save_file`]/
-/// [`FileChooserProxy::save_files`] request.
+/// A response of [`OpenFileRequest`], [`SaveFileRequest`] or
+/// [`SaveFilesRequest`].
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
     uris: Vec<url::Url>,
@@ -442,14 +239,8 @@ impl SelectedFiles {
     }
 }
 
-/// The interface lets sandboxed applications ask the user for access to files
-/// outside the sandbox. The portal backend will present the user with a file
-/// chooser dialog.
-///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileChooser).
-#[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
-pub struct FileChooserProxy<'a>(zbus::Proxy<'a>);
+struct FileChooserProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> FileChooserProxy<'a> {
     /// Create a new instance of [`FileChooserProxy`].
@@ -469,19 +260,6 @@ impl<'a> FileChooserProxy<'a> {
         &self.0
     }
 
-    /// Asks to open one or more files.
-    ///
-    /// # Arguments
-    ///
-    /// * `identifier` - Identifier for the application window.
-    /// * `title` - Title for the file chooser dialog.
-    /// * `options` - [`OpenFileOptions`].
-    ///
-    /// # Specifications
-    ///
-    /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.OpenFile).
-    #[doc(alias = "OpenFile")]
-    #[doc(alias = "xdp_portal_open_file")]
     pub async fn open_file(
         &self,
         identifier: &WindowIdentifier,
@@ -497,19 +275,6 @@ impl<'a> FileChooserProxy<'a> {
         .await
     }
 
-    /// Asks for a location to save a file.
-    ///
-    /// # Arguments
-    ///
-    /// * `identifier` - Identifier for the application window.
-    /// * `title` - Title for the file chooser dialog.
-    /// * `options` - [`SaveFileOptions`].
-    ///
-    /// # Specifications
-    ///
-    /// See also [`SaveFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFile).
-    #[doc(alias = "SaveFile")]
-    #[doc(alias = "xdp_portal_save_file")]
     pub async fn save_file(
         &self,
         identifier: &WindowIdentifier,
@@ -525,24 +290,6 @@ impl<'a> FileChooserProxy<'a> {
         .await
     }
 
-    /// Asks for a folder as a location to save one or more files.
-    /// The names of the files will be used as-is and appended to the
-    /// selected folder's path in the list of returned files.
-    /// If the selected folder already contains a file with one of the given
-    /// names, the portal may prompt or take some other action to
-    /// construct a unique file name and return that instead.
-    ///
-    /// # Arguments
-    ///
-    /// * `identifier` - Identifier for the application window.
-    /// * `title` - Title for the file chooser dialog.
-    /// * `options` - [`SaveFilesOptions`].
-    ///
-    /// # Specifications
-    ///
-    /// See also [`SaveFiles`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileChooser.SaveFiles).
-    #[doc(alias = "SaveFiles")]
-    #[doc(alias = "xdp_portal_save_files")]
     pub async fn save_files(
         &self,
         identifier: &WindowIdentifier,
@@ -556,5 +303,252 @@ impl<'a> FileChooserProxy<'a> {
             &(&identifier, title, &options),
         )
         .await
+    }
+}
+
+#[derive(Debug, Default)]
+#[doc(alias = "xdp_portal_open_file")]
+pub struct OpenFileRequest {
+    identifier: WindowIdentifier,
+    title: String,
+    options: OpenFileOptions,
+}
+
+impl OpenFileRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Sets a title for the file chooser dialog.
+    #[must_use]
+    pub fn title(mut self, title: &str) -> Self {
+        self.title = title.to_owned();
+        self
+    }
+
+    /// Sets a user-visible string to the "accept" button.
+    #[must_use]
+    pub fn accept_label(mut self, accept_label: &str) -> Self {
+        self.options.accept_label = Some(accept_label.to_owned());
+        self
+    }
+
+    /// Sets whether the dialog should be a modal.
+    #[must_use]
+    pub fn modal(mut self, modal: bool) -> Self {
+        self.options.modal = Some(modal);
+        self
+    }
+
+    /// Sets whether to allow multiple files selection.
+    #[must_use]
+    pub fn multiple(mut self, multiple: bool) -> Self {
+        self.options.multiple = Some(multiple);
+        self
+    }
+
+    /// Sets whether to select directories or not.
+    #[must_use]
+    pub fn directory(mut self, directory: bool) -> Self {
+        self.options.directory = Some(directory);
+        self
+    }
+
+    /// Adds a files filter.
+    #[must_use]
+    pub fn filter(mut self, filter: FileFilter) -> Self {
+        self.options.filters.push(filter);
+        self
+    }
+
+    /// Specifies the default filter.
+    #[must_use]
+    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
+        self.options.current_filter = Some(current_filter);
+        self
+    }
+
+    /// Adds a choice.
+    #[must_use]
+    pub fn choice(mut self, choice: Choice) -> Self {
+        self.options.choices.push(choice);
+        self
+    }
+
+    pub async fn build(self) -> Result<SelectedFiles, Error> {
+        let proxy = FileChooserProxy::new().await?;
+        proxy
+            .open_file(&self.identifier, &self.title, self.options)
+            .await
+    }
+}
+
+#[derive(Debug, Default)]
+#[doc(alias = "xdp_portal_save_files")]
+pub struct SaveFilesRequest {
+    identifier: WindowIdentifier,
+    title: String,
+    options: SaveFilesOptions,
+}
+
+impl SaveFilesRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Sets a title for the file chooser dialog.
+    #[must_use]
+    pub fn title(mut self, title: &str) -> Self {
+        self.title = title.to_owned();
+        self
+    }
+
+    /// Sets a user-visible string to the "accept" button.
+    #[must_use]
+    pub fn accept_label(mut self, accept_label: &str) -> Self {
+        self.options.accept_label = Some(accept_label.to_owned());
+        self
+    }
+
+    /// Sets whether the dialog should be a modal.
+    #[must_use]
+    pub fn modal(mut self, modal: bool) -> Self {
+        self.options.modal = Some(modal);
+        self
+    }
+
+    /// Adds a choice.
+    #[must_use]
+    pub fn add_choice(mut self, choice: Choice) -> Self {
+        self.options.choices.push(choice);
+        self
+    }
+
+    /// Specifies the current folder path.
+    #[must_use]
+    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
+        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
+            .expect("`current_folder` should not be null terminated");
+        self.options.current_folder = Some(cstr.into_bytes_with_nul());
+        self
+    }
+
+    /// Sets a list of files to save.
+    #[must_use]
+    pub fn files(mut self, files: &[impl AsRef<Path>]) -> Self {
+        self.options.files = Some(
+            files
+                .iter()
+                .map(|s| {
+                    let cstr = CString::new(s.as_ref().as_os_str().as_bytes())
+                        .expect("`files` should not be null terminated");
+                    cstr.into_bytes_with_nul()
+                })
+                .collect(),
+        );
+        self
+    }
+
+    pub async fn build(self) -> Result<SelectedFiles, Error> {
+        let proxy = FileChooserProxy::new().await?;
+        proxy
+            .save_files(&self.identifier, &self.title, self.options)
+            .await
+    }
+}
+
+#[derive(Debug, Default)]
+#[doc(alias = "xdp_portal_save_file")]
+pub struct SaveFileRequest {
+    identifier: WindowIdentifier,
+    title: String,
+    options: SaveFileOptions,
+}
+
+impl SaveFileRequest {
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
+        self.identifier = identifier;
+        self
+    }
+
+    /// Sets a title for the file chooser dialog.
+    #[must_use]
+    pub fn title(mut self, title: &str) -> Self {
+        self.title = title.to_owned();
+        self
+    }
+    /// Sets a user-visible string to the "accept" button.
+    #[must_use]
+    pub fn accept_label(mut self, accept_label: &str) -> Self {
+        self.options.accept_label = Some(accept_label.to_owned());
+        self
+    }
+
+    /// Sets the current file name.
+    #[must_use]
+    pub fn current_name(mut self, current_name: &str) -> Self {
+        self.options.current_name = Some(current_name.to_owned());
+        self
+    }
+
+    /// Sets the current folder.
+    #[must_use]
+    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
+        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
+            .expect("`current_folder` should not be null terminated");
+        self.options.current_folder = Some(cstr.into_bytes_with_nul());
+        self
+    }
+
+    /// Sets the absolute path of the file.
+    #[must_use]
+    pub fn current_file(mut self, current_file: impl AsRef<Path>) -> Self {
+        let cstr = CString::new(current_file.as_ref().as_os_str().as_bytes())
+            .expect("`current_file` should not be null terminated");
+        self.options.current_file = Some(cstr.into_bytes_with_nul());
+        self
+    }
+
+    /// Sets whether the dialog should be a modal.
+    #[must_use]
+    pub fn modal(mut self, modal: bool) -> Self {
+        self.options.modal = Some(modal);
+        self
+    }
+
+    /// Adds a files filter.
+    #[must_use]
+    pub fn filter(mut self, filter: FileFilter) -> Self {
+        self.options.filters.push(filter);
+        self
+    }
+
+    /// Sets the default filter.
+    #[must_use]
+    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
+        self.options.current_filter = Some(current_filter);
+        self
+    }
+
+    /// Adds a choice.
+    #[must_use]
+    pub fn choice(mut self, choice: Choice) -> Self {
+        self.options.choices.push(choice);
+        self
+    }
+
+    pub async fn build(self) -> Result<SelectedFiles, Error> {
+        let proxy = FileChooserProxy::new().await?;
+        proxy
+            .save_file(&self.identifier, &self.title, self.options)
+            .await
     }
 }
