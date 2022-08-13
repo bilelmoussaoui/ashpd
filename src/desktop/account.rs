@@ -1,12 +1,9 @@
-//! The interface lets sandboxed applications query basic information about the
-//! user, like his name and avatar photo.
-//!
-//! The portal backend will present the user with a dialog to confirm which (if
-//! any) information to share.
+//! Access to the current logged user information such as the id, name
+//! or their avatar uri.
 //!
 //! Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Account).
 //!
-//! # Examples
+//! ### Examples
 //!
 //! ```rust, no_run
 //! use ashpd::desktop::account::UserInformationRequest;
@@ -43,11 +40,8 @@ struct UserInformationOptions {
 /// The response of a [`UserInformationRequest`] request.
 #[zvariant(signature = "dict")]
 pub struct UserInformationResponse {
-    /// User identifier.
     id: String,
-    /// User name.
     name: String,
-    /// User image uri.
     image: url::Url,
 }
 
@@ -76,11 +70,9 @@ impl UserInformationResponse {
     }
 }
 
-#[doc(alias = "org.freedesktop.portal.Account")]
 struct AccountProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> AccountProxy<'a> {
-    /// Create a new instance of [`AccountProxy`].
     pub async fn new() -> Result<AccountProxy<'a>, Error> {
         let connection = session_connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
@@ -92,18 +84,10 @@ impl<'a> AccountProxy<'a> {
         Ok(Self(proxy))
     }
 
-    /// Get a reference to the underlying Proxy.
     pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
 
-    /// Gets information about the user.
-    ///
-    /// # Arguments
-    ///
-    /// * `identifier` - Identifier for the window.
-    /// * `reason` - A user-visible reason for the request.
-    #[doc(alias = "GetUserInformation")]
     pub async fn user_information(
         &self,
         identifier: &WindowIdentifier,
@@ -120,7 +104,7 @@ impl<'a> AccountProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_get_user_information")]
-#[doc(alias = "get_user_information")]
+#[doc(alias = "org.freedesktop.portal.Account")]
 #[derive(Debug, Default)]
 /// A [builder-pattern] type to construct [`UserInformationResponse`].
 ///

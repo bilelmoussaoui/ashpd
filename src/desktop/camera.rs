@@ -1,4 +1,7 @@
-//! # Examples
+//! Check if a camera is available, request access to it and open a PipeWire
+//! remote stream.
+//!
+//! ### Examples
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::camera::Camera;

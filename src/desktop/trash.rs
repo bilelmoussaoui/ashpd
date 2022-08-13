@@ -1,3 +1,5 @@
+//! Move a file to the trash.
+//!
 //! # Examples
 //!
 //!
@@ -41,12 +43,9 @@ use crate::{
 };
 
 #[derive(Debug, Deserialize_repr, Serialize_repr, PartialEq, Type)]
-/// The status of moving a file to the trash.
 #[repr(u32)]
 enum TrashStatus {
-    /// Moving the file to the trash failed.
     Failed = 0,
-    /// Moving the file to the trash succeeded
     Succeeded = 1,
 }
 

@@ -1,5 +1,8 @@
+//! Request access to specific devices such as camera, speakers or microphone.
+//!
 //! **Note** This portal doesn't work for sandboxed applications.
-//! # Examples
+//!
+//! ### Examples
 //!
 //! Access a [`Device`](crate::desktop::device::Device)
 //!

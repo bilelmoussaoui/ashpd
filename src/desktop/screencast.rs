@@ -1,3 +1,5 @@
+//! Start a screencast session and get the PipeWire remote of it.
+//!
 //! # Examples
 //!
 //! How to create a screen cast session & start it.

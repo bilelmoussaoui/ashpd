@@ -1,4 +1,4 @@
-//! The interface lets sandboxed applications request sending an email.
+//! Compose an email.
 //!
 //! Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Email).
 //!
