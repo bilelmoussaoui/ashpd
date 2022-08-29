@@ -32,6 +32,8 @@ mod imp {
         #[template_child]
         pub open_directory_switch: TemplateChild<gtk::Switch>,
         #[template_child]
+        pub open_current_folder_entry: TemplateChild<gtk::Entry>,
+        #[template_child]
         pub open_response_group: TemplateChild<adw::PreferencesGroup>,
 
         #[template_child]
@@ -133,6 +135,7 @@ impl FileChooserPage {
         let directory = imp.open_directory_switch.is_active();
         let modal = imp.open_modal_switch.is_active();
         let multiple = imp.open_multiple_switch.is_active();
+        let current_folder = is_empty(imp.open_current_folder_entry.text());
 
         match portal_open_file(
             &identifier,
@@ -141,6 +144,7 @@ impl FileChooserPage {
             directory,
             modal,
             multiple,
+            current_folder.as_deref(),
         )
         .await
         {
@@ -249,6 +253,7 @@ async fn portal_open_file(
     directory: bool,
     modal: bool,
     multiple: bool,
+    current_folder: Option<&str>,
 ) -> ashpd::Result<SelectedFiles> {
     let proxy = FileChooserProxy::new().await?;
     let options = OpenFileOptions::default()
@@ -257,6 +262,12 @@ async fn portal_open_file(
         .multiple(multiple);
     let options = if let Some(accept_label) = accept_label {
         options.accept_label(accept_label)
+    } else {
+        options
+    };
+
+        let options = if let Some(current_folder) = current_folder {
+        options.current_folder(current_folder)
     } else {
         options
     };

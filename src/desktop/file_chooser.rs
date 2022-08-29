@@ -215,6 +215,8 @@ pub struct OpenFileOptions {
     current_filter: Option<FileFilter>,
     /// List of serialized combo boxes to add to the file chooser
     choices: Vec<Choice>,
+    /// Suggested folder to open the files in
+    current_folder: Option<Vec<u8>>,
 }
 
 impl OpenFileOptions {
@@ -264,6 +266,15 @@ impl OpenFileOptions {
     #[must_use]
     pub fn add_choice(mut self, choice: Choice) -> Self {
         self.choices.push(choice);
+        self
+    }
+
+    /// Specifies the current folder path.
+    #[must_use]
+    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
+        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
+            .expect("`current_folder` should not be null terminated");
+        self.current_folder = Some(cstr.into_bytes_with_nul());
         self
     }
 }
