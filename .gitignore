@@ -15,9 +15,11 @@ ashpd-demo/_build/
 ashpd-demo/builddir/
 ashpd-demo/src/config.rs
 ashpd-demo/target/
+ashpd-backend-demo/target
 
 .flatpak
 .vscode
 _build/
 builddir/
 session-test
+.fenv

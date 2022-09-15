@@ -48,7 +48,7 @@ struct ScreenshotOptions {
     interactive: Option<bool>,
 }
 
-#[derive(DeserializeDict, Type)]
+#[derive(SerializeDict, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 /// The response of a [`ScreenshotRequest`] request.
 pub struct Screenshot {
@@ -56,6 +56,12 @@ pub struct Screenshot {
 }
 
 impl Screenshot {
+    #[cfg(feature = "backend")]
+    /// Create a new instance of the screenshot.
+    pub fn new(uri: url::Url) -> Self {
+        Self { uri }
+    }
+
     /// Creates a new builder-pattern struct instance to construct
     /// [`Screenshot`].
     ///

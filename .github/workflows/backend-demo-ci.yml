@@ -3,7 +3,7 @@ on:
     branches: [master]
   pull_request:
 
-name: CI
+name: Backend Demo CI
 
 jobs:
   check:
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y gettext-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -23,7 +23,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --manifest-path=ashpd-backend-demo/Cargo.toml
 
   test:
     name: Test Suite
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y gettext-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -42,7 +42,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --manifest-path=ashpd-backend-demo/Cargo.toml
 
   fmt:
     name: Rustfmt
@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y gettext-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -62,7 +62,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check
+          args: --manifest-path=ashpd-backend-demo/Cargo.toml --all -- --check
 
   clippy:
     name: Clippy
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y gettext-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -82,4 +82,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend" -- -D warnings
+          args: --manifest-path=ashpd-backend-demo/Cargo.toml -- -D warnings

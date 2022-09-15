@@ -30,6 +30,17 @@ pub use self::file_path::FilePath;
 
 mod proxy;
 
+#[cfg(all(
+    feature = "backend",
+    any(feature = "backend_gtk3", feature = "backend_gtk4")
+))]
+pub use self::window_identifier::external_window::ExternalWindow;
+#[cfg(feature = "backend")]
+pub use self::window_identifier::WindowIdentifierType;
+#[cfg(feature = "backend")]
+#[allow(missing_docs)]
+/// Build your custom portals backend.
+pub mod backend;
 /// Spawn commands outside the sandbox or monitor if the running application has
 /// received an update & install it.
 pub mod flatpak;

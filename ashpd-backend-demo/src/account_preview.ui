@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="xdg-desktop-portal-gnome">
+  <template class="AccountPreview" parent="GtkWindow">
+    <property name="title" translatable="yes">Share Details</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+
+    <child>
+      <object class="GtkShortcutController">
+        <child>
+          <object class="GtkShortcut">
+            <property name="trigger">Escape</property>
+            <property name="action">action(window.close)</property>
+          </object>
+        </child>
+      </object>
+    </child>
+
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="titlebar">
+        <property name="show-title-buttons">False</property>
+        <child>
+          <object class="GtkButton" id="cancel_button">
+            <property name="label" translatable="yes">_Cancel</property>
+            <property name="use-underline">1</property>
+            <signal name="clicked" handler="on_dialog_cancel" swapped="true"/>
+          </object>
+        </child>
+        <child type="end">
+          <object class="GtkButton" id="accept_button">
+            <property name="label" translatable="yes">_Share</property>
+            <property name="use-underline">1</property>
+            <signal name="clicked" handler="on_dialog_ok" swapped="true"/>
+            <style>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+        </child>
+      </object>
+    </child>
+
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="margin-top">24</property>
+        <property name="margin-bottom">24</property>
+        <property name="margin-start">36</property>
+        <property name="margin-end">36</property>
+        <property name="spacing">24</property>
+
+        <child>
+          <object class="GtkLabel" id="heading">
+            <property name="wrap">1</property>
+            <property name="xalign">0.5</property>
+            <property name="max-width-chars">32</property>
+            <property name="width-chars">32</property>
+          </object>
+        </child>
+
+        <!-- Profile Picture -->
+        <child>
+          <object class="GtkButton" id="button">
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <signal name="clicked" handler="image_button_clicked" swapped="yes"/>
+            <child>
+              <object class="AdwAvatar" id="avatar">
+                <property name="size">96</property>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <!-- Rows -->
+        <child>
+          <object class="GtkListBox">
+            <property name="selection-mode">none</property>
+            <style>
+              <class name="content" />
+            </style>
+
+            <child>
+              <object class="AdwEntryRow" id="display_name">
+                <property name="title" translatable="yes">Name</property>
+              </object>
+            </child>
+
+            <child>
+              <object class="AdwEntryRow" id="username">
+                <property name="title" translatable="yes">Username</property>
+              </object>
+            </child>
+
+          </object>
+        </child>
+
+      </object>
+    </child>
+  </template>
+</interface>
