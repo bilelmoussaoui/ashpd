@@ -12,6 +12,7 @@ version = "0.4.0-alpha.1"
 
 [features]
 default = ["async-std"]
+backend = []
 gtk3_x11 = ["gdk3x11", "dep:gtk3"]
 gtk3_wayland = ["gdk3wayland", "dep:gtk3"]
 gtk3 = ["gtk3_x11", "gtk3_wayland"]
