@@ -263,8 +263,10 @@ impl HasWindowHandle for WindowIdentifier {
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 pub enum WindowIdentifierType {
+    /// X11.
     X11(std::os::raw::c_ulong),
     #[allow(dead_code)]
+    /// Wayland.
     Wayland(String),
 }
 

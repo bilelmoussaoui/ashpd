@@ -3,18 +3,14 @@ on:
     branches: [master]
   pull_request:
 
-name: CI
+name: Backend Demo CI
 
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -23,17 +19,13 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --manifest-path=backend-demo/Cargo.toml
 
   test:
     name: Test Suite
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -42,17 +34,13 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --manifest-path=backend-demo/Cargo.toml
 
   fmt:
     name: Rustfmt
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -62,17 +50,13 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check
+          args: --manifest-path=backend-demo/Cargo.toml --all -- --check
 
   clippy:
     name: Clippy
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -82,4 +66,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend" -- -D warnings
+          args: --manifest-path=backend-demo/Cargo.toml -- -D warnings
