@@ -31,6 +31,12 @@ pub use self::file_path::FilePath;
 
 mod proxy;
 
+#[cfg(feature = "backend")]
+pub use self::window_identifier::WindowIdentifierType;
+#[cfg(feature = "backend")]
+#[allow(missing_docs)]
+/// Build your custom portals backend.
+pub mod backend;
 /// Spawn commands outside the sandbox or monitor if the running application has
 /// received an update & install it.
 pub mod flatpak;

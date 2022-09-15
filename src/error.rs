@@ -64,6 +64,9 @@ pub enum Error {
     /// An error indicating that a Icon::Bytes was expected but wrong type was
     /// passed
     UnexpectedIcon,
+    #[cfg(feature = "backend")]
+    /// Failed to parse a URL.
+    Url(url::ParseError),
 }
 
 impl std::error::Error for Error {}
@@ -92,6 +95,8 @@ impl std::fmt::Display for Error {
                 f,
                 "Expected icon of type Icon::Bytes but a different type was used."
             ),
+            #[cfg(feature = "backend")]
+            Self::Url(e) => f.write_str(&format!("Parse error: {e}")),
         }
     }
 }
@@ -142,5 +147,11 @@ impl From<std::io::Error> for Error {
 impl From<UnexpectedIconError> for Error {
     fn from(_: UnexpectedIconError) -> Self {
         Self::UnexpectedIcon
+    }
+}
+#[cfg(feature = "backend")]
+impl From<url::ParseError> for Error {
+    fn from(e: url::ParseError) -> Self {
+        Self::Url(e)
     }
 }

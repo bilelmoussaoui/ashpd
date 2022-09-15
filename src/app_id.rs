@@ -9,6 +9,18 @@ use zbus::zvariant::Type;
 #[derive(Debug, Serialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct AppID(String);
 
+impl AppID {
+    #[cfg(all(
+        feature = "backend",
+        any(feature = "gtk4_x11", feature = "gtk4_wayland")
+    ))]
+    /// Retrieves the associated `gio::DesktopAppInfo` if found
+    pub fn app_info(&self) -> Option<gtk4::gio::DesktopAppInfo> {
+        let desktop_file = format!("{}.desktop", self.0);
+        gtk4::gio::DesktopAppInfo::new(&desktop_file)
+    }
+}
+
 impl FromStr for AppID {
     type Err = crate::Error;
     fn from_str(value: &str) -> Result<Self, Self::Err> {
