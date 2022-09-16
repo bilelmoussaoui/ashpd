@@ -266,19 +266,31 @@ impl ScreenshotRequest {
         self
     }
 
+    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
+        self.identifier = identifier;
+    }
+
     /// Sets whether the dialog should be a modal.
     #[must_use]
     pub fn modal(mut self, modal: bool) -> Self {
-        self.options.modal = Some(modal);
+        self.set_modal(modal);
         self
+    }
+
+    pub fn set_modal(&mut self, modal: bool) {
+        self.options.modal = Some(modal);
     }
 
     /// Sets whether the dialog should offer customization before a screenshot
     /// or not.
     #[must_use]
     pub fn interactive(mut self, interactive: bool) -> Self {
-        self.options.interactive = Some(interactive);
+        self.set_interactive(interactive);
         self
+    }
+
+    pub fn set_interactive(&mut self, interactive: bool) {
+        self.options.interactive = Some(interactive);
     }
 
     /// Build the [`Url`].

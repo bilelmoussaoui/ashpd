@@ -153,15 +153,23 @@ impl OpenFileRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+        self.set_identifier(identifier);
         self
+    }
+
+    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
+        self.identifier = identifier;
     }
 
     #[must_use]
     /// Whether the file should be writeable or not.
     pub fn writeable(mut self, writeable: bool) -> Self {
-        self.options.writeable = Some(writeable);
+        self.set_writeable(writeable);
         self
+    }
+
+    pub fn set_writeable(&mut self, writeable: bool) {
+        self.options.writeable = Some(writeable);
     }
 
     #[must_use]
@@ -169,6 +177,10 @@ impl OpenFileRequest {
     pub fn ask(mut self, ask: bool) -> Self {
         self.options.ask = Some(ask);
         self
+    }
+
+    pub fn set_ask(&mut self, ask: bool) {
+        self.options.ask = Some(ask);
     }
 
     pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
@@ -194,8 +206,12 @@ impl OpenDirectoryRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+        self.set_identifier(identifier);
         self
+    }
+
+    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
+        self.identifier = identifier;
     }
 
     pub async fn build(self, directory: &impl AsRawFd) -> Result<(), Error> {

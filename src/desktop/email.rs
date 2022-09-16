@@ -117,48 +117,77 @@ impl EmailRequest {
     /// Sets the email address to send the email to.
     #[must_use]
     pub fn address(mut self, address: &str) -> Self {
-        self.options.address = Some(address.to_owned());
+        self.set_address(address);
         self
+    }
+
+    pub fn set_address(&mut self, address: &str) {
+        self.options.address = Some(address.to_owned());
     }
 
     /// Sets a list of email addresses to send the email to.
     #[must_use]
     pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.options.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
+        self.set_addresses(addresses);
         self
+    }
+
+    pub fn set_addresses(&mut self, addresses: &[impl AsRef<str> + Type + Serialize]) {
+        self.options.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets a list of email addresses to BCC.
     #[must_use]
     pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.options.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
+        self.set_bcc(bcc);
         self
+    }
+
+    pub fn set_bcc(&mut self, bcc: &[impl AsRef<str> + Type + Serialize]) {
+        self.options.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets a list of email addresses to CC.
     #[must_use]
     pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.options.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
+        self.set_cc(cc);
         self
+    }
+
+    pub fn set_cc(&mut self, cc: &[impl AsRef<str> + Type + Serialize]) {
+        self.options.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets the email subject.
     #[must_use]
     pub fn subject(mut self, subject: &str) -> Self {
-        self.options.subject = Some(subject.to_owned());
+        self.set_subject(subject);
         self
+    }
+
+    pub fn set_subject(&mut self, subject: &str) {
+        self.options.subject = Some(subject.to_owned());
     }
 
     /// Sets the email body.
     #[must_use]
     pub fn body(mut self, body: &str) -> Self {
-        self.options.body = Some(body.to_owned());
+        self.set_body(body);
         self
+    }
+
+    pub fn set_body(&mut self, body: &str) {
+        self.options.body = Some(body.to_owned());
     }
 
     /// Attaches a file to the email.
     #[must_use]
     pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
+        self.add_attachment(attachment);
+        self
+    }
+
+    pub fn add_attachment(&mut self, attachment: &impl AsRawFd) {
         let attachment = Fd::from(attachment.as_raw_fd());
         match self.options.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),
@@ -166,7 +195,6 @@ impl EmailRequest {
                 self.options.attachment_fds.replace(vec![attachment]);
             }
         };
-        self
     }
 
     pub async fn build(self) -> Result<(), Error> {

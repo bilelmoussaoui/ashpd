@@ -125,22 +125,34 @@ impl BackgroundRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+        self.set_identifier(identifier);
         self
+    }
+
+    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
+        self.identifier = identifier;
     }
 
     #[must_use]
     /// Sets whether to auto start the application or not.
     pub fn auto_start(mut self, auto_start: bool) -> Self {
-        self.options.autostart = Some(auto_start);
+        self.set_auto_start(auto_start);
         self
+    }
+
+    pub fn set_auto_start(&mut self, auto_start: bool) {
+        self.options.autostart = Some(auto_start);
     }
 
     #[must_use]
     /// Sets whether the application is dbus activatable.
     pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
-        self.options.dbus_activatable = Some(dbus_activatable);
+        self.set_dbus_activatable(dbus_activatable);
         self
+    }
+
+    pub fn set_dbus_activatable(&mut self, dbus_activatable: bool) {
+        self.options.dbus_activatable = Some(dbus_activatable);
     }
 
     #[must_use]
@@ -148,15 +160,23 @@ impl BackgroundRequest {
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
     pub fn command(mut self, command: &[&str]) -> Self {
-        self.options.command = Some(command.iter().map(|s| s.to_owned().to_owned()).collect());
+        self.set_command(command);
         self
+    }
+
+    pub fn set_command(&mut self, command: &[&str]) {
+        self.options.command = Some(command.iter().map(|s| s.to_owned().to_owned()).collect());
     }
 
     #[must_use]
     /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
-        self.options.reason = Some(reason.to_owned());
+        self.set_reason(reason);
         self
+    }
+
+    pub fn set_reason(&mut self, reason: &str) {
+        self.options.reason = Some(reason.to_owned());
     }
 
     /// Build the [`BackgroundResponse`].
