@@ -1,7 +1,10 @@
+use std::fs::File;
+
+use adw::prelude::*;
 use ashpd::{desktop::email::EmailRequest, WindowIdentifier};
 use gtk::{
+    gio,
     glib::{self, clone},
-    prelude::*,
     subclass::prelude::*,
 };
 
@@ -14,8 +17,9 @@ mod imp {
     use adw::subclass::prelude::*;
 
     use super::*;
+    use crate::widgets::RemovableRow;
 
-    #[derive(Debug, gtk::CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/email.ui")]
     pub struct EmailPage {
         #[template_child]
@@ -28,6 +32,9 @@ mod imp {
         pub cc_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub bcc_entry: TemplateChild<adw::EntryRow>,
+        #[template_child]
+        pub attachments_listbox: TemplateChild<gtk::ListBox>,
+        pub model: gio::ListStore,
     }
 
     #[glib::object_subclass]
@@ -35,6 +42,18 @@ mod imp {
         const NAME: &'static str = "EmailPage";
         type Type = super::EmailPage;
         type ParentType = PortalPage;
+
+        fn new() -> Self {
+            Self {
+                subject: TemplateChild::default(),
+                body: TemplateChild::default(),
+                addresses: TemplateChild::default(),
+                cc_entry: TemplateChild::default(),
+                bcc_entry: TemplateChild::default(),
+                attachments_listbox: TemplateChild::default(),
+                model: gio::ListStore::new(gio::File::static_type()),
+            }
+        }
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -45,13 +64,51 @@ mod imp {
                     page.compose_mail().await;
                 }));
             });
+            klass.install_action("email.attach", None, move |page, _action, _target| {
+                let ctx = glib::MainContext::default();
+                ctx.spawn_local(clone!(@weak page => async move {
+                    page.attach().await;
+                }));
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
         }
     }
-    impl ObjectImpl for EmailPage {}
+    impl ObjectImpl for EmailPage {
+        fn constructed(&self, obj: &Self::Type) {
+            self.attachments_listbox.bind_model(
+                Some(&self.model),
+                glib::clone!(@strong self.model as model => move |obj| {
+                    let attachment = obj.downcast_ref::<gio::File>().unwrap();
+                    let display_name = attachment
+                        .query_info(
+                            &gio::FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+                            gio::FileQueryInfoFlags::NONE,
+                            gio::Cancellable::NONE,
+                        )
+                        .unwrap()
+                        .display_name();
+
+                    let row = RemovableRow::new();
+                    row.connect_removed(glib::clone!(@strong model => move |row| {
+                        let index = row.index();
+                        model.remove(index as u32);
+                    }));
+                    row.set_title(&display_name);
+                    row.set_subtitle(&attachment.uri());
+                    row.upcast()
+                }),
+            );
+
+            self.model
+                .connect_items_changed(glib::clone!(@weak obj => move |model, _, _, _| {
+                    obj.imp().attachments_listbox.set_visible(model.n_items() > 0);
+                }));
+            self.parent_constructed(obj);
+        }
+    }
     impl WidgetImpl for EmailPage {}
     impl BinImpl for EmailPage {}
     impl PortalPageImpl for EmailPage {}
@@ -94,6 +151,13 @@ impl EmailPage {
         if let Some(body) = body {
             request.set_body(&body);
         }
+        let attachments = self.attachments();
+        if !attachments.is_empty() {
+            // TODO: add a request.set_attachments helper method
+            attachments.iter().for_each(|attachment| {
+                request.add_attachment(attachment);
+            });
+        }
         match request.build().await {
             Ok(_) => {
                 self.send_notification(
@@ -105,6 +169,31 @@ impl EmailPage {
                 "Request to compose an email failed",
                 NotificationKind::Error,
             ),
+        }
+    }
+
+    pub fn attachments(&self) -> Vec<File> {
+        self.imp()
+            .model
+            .snapshot()
+            .into_iter()
+            .map(|obj| {
+                let file = obj.downcast_ref::<gio::File>().unwrap();
+                File::open(file.path().unwrap()).unwrap()
+            })
+            .collect::<Vec<File>>()
+    }
+
+    pub async fn attach(&self) {
+        let dialog = gtk::FileChooserNative::builder()
+            .select_multiple(true)
+            .build();
+        if dialog.run_future().await == gtk::ResponseType::Accept {
+            let files = dialog.files();
+            for file in files.into_iter() {
+                let file = file.downcast_ref::<gio::File>().unwrap();
+                self.imp().model.append(file);
+            }
         }
     }
 }
