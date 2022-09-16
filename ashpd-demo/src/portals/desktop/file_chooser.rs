@@ -1,9 +1,7 @@
 use adw::prelude::*;
 use ashpd::{
-    desktop::file_chooser::{
-        FileChooserProxy, OpenFileOptions, SaveFileOptions, SaveFilesOptions, SelectedFiles,
-    },
-    zbus, WindowIdentifier,
+    desktop::file_chooser::{OpenFileRequest, SaveFileRequest, SaveFilesRequest},
+    WindowIdentifier,
 };
 use glib::clone;
 use gtk::{glib, subclass::prelude::*};
@@ -129,21 +127,20 @@ impl FileChooserPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         let imp = self.imp();
         let title = imp.open_title_entry.text();
-        let accept_label = is_empty(imp.open_accept_label_entry.text());
         let directory = imp.open_directory_switch.is_active();
         let modal = imp.open_modal_switch.is_active();
         let multiple = imp.open_multiple_switch.is_active();
 
-        match portal_open_file(
-            &identifier,
-            &title,
-            accept_label.as_deref(),
-            directory,
-            modal,
-            multiple,
-        )
-        .await
-        {
+        let mut request = OpenFileRequest::default()
+            .directory(directory)
+            .identifier(identifier)
+            .modal(modal)
+            .title(&title)
+            .multiple(multiple);
+        if let Some(accept_label) = is_empty(imp.open_accept_label_entry.text()) {
+            request.set_accept_label(&accept_label)
+        }
+        match request.build().await {
             Ok(files) => {
                 imp.open_response_group.show();
 
@@ -167,23 +164,25 @@ impl FileChooserPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         let imp = self.imp();
         let title = imp.save_file_title_entry.text();
-        let accept_label = is_empty(imp.save_file_accept_label_entry.text());
         let modal = imp.save_file_modal_switch.is_active();
-        let current_name = is_empty(imp.save_file_current_name_entry.text());
-        let current_folder = is_empty(imp.save_file_current_folder_entry.text());
-        let current_file = is_empty(imp.save_file_current_file_entry.text());
+        let mut request = SaveFileRequest::default()
+            .identifier(identifier)
+            .modal(modal)
+            .title(&title);
 
-        match portal_save_file(
-            &identifier,
-            &title,
-            accept_label.as_deref(),
-            modal,
-            current_name.as_deref(),
-            current_folder.as_deref(),
-            current_file.as_deref(),
-        )
-        .await
-        {
+        if let Some(accept_label) = is_empty(imp.save_file_accept_label_entry.text()) {
+            request.set_accept_label(&accept_label);
+        }
+        if let Some(current_name) = is_empty(imp.save_file_current_name_entry.text()) {
+            request.set_current_name(&current_name);
+        }
+        if let Some(current_folder) = is_empty(imp.save_file_current_folder_entry.text()) {
+            request.set_current_folder(current_folder);
+        }
+        if let Some(current_file) = is_empty(imp.save_file_current_file_entry.text()) {
+            request.set_current_file(current_file);
+        }
+        match request.build().await {
             Ok(files) => {
                 imp.save_file_response_group.show();
 
@@ -208,21 +207,29 @@ impl FileChooserPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         let imp = self.imp();
         let title = imp.save_files_title_entry.text();
-        let accept_label = is_empty(imp.save_files_accept_label_entry.text());
-        let current_folder = is_empty(imp.save_files_current_folder_entry.text());
         let modal = imp.save_files_modal_switch.is_active();
-        let files = is_empty(imp.save_files_files_entry.text()).map(split_comma);
+        let mut request = SaveFilesRequest::default()
+            .identifier(identifier)
+            .modal(modal)
+            .title(&title);
 
-        match portal_save_files(
-            &identifier,
-            &title,
-            accept_label.as_deref(),
-            modal,
-            current_folder.as_deref(),
-            files.as_deref(),
-        )
-        .await
-        {
+        if let Some(accept_label) = is_empty(imp.save_files_accept_label_entry.text()) {
+            request.set_accept_label(&accept_label);
+        }
+        if let Some(current_folder) = is_empty(imp.save_files_current_folder_entry.text()) {
+            request.set_current_folder(current_folder);
+        }
+
+        if let Some(files) = is_empty(imp.save_files_files_entry.text()).map(split_comma) {
+            request.set_files(
+                files
+                    .iter()
+                    .map(|s| s.as_ref())
+                    .collect::<Vec<&str>>()
+                    .as_slice(),
+            );
+        };
+        match request.build().await {
             Ok(files) => {
                 imp.save_files_response_group.show();
 
@@ -240,97 +247,4 @@ impl FileChooserPage {
             }
         }
     }
-}
-
-async fn portal_open_file(
-    identifier: &WindowIdentifier,
-    title: &str,
-    accept_label: Option<&str>,
-    directory: bool,
-    modal: bool,
-    multiple: bool,
-) -> ashpd::Result<SelectedFiles> {
-    let proxy = FileChooserProxy::new().await?;
-    let options = OpenFileOptions::default()
-        .directory(directory)
-        .modal(modal)
-        .multiple(multiple);
-    let options = if let Some(accept_label) = accept_label {
-        options.accept_label(accept_label)
-    } else {
-        options
-    };
-
-    let selected_files = proxy.open_file(identifier, title, options).await?;
-    Ok(selected_files)
-}
-
-async fn portal_save_file(
-    identifier: &WindowIdentifier,
-    title: &str,
-    accept_label: Option<&str>,
-    modal: bool,
-    current_name: Option<&str>,
-    current_folder: Option<&str>,
-    current_file: Option<&str>,
-) -> ashpd::Result<SelectedFiles> {
-    let proxy = FileChooserProxy::new().await?;
-    let options = SaveFileOptions::default().modal(modal);
-    let options = if let Some(accept_label) = accept_label {
-        options.accept_label(accept_label)
-    } else {
-        options
-    };
-    let options = if let Some(current_name) = current_name {
-        options.current_name(current_name)
-    } else {
-        options
-    };
-    let options = if let Some(current_folder) = current_folder {
-        options.current_folder(current_folder)
-    } else {
-        options
-    };
-    let options = if let Some(current_file) = current_file {
-        options.current_file(current_file)
-    } else {
-        options
-    };
-    let selected_files = proxy.save_file(identifier, title, options).await?;
-    Ok(selected_files)
-}
-
-async fn portal_save_files<S: AsRef<str>>(
-    identifier: &WindowIdentifier,
-    title: &str,
-    accept_label: Option<&str>,
-    modal: bool,
-    current_folder: Option<&str>,
-    files: Option<&[S]>,
-) -> ashpd::Result<SelectedFiles> {
-    let proxy = FileChooserProxy::new().await?;
-    let options = SaveFilesOptions::default().modal(modal);
-    let options = if let Some(accept_label) = accept_label {
-        options.accept_label(accept_label)
-    } else {
-        options
-    };
-    let options = if let Some(current_folder) = current_folder {
-        options.current_folder(current_folder)
-    } else {
-        options
-    };
-    let options = if let Some(files) = files {
-        options.files(
-            files
-                .iter()
-                .map(|s| s.as_ref())
-                .collect::<Vec<&str>>()
-                .as_slice(),
-        )
-    } else {
-        options
-    };
-    let selected_files = proxy.save_files(identifier, title, options).await?;
-    Ok(selected_files)
 }

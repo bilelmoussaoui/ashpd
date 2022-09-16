@@ -85,7 +85,11 @@ impl WallpaperPage {
             let identifier = WindowIdentifier::from_native(&root).await;
             match url::Url::parse(&file_chooser.file().unwrap().uri()) {
                 Ok(wallpaper_uri) => {
-                    match wallpaper::set_from_uri(&identifier, &wallpaper_uri, show_preview, set_on)
+                    match wallpaper::WallpaperRequest::default()
+                        .identifier(identifier)
+                        .show_preview(show_preview)
+                        .set_on(set_on)
+                        .build_uri(&wallpaper_uri)
                         .await
                     {
                         Err(err) => {

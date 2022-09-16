@@ -1,4 +1,4 @@
-use ashpd::{documents::DocumentsProxy, zbus};
+use ashpd::documents::Documents;
 use gtk::{
     glib::{self, clone},
     prelude::*,
@@ -61,7 +61,7 @@ impl DocumentsPage {
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {
-        let proxy = DocumentsProxy::new().await?;
+        let proxy = Documents::new().await?;
 
         let mount_point = proxy.mount_point().await?;
         self.imp()

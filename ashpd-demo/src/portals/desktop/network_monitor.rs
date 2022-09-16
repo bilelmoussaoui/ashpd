@@ -1,5 +1,5 @@
 use adw::prelude::*;
-use ashpd::{desktop::network_monitor::NetworkMonitorProxy, zbus};
+use ashpd::desktop::network_monitor::NetworkMonitor;
 use gtk::{
     glib::{self, clone},
     subclass::prelude::*,
@@ -85,7 +85,7 @@ impl NetworkMonitorPage {
 
     async fn refresh(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let proxy = NetworkMonitorProxy::new().await?;
+        let proxy = NetworkMonitor::new().await?;
         let status = proxy.status().await?;
 
         imp.connectivity
@@ -99,7 +99,7 @@ impl NetworkMonitorPage {
 
     async fn can_reach(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let proxy = NetworkMonitorProxy::new().await?;
+        let proxy = NetworkMonitor::new().await?;
 
         let hostname = imp.host_entry.text();
         let port = imp.port_entry.text().parse().unwrap_or(80);

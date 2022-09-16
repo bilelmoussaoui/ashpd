@@ -4,9 +4,9 @@ use adw::prelude::*;
 use ashpd::{
     desktop::{
         location::{Accuracy, Location, LocationProxy},
-        SessionProxy,
+        Session,
     },
-    zbus, WindowIdentifier,
+    WindowIdentifier,
 };
 use chrono::{DateTime, Local, TimeZone};
 use futures::{
@@ -56,7 +56,7 @@ mod imp {
         #[template_child(id = "license")]
         pub map_license: TemplateChild<shumate::License>,
         pub marker: shumate::Marker,
-        pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static>>>>,
         pub abort_handle: Arc<Mutex<Option<AbortHandle>>>,
     }
 
@@ -220,7 +220,7 @@ impl LocationPage {
             imp.heading_label.set_label(&heading.to_string());
         }
         if let Some(description) = location.description() {
-            imp.description_label.set_label(&description.to_string());
+            imp.description_label.set_label(description);
         }
         imp.latitude_label
             .set_label(&location.latitude().to_string());
@@ -243,7 +243,7 @@ pub async fn locate<'a>(
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,
-) -> ashpd::Result<(SessionProxy<'a>, LocationProxy<'a>)> {
+) -> ashpd::Result<(Session<'a>, LocationProxy<'a>)> {
     let proxy = LocationProxy::new().await?;
     let session = proxy
         .create_session(

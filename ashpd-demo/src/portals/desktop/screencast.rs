@@ -3,11 +3,11 @@ use std::{os::unix::io::RawFd, sync::Arc};
 use adw::prelude::*;
 use ashpd::{
     desktop::{
-        screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType, Stream},
-        SessionProxy,
+        screencast::{CursorMode, PersistMode, Screencast, SourceType, Stream},
+        Session,
     },
     enumflags2::BitFlags,
-    zbus, WindowIdentifier,
+    WindowIdentifier,
 };
 use futures::lock::Mutex;
 use gtk::{
@@ -33,7 +33,7 @@ mod imp {
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub multiple_switch: TemplateChild<gtk::Switch>,
-        pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static>>>>,
         #[template_child]
         pub monitor_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
@@ -212,7 +212,7 @@ impl ScreenCastPage {
         imp.response_group.hide();
     }
 
-    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, RawFd, SessionProxy<'static>)> {
+    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, RawFd, Session<'static>)> {
         let imp = self.imp();
         let sources = self.selected_sources();
         let cursor_mode = self.selected_cursor_mode();
@@ -223,7 +223,7 @@ impl ScreenCastPage {
 
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        let proxy = ScreenCastProxy::new().await?;
+        let proxy = Screencast::new().await?;
         let session = proxy.create_session().await?;
         let mut token = imp.session_token.lock().await;
         proxy
@@ -247,7 +247,7 @@ impl ScreenCastPage {
 }
 
 pub async fn available_types() -> ashpd::Result<(BitFlags<CursorMode>, BitFlags<SourceType>)> {
-    let proxy = ScreenCastProxy::new().await?;
+    let proxy = Screencast::new().await?;
 
     let cursor_modes = proxy.available_cursor_modes().await?;
     let source_types = proxy.available_source_types().await?;

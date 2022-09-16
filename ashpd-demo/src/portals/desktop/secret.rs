@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use ashpd::{desktop::secret, zbus};
+use ashpd::desktop::secret;
 use glib::clone;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
@@ -68,7 +68,7 @@ impl SecretPage {
             let key_str = format!("{:?}", key)
                 .trim_start_matches('[')
                 .trim_end_matches(']')
-                .replace(",", " ");
+                .replace(',', " ");
             imp.token_label.set_text(&key_str);
             imp.response_group.show();
         }
@@ -76,10 +76,10 @@ impl SecretPage {
 }
 
 async fn retrieve_secret() -> ashpd::Result<Vec<u8>> {
-    let proxy = secret::SecretProxy::new().await?;
+    let proxy = secret::Secret::new().await?;
 
     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
-    proxy.retrieve_secret(&x2).await?;
+    proxy.retrieve(&x2).await?;
     drop(x2);
     let mut buf = Vec::new();
     x1.read_to_end(&mut buf)?;

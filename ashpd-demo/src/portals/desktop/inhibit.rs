@@ -3,10 +3,10 @@ use std::sync::Arc;
 use ashpd::{
     desktop::{
         inhibit::{InhibitFlags, InhibitProxy, SessionState},
-        SessionProxy,
+        Session,
     },
     enumflags2::BitFlags,
-    zbus, WindowIdentifier,
+    WindowIdentifier,
 };
 use futures::lock::Mutex;
 use gtk::{
@@ -37,7 +37,7 @@ mod imp {
         pub user_switch_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub suspend_check: TemplateChild<gtk::CheckButton>,
-        pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static>>>>,
     }
 
     #[glib::object_subclass]

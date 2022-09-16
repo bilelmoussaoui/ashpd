@@ -1,5 +1,5 @@
 use adw::prelude::*;
-use ashpd::{desktop::proxy_resolver::ProxyResolverProxy, zbus};
+use ashpd::desktop::proxy_resolver::ProxyResolver;
 use gtk::{
     glib::{self, clone},
     subclass::prelude::*,
@@ -66,7 +66,7 @@ impl ProxyResolverPage {
 
     async fn resolve(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let proxy = ProxyResolverProxy::new().await?;
+        let proxy = ProxyResolver::new().await?;
 
         match url::Url::parse(&imp.uri.text()) {
             Ok(uri) => match proxy.lookup(&uri).await {

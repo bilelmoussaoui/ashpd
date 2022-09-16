@@ -3,12 +3,12 @@ use std::sync::Arc;
 use adw::prelude::*;
 use ashpd::{
     desktop::{
-        remote_desktop::{DeviceType, RemoteDesktopProxy},
-        screencast::{CursorMode, PersistMode, ScreenCastProxy, SourceType, Stream},
-        SessionProxy,
+        remote_desktop::{DeviceType, RemoteDesktop},
+        screencast::{CursorMode, PersistMode, Screencast, SourceType, Stream},
+        Session,
     },
     enumflags2::BitFlags,
-    zbus, WindowIdentifier,
+    WindowIdentifier,
 };
 use futures::lock::Mutex;
 use gtk::{
@@ -29,7 +29,7 @@ mod imp {
     pub struct RemoteDesktopPage {
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
-        pub session: Arc<Mutex<Option<SessionProxy<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static>>>>,
         #[template_child]
         pub screencast_switch: TemplateChild<gtk::Switch>,
         #[template_child]
@@ -208,9 +208,7 @@ impl RemoteDesktopPage {
         imp.response_group.hide();
     }
 
-    async fn remote(
-        &self,
-    ) -> ashpd::Result<(BitFlags<DeviceType>, Vec<Stream>, SessionProxy<'static>)> {
+    async fn remote(&self) -> ashpd::Result<(BitFlags<DeviceType>, Vec<Stream>, Session<'static>)> {
         let imp = self.imp();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -220,10 +218,10 @@ impl RemoteDesktopPage {
         let sources = self.selected_sources();
         let devices = self.selected_devices();
 
-        let proxy = RemoteDesktopProxy::new().await?;
+        let proxy = RemoteDesktop::new().await?;
         let session = proxy.create_session().await?;
         if is_screencast {
-            let screencast_proxy = ScreenCastProxy::new().await?;
+            let screencast_proxy = Screencast::new().await?;
             screencast_proxy
                 .select_sources(
                     &session,
@@ -244,6 +242,6 @@ impl RemoteDesktopPage {
 }
 
 pub async fn available_devices() -> ashpd::Result<BitFlags<DeviceType>> {
-    let proxy = RemoteDesktopProxy::new().await?;
+    let proxy = RemoteDesktop::new().await?;
     proxy.available_device_types().await
 }

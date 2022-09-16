@@ -1,4 +1,4 @@
-use ashpd::{desktop::account, WindowIdentifier};
+use ashpd::{desktop::account::UserInformationResponse, WindowIdentifier};
 use glib::clone;
 use gtk::{gdk_pixbuf, glib, prelude::*, subclass::prelude::*};
 
@@ -70,8 +70,10 @@ impl AccountPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = imp.reason.text();
         self.send_notification("Fetching user information...", NotificationKind::Info);
-
-        match account::user_information(&identifier, &reason).await {
+        let request = UserInformationResponse::builder()
+            .identifier(identifier)
+            .reason(&reason);
+        match request.build().await {
             Ok(user_info) => {
                 self.send_notification(
                     "User information request was successful",
@@ -79,8 +81,11 @@ impl AccountPage {
                 );
                 imp.id_label.set_text(user_info.id());
                 imp.name_label.set_text(user_info.name());
-                let path: std::path::PathBuf =
-                    user_info.image().trim_start_matches("file://").into();
+                let path: std::path::PathBuf = user_info
+                    .image()
+                    .as_str()
+                    .trim_start_matches("file://")
+                    .into();
                 let pixbuf = gdk_pixbuf::Pixbuf::from_file(path).unwrap();
 
                 imp.avatar.set_from_pixbuf(Some(&pixbuf));

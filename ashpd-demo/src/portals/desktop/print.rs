@@ -2,7 +2,7 @@ use std::os::unix::prelude::AsRawFd;
 
 use ashpd::{
     desktop::print::{PageSetup, PrintProxy, Settings},
-    zbus, WindowIdentifier,
+    WindowIdentifier,
 };
 use gtk::{
     glib::{self, clone},
