@@ -118,15 +118,23 @@ impl UserInformationRequest {
     #[must_use]
     /// Sets a user-visible reason for the request.
     pub fn reason(mut self, reason: &str) -> Self {
-        self.options.reason = Some(reason.to_owned());
+        self.set_reason(reason);
         self
+    }
+
+    pub fn set_reason(&mut self, reason: &str) {
+        self.options.reason = Some(reason.to_owned());
     }
 
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+        self.set_identifier(identifier);
         self
+    }
+
+    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
+        self.identifier = identifier;
     }
 
     /// Build the [`UserInformationResponse`].

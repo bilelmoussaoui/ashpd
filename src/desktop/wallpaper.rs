@@ -179,8 +179,12 @@ impl WallpaperRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+        self.set_identifier(identifier);
         self
+    }
+
+    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
+        self.identifier = identifier;
     }
 
     /// Whether to show a preview of the picture.
@@ -188,15 +192,23 @@ impl WallpaperRequest {
     /// not set.
     #[must_use]
     pub fn show_preview(mut self, show_preview: bool) -> Self {
-        self.options.show_preview = Some(show_preview);
+        self.set_show_preview(show_preview);
         self
+    }
+
+    pub fn set_show_preview(&mut self, show_preview: bool) {
+        self.options.show_preview = Some(show_preview);
     }
 
     /// Sets where to set the wallpaper on.
     #[must_use]
     pub fn set_on(mut self, set_on: SetOn) -> Self {
-        self.options.set_on = Some(set_on);
+        self.set_set_on(set_on);
         self
+    }
+
+    pub fn set_set_on(&mut self, set_on: SetOn) {
+        self.options.set_on = Some(set_on);
     }
 
     /// Build using a URI.
