@@ -1,6 +1,6 @@
 use std::os::unix::prelude::RawFd;
 
-use ashpd::{desktop::camera, zbus};
+use ashpd::desktop::camera;
 use glib::clone;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
@@ -9,8 +9,9 @@ use crate::widgets::{
 };
 
 mod imp {
-    use adw::subclass::prelude::*;
     use std::cell::RefCell;
+
+    use adw::subclass::prelude::*;
 
     use super::*;
 
@@ -107,8 +108,8 @@ impl CameraPage {
                     let props = s.properties();
                     let nick = props
                         .get("node.nick")
-                        .or(props.get("node.description"))
-                        .or(props.get("node.name"))
+                        .or_else(|| props.get("node.description"))
+                        .or_else(|| props.get("node.name"))
                         .map(String::from)
                         .unwrap_or_default();
                     let name = props.get("name").map(String::from).unwrap_or_default();
@@ -167,12 +168,12 @@ impl CameraPage {
 }
 
 async fn stream() -> ashpd::Result<RawFd> {
-    let proxy = camera::CameraProxy::new().await?;
-    proxy.access_camera().await?;
-    Ok(proxy.open_pipe_wire_remote().await?)
+    let proxy = camera::Camera::new().await?;
+    proxy.request_access().await?;
+    proxy.open_pipe_wire_remote().await
 }
 
 async fn camera_available() -> ashpd::Result<bool> {
-    let proxy = camera::CameraProxy::new().await?;
-    Ok(proxy.is_camera_present().await?)
+    let proxy = camera::Camera::new().await?;
+    proxy.is_present().await
 }

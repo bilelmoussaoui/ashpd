@@ -1,7 +1,6 @@
 use adw::prelude::*;
 use ashpd::{
     desktop::notification::{Button, Notification, NotificationProxy, Priority},
-    zbus,
     zvariant::Value,
 };
 use glib::clone;

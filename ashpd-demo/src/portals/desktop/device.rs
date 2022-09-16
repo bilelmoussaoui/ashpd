@@ -1,7 +1,4 @@
-use ashpd::{
-    desktop::device::{Device, DeviceProxy},
-    zbus,
-};
+use ashpd::desktop::device::{Device, DeviceProxy};
 use gtk::{
     glib::{self, clone},
     prelude::*,

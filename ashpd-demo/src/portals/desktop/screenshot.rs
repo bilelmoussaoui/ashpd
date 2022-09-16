@@ -83,7 +83,11 @@ impl ScreenshotPage {
         // used for retrieving a window identifier
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        match screenshot::pick_color(&identifier).await {
+        match screenshot::ColorResponse::builder()
+            .identifier(identifier)
+            .build()
+            .await
+        {
             Ok(color) => {
                 self.imp().color_widget.set_rgba(color.into());
                 self.send_notification(
@@ -106,9 +110,15 @@ impl ScreenshotPage {
         let interactive = imp.interactive_switch.is_active();
         let modal = imp.modal_switch.is_active();
 
-        match screenshot::take(&identifier, interactive, modal).await {
+        match screenshot::ScreenshotRequest::default()
+            .identifier(identifier)
+            .interactive(interactive)
+            .modal(modal)
+            .build()
+            .await
+        {
             Ok(uri) => {
-                let file = gio::File::for_uri(&uri.as_str());
+                let file = gio::File::for_uri(uri.as_str());
                 imp.screenshot_photo.set_file(Some(&file));
                 imp.revealer.show(); // Revealer has a weird issue where it still
                                      // takes space even if it's child is hidden

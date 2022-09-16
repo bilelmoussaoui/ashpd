@@ -2,7 +2,7 @@ use std::{collections::HashMap, convert::TryFrom};
 
 use adw::prelude::*;
 use ashpd::{
-    flatpak::{FlatpakProxy, SpawnFlags, SpawnOptions},
+    flatpak::{Flatpak, SpawnFlags, SpawnOptions},
     zbus, zvariant,
 };
 use gio::ApplicationFlags;
@@ -223,7 +223,7 @@ impl Application {
     }
 
     async fn restart(&self) -> ashpd::Result<()> {
-        let proxy = FlatpakProxy::new().await?;
+        let proxy = Flatpak::new().await?;
         proxy
             .spawn(
                 "/",

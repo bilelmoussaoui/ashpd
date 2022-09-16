@@ -1,7 +1,4 @@
-use ashpd::{
-    desktop::email::{self, Email},
-    WindowIdentifier,
-};
+use ashpd::{desktop::email::EmailRequest, WindowIdentifier};
 use gtk::{
     glib::{self, clone},
     prelude::*,
@@ -79,26 +76,25 @@ impl EmailPage {
         let bcc = is_empty(imp.bcc_entry.text()).map(split_comma);
         let cc = is_empty(imp.cc_entry.text()).map(split_comma);
         let root = self.native().unwrap();
+        let identifier = WindowIdentifier::from_native(&root).await;
 
-        let mut email = Email::new();
+        let mut request = EmailRequest::default().identifier(identifier);
         if let Some(subject) = subject {
-            email.set_subject(&subject);
-        }
-        if let Some(body) = body {
-            email.set_body(&body);
+            request.set_subject(&subject);
         }
         if let Some(addresses) = addresses {
-            email.set_addresses(&addresses);
-        }
-        if let Some(bcc) = bcc {
-            email.set_bcc(&bcc);
+            request.set_addresses(&addresses);
         }
         if let Some(cc) = cc {
-            email.set_cc(&cc);
+            request.set_cc(&cc);
         }
-
-        let identifier = WindowIdentifier::from_native(&root).await;
-        match email::compose(&identifier, email).await {
+        if let Some(bcc) = bcc {
+            request.set_bcc(&bcc);
+        }
+        if let Some(body) = body {
+            request.set_body(&body);
+        }
+        match request.build().await {
             Ok(_) => {
                 self.send_notification(
                     "Compose an email request was successful",

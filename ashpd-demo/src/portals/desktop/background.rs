@@ -1,4 +1,4 @@
-use ashpd::{desktop::background, WindowIdentifier};
+use ashpd::{desktop::background::BackgroundResponse, WindowIdentifier};
 use gtk::{
     glib::{self, clone},
     prelude::*,
@@ -70,29 +70,29 @@ impl BackgroundPage {
     }
 
     async fn request_background(&self) {
+        let root = self.native().unwrap();
+        let identifier = WindowIdentifier::from_native(&root).await;
         let imp = self.imp();
         let reason = imp.reason_entry.text();
         let auto_start = imp.auto_start_switch.is_active();
         let dbus_activatable = imp.dbus_activatable_switch.is_active();
-        let command = is_empty(imp.command_entry.text()).map(|txt| {
+
+        let mut request = BackgroundResponse::builder()
+            .identifier(identifier)
+            .reason(&reason)
+            .auto_start(auto_start)
+            .dbus_activatable(dbus_activatable);
+
+        if let Some(command) = is_empty(imp.command_entry.text()).map(|txt| {
             txt.split_whitespace()
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>()
-        });
-        let root = self.native().unwrap();
-
-        let identifier = WindowIdentifier::from_native(&root).await;
+        }) {
+            request.set_command(&command.iter().map(|s| s.as_str()).collect::<Vec<_>>());
+        }
         self.send_notification("Requesting background access", NotificationKind::Info);
 
-        match background::request(
-            &identifier,
-            &reason,
-            auto_start,
-            command.as_deref(),
-            dbus_activatable,
-        )
-        .await
-        {
+        match request.build().await {
             Ok(response) => {
                 imp.response_group.show();
                 imp.auto_start_label
