@@ -54,7 +54,7 @@ mod imp {
         type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
 
             klass.install_action("screencast.start", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();

@@ -13,7 +13,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/sidebar_row.ui")]
     pub struct SidebarRow {
         #[template_child]
-        pub label: TemplateChild<gtk::Label>,
+        pub title: TemplateChild<gtk::Label>,
         pub name: RefCell<Option<String>>,
     }
 
@@ -24,7 +24,7 @@ mod imp {
         type ParentType = gtk::ListBoxRow;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -35,35 +35,28 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpecString::new(
-                        "label",
-                        "Label",
-                        "Row Label",
-                        Some(""),
-                        ParamFlags::READWRITE | ParamFlags::CONSTRUCT,
-                    ),
-                    ParamSpecString::new(
-                        "page-name",
-                        "Page Name",
-                        "Page Name",
-                        Some("welcome"),
-                        ParamFlags::READWRITE | ParamFlags::CONSTRUCT,
-                    ),
+                    ParamSpecString::builder("title")
+                        .flags(ParamFlags::READWRITE | ParamFlags::CONSTRUCT)
+                        .build(),
+                    ParamSpecString::builder("page-name")
+                        .default_value(Some("welcome"))
+                        .flags(ParamFlags::READWRITE | ParamFlags::CONSTRUCT)
+                        .build(),
                 ]
             });
             PROPS.as_ref()
         }
         fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
-                "label" => self.label.label().to_value(),
+                "title" => self.title.label().to_value(),
                 "page-name" => self.name.borrow().to_value(),
                 _ => unimplemented!(),
             }
         }
         fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &ParamSpec) {
             match pspec.name() {
-                "label" => {
-                    self.label.set_text(&value.get::<String>().unwrap());
+                "title" => {
+                    self.title.set_text(&value.get::<String>().unwrap());
                 }
                 "page-name" => {
                     self.name
@@ -84,17 +77,16 @@ glib::wrapper! {
 
 impl SidebarRow {
     #[allow(clippy::new_without_default)]
-    pub fn new(label: &str, page_name: &str) -> Self {
-        glib::Object::new(&[("label", &label), ("page-name", &page_name)])
+    pub fn new(title: &str, page_name: &str) -> Self {
+        glib::Object::new(&[("title", &title), ("page-name", &page_name)])
             .expect("Failed to create a SidebarRow")
     }
 
     pub fn title(&self) -> Option<String> {
-        self.property("label")
+        self.property("title")
     }
 
     pub fn name(&self) -> String {
-        self.property::<Option<String>>("page-name")
-            .unwrap_or_else(|| "welcome".to_string())
+        self.property("page-name")
     }
 }

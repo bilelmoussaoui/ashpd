@@ -79,7 +79,7 @@ mod imp {
         }
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
 
             klass.install_action("location.start", None, move |page, _action, _target| {
                 let ctx = glib::MainContext::default();

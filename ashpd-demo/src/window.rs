@@ -107,7 +107,7 @@ mod imp {
         }
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
             SidebarRow::static_type();
 
             klass.install_action("win.back", None, |win, _, _| {

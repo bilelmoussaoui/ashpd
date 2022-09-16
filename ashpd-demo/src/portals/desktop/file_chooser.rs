@@ -68,7 +68,7 @@ mod imp {
         type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
-            Self::bind_template(klass);
+            klass.bind_template();
 
             klass.install_action(
                 "file_chooser.open_file",

@@ -61,91 +61,91 @@
                     <property name="width-request">200</property>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Account</property>
+                        <property name="title" translatable="yes">Account</property>
                         <property name="page-name">account</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Camera</property>
+                        <property name="title" translatable="yes">Camera</property>
                         <property name="page-name">camera</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Documents</property>
+                        <property name="title" translatable="yes">Documents</property>
                         <property name="page-name">documents</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Email</property>
+                        <property name="title" translatable="yes">Email</property>
                         <property name="page-name">email</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">File Chooser</property>
+                        <property name="title" translatable="yes">File Chooser</property>
                         <property name="page-name">file_chooser</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Inhibit</property>
+                        <property name="title" translatable="yes">Inhibit</property>
                         <property name="page-name">inhibit</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Location</property>
+                        <property name="title" translatable="yes">Location</property>
                         <property name="page-name">location</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Notification</property>
+                        <property name="title" translatable="yes">Notification</property>
                         <property name="page-name">notification</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Open URI</property>
+                        <property name="title" translatable="yes">Open URI</property>
                         <property name="page-name">open_uri</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Print</property>
+                        <property name="title" translatable="yes">Print</property>
                         <property name="page-name">print</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Remote Desktop</property>
+                        <property name="title" translatable="yes">Remote Desktop</property>
                         <property name="page-name">remote_desktop</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Screen Cast</property>
+                        <property name="title" translatable="yes">Screen Cast</property>
                         <property name="page-name">screencast</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Screenshot</property>
+                        <property name="title" translatable="yes">Screenshot</property>
                         <property name="page-name">screenshot</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Secret</property>
+                        <property name="title" translatable="yes">Secret</property>
                         <property name="page-name">secret</property>
                       </object>
                     </child>
                     <child>
                       <object class="SidebarRow">
-                        <property name="label" translatable="yes">Wallpaper</property>
+                        <property name="title" translatable="yes">Wallpaper</property>
                         <property name="page-name">wallpaper</property>
                       </object>
                     </child>

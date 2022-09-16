@@ -27,13 +27,7 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             use once_cell::sync::Lazy;
             static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
-                vec![ParamSpecBoxed::new(
-                    "rgba",
-                    "RGBA",
-                    "Color RGBA",
-                    gdk::RGBA::static_type(),
-                    glib::ParamFlags::READWRITE,
-                )]
+                vec![ParamSpecBoxed::builder("rgba", gdk::RGBA::static_type()).build()]
             });
             PROPS.as_ref()
         }
