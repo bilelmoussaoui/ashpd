@@ -13,5 +13,5 @@ jobs:
       - uses: codespell-project/actions-codespell@master
         with:
           check_filenames: true
-          ignore_words_list: "crate,ser"
+          ignore_words_list: crate,ser,DoNot
           skip: "*.svg"
