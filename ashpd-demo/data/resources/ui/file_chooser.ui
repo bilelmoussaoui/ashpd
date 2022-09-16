@@ -62,8 +62,13 @@
               <object class="GtkButton">
                 <property name="label" translatable="yes">_Request</property>
                 <property name="use-underline">True</property>
-                <property name="halign">start</property>
+                <property name="halign">center</property>
                 <property name="action-name">file_chooser.open_file</property>
+                <style>
+                  <class name="pill" />
+                  <class name="large-button" />
+                  <class name="suggested-action" />
+                </style>
               </object>
             </child>
             <child>
@@ -121,8 +126,13 @@
               <object class="GtkButton">
                 <property name="label" translatable="yes">_Request</property>
                 <property name="use-underline">True</property>
-                <property name="halign">start</property>
+                <property name="halign">center</property>
                 <property name="action-name">file_chooser.save_file</property>
+                <style>
+                  <class name="pill" />
+                  <class name="large-button" />
+                  <class name="suggested-action" />
+                </style>
               </object>
             </child>
             <child>
@@ -175,8 +185,13 @@
               <object class="GtkButton">
                 <property name="label" translatable="yes">_Request</property>
                 <property name="use-underline">True</property>
-                <property name="halign">start</property>
+                <property name="halign">center</property>
                 <property name="action-name">file_chooser.save_files</property>
+                <style>
+                  <class name="pill" />
+                  <class name="large-button" />
+                  <class name="suggested-action" />
+                </style>
               </object>
             </child>
             <child>

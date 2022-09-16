@@ -139,6 +139,11 @@
                     <property name="use-underline">True</property>
                     <property name="halign">start</property>
                     <property name="action-name">remote_desktop.start</property>
+                    <style>
+                      <class name="pill" />
+                      <class name="large-button" />
+                      <class name="suggested-action" />
+                    </style>
                   </object>
                 </child>
                 <child>
@@ -151,6 +156,8 @@
                     <property name="halign">end</property>
                     <property name="hexpand">True</property>
                     <style>
+                      <class name="pill" />
+                      <class name="large-button" />
                       <class name="destructive-action" />
                     </style>
                   </object>

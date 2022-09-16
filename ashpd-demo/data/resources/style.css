@@ -24,3 +24,7 @@ notification infobar label {
 .map-marker {
     color: #e01b24;
 }
+
+.large-button {
+    min-width: 200px;
+}

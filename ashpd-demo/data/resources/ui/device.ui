@@ -51,8 +51,13 @@
             <child>
               <object class="GtkButton">
                 <property name="label">Request</property>
-                <property name="halign">start</property>
+                <property name="halign">center</property>
                 <property name="action-name">device.request</property>
+                <style>
+                  <class name="pill" />
+                  <class name="large-button" />
+                  <class name="suggested-action" />
+                </style>
               </object>
             </child>
           </object>
