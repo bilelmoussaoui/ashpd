@@ -1,5 +1,5 @@
 use adw::subclass::prelude::*;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{glib, prelude::*};
 
 use super::{Notification, NotificationKind};
 

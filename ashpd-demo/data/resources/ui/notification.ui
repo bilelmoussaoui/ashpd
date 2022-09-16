@@ -13,36 +13,18 @@
                 <property name="title" translatable="yes">Notification</property>
                 <property name="description" translatable="yes">Calls AddNotification on org.freedesktop.portal.Notification</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="id_entry">
                     <property name="title" translatable="yes">ID</property>
-                    <property name="activatable-widget">id_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="id_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="title_entry">
                     <property name="title" translatable="yes">Title</property>
-                    <property name="activatable-widget">title_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="title_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="body_entry">
                     <property name="title" translatable="yes">Body</property>
-                    <property name="activatable-widget">body_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="body_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>

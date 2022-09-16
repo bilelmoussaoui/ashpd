@@ -13,14 +13,8 @@
                 <property name="title" translatable="yes">Run the Application in the Background</property>
                 <property name="description">Calls RequestBackground on org.freedesktop.portal.Background</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="reason_entry">
                     <property name="title" translatable="yes">Reason</property>
-                    <property name="activatable-widget">reason_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="reason_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
@@ -46,15 +40,8 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="command_entry">
                     <property name="title" translatable="yes">Command</property>
-                    <property name="subtitle" translatable="yes">Comma separated args otherwise the Exec line from desktop file is used</property>
-                    <property name="activatable-widget">command_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="command_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

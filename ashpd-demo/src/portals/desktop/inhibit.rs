@@ -26,7 +26,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/inhibit.ui")]
     pub struct InhibitPage {
         #[template_child]
-        pub reason: TemplateChild<gtk::Entry>,
+        pub reason: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]

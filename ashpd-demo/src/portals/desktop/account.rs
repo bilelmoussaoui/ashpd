@@ -13,7 +13,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/account.ui")]
     pub struct AccountPage {
         #[template_child]
-        pub reason: TemplateChild<gtk::Entry>,
+        pub reason_row: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
@@ -68,7 +68,7 @@ impl AccountPage {
         let root = self.native().unwrap();
         let imp = self.imp();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let reason = imp.reason.text();
+        let reason = imp.reason_row.text();
         self.send_notification("Fetching user information...", NotificationKind::Info);
         let request = UserInformationResponse::builder()
             .identifier(identifier)

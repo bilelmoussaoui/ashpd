@@ -14,14 +14,8 @@
                 <property name="title" translatable="yes">Prepare &amp;amp; print a document</property>
                 <property name="description" translatable="yes">Calls Inhibit on org.freedesktop.portal.Print</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="title">
                     <property name="title" translatable="yes">Title</property>
-                    <property name="activatable-widget">title</property>
-                    <child>
-                      <object class="GtkEntry" id="title">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>

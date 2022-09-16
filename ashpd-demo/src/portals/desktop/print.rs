@@ -21,7 +21,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/print.ui")]
     pub struct PrintPage {
         #[template_child]
-        pub title: TemplateChild<gtk::Entry>,
+        pub title: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub modal_switch: TemplateChild<gtk::Switch>,
     }

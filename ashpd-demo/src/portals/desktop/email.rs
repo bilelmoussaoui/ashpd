@@ -19,15 +19,15 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/email.ui")]
     pub struct EmailPage {
         #[template_child]
-        pub subject: TemplateChild<gtk::Entry>,
+        pub subject: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub body: TemplateChild<gtk::Entry>,
+        pub body: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub addresses: TemplateChild<gtk::Entry>,
+        pub addresses: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub cc_entry: TemplateChild<gtk::Entry>,
+        pub cc_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub bcc_entry: TemplateChild<gtk::Entry>,
+        pub bcc_entry: TemplateChild<adw::EntryRow>,
     }
 
     #[glib::object_subclass]

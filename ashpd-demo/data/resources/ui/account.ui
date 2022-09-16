@@ -13,13 +13,8 @@
                 <property name="title" translatable="yes">User Information</property>
                 <property name="description" translatable="yes">Calls GetUserInformation on org.freedesktop.portal.Account</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="reason_row">
                     <property name="title" translatable="yes">Reason</property>
-                    <child>
-                      <object class="GtkEntry" id="reason">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

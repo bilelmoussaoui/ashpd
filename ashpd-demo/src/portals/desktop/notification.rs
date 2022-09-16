@@ -17,11 +17,11 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/notification.ui")]
     pub struct NotificationPage {
         #[template_child]
-        pub id_entry: TemplateChild<gtk::Entry>,
+        pub id_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub title_entry: TemplateChild<gtk::Entry>,
+        pub title_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub body_entry: TemplateChild<gtk::Entry>,
+        pub body_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub priority_combo: TemplateChild<adw::ComboRow>,
         #[template_child]

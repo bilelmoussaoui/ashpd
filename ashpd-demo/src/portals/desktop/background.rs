@@ -18,13 +18,13 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/background.ui")]
     pub struct BackgroundPage {
         #[template_child]
-        pub reason_entry: TemplateChild<gtk::Entry>,
+        pub reason_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub auto_start_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub dbus_activatable_switch: TemplateChild<gtk::Switch>,
         #[template_child]
-        pub command_entry: TemplateChild<gtk::Entry>,
+        pub command_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]

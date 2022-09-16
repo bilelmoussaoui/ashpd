@@ -20,7 +20,7 @@ mod imp {
         #[template_child]
         pub ask_switch: TemplateChild<gtk::Switch>,
         #[template_child]
-        pub uri_entry: TemplateChild<gtk::Entry>,
+        pub uri_entry: TemplateChild<adw::EntryRow>,
     }
 
     #[glib::object_subclass]

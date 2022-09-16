@@ -13,64 +13,32 @@
                 <property name="title" translatable="yes">Compose an Email</property>
                 <property name="description" translatable="yes">Calls ComposeEmail on org.freedesktop.portal.Email</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="subject">
                     <property name="title" translatable="yes">_Subject</property>
                     <property name="use-underline">True</property>
-                    <property name="activatable-widget">subject</property>
-                    <child>
-                      <object class="GtkEntry" id="subject">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="body">
                     <property name="title" translatable="yes">_Body</property>
                     <property name="use-underline">True</property>
-                    <property name="activatable-widget">body</property>
-                    <child>
-                      <object class="GtkEntry" id="body">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="addresses">
                     <property name="title" translatable="yes">_Addresses</property>
                     <property name="use-underline">True</property>
-                    <property name="subtitle" translatable="yes">Comma separated emails (Required)</property>
-                    <property name="activatable-widget">addresses</property>
-                    <child>
-                      <object class="GtkEntry" id="addresses">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="cc_entry">
                     <property name="title" translatable="yes">CC</property>
-                    <property name="subtitle" translatable="yes">Comma separated emails</property>
-                    <property name="activatable-widget">cc_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="cc_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
+
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="bcc_entry">
                     <property name="title" translatable="yes">BCC</property>
-                    <property name="subtitle">Comma separated emails</property>
-                    <property name="activatable-widget">bcc_entry</property>
-                    <child>
-                      <object class="GtkEntry" id="bcc_entry">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

@@ -13,14 +13,8 @@
                 <property name="title" translatable="yes">Inhibit Session Status Changes</property>
                 <property name="description" translatable="yes">Calls Inhibit on org.freedesktop.portal.Inhibit</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="reason">
                     <property name="title" translatable="yes">Reason</property>
-                    <property name="activatable-widget">reason</property>
-                    <child>
-                      <object class="GtkEntry" id="reason">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

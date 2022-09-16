@@ -20,9 +20,9 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/file_chooser.ui")]
     pub struct FileChooserPage {
         #[template_child]
-        pub open_title_entry: TemplateChild<gtk::Entry>,
+        pub open_title_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub open_accept_label_entry: TemplateChild<gtk::Entry>,
+        pub open_accept_label_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub open_modal_switch: TemplateChild<gtk::Switch>,
         #[template_child]
@@ -33,30 +33,30 @@ mod imp {
         pub open_response_group: TemplateChild<adw::PreferencesGroup>,
 
         #[template_child]
-        pub save_file_title_entry: TemplateChild<gtk::Entry>,
+        pub save_file_title_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_file_current_file_entry: TemplateChild<gtk::Entry>,
+        pub save_file_current_file_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_file_current_name_entry: TemplateChild<gtk::Entry>,
+        pub save_file_current_name_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_file_accept_label_entry: TemplateChild<gtk::Entry>,
+        pub save_file_accept_label_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_file_current_folder_entry: TemplateChild<gtk::Entry>,
+        pub save_file_current_folder_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub save_file_modal_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub save_file_response_group: TemplateChild<adw::PreferencesGroup>,
 
         #[template_child]
-        pub save_files_title_entry: TemplateChild<gtk::Entry>,
+        pub save_files_title_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_files_accept_label_entry: TemplateChild<gtk::Entry>,
+        pub save_files_accept_label_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_files_current_folder_entry: TemplateChild<gtk::Entry>,
+        pub save_files_current_folder_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub save_files_modal_switch: TemplateChild<gtk::Switch>,
         #[template_child]
-        pub save_files_files_entry: TemplateChild<gtk::Entry>,
+        pub save_files_files_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub save_files_response_group: TemplateChild<adw::PreferencesGroup>,
     }
