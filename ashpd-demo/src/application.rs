@@ -209,17 +209,16 @@ impl Application {
     }
 
     fn show_about_dialog(&self) {
-        let dialog = gtk::AboutDialog::builder()
-            .logo_icon_name(config::APP_ID)
+        adw::AboutWindow::builder()
+            .application_icon(config::APP_ID)
             .license_type(gtk::License::MitX11)
             .website("https://github.com/bilelmoussaoui/ashpd/")
             .version(config::VERSION)
             .transient_for(&self.main_window())
             .modal(true)
-            .authors(vec!["Bilal Elmoussaoui".into()])
-            .build();
-
-        dialog.show();
+            .developer_name("Bilal Elmoussaoui")
+            .build()
+            .present();
     }
 
     async fn restart(&self) -> ashpd::Result<()> {
