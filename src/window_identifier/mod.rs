@@ -300,7 +300,7 @@ unsafe impl HasRawWindowHandle for WindowIdentifier {
 }
 
 /// Supported WindowIdentifier kinds
-#[derive(Debug, Clone, PartialEq, Eq, zvariant::Type)]
+#[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 pub enum WindowIdentifierType {
     X11(std::os::raw::c_ulong),
