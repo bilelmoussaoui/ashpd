@@ -79,14 +79,6 @@ impl CameraPaintable {
         glib::Object::new(&[]).expect("Failed to create a CameraPaintable")
     }
 
-    pub fn set_pipewire_fd<F: AsRawFd>(&self, fd: F) {
-        let raw_fd = fd.as_raw_fd();
-        tracing::debug!("Loading PipeWire FD: {}", raw_fd);
-        let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
-        pipewire_element.set_property("fd", &raw_fd);
-        self.init_pipeline(pipewire_element);
-    }
-
     pub fn set_pipewire_node_id<F: AsRawFd>(&self, fd: F, node_id: Option<u32>) {
         let raw_fd = fd.as_raw_fd();
         let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
