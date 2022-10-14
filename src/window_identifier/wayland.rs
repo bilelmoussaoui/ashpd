@@ -188,14 +188,12 @@ impl wayland_client::Dispatch<wl_registry::WlRegistry, ()> for State {
                 "zxdg_exporter_v1" => {
                     #[cfg(feature = "tracing")]
                     tracing::info!("Found wayland interface {interface} v{version}");
-                    let exporter = registry
-                        .bind::<ZxdgExporterV1, (), State>(
-                            name,
-                            version.min(ZXDG_EXPORTER_V1),
-                            qhandle,
-                            (),
-                        )
-                        .unwrap();
+                    let exporter = registry.bind::<ZxdgExporterV1, (), State>(
+                        name,
+                        version.min(ZXDG_EXPORTER_V1),
+                        qhandle,
+                        (),
+                    );
                     match state.exporter {
                         Some(Exporter::V2(_)) => (),
                         _ => state.exporter = Some(Exporter::V1(exporter)),
@@ -204,14 +202,12 @@ impl wayland_client::Dispatch<wl_registry::WlRegistry, ()> for State {
                 "zxdg_exporter_v2" => {
                     #[cfg(feature = "tracing")]
                     tracing::info!("Found wayland interface {interface} v{version}");
-                    let exporter = registry
-                        .bind::<ZxdgExporterV2, (), State>(
-                            name,
-                            version.min(ZXDG_EXPORTER_V2),
-                            qhandle,
-                            (),
-                        )
-                        .unwrap();
+                    let exporter = registry.bind::<ZxdgExporterV2, (), State>(
+                        name,
+                        version.min(ZXDG_EXPORTER_V2),
+                        qhandle,
+                        (),
+                    );
                     state.exporter = Some(Exporter::V2(exporter));
                 }
                 _ => (),
@@ -231,19 +227,19 @@ fn wayland_export_handle(
     let mut event_queue = conn.new_event_queue();
     let qhandle = event_queue.handle();
     let mut state = State::default();
-    display.get_registry(&qhandle, ())?;
+    display.get_registry(&qhandle, ());
     event_queue.roundtrip(&mut state)?;
 
     let exported = match state.exporter.take() {
         Some(Exporter::V2(exporter)) => {
-            let exp = exporter.export_toplevel(surface, &qhandle, ())?;
+            let exp = exporter.export_toplevel(surface, &qhandle, ());
             event_queue.roundtrip(&mut state)?;
             exporter.destroy();
 
             Some(Exported::V2(exp))
         }
         Some(Exporter::V1(exporter)) => {
-            let exp = exporter.export(surface, &qhandle, ())?;
+            let exp = exporter.export(surface, &qhandle, ());
             event_queue.roundtrip(&mut state)?;
             exporter.destroy();
 
