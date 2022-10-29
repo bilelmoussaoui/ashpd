@@ -77,11 +77,6 @@ glib::wrapper! {
 }
 
 impl ColorWidget {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     pub fn set_rgba(&self, rgba: gdk::RGBA) {
         self.set_property("rgba", &rgba);
         self.queue_draw();

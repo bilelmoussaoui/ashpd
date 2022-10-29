@@ -69,10 +69,6 @@ glib::wrapper! {
 }
 
 impl CameraPaintable {
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     pub fn set_pipewire_node_id<F: AsRawFd>(&self, fd: F, node_id: Option<u32>) {
         let raw_fd = fd.as_raw_fd();
         let pipewire_element = gst::ElementFactory::make("pipewiresrc").build().unwrap();
@@ -148,6 +144,6 @@ impl CameraPaintable {
 
 impl Default for CameraPaintable {
     fn default() -> Self {
-        Self::new()
+        glib::Object::new(&[])
     }
 }

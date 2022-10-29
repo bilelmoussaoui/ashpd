@@ -91,7 +91,7 @@ mod imp {
                         .unwrap()
                         .display_name();
 
-                    let row = RemovableRow::new();
+                    let row = RemovableRow::default();
                     row.connect_removed(glib::clone!(@strong model => move |row| {
                         let index = row.index();
                         model.remove(index as u32);
@@ -119,11 +119,6 @@ glib::wrapper! {
 }
 
 impl EmailPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn compose_mail(&self) {
         let imp = self.imp();
 

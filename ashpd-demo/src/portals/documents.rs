@@ -57,11 +57,6 @@ glib::wrapper! {
 }
 
 impl DocumentsPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn refresh(&self) -> ashpd::Result<()> {
         let proxy = Documents::new().await?;
 

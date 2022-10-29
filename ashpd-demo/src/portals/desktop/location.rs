@@ -146,11 +146,6 @@ glib::wrapper! {
 }
 
 impl LocationPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn locate(&self) {
         let imp = self.imp();
         let distance_threshold = imp.distance_spin.value() as u32;

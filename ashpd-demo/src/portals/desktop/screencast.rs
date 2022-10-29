@@ -160,7 +160,7 @@ impl ScreenCastPage {
                     NotificationKind::Success,
                 );
                 streams.iter().for_each(|stream| {
-                    let paintable = CameraPaintable::new();
+                    let paintable = CameraPaintable::default();
                     let picture = gtk::Picture::builder()
                         .paintable(&paintable)
                         .hexpand(true)

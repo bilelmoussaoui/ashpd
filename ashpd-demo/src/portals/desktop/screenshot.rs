@@ -69,11 +69,6 @@ glib::wrapper! {
 }
 
 impl ScreenshotPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn pick_color(&self) {
         // used for retrieving a window identifier
         let root = self.native().unwrap();

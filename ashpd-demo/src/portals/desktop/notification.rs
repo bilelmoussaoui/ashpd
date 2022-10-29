@@ -79,11 +79,6 @@ glib::wrapper! {
 }
 
 impl NotificationPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     fn add_button(&self) {
         let button = NotificationButton::new();
         button.connect_removed(glib::clone!(@weak self as page => move |button| {

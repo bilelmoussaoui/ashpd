@@ -84,11 +84,6 @@ glib::wrapper! {
 }
 
 impl InhibitPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     fn inhibit_flags(&self) -> BitFlags<InhibitFlags> {
         let imp = self.imp();
         let mut flags = BitFlags::empty();

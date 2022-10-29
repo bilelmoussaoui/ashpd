@@ -55,11 +55,6 @@ glib::wrapper! {
 }
 
 impl WallpaperPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn pick_wallpaper(&self) {
         let imp = self.imp();
         let root = self.native().unwrap();

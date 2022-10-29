@@ -91,11 +91,6 @@ glib::wrapper! {
 }
 
 impl CameraPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn start_stream(&self) {
         let imp = self.imp();
 
@@ -107,7 +102,7 @@ impl CameraPage {
                 let n_cameras = streams.len();
                 for s in streams.iter() {
                     let picture = gtk::Picture::new();
-                    let paintable = CameraPaintable::new();
+                    let paintable = CameraPaintable::default();
                     let props = s.properties();
                     let nick = props
                         .get("node.nick")

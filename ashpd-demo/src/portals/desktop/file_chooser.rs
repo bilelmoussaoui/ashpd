@@ -108,11 +108,6 @@ glib::wrapper! {
 }
 
 impl FileChooserPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn open_file(&self) {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;

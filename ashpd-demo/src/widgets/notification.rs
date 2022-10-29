@@ -50,11 +50,6 @@ glib::wrapper! {
 }
 
 impl Notification {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     pub fn send(&self, text: &str, kind: NotificationKind) {
         let imp = self.imp();
         imp.info_bar.remove_css_class("error");

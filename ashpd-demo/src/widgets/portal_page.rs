@@ -59,13 +59,6 @@ glib::wrapper! {
         @implements gtk::Buildable;
 }
 
-impl PortalPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-}
-
 pub trait PortalPageExt {
     fn send_notification(&self, message: &str, kind: NotificationKind);
 }

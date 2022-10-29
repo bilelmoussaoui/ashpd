@@ -57,11 +57,6 @@ glib::wrapper! {
 }
 
 impl SecretPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn retrieve_secret(&self) {
         let imp = self.imp();
 

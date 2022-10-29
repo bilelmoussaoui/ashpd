@@ -53,11 +53,6 @@ glib::wrapper! {
 }
 
 impl OpenUriPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn open_uri(&self) {
         let imp = self.imp();
         let writeable = imp.writeable_switch.is_active();

@@ -56,11 +56,6 @@ glib::wrapper! {
 }
 
 impl AccountPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn fetch_user_information(&self) {
         let root = self.native().unwrap();
         let imp = self.imp();

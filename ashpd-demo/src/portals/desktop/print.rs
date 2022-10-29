@@ -56,11 +56,6 @@ glib::wrapper! {
 }
 
 impl PrintPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     async fn select_file(&self) {
         let imp = self.imp();
         let title = imp.title.text();

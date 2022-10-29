@@ -53,11 +53,6 @@ glib::wrapper! {
 }
 
 impl RemovableRow {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new(&[])
-    }
-
     pub fn connect_removed<F>(&self, callback: F) -> glib::SignalHandlerId
     where
         F: Fn(&Self) + 'static,
@@ -69,5 +64,11 @@ impl RemovableRow {
                 callback(obj);
             }),
         )
+    }
+}
+
+impl Default for RemovableRow {
+    fn default() -> Self {
+        glib::Object::new(&[])
     }
 }
