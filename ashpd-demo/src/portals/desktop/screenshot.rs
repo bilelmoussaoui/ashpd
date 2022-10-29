@@ -1,5 +1,4 @@
 use ashpd::{desktop::screenshot, WindowIdentifier};
-use glib::clone;
 use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
@@ -33,24 +32,18 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action(
+            klass.install_action_async(
                 "screenshot.pick-color",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.pick_color().await;
-                    }));
+                move |page, _action, _target| async move {
+                    page.pick_color().await;
                 },
             );
-            klass.install_action(
+            klass.install_action_async(
                 "screenshot.screenshot",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.screenshot().await;
-                    }));
+                move |page, _action, _target| async move {
+                    page.screenshot().await;
                 },
             );
         }
@@ -60,7 +53,8 @@ mod imp {
         }
     }
     impl ObjectImpl for ScreenshotPage {
-        fn constructed(&self, _obj: &Self::Type) {
+        fn constructed(&self) {
+            self.parent_constructed();
             self.screenshot_photo.set_overflow(gtk::Overflow::Hidden);
         }
     }
@@ -70,13 +64,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct ScreenshotPage(ObjectSubclass<imp::ScreenshotPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct ScreenshotPage(ObjectSubclass<imp::ScreenshotPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl ScreenshotPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a ScreenshotPage")
+        glib::Object::new(&[])
     }
 
     async fn pick_color(&self) {

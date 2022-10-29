@@ -81,19 +81,21 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("location.start", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "location.start",
+                None,
+                move |page, _action, _target| async move {
                     page.locate().await;
-                }));
-            });
+                },
+            );
 
-            klass.install_action("location.stop", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "location.stop",
+                None,
+                move |page, _action, _target| async move {
                     page.stop_session().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -101,7 +103,9 @@ mod imp {
         }
     }
     impl ObjectImpl for LocationPage {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            self.parent_constructed();
+            let obj = self.obj();
             let registry = shumate::MapSourceRegistry::with_defaults();
             let source = registry.by_id(&shumate::MAP_SOURCE_OSM_MAPNIK).unwrap();
             obj.action_set_enabled("location.stop", false);
@@ -121,10 +125,10 @@ mod imp {
             viewport.set_zoom_level(6.0);
 
             // self.map_license.append_map_source(&source);
-            self.parent_constructed(obj);
         }
 
-        fn dispose(&self, obj: &Self::Type) {
+        fn dispose(&self) {
+            let obj = self.obj();
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak obj as page => async move {
                 page.stop_session().await;
@@ -143,7 +147,7 @@ glib::wrapper! {
 impl LocationPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a LocationPage")
+        glib::Object::new(&[])
     }
 
     async fn locate(&self) {

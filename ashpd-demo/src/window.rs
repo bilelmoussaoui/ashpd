@@ -122,8 +122,9 @@ mod imp {
     }
 
     impl ObjectImpl for ApplicationWindow {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
+            let obj = self.obj();
             if config::PROFILE == "Devel" {
                 obj.add_css_class("devel");
             }
@@ -186,11 +187,11 @@ mod imp {
     impl WidgetImpl for ApplicationWindow {}
     impl WindowImpl for ApplicationWindow {
         // save window state on delete event
-        fn close_request(&self, obj: &Self::Type) -> Inhibit {
-            if let Err(err) = obj.save_window_size() {
+        fn close_request(&self) -> Inhibit {
+            if let Err(err) = self.obj().save_window_size() {
                 warn!("Failed to save window state, {}", &err);
             }
-            Inhibit(false)
+            self.parent_close_request()
         }
     }
 
@@ -206,7 +207,7 @@ glib::wrapper! {
 
 impl ApplicationWindow {
     pub fn new(app: &Application) -> Self {
-        glib::Object::new(&[("application", &app)]).expect("Failed to create ApplicationWindow")
+        glib::Object::new(&[("application", &app)])
     }
 
     fn save_window_size(&self) -> Result<(), glib::BoolError> {

@@ -2,7 +2,6 @@ use std::cell::RefCell;
 
 use adw::prelude::*;
 use ashpd::{desktop::wallpaper, WindowIdentifier};
-use glib::clone;
 use gtk::{glib, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
@@ -31,12 +30,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("wallpaper.select", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "wallpaper.select",
+                None,
+                move |page, _action, _target| async move {
                     page.pick_wallpaper().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -50,13 +50,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct WallpaperPage(ObjectSubclass<imp::WallpaperPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct WallpaperPage(ObjectSubclass<imp::WallpaperPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl WallpaperPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a WallpaperPage")
+        glib::Object::new(&[])
     }
 
     async fn pick_wallpaper(&self) {

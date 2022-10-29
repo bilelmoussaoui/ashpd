@@ -33,23 +33,17 @@ mod imp {
     }
     impl ObjectImpl for PortalPage {}
     impl WidgetImpl for PortalPage {
-        fn unmap(&self, widget: &Self::Type) {
+        fn unmap(&self) {
             self.notification.close();
 
-            self.parent_unmap(widget);
+            self.parent_unmap();
         }
     }
     impl BinImpl for PortalPage {}
     impl BuildableImpl for PortalPage {
-        fn add_child(
-            &self,
-            buildable: &Self::Type,
-            builder: &gtk::Builder,
-            child: &glib::Object,
-            type_: Option<&str>,
-        ) {
-            if buildable.first_child().is_none() {
-                self.parent_add_child(buildable, builder, child, type_);
+        fn add_child(&self, builder: &gtk::Builder, child: &glib::Object, type_: Option<&str>) {
+            if self.obj().first_child().is_none() {
+                self.parent_add_child(builder, child, type_);
             } else {
                 // We first check if the main child `box_` has already been bound.
                 self.container
@@ -60,13 +54,15 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct PortalPage(ObjectSubclass<imp::PortalPage>) @extends gtk::Widget, adw::Bin, @implements gtk::Buildable;
+    pub struct PortalPage(ObjectSubclass<imp::PortalPage>)
+        @extends gtk::Widget, adw::Bin,
+        @implements gtk::Buildable;
 }
 
 impl PortalPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a PortalPage")
+        glib::Object::new(&[])
     }
 }
 

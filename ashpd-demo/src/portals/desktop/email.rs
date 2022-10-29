@@ -2,11 +2,7 @@ use std::fs::File;
 
 use adw::prelude::*;
 use ashpd::{desktop::email::EmailRequest, WindowIdentifier};
-use gtk::{
-    gio,
-    glib::{self, clone},
-    subclass::prelude::*,
-};
+use gtk::{gio, glib, subclass::prelude::*};
 
 use crate::{
     portals::{is_empty, split_comma},
@@ -58,18 +54,20 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("email.compose", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "email.compose",
+                None,
+                move |page, _action, _target| async move {
                     page.compose_mail().await;
-                }));
-            });
-            klass.install_action("email.attach", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+                },
+            );
+            klass.install_action_async(
+                "email.attach",
+                None,
+                move |page, _action, _target| async move {
                     page.attach().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -77,7 +75,9 @@ mod imp {
         }
     }
     impl ObjectImpl for EmailPage {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            self.parent_constructed();
+            let obj = self.obj();
             self.attachments_listbox.bind_model(
                 Some(&self.model),
                 glib::clone!(@strong self.model as model => move |obj| {
@@ -106,7 +106,6 @@ mod imp {
                 .connect_items_changed(glib::clone!(@weak obj => move |model, _, _, _| {
                     obj.imp().attachments_listbox.set_visible(model.n_items() > 0);
                 }));
-            self.parent_constructed(obj);
         }
     }
     impl WidgetImpl for EmailPage {}
@@ -115,13 +114,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct EmailPage(ObjectSubclass<imp::EmailPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct EmailPage(ObjectSubclass<imp::EmailPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl EmailPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a EmailPage")
+        glib::Object::new(&[])
     }
 
     async fn compose_mail(&self) {
@@ -191,8 +191,8 @@ impl EmailPage {
         if dialog.run_future().await == gtk::ResponseType::Accept {
             let files = dialog.files();
             for file in files.into_iter() {
-                let file = file.downcast_ref::<gio::File>().unwrap();
-                self.imp().model.append(file);
+                let file = file.unwrap().downcast::<gio::File>().unwrap();
+                self.imp().model.append(&file);
             }
         }
     }

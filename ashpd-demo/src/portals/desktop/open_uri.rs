@@ -1,9 +1,5 @@
 use ashpd::{desktop::open_uri, WindowIdentifier};
-use gtk::{
-    glib::{self, clone},
-    prelude::*,
-    subclass::prelude::*,
-};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -32,12 +28,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("open_uri.uri", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "open_uri.uri",
+                None,
+                move |page, _action, _target| async move {
                     page.open_uri().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -57,7 +54,7 @@ glib::wrapper! {
 impl OpenUriPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a OpenUriPage")
+        glib::Object::new(&[])
     }
 
     async fn open_uri(&self) {

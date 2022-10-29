@@ -28,13 +28,13 @@ mod imp {
     }
 
     impl ObjectImpl for CameraPaintable {
-        fn dispose(&self, paintable: &Self::Type) {
-            paintable.close_pipeline();
+        fn dispose(&self) {
+            self.obj().close_pipeline();
         }
     }
 
     impl PaintableImpl for CameraPaintable {
-        fn intrinsic_height(&self, _paintable: &Self::Type) -> i32 {
+        fn intrinsic_height(&self) -> i32 {
             if let Some(ref paintable) = *self.sink_paintable.borrow() {
                 paintable.intrinsic_height()
             } else {
@@ -42,7 +42,7 @@ mod imp {
             }
         }
 
-        fn intrinsic_width(&self, _paintable: &Self::Type) -> i32 {
+        fn intrinsic_width(&self) -> i32 {
             if let Some(ref paintable) = *self.sink_paintable.borrow() {
                 paintable.intrinsic_width()
             } else {
@@ -50,17 +50,10 @@ mod imp {
             }
         }
 
-        fn snapshot(
-            &self,
-            _paintable: &Self::Type,
-            snapshot: &gdk::Snapshot,
-            width: f64,
-            height: f64,
-        ) {
+        fn snapshot(&self, snapshot: &gdk::Snapshot, width: f64, height: f64) {
             if let Some(ref image) = *self.sink_paintable.borrow() {
                 image.snapshot(snapshot, width, height);
             } else {
-                let snapshot = snapshot.downcast_ref::<gtk::Snapshot>().unwrap();
                 snapshot.append_color(
                     &gdk::RGBA::BLACK,
                     &graphene::Rect::new(0f32, 0f32, width as f32, height as f32),
@@ -71,17 +64,18 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct CameraPaintable(ObjectSubclass<imp::CameraPaintable>) @implements gdk::Paintable;
+    pub struct CameraPaintable(ObjectSubclass<imp::CameraPaintable>)
+        @implements gdk::Paintable;
 }
 
 impl CameraPaintable {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a CameraPaintable")
+        glib::Object::new(&[])
     }
 
     pub fn set_pipewire_node_id<F: AsRawFd>(&self, fd: F, node_id: Option<u32>) {
         let raw_fd = fd.as_raw_fd();
-        let pipewire_element = gst::ElementFactory::make("pipewiresrc", None).unwrap();
+        let pipewire_element = gst::ElementFactory::make("pipewiresrc").build().unwrap();
         pipewire_element.set_property("fd", &raw_fd);
         if let Some(node) = node_id {
             tracing::debug!(
@@ -101,7 +95,9 @@ impl CameraPaintable {
         let imp = self.imp();
         let pipeline = gst::Pipeline::new(None);
 
-        let sink = gst::ElementFactory::make("gtk4paintablesink", None).unwrap();
+        let sink = gst::ElementFactory::make("gtk4paintablesink")
+            .build()
+            .unwrap();
         let paintable = sink.property::<gdk::Paintable>("paintable");
 
         paintable.connect_invalidate_contents(clone!(@weak self as pt => move |_| {
@@ -113,9 +109,9 @@ impl CameraPaintable {
         }));
         imp.sink_paintable.replace(Some(paintable));
 
-        let convert = gst::ElementFactory::make("videoconvert", None).unwrap();
-        let queue1 = gst::ElementFactory::make("queue", None).unwrap();
-        let queue2 = gst::ElementFactory::make("queue", None).unwrap();
+        let convert = gst::ElementFactory::make("videoconvert").build().unwrap();
+        let queue1 = gst::ElementFactory::make("queue").build().unwrap();
+        let queue2 = gst::ElementFactory::make("queue").build().unwrap();
         pipeline
             .add_many(&[&pipewire_src, &queue1, &convert, &queue2, &sink])
             .unwrap();

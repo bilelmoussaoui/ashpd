@@ -45,13 +45,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct Notification(ObjectSubclass<imp::Notification>) @extends gtk::Widget, adw::Bin;
+    pub struct Notification(ObjectSubclass<imp::Notification>)
+        @extends gtk::Widget, adw::Bin;
 }
 
 impl Notification {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a Notification")
+        glib::Object::new(&[])
     }
 
     pub fn send(&self, text: &str, kind: NotificationKind) {

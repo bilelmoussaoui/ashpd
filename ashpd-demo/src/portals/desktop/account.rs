@@ -1,5 +1,4 @@
 use ashpd::{desktop::account::UserInformationResponse, WindowIdentifier};
-use glib::clone;
 use gtk::{gdk_pixbuf, glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
@@ -32,14 +31,11 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.install_action(
+            klass.install_action_async(
                 "account.information",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.fetch_user_information().await;
-                    }));
+                move |page, _action, _target| async move {
+                    page.fetch_user_information().await;
                 },
             );
         }
@@ -55,13 +51,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct AccountPage(ObjectSubclass<imp::AccountPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct AccountPage(ObjectSubclass<imp::AccountPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl AccountPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a AccountPage")
+        glib::Object::new(&[])
     }
 
     async fn fetch_user_information(&self) {

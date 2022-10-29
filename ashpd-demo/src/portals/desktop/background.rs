@@ -1,9 +1,5 @@
 use ashpd::{desktop::background::BackgroundResponse, WindowIdentifier};
-use gtk::{
-    glib::{self, clone},
-    prelude::*,
-    subclass::prelude::*,
-};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::{
     portals::is_empty,
@@ -41,12 +37,13 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.install_action("background.request", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "background.request",
+                None,
+                move |page, _action, _target| async move {
                     page.request_background().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -60,13 +57,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct BackgroundPage(ObjectSubclass<imp::BackgroundPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct BackgroundPage(ObjectSubclass<imp::BackgroundPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl BackgroundPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a BackgroundPage")
+        glib::Object::new(&[])
     }
 
     async fn request_background(&self) {

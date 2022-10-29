@@ -39,12 +39,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("camera.start", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "camera.start",
+                None,
+                move |page, _action, _target| async move {
                     page.start_stream().await;
-                }));
-            });
+                },
+            );
             klass.install_action("camera.stop", None, move |page, _, _| {
                 page.stop_stream();
             });
@@ -55,14 +56,15 @@ mod imp {
         }
     }
     impl ObjectImpl for CameraPage {
-        fn constructed(&self, obj: &Self::Type) {
-            obj.action_set_enabled("camera.stop", false);
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.obj().action_set_enabled("camera.stop", false);
         }
     }
     impl WidgetImpl for CameraPage {
-        fn map(&self, widget: &Self::Type) {
+        fn map(&self) {
             let ctx = glib::MainContext::default();
+            let widget = self.obj();
             ctx.spawn_local(clone!(@weak widget as page => async move {
                 let imp = page.imp();
                 let is_available = camera_available().await.unwrap_or(false);
@@ -76,7 +78,7 @@ mod imp {
                     page.action_set_enabled("camera.stop", false);
                 }
             }));
-            self.parent_map(widget);
+            self.parent_map();
         }
     }
     impl BinImpl for CameraPage {}
@@ -84,13 +86,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct CameraPage(ObjectSubclass<imp::CameraPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct CameraPage(ObjectSubclass<imp::CameraPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl CameraPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a CameraPage")
+        glib::Object::new(&[])
     }
 
     async fn start_stream(&self) {

@@ -4,7 +4,6 @@ use std::{
 };
 
 use ashpd::desktop::secret;
-use glib::clone;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{PortalPage, PortalPageImpl};
@@ -33,12 +32,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("secret.retrieve", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "secret.retrieve",
+                None,
+                move |page, _action, _target| async move {
                     page.retrieve_secret().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -52,13 +52,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct SecretPage(ObjectSubclass<imp::SecretPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct SecretPage(ObjectSubclass<imp::SecretPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl SecretPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a SecretPage")
+        glib::Object::new(&[])
     }
 
     async fn retrieve_secret(&self) {

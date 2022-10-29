@@ -1,9 +1,5 @@
 use ashpd::desktop::device::{Device, DeviceProxy};
-use gtk::{
-    glib::{self, clone},
-    prelude::*,
-    subclass::prelude::*,
-};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -32,20 +28,27 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("device.request", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "device.request",
+                None,
+                move |page, _action, _target| async move {
                     match page.request().await {
                         Ok(_) => {
-                            page.send_notification("Device access request was successful", NotificationKind::Success);
+                            page.send_notification(
+                                "Device access request was successful",
+                                NotificationKind::Success,
+                            );
                         }
                         Err(err) => {
                             tracing::error!("Failed to request device access {}", err);
-                            page.send_notification("Request to access a device failed", NotificationKind::Error);
+                            page.send_notification(
+                                "Request to access a device failed",
+                                NotificationKind::Error,
+                            );
                         }
                     }
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -59,13 +62,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct DevicePage(ObjectSubclass<imp::DevicePage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct DevicePage(ObjectSubclass<imp::DevicePage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl DevicePage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a DevicePage")
+        glib::Object::new(&[])
     }
 
     async fn request(&self) -> ashpd::Result<()> {

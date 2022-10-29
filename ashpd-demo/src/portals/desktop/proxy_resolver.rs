@@ -1,9 +1,6 @@
 use adw::prelude::*;
 use ashpd::desktop::proxy_resolver::ProxyResolver;
-use gtk::{
-    glib::{self, clone},
-    subclass::prelude::*,
-};
+use gtk::{glib, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -30,16 +27,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action(
+            klass.install_action_async(
                 "proxy_resolver.resolve",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        if let Err(err) = page.resolve().await {
-                            tracing::error!("Failed to resolve proxy {}", err);
-                        }
-                    }));
+                move |page, _action, _target| async move {
+                    if let Err(err) = page.resolve().await {
+                        tracing::error!("Failed to resolve proxy {}", err);
+                    }
                 },
             );
         }
@@ -55,13 +49,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct ProxyResolverPage(ObjectSubclass<imp::ProxyResolverPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct ProxyResolverPage(ObjectSubclass<imp::ProxyResolverPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl ProxyResolverPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a ProxyResolverPage")
+        glib::Object::new(&[])
     }
 
     async fn resolve(&self) -> ashpd::Result<()> {

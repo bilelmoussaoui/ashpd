@@ -39,16 +39,13 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.install_action(
+            klass.install_action_async(
                 "network_monitor.can_reach",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        if let Err(err) = page.can_reach().await {
-                            tracing::error!("Failed to call can reach on NetworkMonitor {}", err);
-                        }
-                    }));
+                move |page, _action, _target| async move {
+                    if let Err(err) = page.can_reach().await {
+                        tracing::error!("Failed to call can reach on NetworkMonitor {}", err);
+                    }
                 },
             );
         }
@@ -59,14 +56,15 @@ mod imp {
     }
     impl ObjectImpl for NetworkMonitorPage {}
     impl WidgetImpl for NetworkMonitorPage {
-        fn map(&self, widget: &Self::Type) {
+        fn map(&self) {
+            let widget = self.obj();
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak widget => async move {
                 if let Err(err) = widget.refresh().await {
                     tracing::error!("Failed to call can refresh on NetworkMonitor {}", err);
                 }
             }));
-            self.parent_map(widget);
+            self.parent_map();
         }
     }
     impl BinImpl for NetworkMonitorPage {}
@@ -74,13 +72,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct NetworkMonitorPage(ObjectSubclass<imp::NetworkMonitorPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct NetworkMonitorPage(ObjectSubclass<imp::NetworkMonitorPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl NetworkMonitorPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a NetworkMonitorPage")
+        glib::Object::new(&[])
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {

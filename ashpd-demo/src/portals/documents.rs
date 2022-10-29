@@ -36,14 +36,15 @@ mod imp {
     impl ObjectImpl for DocumentsPage {}
 
     impl WidgetImpl for DocumentsPage {
-        fn map(&self, widget: &Self::Type) {
+        fn map(&self) {
+            let widget = self.obj();
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak widget => async move {
                 if let Err(err) = widget.refresh().await {
                     tracing::error!("Failed to call a method on Documents portal{}", err);
                 }
             }));
-            self.parent_map(widget);
+            self.parent_map();
         }
     }
     impl BinImpl for DocumentsPage {}
@@ -51,13 +52,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct DocumentsPage(ObjectSubclass<imp::DocumentsPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct DocumentsPage(ObjectSubclass<imp::DocumentsPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl DocumentsPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a DocumentsPage")
+        glib::Object::new(&[])
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {

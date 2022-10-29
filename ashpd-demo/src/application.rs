@@ -43,7 +43,9 @@ mod imp {
     }
 
     impl ObjectImpl for Application {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            self.parent_constructed();
+            let obj = self.obj();
             obj.add_main_option(
                 "replace",
                 glib::Char::try_from('r').unwrap(),
@@ -52,12 +54,13 @@ mod imp {
                 "Replace the running instance",
                 None,
             );
-            self.parent_constructed(obj);
         }
     }
 
     impl ApplicationImpl for Application {
-        fn activate(&self, app: &Self::Type) {
+        fn activate(&self) {
+            self.parent_activate();
+            let app = self.obj();
             debug!("Application::activate");
 
             if let Some(window) = self.window.get() {
@@ -66,7 +69,7 @@ mod imp {
                 window.present();
                 return;
             }
-            let window = ApplicationWindow::new(app);
+            let window = ApplicationWindow::new(&*app);
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
@@ -75,11 +78,11 @@ mod imp {
             app.setup_accels();
 
             app.main_window().present();
-            self.parent_activate(app);
         }
 
-        fn startup(&self, app: &Self::Type) {
-            self.parent_startup(app);
+        fn startup(&self) {
+            self.parent_startup();
+            let app = self.obj();
             debug!("Application::startup");
             // Set icons for shell
             gtk::Window::set_default_icon_name(config::APP_ID);
@@ -99,7 +102,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct Application(ObjectSubclass<imp::Application>)
-        @extends gio::Application, gtk::Application, adw::Application, @implements gio::ActionMap, gio::ActionGroup;
+        @extends gio::Application, gtk::Application, adw::Application,
+        @implements gio::ActionMap, gio::ActionGroup;
 }
 
 impl Application {
@@ -110,7 +114,6 @@ impl Application {
             ("flags", &ApplicationFlags::FLAGS_NONE),
             ("resource-base-path", &Some("/com/belmoussaoui/ashpd/demo/")),
         ])
-        .expect("Application initialization failed...")
     }
 
     fn main_window(&self) -> ApplicationWindow {

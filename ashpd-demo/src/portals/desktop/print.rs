@@ -4,11 +4,7 @@ use ashpd::{
     desktop::print::{PageSetup, PrintProxy, Settings},
     WindowIdentifier,
 };
-use gtk::{
-    glib::{self, clone},
-    prelude::*,
-    subclass::prelude::*,
-};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -35,12 +31,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("print.select_file", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "print.select_file",
+                None,
+                move |page, _action, _target| async move {
                     page.select_file().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -54,13 +51,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct PrintPage(ObjectSubclass<imp::PrintPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct PrintPage(ObjectSubclass<imp::PrintPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl PrintPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a PrintPage")
+        glib::Object::new(&[])
     }
 
     async fn select_file(&self) {

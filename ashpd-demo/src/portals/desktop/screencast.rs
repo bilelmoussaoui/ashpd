@@ -56,19 +56,21 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("screencast.start", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "screencast.start",
+                None,
+                move |page, _action, _target| async move {
                     page.start_session().await;
-                }));
-            });
-            klass.install_action("screencast.stop", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+                },
+            );
+            klass.install_action_async(
+                "screencast.stop",
+                None,
+                move |page, _action, _target| async move {
                     page.stop_session().await;
                     page.send_notification("Screen cast session stopped", NotificationKind::Info);
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -76,14 +78,14 @@ mod imp {
         }
     }
     impl ObjectImpl for ScreenCastPage {
-        fn constructed(&self, obj: &Self::Type) {
-            obj.action_set_enabled("screencast.stop", false);
-
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.obj().action_set_enabled("screencast.stop", false);
         }
     }
     impl WidgetImpl for ScreenCastPage {
-        fn map(&self, widget: &Self::Type) {
+        fn map(&self) {
+            let widget = self.obj();
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak widget as page => async move {
                 let imp = page.imp();
@@ -96,7 +98,7 @@ mod imp {
 //                    imp.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
                 }
             }));
-            self.parent_map(widget);
+            self.parent_map();
         }
     }
     impl BinImpl for ScreenCastPage {}
@@ -104,13 +106,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct ScreenCastPage(ObjectSubclass<imp::ScreenCastPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct ScreenCastPage(ObjectSubclass<imp::ScreenCastPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl ScreenCastPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a ScreenCastPage")
+        glib::Object::new(&[])
     }
 
     /// Returns the selected SourceType

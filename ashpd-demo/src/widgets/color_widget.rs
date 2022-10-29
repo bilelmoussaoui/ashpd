@@ -4,6 +4,7 @@ mod imp {
     use std::cell::RefCell;
 
     use glib::{ParamSpec, ParamSpecBoxed};
+    use once_cell::sync::Lazy;
 
     use super::*;
 
@@ -25,27 +26,19 @@ mod imp {
 
     impl ObjectImpl for ColorWidget {
         fn properties() -> &'static [ParamSpec] {
-            use once_cell::sync::Lazy;
-            static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
-                vec![ParamSpecBoxed::builder("rgba", gdk::RGBA::static_type()).build()]
-            });
+            static PROPS: Lazy<Vec<ParamSpec>> =
+                Lazy::new(|| vec![ParamSpecBoxed::builder::<gdk::RGBA>("rgba").build()]);
             PROPS.as_ref()
         }
 
-        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> glib::Value {
+        fn property(&self, _id: usize, pspec: &ParamSpec) -> glib::Value {
             match pspec.name() {
                 "rgba" => self.rgba.borrow().to_value(),
                 _ => unimplemented!(),
             }
         }
 
-        fn set_property(
-            &self,
-            _obj: &Self::Type,
-            _id: usize,
-            value: &glib::Value,
-            pspec: &ParamSpec,
-        ) {
+        fn set_property(&self, _id: usize, value: &glib::Value, pspec: &ParamSpec) {
             match pspec.name() {
                 "rgba" => {
                     self.rgba.borrow_mut().replace(value.get().unwrap());
@@ -54,13 +47,16 @@ mod imp {
             }
         }
 
-        fn constructed(&self, widget: &Self::Type) {
+        fn constructed(&self) {
+            self.parent_constructed();
+            let widget = self.obj();
             widget.set_size_request(60, 30);
             widget.set_overflow(gtk::Overflow::Hidden);
         }
     }
     impl WidgetImpl for ColorWidget {
-        fn snapshot(&self, widget: &Self::Type, snapshot: &gtk::Snapshot) {
+        fn snapshot(&self, snapshot: &gtk::Snapshot) {
+            let widget = self.obj();
             let color = self.rgba.borrow().unwrap_or_else(|| {
                 gdk::RGBA::builder()
                     .red(53.0 / 255.0)
@@ -76,13 +72,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct ColorWidget(ObjectSubclass<imp::ColorWidget>) @extends gtk::Widget;
+    pub struct ColorWidget(ObjectSubclass<imp::ColorWidget>)
+        @extends gtk::Widget;
 }
 
 impl ColorWidget {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a ColorWidget")
+        glib::Object::new(&[])
     }
 
     pub fn set_rgba(&self, rgba: gdk::RGBA) {

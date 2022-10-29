@@ -19,15 +19,15 @@ mod imp {
 
     impl ObjectImpl for RemovableRow {
         fn signals() -> &'static [Signal] {
-            static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
-                vec![Signal::builder("removed", &[], <()>::static_type().into())
-                    .action()
-                    .build()]
-            });
+            static SIGNALS: Lazy<Vec<Signal>> =
+                Lazy::new(|| vec![Signal::builder("removed").action().build()]);
             SIGNALS.as_ref()
         }
 
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            let obj = self.obj();
             let remove_button = gtk::Button::from_icon_name("edit-delete-symbolic");
             remove_button.set_valign(gtk::Align::Center);
             remove_button.add_css_class("circular");
@@ -39,7 +39,6 @@ mod imp {
             }));
             obj.set_activatable(true);
             obj.set_activatable_widget(Some(&remove_button));
-            self.parent_constructed(obj);
         }
     }
     impl WidgetImpl for RemovableRow {}
@@ -56,15 +55,19 @@ glib::wrapper! {
 impl RemovableRow {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a RemovableRow")
+        glib::Object::new(&[])
     }
 
     pub fn connect_removed<F>(&self, callback: F) -> glib::SignalHandlerId
     where
         F: Fn(&Self) + 'static,
     {
-        self.connect_closure("removed", false, glib::closure_local!(move |obj: &Self| {
-            callback(&obj);
-        }))
+        self.connect_closure(
+            "removed",
+            false,
+            glib::closure_local!(move |obj: &Self| {
+                callback(obj);
+            }),
+        )
     }
 }

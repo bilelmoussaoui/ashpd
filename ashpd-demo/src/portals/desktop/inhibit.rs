@@ -9,11 +9,7 @@ use ashpd::{
     WindowIdentifier,
 };
 use futures::lock::Mutex;
-use gtk::{
-    glib::{self, clone},
-    prelude::*,
-    subclass::prelude::*,
-};
+use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{PortalPage, PortalPageImpl};
 
@@ -49,24 +45,22 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action(
+            klass.install_action_async(
                 "inhibit.start_session",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        if let Err(err) = page.start_session().await {
-                            tracing::error!("Failed to inhibit {}", err);
-                        }
-                    }));
+                move |page, _action, _target| async move {
+                    if let Err(err) = page.start_session().await {
+                        tracing::error!("Failed to inhibit {}", err);
+                    }
                 },
             );
-            klass.install_action("inhibit.stop", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "inhibit.stop",
+                None,
+                move |page, _action, _target| async move {
                     page.stop().await;
-                }));
-            });
+                },
+            );
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -74,9 +68,9 @@ mod imp {
         }
     }
     impl ObjectImpl for InhibitPage {
-        fn constructed(&self, obj: &Self::Type) {
-            obj.action_set_enabled("inhibit.stop", false);
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.obj().action_set_enabled("inhibit.stop", false);
         }
     }
     impl WidgetImpl for InhibitPage {}
@@ -91,7 +85,7 @@ glib::wrapper! {
 impl InhibitPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a InhibitPage")
+        glib::Object::new(&[])
     }
 
     fn inhibit_flags(&self) -> BitFlags<InhibitFlags> {

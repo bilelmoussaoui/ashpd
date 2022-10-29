@@ -59,25 +59,22 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action(
+            klass.install_action_async(
                 "remote_desktop.start",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.start_session().await;
-                    }));
+                move |page, _action, _target| async move {
+                    page.start_session().await;
                 },
             );
-            klass.install_action(
+            klass.install_action_async(
                 "remote_desktop.stop",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.stop_session().await;
-                        page.send_notification("Remote desktop session stopped", NotificationKind::Info);
-                    }));
+                move |page, _action, _target| async move {
+                    page.stop_session().await;
+                    page.send_notification(
+                        "Remote desktop session stopped",
+                        NotificationKind::Info,
+                    );
                 },
             );
         }
@@ -87,13 +84,14 @@ mod imp {
         }
     }
     impl ObjectImpl for RemoteDesktopPage {
-        fn constructed(&self, obj: &Self::Type) {
-            obj.action_set_enabled("remote_desktop.stop", false);
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.obj().action_set_enabled("remote_desktop.stop", false);
         }
     }
     impl WidgetImpl for RemoteDesktopPage {
-        fn map(&self, widget: &Self::Type) {
+        fn map(&self) {
+            let widget = self.obj();
             let ctx = glib::MainContext::default();
             ctx.spawn_local(clone!(@weak widget as page => async move {
                 let imp = page.imp();
@@ -112,7 +110,7 @@ mod imp {
                     imp.keyboard_check.set_sensitive(devices.contains(DeviceType::Keyboard));
                 }
             }));
-            self.parent_map(widget);
+            self.parent_map();
         }
     }
     impl BinImpl for RemoteDesktopPage {}
@@ -120,13 +118,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct RemoteDesktopPage(ObjectSubclass<imp::RemoteDesktopPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct RemoteDesktopPage(ObjectSubclass<imp::RemoteDesktopPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl RemoteDesktopPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a RemoteDesktopPage")
+        glib::Object::new(&[])
     }
 
     /// Returns the selected DeviceType

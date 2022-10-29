@@ -3,7 +3,6 @@ use ashpd::{
     desktop::file_chooser::{OpenFileRequest, SaveFileRequest, SaveFilesRequest},
     WindowIdentifier,
 };
-use glib::clone;
 use gtk::{glib, subclass::prelude::*};
 
 use crate::{
@@ -70,34 +69,25 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action(
+            klass.install_action_async(
                 "file_chooser.open_file",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.open_file().await;
-                    }));
+                move |page, _action, _target| async move {
+                    page.open_file().await;
                 },
             );
-            klass.install_action(
+            klass.install_action_async(
                 "file_chooser.save_file",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.save_file().await;
-                    }));
+                move |page, _action, _target| async move {
+                    page.save_file().await;
                 },
             );
-            klass.install_action(
+            klass.install_action_async(
                 "file_chooser.save_files",
                 None,
-                move |page, _action, _target| {
-                    let ctx = glib::MainContext::default();
-                    ctx.spawn_local(clone!(@weak page => async move {
-                        page.save_files().await;
-                    }));
+                move |page, _action, _target| async move {
+                    page.save_files().await;
                 },
             );
         }
@@ -119,7 +109,7 @@ glib::wrapper! {
 impl FileChooserPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a FileChooserPage")
+        glib::Object::new(&[])
     }
 
     async fn open_file(&self) {

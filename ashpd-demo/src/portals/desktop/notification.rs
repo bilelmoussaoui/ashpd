@@ -3,7 +3,6 @@ use ashpd::{
     desktop::notification::{Button, Notification, NotificationProxy, Priority},
     zvariant::Value,
 };
-use glib::clone;
 use gtk::{glib, subclass::prelude::*};
 
 use self::button::NotificationButton;
@@ -50,14 +49,15 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action("notification.send", None, move |page, _action, _target| {
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak page => async move {
+            klass.install_action_async(
+                "notification.send",
+                None,
+                move |page, _action, _target| async move {
                     if let Err(err) = page.send().await {
                         tracing::error!("Failed to send a notification {}", err);
                     }
-                }));
-            });
+                },
+            );
             klass.install_action("notification.add_button", None, move |page, _, _| {
                 page.add_button();
             });
@@ -80,7 +80,7 @@ glib::wrapper! {
 impl NotificationPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create a NotificationPage")
+        glib::Object::new(&[])
     }
 
     fn add_button(&self) {
@@ -186,17 +186,14 @@ mod button {
 
         impl ObjectImpl for NotificationButton {
             fn signals() -> &'static [Signal] {
-                static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
-                    vec![Signal::builder("removed", &[], <()>::static_type().into())
-                        .action()
-                        .build()]
-                });
+                static SIGNALS: Lazy<Vec<Signal>> =
+                    Lazy::new(|| vec![Signal::builder("removed").action().build()]);
                 SIGNALS.as_ref()
             }
 
-            fn constructed(&self, obj: &Self::Type) {
-                obj.create_widgets();
-                self.parent_constructed(obj);
+            fn constructed(&self) {
+                self.parent_constructed();
+                self.obj().create_widgets();
             }
         }
         impl WidgetImpl for NotificationButton {}
@@ -211,16 +208,20 @@ mod button {
     impl NotificationButton {
         #[allow(clippy::new_without_default)]
         pub fn new() -> Self {
-            glib::Object::new(&[]).expect("Failed to create a ColorWidget")
+            glib::Object::new(&[])
         }
 
         pub fn connect_removed<F>(&self, callback: F) -> glib::SignalHandlerId
         where
             F: Fn(&Self) + 'static,
         {
-            self.connect_closure("removed", false, glib::closure_local!(move |obj: &Self| {
-                callback(&obj);
-            }))
+            self.connect_closure(
+                "removed",
+                false,
+                glib::closure_local!(move |obj: &Self| {
+                    callback(obj);
+                }),
+            )
         }
 
         pub fn button(&self) -> Button {

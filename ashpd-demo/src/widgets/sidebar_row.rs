@@ -3,7 +3,7 @@ use gtk::{glib, prelude::*};
 mod imp {
     use std::cell::RefCell;
 
-    use glib::{ParamFlags, ParamSpec, ParamSpecString, Value};
+    use glib::{ParamSpec, ParamSpecString, Value};
     use gtk::subclass::prelude::*;
     use once_cell::sync::Lazy;
 
@@ -35,25 +35,23 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpecString::builder("title")
-                        .flags(ParamFlags::READWRITE | ParamFlags::CONSTRUCT)
-                        .build(),
+                    ParamSpecString::builder("title").construct().build(),
                     ParamSpecString::builder("page-name")
                         .default_value(Some("welcome"))
-                        .flags(ParamFlags::READWRITE | ParamFlags::CONSTRUCT)
+                        .construct()
                         .build(),
                 ]
             });
             PROPS.as_ref()
         }
-        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &ParamSpec) -> Value {
+        fn property(&self, _id: usize, pspec: &ParamSpec) -> Value {
             match pspec.name() {
                 "title" => self.title.label().to_value(),
                 "page-name" => self.name.borrow().to_value(),
                 _ => unimplemented!(),
             }
         }
-        fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &ParamSpec) {
+        fn set_property(&self, _id: usize, value: &Value, pspec: &ParamSpec) {
             match pspec.name() {
                 "title" => {
                     self.title.set_text(&value.get::<String>().unwrap());
@@ -72,14 +70,14 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct SidebarRow(ObjectSubclass<imp::SidebarRow>) @extends gtk::Widget, gtk::ListBoxRow;
+    pub struct SidebarRow(ObjectSubclass<imp::SidebarRow>)
+        @extends gtk::Widget, gtk::ListBoxRow;
 }
 
 impl SidebarRow {
     #[allow(clippy::new_without_default)]
     pub fn new(title: &str, page_name: &str) -> Self {
         glib::Object::new(&[("title", &title), ("page-name", &page_name)])
-            .expect("Failed to create a SidebarRow")
     }
 
     pub fn title(&self) -> Option<String> {
