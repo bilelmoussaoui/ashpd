@@ -8,7 +8,6 @@ use ashpd::{
 use gio::ApplicationFlags;
 use glib::{clone, WeakRef};
 use gtk::{gio, glib, subclass::prelude::*};
-use gtk_macros::action;
 use once_cell::sync::OnceCell;
 use serde::Serialize;
 use tracing::{debug, info};
@@ -122,21 +121,22 @@ impl Application {
 
     fn setup_gactions(&self) {
         // Quit
-        action!(
-            self,
-            "quit",
-            clone!(@weak self as app => move |_, _| {
+        let quit_action = gio::ActionEntry::builder("quit")
+            .activate(move |app: &Self, _, _| {
                 // This is needed to trigger the delete event
                 // and saving the window state
                 app.main_window().close();
                 app.quit();
             })
-        );
+            .build();
 
-        action!(
-            self,
-            "restart",
-            clone!(@weak self as app => move |_, _| {
+        // About
+        let about_action = gio::ActionEntry::builder("about")
+            .activate(move |app: &Self, _, _| app.show_about_dialog())
+            .build();
+
+        let restart_action = gio::ActionEntry::builder("restart")
+            .activate(move |app: &Self, _, _| {
                 // This is needed to trigger the delete event
                 // and saving the window state
                 let ctx = glib::MainContext::default();
@@ -146,21 +146,21 @@ impl Application {
                     }
                 }));
             })
-        );
+            .build();
+
+        self.add_action_entries([about_action, quit_action, restart_action])
+            .unwrap();
+
         let is_sandboxed = futures::executor::block_on(async { ashpd::is_sandboxed().await });
         // The restart app requires the Flatpak portal
-        gtk_macros::get_action!(self, @restart).set_enabled(is_sandboxed);
+        self.lookup_action("restart")
+            .unwrap()
+            .downcast_ref::<gio::SimpleAction>()
+            .unwrap()
+            .set_enabled(is_sandboxed);
 
         let action = self.imp().settings.create_action("dark-mode");
         self.add_action(&action);
-        // About
-        action!(
-            self,
-            "about",
-            clone!(@weak self as app => move |_, _| {
-                app.show_about_dialog();
-            })
-        );
     }
 
     pub fn stop_current_instance() -> ashpd::Result<()> {

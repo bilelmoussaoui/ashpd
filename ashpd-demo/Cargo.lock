@@ -68,7 +68,6 @@ dependencies = [
  "gettext-rs",
  "gst-plugin-gtk4",
  "gstreamer",
- "gtk-macros",
  "gtk4",
  "libadwaita",
  "libshumate",
@@ -1162,12 +1161,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gtk-macros"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da5bf7748fd4cd0b2490df8debcc911809dbcbee4ece9531b96c29a9c729de5a"
-
-[[package]]
 name = "gtk4"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1616,9 +1609,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.15.0"
+version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e82dad04139b71a90c080c8463fe0dc7902db5192d939bd0950f074d014339e1"
+checksum = "86f0b0d4bf799edbc74508c1e8bf170ff5f41238e5f8225603ca7caaae2b7860"
 
 [[package]]
 name = "option-operations"
