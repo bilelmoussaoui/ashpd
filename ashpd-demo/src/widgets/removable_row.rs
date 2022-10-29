@@ -63,10 +63,8 @@ impl RemovableRow {
     where
         F: Fn(&Self) + 'static,
     {
-        self.connect_local("removed", false, move |args| {
-            let obj = args.get(0).unwrap().get::<Self>().unwrap();
+        self.connect_closure("removed", false, glib::closure_local!(move |obj: &Self| {
             callback(&obj);
-            None
-        })
+        }))
     }
 }

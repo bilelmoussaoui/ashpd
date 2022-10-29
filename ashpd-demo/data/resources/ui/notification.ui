@@ -28,6 +28,16 @@
                   </object>
                 </child>
                 <child>
+                  <object class="AdwEntryRow" id="default_action_entry">
+                    <property name="title" translatable="yes">Default Action</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="default_action_target_entry">
+                    <property name="title" translatable="yes">Default Action Target</property>
+                  </object>
+                </child>
+                <child>
                   <object class="AdwComboRow" id="priority_combo">
                     <property name="title" translatable="yes">Priority</property>
                     <property name="model">
@@ -41,6 +51,31 @@
                       </object>
                     </property>
                     <property name="selected">1</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Buttons</property>
+                <child type="header-suffix">
+                  <object class="GtkButton">
+                    <property name="action-name">notification.add_button</property>
+                    <property name="child">
+                      <object class="AdwButtonContent">
+                        <property name="icon-name">list-add-symbolic</property>
+                        <property name="label" translatable="yes">_Add</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </property>
+                    <style>
+                      <class name="flat" />
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="buttons_box">
+                    <property name="orientation">vertical</property>
                   </object>
                 </child>
               </object>

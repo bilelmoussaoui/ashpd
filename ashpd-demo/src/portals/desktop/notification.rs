@@ -6,6 +6,7 @@ use ashpd::{
 use glib::clone;
 use gtk::{glib, subclass::prelude::*};
 
+use self::button::NotificationButton;
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
@@ -25,6 +26,10 @@ mod imp {
         #[template_child]
         pub priority_combo: TemplateChild<adw::ComboRow>,
         #[template_child]
+        pub default_action_entry: TemplateChild<adw::EntryRow>,
+        #[template_child]
+        pub default_action_target_entry: TemplateChild<adw::EntryRow>,
+        #[template_child]
         pub id_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub action_name_label: TemplateChild<gtk::Label>,
@@ -32,6 +37,8 @@ mod imp {
         pub parameters_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub buttons_box: TemplateChild<gtk::Box>,
     }
 
     #[glib::object_subclass]
@@ -50,6 +57,9 @@ mod imp {
                         tracing::error!("Failed to send a notification {}", err);
                     }
                 }));
+            });
+            klass.install_action("notification.add_button", None, move |page, _, _| {
+                page.add_button();
             });
         }
 
@@ -73,12 +83,42 @@ impl NotificationPage {
         glib::Object::new(&[]).expect("Failed to create a NotificationPage")
     }
 
+    fn add_button(&self) {
+        let button = NotificationButton::new();
+        button.connect_removed(glib::clone!(@weak self as page => move |button| {
+            page.imp().buttons_box.remove(button);
+        }));
+        self.imp().buttons_box.append(&button);
+    }
+
+    fn buttons(&self) -> Vec<Button> {
+        let mut buttons = vec![];
+        let mut child = match self.imp().buttons_box.first_child() {
+            Some(t) => t,
+            None => return buttons,
+        };
+
+        loop {
+            let button_widget = child.downcast_ref::<NotificationButton>().unwrap();
+            buttons.push(button_widget.button());
+
+            if let Some(next_child) = child.next_sibling() {
+                child = next_child;
+            } else {
+                break;
+            }
+        }
+        buttons
+    }
+
     async fn send(&self) -> ashpd::Result<()> {
         let imp = self.imp();
 
         let notification_id = imp.id_entry.text();
         let title = imp.title_entry.text();
         let body = imp.body_entry.text();
+        let default_action = imp.default_action_entry.text();
+        let default_action_target = imp.default_action_target_entry.text();
         let priority = match imp.priority_combo.selected() {
             0 => Priority::Low,
             1 => Priority::Normal,
@@ -87,13 +127,15 @@ impl NotificationPage {
             _ => unimplemented!(),
         };
 
-        let notification = Notification::new(&title)
-            .default_action("open")
-            .default_action_target(Value::U32(100).into())
+        let mut notification = Notification::new(&title)
+            .default_action(&default_action)
+            .default_action_target(Value::Str(default_action_target.as_str().into()).into())
             .body(&body)
-            .priority(priority)
-            .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-            .button(Button::new("Delete", "delete").target(Value::U32(40).into()));
+            .priority(priority);
+
+        for button in self.buttons().into_iter() {
+            notification = notification.button(button);
+        }
 
         let proxy = NotificationProxy::new().await?;
         match proxy.add_notification(&notification_id, notification).await {
@@ -109,12 +151,118 @@ impl NotificationPage {
                 imp.id_label.set_text(action.id());
                 imp.action_name_label.set_text(action.name());
                 imp.parameters_label
-                    .set_text(&format!("{:#?}", action.parameter()));
+                    .set_text(action.parameter()[0].downcast_ref::<str>().unwrap());
             }
             Err(_) => {
                 self.send_notification("Failed to send a notification", NotificationKind::Error);
             }
         }
         Ok(())
+    }
+}
+
+mod button {
+    use super::*;
+    mod imp {
+        use adw::subclass::prelude::BinImpl;
+        use glib::subclass::Signal;
+        use once_cell::sync::Lazy;
+
+        use super::*;
+
+        #[derive(Debug, Default)]
+        pub struct NotificationButton {
+            pub(super) label_row: adw::EntryRow,
+            pub(super) action_row: adw::EntryRow,
+            pub(super) target_row: adw::EntryRow,
+        }
+
+        #[glib::object_subclass]
+        impl ObjectSubclass for NotificationButton {
+            const NAME: &'static str = "NotificationButton";
+            type Type = super::NotificationButton;
+            type ParentType = adw::Bin;
+        }
+
+        impl ObjectImpl for NotificationButton {
+            fn signals() -> &'static [Signal] {
+                static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
+                    vec![Signal::builder("removed", &[], <()>::static_type().into())
+                        .action()
+                        .build()]
+                });
+                SIGNALS.as_ref()
+            }
+
+            fn constructed(&self, obj: &Self::Type) {
+                obj.create_widgets();
+                self.parent_constructed(obj);
+            }
+        }
+        impl WidgetImpl for NotificationButton {}
+        impl BinImpl for NotificationButton {}
+    }
+
+    glib::wrapper! {
+        pub struct NotificationButton(ObjectSubclass<imp::NotificationButton>)
+            @extends gtk::Widget, adw::Bin;
+    }
+
+    impl NotificationButton {
+        #[allow(clippy::new_without_default)]
+        pub fn new() -> Self {
+            glib::Object::new(&[]).expect("Failed to create a ColorWidget")
+        }
+
+        pub fn connect_removed<F>(&self, callback: F) -> glib::SignalHandlerId
+        where
+            F: Fn(&Self) + 'static,
+        {
+            self.connect_closure("removed", false, glib::closure_local!(move |obj: &Self| {
+                callback(&obj);
+            }))
+        }
+
+        pub fn button(&self) -> Button {
+            let imp = self.imp();
+            let label = imp.label_row.text();
+            let action = imp.action_row.text();
+            let target = imp.target_row.text();
+            Button::new(&label, &action).target(Value::Str(target.as_str().into()).into())
+        }
+
+        fn create_widgets(&self) {
+            let imp = self.imp();
+            let container = gtk::Box::builder()
+                .orientation(gtk::Orientation::Vertical)
+                .build();
+
+            let list_box = gtk::ListBox::new();
+            list_box.add_css_class("boxed-list");
+
+            imp.label_row.set_title("Label");
+            list_box.append(&imp.label_row);
+            imp.action_row.set_title("Action");
+            list_box.append(&imp.action_row);
+            imp.target_row.set_title("Action Target");
+            list_box.append(&imp.target_row);
+
+            container.append(&list_box);
+
+            let remove_button = gtk::Button::builder()
+                .halign(gtk::Align::End)
+                .valign(gtk::Align::Center)
+                .margin_top(6)
+                .label("Remove")
+                .margin_bottom(12)
+                .build();
+            remove_button.add_css_class("destructive-action");
+            remove_button.connect_clicked(glib::clone!(@weak self as obj => move |_btn| {
+                obj.emit_by_name::<()>("removed", &[]);
+            }));
+            container.append(&remove_button);
+
+            self.set_child(Some(&container));
+        }
     }
 }
