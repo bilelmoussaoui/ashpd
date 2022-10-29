@@ -8,13 +8,12 @@ jobs:
     name: "Flatpak"
     runs-on: ubuntu-22.04
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-nightly
+      image: bilelmoussaoui/flatpak-github-actions:43
       options: --privileged
     steps:
     - uses: actions/checkout@v3
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
       with:
-        repository-name: "flathub-beta"
         bundle: "ashpd-demo.flatpak"
         manifest-path: "ashpd-demo/build-aux/com.belmoussaoui.ashpd.demo.Devel.json"
         run-tests: "true"

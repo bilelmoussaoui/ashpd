@@ -1,7 +1,7 @@
 {
     "app-id": "com.belmoussaoui.ashpd.demo.Devel",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "master",
+    "runtime-version": "43",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": ["org.freedesktop.Sdk.Extension.rust-stable", "org.freedesktop.Sdk.Extension.llvm14"],
     "command": "ashpd-demo",
