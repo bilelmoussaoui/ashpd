@@ -103,7 +103,8 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct FileChooserPage(ObjectSubclass<imp::FileChooserPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct FileChooserPage(ObjectSubclass<imp::FileChooserPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl FileChooserPage {

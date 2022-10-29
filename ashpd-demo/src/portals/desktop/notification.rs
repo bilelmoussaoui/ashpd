@@ -74,7 +74,8 @@ mod imp {
 }
 
 glib::wrapper! {
-    pub struct NotificationPage(ObjectSubclass<imp::NotificationPage>) @extends gtk::Widget, adw::Bin, PortalPage;
+    pub struct NotificationPage(ObjectSubclass<imp::NotificationPage>)
+        @extends gtk::Widget, adw::Bin, PortalPage;
 }
 
 impl NotificationPage {
