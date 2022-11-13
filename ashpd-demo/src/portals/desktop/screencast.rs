@@ -126,6 +126,9 @@ impl ScreenCastPage {
         if imp.window_check.is_active() {
             sources.insert(SourceType::Window);
         }
+        if imp.virtual_check.is_active() {
+            sources.insert(SourceType::Virtual);
+        }
         sources
     }
 
