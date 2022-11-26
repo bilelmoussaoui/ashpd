@@ -47,7 +47,7 @@
 use std::{fmt, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{OwnedValue, SerializeDict, Type};
+use zbus::zvariant::{OwnedValue, SerializeDict, Type, Value};
 
 use super::{Icon, DESTINATION, PATH};
 use crate::{
@@ -188,11 +188,11 @@ impl Notification {
 
     /// Sets a value to be sent in the `action_invoked` signal.
     #[must_use]
-    pub fn default_action_target<T: Into<OwnedValue>>(
+    pub fn default_action_target<'a, T: Into<Value<'a>>>(
         mut self,
         default_action_target: impl Into<Option<T>>,
     ) -> Self {
-        self.default_action_target = default_action_target.into().map(|t| t.into());
+        self.default_action_target = default_action_target.into().map(|t| t.into().to_owned());
         self
     }
 
@@ -240,8 +240,8 @@ impl Button {
 
     /// The value to send with the action name when the button is clicked.
     #[must_use]
-    pub fn target<T: Into<OwnedValue>>(mut self, target: impl Into<Option<T>>) -> Self {
-        self.target = target.into().map(|t| t.into());
+    pub fn target<'a, T: Into<Value<'a>>>(mut self, target: impl Into<Option<T>>) -> Self {
+        self.target = target.into().map(|t| t.into().to_owned());
         self
     }
 }
