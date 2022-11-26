@@ -117,24 +117,16 @@ pub struct UserInformationRequest {
 impl UserInformationRequest {
     #[must_use]
     /// Sets a user-visible reason for the request.
-    pub fn reason(mut self, reason: &str) -> Self {
-        self.set_reason(reason);
+    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+        self.options.reason = reason.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_reason(&mut self, reason: &str) {
-        self.options.reason = Some(reason.to_owned());
     }
 
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     /// Build the [`UserInformationResponse`].

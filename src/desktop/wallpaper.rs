@@ -178,37 +178,25 @@ pub struct WallpaperRequest {
 impl WallpaperRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     /// Whether to show a preview of the picture.
     /// **Note** the portal may decide to show a preview even if this option is
     /// not set.
     #[must_use]
-    pub fn show_preview(mut self, show_preview: bool) -> Self {
-        self.set_show_preview(show_preview);
+    pub fn show_preview(mut self, show_preview: impl Into<Option<bool>>) -> Self {
+        self.options.show_preview = show_preview.into();
         self
-    }
-
-    pub fn set_show_preview(&mut self, show_preview: bool) {
-        self.options.show_preview = Some(show_preview);
     }
 
     /// Sets where to set the wallpaper on.
     #[must_use]
-    pub fn set_on(mut self, set_on: SetOn) -> Self {
-        self.set_set_on(set_on);
+    pub fn set_on(mut self, set_on: impl Into<Option<SetOn>>) -> Self {
+        self.options.set_on = set_on.into();
         self
-    }
-
-    pub fn set_set_on(&mut self, set_on: SetOn) {
-        self.options.set_on = Some(set_on);
     }
 
     /// Build using a URI.

@@ -252,198 +252,201 @@ pub struct Settings {
 impl Settings {
     /// Sets the orientation.
     #[must_use]
-    pub fn orientation(mut self, orientation: Orientation) -> Self {
-        self.orientation = Some(orientation);
+    pub fn orientation(mut self, orientation: impl Into<Option<Orientation>>) -> Self {
+        self.orientation = orientation.into();
         self
     }
 
     /// Sets the paper name.
     #[must_use]
-    pub fn paper_format(mut self, paper_format: &str) -> Self {
-        self.paper_format = Some(paper_format.to_owned());
+    pub fn paper_format<'a>(mut self, paper_format: impl Into<Option<&'a str>>) -> Self {
+        self.paper_format = paper_format.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the paper width.
     #[must_use]
-    pub fn paper_width(mut self, paper_width: &str) -> Self {
-        self.paper_width = Some(paper_width.to_owned());
+    pub fn paper_width<'a>(mut self, paper_width: impl Into<Option<&'a str>>) -> Self {
+        self.paper_width = paper_width.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the paper height.
     #[must_use]
-    pub fn paper_height(mut self, paper_height: &str) -> Self {
-        self.paper_height = Some(paper_height.to_owned());
+    pub fn paper_height<'a>(mut self, paper_height: impl Into<Option<&'a str>>) -> Self {
+        self.paper_height = paper_height.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the number of copies to print.
     #[must_use]
-    pub fn n_copies(mut self, n_copies: &str) -> Self {
-        self.n_copies = Some(n_copies.to_owned());
+    pub fn n_copies<'a>(mut self, n_copies: impl Into<Option<&'a str>>) -> Self {
+        self.n_copies = n_copies.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the default paper source.
     #[must_use]
-    pub fn default_source(mut self, default_source: &str) -> Self {
-        self.default_source = Some(default_source.to_owned());
+    pub fn default_source<'a>(mut self, default_source: impl Into<Option<&'a str>>) -> Self {
+        self.default_source = default_source.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the print quality.
     #[must_use]
-    pub fn quality(mut self, quality: Quality) -> Self {
-        self.quality = Some(quality);
+    pub fn quality(mut self, quality: impl Into<Option<Quality>>) -> Self {
+        self.quality = quality.into();
         self
     }
 
     /// Sets the resolution, both resolution-x & resolution-y.
     #[must_use]
-    pub fn resolution(mut self, resolution: &str) -> Self {
-        self.resolution = Some(resolution.to_owned());
+    pub fn resolution<'a>(mut self, resolution: impl Into<Option<&'a str>>) -> Self {
+        self.resolution = resolution.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets whether to use color.
     #[must_use]
-    pub fn use_color(mut self, use_color: bool) -> Self {
-        self.use_color = Some(use_color);
+    pub fn use_color(mut self, use_color: impl Into<Option<bool>>) -> Self {
+        self.use_color = use_color.into();
         self
     }
 
     /// Sets the duplex printing mode.
     #[must_use]
-    pub fn duplex(mut self, duplex: &str) -> Self {
-        self.duplex = Some(duplex.to_owned());
+    pub fn duplex<'a>(mut self, duplex: impl Into<Option<&'a str>>) -> Self {
+        self.duplex = duplex.into().map(ToOwned::to_owned);
         self
     }
 
     /// Whether to collate copies.
     #[must_use]
-    pub fn collate(mut self, collate: &str) -> Self {
-        self.collate = Some(collate.to_owned());
+    pub fn collate<'a>(mut self, collate: impl Into<Option<&'a str>>) -> Self {
+        self.collate = collate.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets whether to reverse the order of the printed pages.
     #[must_use]
-    pub fn reverse(mut self, reverse: &str) -> Self {
-        self.reverse = Some(reverse.to_owned());
+    pub fn reverse<'a>(mut self, reverse: impl Into<Option<&'a str>>) -> Self {
+        self.reverse = reverse.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the media type.
     #[must_use]
-    pub fn media_type(mut self, media_type: &str) -> Self {
-        self.media_type = Some(media_type.to_owned());
+    pub fn media_type<'a>(mut self, media_type: impl Into<Option<&'a str>>) -> Self {
+        self.media_type = media_type.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the dithering to use.
     #[must_use]
-    pub fn dither(mut self, dither: &str) -> Self {
-        self.dither = Some(dither.to_owned());
+    pub fn dither<'a>(mut self, dither: impl Into<Option<&'a str>>) -> Self {
+        self.dither = dither.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the page scale in percent.
     #[must_use]
-    pub fn scale(mut self, scale: &str) -> Self {
-        self.scale = Some(scale.to_owned());
+    pub fn scale<'a>(mut self, scale: impl Into<Option<&'a str>>) -> Self {
+        self.scale = scale.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets what pages to print, one of all, selection, current or ranges.
     #[must_use]
-    pub fn print_pages(mut self, print_pages: &str) -> Self {
-        self.print_pages = Some(print_pages.to_owned());
+    pub fn print_pages<'a>(mut self, print_pages: impl Into<Option<&'a str>>) -> Self {
+        self.print_pages = print_pages.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets a list of page ranges, formatted like this: 0-2,4,9-11.
     #[must_use]
-    pub fn page_ranges(mut self, page_ranges: &str) -> Self {
-        self.page_ranges = Some(page_ranges.to_owned());
+    pub fn page_ranges<'a>(mut self, page_ranges: impl Into<Option<&'a str>>) -> Self {
+        self.page_ranges = page_ranges.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets what pages to print, one of all, even or odd.
     #[must_use]
-    pub fn page_set(mut self, page_set: &str) -> Self {
-        self.page_set = Some(page_set.to_owned());
+    pub fn page_set<'a>(mut self, page_set: impl Into<Option<&'a str>>) -> Self {
+        self.page_set = page_set.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the finishings.
     #[must_use]
-    pub fn finishings(mut self, finishings: &str) -> Self {
-        self.finishings = Some(finishings.to_owned());
+    pub fn finishings<'a>(mut self, finishings: impl Into<Option<&'a str>>) -> Self {
+        self.finishings = finishings.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the number of pages per sheet.
     #[must_use]
-    pub fn number_up(mut self, number_up: &str) -> Self {
-        self.number_up = Some(number_up.to_owned());
+    pub fn number_up<'a>(mut self, number_up: impl Into<Option<&'a str>>) -> Self {
+        self.number_up = number_up.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the number up layout, one of lrtb, lrbt, rltb, rlbt, tblr, tbrl,
     /// btlr, btrl.
     #[must_use]
-    pub fn number_up_layout(mut self, number_up_layout: &str) -> Self {
-        self.number_up_layout = Some(number_up_layout.to_owned());
+    pub fn number_up_layout<'a>(mut self, number_up_layout: impl Into<Option<&'a str>>) -> Self {
+        self.number_up_layout = number_up_layout.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the output bin
     #[must_use]
-    pub fn output_bin(mut self, output_bin: &str) -> Self {
-        self.output_bin = Some(output_bin.to_owned());
+    pub fn output_bin<'a>(mut self, output_bin: impl Into<Option<&'a str>>) -> Self {
+        self.output_bin = output_bin.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the horizontal resolution in dpi.
     #[must_use]
-    pub fn resolution_x(mut self, resolution_x: &str) -> Self {
-        self.resolution_x = Some(resolution_x.to_owned());
+    pub fn resolution_x<'a>(mut self, resolution_x: impl Into<Option<&'a str>>) -> Self {
+        self.resolution_x = resolution_x.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the vertical resolution in dpi.
     #[must_use]
-    pub fn resolution_y(mut self, resolution_y: &str) -> Self {
-        self.resolution_y = Some(resolution_y.to_owned());
+    pub fn resolution_y<'a>(mut self, resolution_y: impl Into<Option<&'a str>>) -> Self {
+        self.resolution_y = resolution_y.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the resolution in lines per inch.
     #[must_use]
-    pub fn print_lpi(mut self, print_lpi: &str) -> Self {
-        self.print_lpi = Some(print_lpi.to_owned());
+    pub fn print_lpi<'a>(mut self, print_lpi: impl Into<Option<&'a str>>) -> Self {
+        self.print_lpi = print_lpi.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the print-to-file base name.
     #[must_use]
-    pub fn output_basename(mut self, output_basename: &str) -> Self {
-        self.output_basename = Some(output_basename.to_owned());
+    pub fn output_basename<'a>(mut self, output_basename: impl Into<Option<&'a str>>) -> Self {
+        self.output_basename = output_basename.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the print-to-file format, one of PS, PDF, SVG.
     #[must_use]
-    pub fn output_file_format(mut self, output_file_format: &str) -> Self {
-        self.output_file_format = Some(output_file_format.to_owned());
+    pub fn output_file_format<'a>(
+        mut self,
+        output_file_format: impl Into<Option<&'a str>>,
+    ) -> Self {
+        self.output_file_format = output_file_format.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the print-to-file output uri.
     #[must_use]
-    pub fn output_uri(mut self, output_uri: &url::Url) -> Self {
-        self.output_uri = Some(output_uri.to_owned());
+    pub fn output_uri<'a>(mut self, output_uri: impl Into<Option<&'a url::Url>>) -> Self {
+        self.output_uri = output_uri.into().map(ToOwned::to_owned);
         self
     }
 }
@@ -478,71 +481,71 @@ pub struct PageSetup {
 impl PageSetup {
     /// Sets the ppdname.
     #[must_use]
-    pub fn ppdname(mut self, ppdname: &str) -> Self {
-        self.ppdname = Some(ppdname.to_owned());
+    pub fn ppdname<'a>(mut self, ppdname: impl Into<Option<&'a str>>) -> Self {
+        self.ppdname = ppdname.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the name of the page setup.
     #[must_use]
-    pub fn name(mut self, name: &str) -> Self {
-        self.name = Some(name.to_owned());
+    pub fn name<'a>(mut self, name: impl Into<Option<&'a str>>) -> Self {
+        self.name = name.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the user visible name of the page setup.
     #[must_use]
-    pub fn display_name(mut self, display_name: &str) -> Self {
-        self.display_name = Some(display_name.to_owned());
+    pub fn display_name<'a>(mut self, display_name: impl Into<Option<&'a str>>) -> Self {
+        self.display_name = display_name.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets the orientation.
     #[must_use]
-    pub fn orientation(mut self, orientation: Orientation) -> Self {
-        self.orientation = Some(orientation);
+    pub fn orientation(mut self, orientation: impl Into<Option<Orientation>>) -> Self {
+        self.orientation = orientation.into();
         self
     }
 
     /// Sets the page width.
     #[must_use]
-    pub fn width(mut self, width: f64) -> Self {
-        self.width = Some(width);
+    pub fn width(mut self, width: impl Into<Option<f64>>) -> Self {
+        self.width = width.into();
         self
     }
 
     /// Sets the page height.
     #[must_use]
-    pub fn height(mut self, height: f64) -> Self {
-        self.height = Some(height);
+    pub fn height(mut self, height: impl Into<Option<f64>>) -> Self {
+        self.height = height.into();
         self
     }
 
     /// Sets the page top margin.
     #[must_use]
-    pub fn margin_top(mut self, margin_top: f64) -> Self {
-        self.margin_top = Some(margin_top);
+    pub fn margin_top(mut self, margin_top: impl Into<Option<f64>>) -> Self {
+        self.margin_top = margin_top.into();
         self
     }
 
     /// Sets the page bottom margin.
     #[must_use]
-    pub fn margin_bottom(mut self, margin_bottom: f64) -> Self {
-        self.margin_bottom = Some(margin_bottom);
+    pub fn margin_bottom(mut self, margin_bottom: impl Into<Option<f64>>) -> Self {
+        self.margin_bottom = margin_bottom.into();
         self
     }
 
     /// Sets the page right margin.
     #[must_use]
-    pub fn margin_right(mut self, margin_right: f64) -> Self {
-        self.margin_right = Some(margin_right);
+    pub fn margin_right(mut self, margin_right: impl Into<Option<f64>>) -> Self {
+        self.margin_right = margin_right.into();
         self
     }
 
     /// Sets the page margin left.
     #[must_use]
-    pub fn margin_left(mut self, margin_left: f64) -> Self {
-        self.margin_left = Some(margin_left);
+    pub fn margin_left(mut self, margin_left: impl Into<Option<f64>>) -> Self {
+        self.margin_left = margin_left.into();
         self
     }
 }
@@ -559,8 +562,8 @@ struct PreparePrintOptions {
 
 impl PreparePrintOptions {
     /// Sets whether the dialog should be a modal.
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.modal = modal.into();
         self
     }
 }
@@ -580,14 +583,14 @@ struct PrintOptions {
 
 impl PrintOptions {
     /// A token retrieved from [`PrintProxy::prepare_print`].
-    pub fn token(mut self, token: u32) -> Self {
-        self.token = Some(token);
+    pub fn token(mut self, token: impl Into<Option<u32>>) -> Self {
+        self.token = token.into();
         self
     }
 
     /// Sets whether the dialog should be a modal.
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.modal = modal.into();
         self
     }
 }

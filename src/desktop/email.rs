@@ -109,75 +109,66 @@ pub struct EmailRequest {
 impl EmailRequest {
     /// Sets a window identifier.
     #[must_use]
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
     }
 
     /// Sets the email address to send the email to.
     #[must_use]
-    pub fn address(mut self, address: &str) -> Self {
-        self.set_address(address);
+    pub fn address<'a>(mut self, address: impl Into<Option<&'a str>>) -> Self {
+        self.options.address = address.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_address(&mut self, address: &str) {
-        self.options.address = Some(address.to_owned());
     }
 
     /// Sets a list of email addresses to send the email to.
     #[must_use]
-    pub fn addresses(mut self, addresses: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.set_addresses(addresses);
+    pub fn addresses<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
+        mut self,
+        addresses: impl Into<Option<P>>,
+    ) -> Self {
+        self.options.addresses = addresses
+            .into()
+            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
         self
-    }
-
-    pub fn set_addresses(&mut self, addresses: &[impl AsRef<str> + Type + Serialize]) {
-        self.options.addresses = Some(addresses.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets a list of email addresses to BCC.
     #[must_use]
-    pub fn bcc(mut self, bcc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.set_bcc(bcc);
+    pub fn bcc<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
+        mut self,
+        bcc: impl Into<Option<P>>,
+    ) -> Self {
+        self.options.bcc = bcc
+            .into()
+            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
         self
-    }
-
-    pub fn set_bcc(&mut self, bcc: &[impl AsRef<str> + Type + Serialize]) {
-        self.options.bcc = Some(bcc.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets a list of email addresses to CC.
     #[must_use]
-    pub fn cc(mut self, cc: &[impl AsRef<str> + Type + Serialize]) -> Self {
-        self.set_cc(cc);
+    pub fn cc<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
+        mut self,
+        cc: impl Into<Option<P>>,
+    ) -> Self {
+        self.options.cc = cc
+            .into()
+            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
         self
-    }
-
-    pub fn set_cc(&mut self, cc: &[impl AsRef<str> + Type + Serialize]) {
-        self.options.cc = Some(cc.iter().map(|s| s.as_ref().to_owned()).collect());
     }
 
     /// Sets the email subject.
     #[must_use]
-    pub fn subject(mut self, subject: &str) -> Self {
-        self.set_subject(subject);
+    pub fn subject<'a>(mut self, subject: impl Into<Option<&'a str>>) -> Self {
+        self.options.subject = subject.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_subject(&mut self, subject: &str) {
-        self.options.subject = Some(subject.to_owned());
     }
 
     /// Sets the email body.
     #[must_use]
-    pub fn body(mut self, body: &str) -> Self {
-        self.set_body(body);
+    pub fn body<'a>(mut self, body: impl Into<Option<&'a str>>) -> Self {
+        self.options.body = body.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_body(&mut self, body: &str) {
-        self.options.body = Some(body.to_owned());
     }
 
     /// Attaches a file to the email.

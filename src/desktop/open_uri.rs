@@ -152,35 +152,23 @@ pub struct OpenFileRequest {
 impl OpenFileRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     #[must_use]
     /// Whether the file should be writeable or not.
-    pub fn writeable(mut self, writeable: bool) -> Self {
-        self.set_writeable(writeable);
+    pub fn writeable(mut self, writeable: impl Into<Option<bool>>) -> Self {
+        self.options.writeable = writeable.into();
         self
-    }
-
-    pub fn set_writeable(&mut self, writeable: bool) {
-        self.options.writeable = Some(writeable);
     }
 
     #[must_use]
     /// Whether to always ask the user which application to use or not.
-    pub fn ask(mut self, ask: bool) -> Self {
-        self.options.ask = Some(ask);
+    pub fn ask(mut self, ask: impl Into<Option<bool>>) -> Self {
+        self.options.ask = ask.into();
         self
-    }
-
-    pub fn set_ask(&mut self, ask: bool) {
-        self.options.ask = Some(ask);
     }
 
     pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
@@ -205,13 +193,9 @@ pub struct OpenDirectoryRequest {
 impl OpenDirectoryRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     pub async fn build(self, directory: &impl AsRawFd) -> Result<(), Error> {

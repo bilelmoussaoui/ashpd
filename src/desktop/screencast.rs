@@ -139,33 +139,35 @@ struct SelectSourcesOptions {
 impl SelectSourcesOptions {
     /// Sets whether to allow selecting multiple sources.
     #[must_use]
-    pub fn multiple(mut self, multiple: bool) -> Self {
-        self.multiple = Some(multiple);
+    pub fn multiple(mut self, multiple: impl Into<Option<bool>>) -> Self {
+        self.multiple = multiple.into();
         self
     }
 
     /// Sets how the cursor will be drawn on the screen cast stream.
     #[must_use]
-    pub fn cursor_mode(mut self, cursor_mode: CursorMode) -> Self {
-        self.cursor_mode = Some(cursor_mode);
+    pub fn cursor_mode(mut self, cursor_mode: impl Into<Option<CursorMode>>) -> Self {
+        self.cursor_mode = cursor_mode.into();
         self
     }
 
     /// Sets the types of content to record.
     #[must_use]
-    pub fn types(mut self, types: BitFlags<SourceType>) -> Self {
-        self.types = Some(types);
+    pub fn types(mut self, types: impl Into<Option<BitFlags<SourceType>>>) -> Self {
+        self.types = types.into();
         self
     }
 
     #[must_use]
-    pub fn persist_mode(mut self, persist_mode: PersistMode) -> Self {
-        self.persist_mode = Some(persist_mode);
+    pub fn persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
+        self.persist_mode = persist_mode.into();
         self
     }
 
-    pub fn set_restore_token(&mut self, token: &str) {
-        self.restore_token = Some(token.to_owned());
+    #[must_use]
+    pub fn restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
+        self.restore_token = token.into().map(ToOwned::to_owned);
+        self
     }
 }
 
@@ -365,14 +367,12 @@ impl<'a> Screencast<'a> {
         restore_token: Option<&str>,
         persist_mode: PersistMode,
     ) -> Result<(), Error> {
-        let mut options = SelectSourcesOptions::default()
+        let options = SelectSourcesOptions::default()
             .cursor_mode(cursor_mode)
             .multiple(multiple)
             .types(types)
-            .persist_mode(persist_mode);
-        if let Some(token) = restore_token {
-            options.set_restore_token(token);
-        }
+            .persist_mode(persist_mode)
+            .restore_token(restore_token);
         call_basic_response_method(
             self.inner(),
             &options.handle_token,

@@ -261,36 +261,24 @@ pub struct ScreenshotRequest {
 impl ScreenshotRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     /// Sets whether the dialog should be a modal.
     #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.set_modal(modal);
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.options.modal = modal.into();
         self
-    }
-
-    pub fn set_modal(&mut self, modal: bool) {
-        self.options.modal = Some(modal);
     }
 
     /// Sets whether the dialog should offer customization before a screenshot
     /// or not.
     #[must_use]
-    pub fn interactive(mut self, interactive: bool) -> Self {
-        self.set_interactive(interactive);
+    pub fn interactive(mut self, interactive: impl Into<Option<bool>>) -> Self {
+        self.options.interactive = interactive.into();
         self
-    }
-
-    pub fn set_interactive(&mut self, interactive: bool) {
-        self.options.interactive = Some(interactive);
     }
 
     /// Build the [`Url`].

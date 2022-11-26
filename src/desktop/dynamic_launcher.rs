@@ -107,8 +107,8 @@ pub struct PrepareInstallOptions {
 }
 
 impl PrepareInstallOptions {
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.modal = Some(modal);
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.modal = modal.into();
         self
     }
 
@@ -117,18 +117,18 @@ impl PrepareInstallOptions {
         self
     }
 
-    pub fn target(mut self, target: &str) -> Self {
-        self.target = Some(target.to_owned());
+    pub fn target<'a>(mut self, target: impl Into<Option<&'a str>>) -> Self {
+        self.target = target.into().map(ToOwned::to_owned);
         self
     }
 
-    pub fn editable_name(mut self, editable_name: bool) -> Self {
-        self.editable_name = Some(editable_name);
+    pub fn editable_name(mut self, editable_name: impl Into<Option<bool>>) -> Self {
+        self.editable_name = editable_name.into();
         self
     }
 
-    pub fn editable_icon(mut self, editable_icon: bool) -> Self {
-        self.editable_icon = Some(editable_icon);
+    pub fn editable_icon(mut self, editable_icon: impl Into<Option<bool>>) -> Self {
+        self.editable_icon = editable_icon.into();
         self
     }
 }

@@ -29,6 +29,7 @@
 //! If no `command` is provided, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
 
+use serde::Serialize;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -124,59 +125,44 @@ pub struct BackgroundRequest {
 impl BackgroundRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     #[must_use]
     /// Sets whether to auto start the application or not.
-    pub fn auto_start(mut self, auto_start: bool) -> Self {
-        self.set_auto_start(auto_start);
+    pub fn auto_start(mut self, auto_start: impl Into<Option<bool>>) -> Self {
+        self.options.autostart = auto_start.into();
         self
-    }
-
-    pub fn set_auto_start(&mut self, auto_start: bool) {
-        self.options.autostart = Some(auto_start);
     }
 
     #[must_use]
     /// Sets whether the application is dbus activatable.
-    pub fn dbus_activatable(mut self, dbus_activatable: bool) -> Self {
-        self.set_dbus_activatable(dbus_activatable);
+    pub fn dbus_activatable(mut self, dbus_activatable: impl Into<Option<bool>>) -> Self {
+        self.options.dbus_activatable = dbus_activatable.into();
         self
-    }
-
-    pub fn set_dbus_activatable(&mut self, dbus_activatable: bool) {
-        self.options.dbus_activatable = Some(dbus_activatable);
     }
 
     #[must_use]
     /// Specifies the command line to execute.
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    pub fn command(mut self, command: &[&str]) -> Self {
-        self.set_command(command);
+    pub fn command<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
+        mut self,
+        command: impl Into<Option<P>>,
+    ) -> Self {
+        self.options.command = command
+            .into()
+            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
         self
-    }
-
-    pub fn set_command(&mut self, command: &[&str]) {
-        self.options.command = Some(command.iter().map(|s| s.to_owned().to_owned()).collect());
     }
 
     #[must_use]
     /// Sets a user-visible reason for the request.
-    pub fn reason(mut self, reason: &str) -> Self {
-        self.set_reason(reason);
+    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+        self.options.reason = reason.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_reason(&mut self, reason: &str) {
-        self.options.reason = Some(reason.to_owned());
     }
 
     /// Build the [`BackgroundResponse`].

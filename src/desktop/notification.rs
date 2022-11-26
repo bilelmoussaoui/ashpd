@@ -18,12 +18,12 @@
 //!             notification_id,
 //!             Notification::new("Contrast")
 //!                 .default_action("open")
-//!                 .default_action_target(Value::U32(100).into())
+//!                 .default_action_target(100)
 //!                 .body("color copied to clipboard")
 //!                 .priority(Priority::High)
 //!                 .icon(Icon::from_names(&["dialog-question-symbolic"]))
-//!                 .button(Button::new("Copy", "copy").target(Value::U32(32).into()))
-//!                 .button(Button::new("Delete", "delete").target(Value::U32(40).into())),
+//!                 .button(Button::new("Copy", "copy").target(32))
+//!                 .button(Button::new("Delete", "delete").target(40)),
 //!         )
 //!         .await?;
 //!
@@ -160,36 +160,39 @@ impl Notification {
 
     /// Sets the notification body.
     #[must_use]
-    pub fn body(mut self, body: &str) -> Self {
-        self.body = Some(body.to_owned());
+    pub fn body<'a>(mut self, body: impl Into<Option<&'a str>>) -> Self {
+        self.body = body.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets an icon to the notification.
     #[must_use]
-    pub fn icon(mut self, icon: Icon) -> Self {
-        self.icon = Some(icon);
+    pub fn icon(mut self, icon: impl Into<Option<Icon>>) -> Self {
+        self.icon = icon.into();
         self
     }
 
     /// Sets the notification priority.
     #[must_use]
-    pub fn priority(mut self, priority: Priority) -> Self {
-        self.priority = Some(priority);
+    pub fn priority(mut self, priority: impl Into<Option<Priority>>) -> Self {
+        self.priority = priority.into();
         self
     }
 
     /// Sets the default action when the user clicks on the notification.
     #[must_use]
-    pub fn default_action(mut self, default_action: &str) -> Self {
-        self.default_action = Some(default_action.to_owned());
+    pub fn default_action<'a>(mut self, default_action: impl Into<Option<&'a str>>) -> Self {
+        self.default_action = default_action.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets a value to be sent in the `action_invoked` signal.
     #[must_use]
-    pub fn default_action_target(mut self, default_action_target: OwnedValue) -> Self {
-        self.default_action_target = Some(default_action_target);
+    pub fn default_action_target<T: Into<OwnedValue>>(
+        mut self,
+        default_action_target: impl Into<Option<T>>,
+    ) -> Self {
+        self.default_action_target = default_action_target.into().map(|t| t.into());
         self
     }
 
@@ -237,8 +240,8 @@ impl Button {
 
     /// The value to send with the action name when the button is clicked.
     #[must_use]
-    pub fn target(mut self, target: OwnedValue) -> Self {
-        self.target = Some(target);
+    pub fn target<T: Into<OwnedValue>>(mut self, target: impl Into<Option<T>>) -> Self {
+        self.target = target.into().map(|t| t.into());
         self
     }
 }

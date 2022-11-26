@@ -163,8 +163,8 @@ struct SelectDevicesOptions {
 
 impl SelectDevicesOptions {
     /// Sets the device types to request remote controlling of.
-    pub fn types(mut self, types: BitFlags<DeviceType>) -> Self {
-        self.types = Some(types);
+    pub fn types(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
+        self.types = types.into();
         self
     }
 }

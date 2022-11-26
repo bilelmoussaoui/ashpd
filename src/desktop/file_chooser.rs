@@ -317,68 +317,44 @@ pub struct OpenFileRequest {
 impl OpenFileRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     /// Sets a title for the file chooser dialog.
     #[must_use]
-    pub fn title(mut self, title: &str) -> Self {
-        self.set_title(title);
+    pub fn title<'a>(mut self, title: impl Into<Option<&'a str>>) -> Self {
+        self.title = title.into().map(ToOwned::to_owned).unwrap_or_default();
         self
-    }
-
-    pub fn set_title(&mut self, title: &str) {
-        self.title = title.to_owned();
     }
 
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.set_accept_label(accept_label);
+    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+        self.options.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_accept_label(&mut self, accept_label: &str) {
-        self.options.accept_label = Some(accept_label.to_owned());
     }
 
     /// Sets whether the dialog should be a modal.
     #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.set_modal(modal);
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.options.modal = modal.into();
         self
-    }
-
-    pub fn set_modal(&mut self, modal: bool) {
-        self.options.modal = Some(modal);
     }
 
     /// Sets whether to allow multiple files selection.
     #[must_use]
-    pub fn multiple(mut self, multiple: bool) -> Self {
-        self.set_multiple(multiple);
+    pub fn multiple(mut self, multiple: impl Into<Option<bool>>) -> Self {
+        self.options.multiple = multiple.into();
         self
-    }
-
-    pub fn set_multiple(&mut self, multiple: bool) {
-        self.options.multiple = Some(multiple);
     }
 
     /// Sets whether to select directories or not.
     #[must_use]
-    pub fn directory(mut self, directory: bool) -> Self {
-        self.set_directory(directory);
+    pub fn directory(mut self, directory: impl Into<Option<bool>>) -> Self {
+        self.options.directory = directory.into();
         self
-    }
-
-    pub fn set_directory(&mut self, directory: bool) {
-        self.options.directory = Some(directory);
     }
 
     /// Adds a files filter.
@@ -388,14 +364,16 @@ impl OpenFileRequest {
         self
     }
 
-    pub fn set_filters(&mut self, filters: &[FileFilter]) {
-        self.options.filters = filters.to_vec();
+    #[must_use]
+    pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
+        self.options.filters = filters.into_iter().collect();
+        self
     }
 
     /// Specifies the default filter.
     #[must_use]
-    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
-        self.options.current_filter = Some(current_filter);
+    pub fn current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
+        self.options.current_filter = current_filter.into();
         self
     }
 
@@ -406,8 +384,10 @@ impl OpenFileRequest {
         self
     }
 
-    pub fn set_choices(&mut self, choices: &[Choice]) {
-        self.options.choices = choices.to_vec();
+    #[must_use]
+    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+        self.options.choices = choices.into_iter().collect();
+        self
     }
 
     pub async fn build(self) -> Result<SelectedFiles, Error> {
@@ -429,46 +409,30 @@ pub struct SaveFilesRequest {
 impl SaveFilesRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     /// Sets a title for the file chooser dialog.
     #[must_use]
-    pub fn title(mut self, title: &str) -> Self {
-        self.set_title(title);
+    pub fn title<'a>(mut self, title: impl Into<Option<&'a str>>) -> Self {
+        self.title = title.into().map(ToOwned::to_owned).unwrap_or_default();
         self
-    }
-
-    pub fn set_title(&mut self, title: &str) {
-        self.title = title.to_owned();
     }
 
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.set_accept_label(accept_label);
+    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+        self.options.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_accept_label(&mut self, accept_label: &str) {
-        self.options.accept_label = Some(accept_label.to_owned());
     }
 
     /// Sets whether the dialog should be a modal.
     #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.set_modal(modal);
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.options.modal = modal.into();
         self
-    }
-
-    pub fn set_modal(&mut self, modal: bool) {
-        self.options.modal = Some(modal);
     }
 
     /// Adds a choice.
@@ -478,41 +442,40 @@ impl SaveFilesRequest {
         self
     }
 
-    pub fn set_choices(&mut self, choices: &[Choice]) {
-        self.options.choices = choices.to_vec();
+    #[must_use]
+    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+        self.options.choices = choices.into_iter().collect();
+        self
     }
 
     /// Specifies the current folder path.
     #[must_use]
-    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
-        self.set_current_folder(current_folder);
+    pub fn current_folder<P: AsRef<Path>>(mut self, current_folder: impl Into<Option<P>>) -> Self {
+        self.options.current_folder = current_folder.into().map(|c| {
+            CString::new(c.as_ref().as_os_str().as_bytes())
+                .expect("`current_folder` should not be null terminated")
+                .into_bytes_with_nul()
+        });
         self
-    }
-
-    pub fn set_current_folder(&mut self, current_folder: impl AsRef<Path>) {
-        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
-            .expect("`current_folder` should not be null terminated");
-        self.options.current_folder = Some(cstr.into_bytes_with_nul());
     }
 
     /// Sets a list of files to save.
     #[must_use]
-    pub fn files(mut self, files: &[impl AsRef<Path>]) -> Self {
-        self.set_files(files);
-        self
-    }
-
-    pub fn set_files(&mut self, files: &[impl AsRef<Path>]) {
-        self.options.files = Some(
+    pub fn files<P: IntoIterator<Item = impl AsRef<Path>>>(
+        mut self,
+        files: impl Into<Option<P>>,
+    ) -> Self {
+        self.options.files = files.into().map(|files| {
             files
-                .iter()
+                .into_iter()
                 .map(|s| {
                     let cstr = CString::new(s.as_ref().as_os_str().as_bytes())
                         .expect("`files` should not be null terminated");
                     cstr.into_bytes_with_nul()
                 })
-                .collect(),
-        );
+                .collect()
+        });
+        self
     }
 
     pub async fn build(self) -> Result<SelectedFiles, Error> {
@@ -534,84 +497,59 @@ pub struct SaveFileRequest {
 impl SaveFileRequest {
     #[must_use]
     /// Sets a window identifier.
-
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.set_identifier(identifier);
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into().unwrap_or_default();
         self
-    }
-
-    pub fn set_identifier(&mut self, identifier: WindowIdentifier) {
-        self.identifier = identifier;
     }
 
     /// Sets a title for the file chooser dialog.
     #[must_use]
-    pub fn title(mut self, title: &str) -> Self {
-        self.set_title(title);
+    pub fn title<'a>(mut self, title: impl Into<Option<&'a str>>) -> Self {
+        self.title = title.into().map(ToOwned::to_owned).unwrap_or_default();
         self
-    }
-
-    pub fn set_title(&mut self, title: &str) {
-        self.title = title.to_owned();
     }
 
     /// Sets a user-visible string to the "accept" button.
     #[must_use]
-    pub fn accept_label(mut self, accept_label: &str) -> Self {
-        self.set_accept_label(accept_label);
+    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+        self.options.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_accept_label(&mut self, accept_label: &str) {
-        self.options.accept_label = Some(accept_label.to_owned());
     }
 
     /// Sets whether the dialog should be a modal.
     #[must_use]
-    pub fn modal(mut self, modal: bool) -> Self {
-        self.set_modal(modal);
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.options.modal = modal.into();
         self
-    }
-
-    pub fn set_modal(&mut self, modal: bool) {
-        self.options.modal = Some(modal);
     }
 
     /// Sets the current file name.
     #[must_use]
-    pub fn current_name(mut self, current_name: &str) -> Self {
-        self.set_current_name(current_name);
+    pub fn current_name<'a>(mut self, current_name: impl Into<Option<&'a str>>) -> Self {
+        self.options.current_name = current_name.into().map(ToOwned::to_owned);
         self
-    }
-
-    pub fn set_current_name(&mut self, current_name: &str) {
-        self.options.current_name = Some(current_name.to_owned());
     }
 
     /// Sets the current folder.
     #[must_use]
-    pub fn current_folder(mut self, current_folder: impl AsRef<Path>) -> Self {
-        self.set_current_folder(current_folder);
+    pub fn current_folder<P: AsRef<Path>>(mut self, current_folder: impl Into<Option<P>>) -> Self {
+        self.options.current_folder = current_folder.into().map(|c| {
+            CString::new(c.as_ref().as_os_str().as_bytes())
+                .expect("`current_folder` should not be null terminated")
+                .into_bytes_with_nul()
+        });
         self
-    }
-
-    pub fn set_current_folder(&mut self, current_folder: impl AsRef<Path>) {
-        let cstr = CString::new(current_folder.as_ref().as_os_str().as_bytes())
-            .expect("`current_folder` should not be null terminated");
-        self.options.current_folder = Some(cstr.into_bytes_with_nul());
     }
 
     /// Sets the absolute path of the file.
     #[must_use]
-    pub fn current_file(mut self, current_file: impl AsRef<Path>) -> Self {
-        self.set_current_file(current_file);
+    pub fn current_file<P: AsRef<Path>>(mut self, current_file: impl Into<Option<P>>) -> Self {
+        self.options.current_file = current_file.into().map(|c| {
+            CString::new(c.as_ref().as_os_str().as_bytes())
+                .expect("`current_folder` should not be null terminated")
+                .into_bytes_with_nul()
+        });
         self
-    }
-
-    pub fn set_current_file(&mut self, current_file: impl AsRef<Path>) {
-        let cstr = CString::new(current_file.as_ref().as_os_str().as_bytes())
-            .expect("`current_file` should not be null terminated");
-        self.options.current_file = Some(cstr.into_bytes_with_nul());
     }
 
     /// Adds a files filter.
@@ -621,19 +559,17 @@ impl SaveFileRequest {
         self
     }
 
-    pub fn set_filters(&mut self, filters: &[FileFilter]) {
-        self.options.filters = filters.to_vec();
+    #[must_use]
+    pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
+        self.options.filters = filters.into_iter().collect();
+        self
     }
 
     /// Sets the default filter.
     #[must_use]
-    pub fn current_filter(mut self, current_filter: FileFilter) -> Self {
-        self.set_current_filter(current_filter);
+    pub fn current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
+        self.options.current_filter = current_filter.into();
         self
-    }
-
-    pub fn set_current_filter(&mut self, current_filter: FileFilter) {
-        self.options.current_filter = Some(current_filter);
     }
 
     /// Adds a choice.
@@ -643,8 +579,10 @@ impl SaveFileRequest {
         self
     }
 
-    pub fn set_choices(&mut self, choices: &[Choice]) {
-        self.options.choices = choices.to_vec();
+    #[must_use]
+    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+        self.options.choices = choices.into_iter().collect();
+        self
     }
 
     pub async fn build(self) -> Result<SelectedFiles, Error> {
