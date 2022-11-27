@@ -95,10 +95,10 @@ use crate::{
 pub enum KeyState {
     #[doc(alias = "XDP_KEY_PRESSED")]
     /// The key is pressed.
-    Pressed = 0,
+    Pressed = 1,
     #[doc(alias = "XDP_KEY_RELEASED")]
     /// The key is released..
-    Released = 1,
+    Released = 0,
 }
 
 #[bitflags]
