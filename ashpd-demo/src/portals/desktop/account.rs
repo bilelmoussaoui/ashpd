@@ -64,7 +64,7 @@ impl AccountPage {
         self.send_notification("Fetching user information...", NotificationKind::Info);
         let request = UserInformationResponse::builder()
             .identifier(identifier)
-            .reason(&reason);
+            .reason(&*reason);
         match request.build().await {
             Ok(user_info) => {
                 self.send_notification(

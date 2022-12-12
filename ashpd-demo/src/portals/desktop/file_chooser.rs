@@ -121,11 +121,11 @@ impl FileChooserPage {
             .directory(directory)
             .identifier(identifier)
             .modal(modal)
-            .title(&title)
+            .title(&*title)
             .multiple(multiple);
         if let Some(accept_label) = is_empty(imp.open_accept_label_entry.text()) {
-            request.set_accept_label(&accept_label)
-        }
+            request = request.accept_label(&*accept_label)
+        };
         match request.build().await {
             Ok(files) => {
                 imp.open_response_group.show();
@@ -154,19 +154,19 @@ impl FileChooserPage {
         let mut request = SaveFileRequest::default()
             .identifier(identifier)
             .modal(modal)
-            .title(&title);
+            .title(&*title);
 
         if let Some(accept_label) = is_empty(imp.save_file_accept_label_entry.text()) {
-            request.set_accept_label(&accept_label);
+            request = request.accept_label(&*accept_label);
         }
         if let Some(current_name) = is_empty(imp.save_file_current_name_entry.text()) {
-            request.set_current_name(&current_name);
+            request = request.current_name(&*current_name);
         }
         if let Some(current_folder) = is_empty(imp.save_file_current_folder_entry.text()) {
-            request.set_current_folder(current_folder);
+            request = request.current_folder(current_folder);
         }
         if let Some(current_file) = is_empty(imp.save_file_current_file_entry.text()) {
-            request.set_current_file(current_file);
+            request = request.current_file(current_file);
         }
         match request.build().await {
             Ok(files) => {
@@ -197,17 +197,17 @@ impl FileChooserPage {
         let mut request = SaveFilesRequest::default()
             .identifier(identifier)
             .modal(modal)
-            .title(&title);
+            .title(&*title);
 
         if let Some(accept_label) = is_empty(imp.save_files_accept_label_entry.text()) {
-            request.set_accept_label(&accept_label);
+            request = request.accept_label(&*accept_label);
         }
         if let Some(current_folder) = is_empty(imp.save_files_current_folder_entry.text()) {
-            request.set_current_folder(current_folder);
+            request = request.current_folder(current_folder);
         }
 
         if let Some(files) = is_empty(imp.save_files_files_entry.text()).map(split_comma) {
-            request.set_files(
+            request = request.files(
                 files
                     .iter()
                     .map(|s| s.as_ref())

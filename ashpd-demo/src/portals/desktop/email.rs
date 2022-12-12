@@ -132,19 +132,19 @@ impl EmailPage {
 
         let mut request = EmailRequest::default().identifier(identifier);
         if let Some(subject) = subject {
-            request.set_subject(&subject);
+            request = request.subject(&*subject);
         }
         if let Some(addresses) = addresses {
-            request.set_addresses(&addresses);
+            request = request.addresses(&addresses);
         }
         if let Some(cc) = cc {
-            request.set_cc(&cc);
+            request = request.cc(&cc);
         }
         if let Some(bcc) = bcc {
-            request.set_bcc(&bcc);
+            request = request.bcc(&bcc);
         }
         if let Some(body) = body {
-            request.set_body(&body);
+            request = request.body(&*body);
         }
         let attachments = self.attachments();
         if !attachments.is_empty() {

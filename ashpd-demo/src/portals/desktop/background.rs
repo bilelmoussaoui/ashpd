@@ -77,7 +77,7 @@ impl BackgroundPage {
 
         let mut request = BackgroundResponse::builder()
             .identifier(identifier)
-            .reason(&reason)
+            .reason(&*reason)
             .auto_start(auto_start)
             .dbus_activatable(dbus_activatable);
 
@@ -86,7 +86,7 @@ impl BackgroundPage {
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>()
         }) {
-            request.set_command(&command.iter().map(|s| s.as_str()).collect::<Vec<_>>());
+            request = request.command(&command.iter().map(|s| s.as_str()).collect::<Vec<_>>());
         }
         self.send_notification("Requesting background access", NotificationKind::Info);
 

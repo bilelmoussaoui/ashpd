@@ -68,7 +68,7 @@ mod imp {
                 window.present();
                 return;
             }
-            let window = ApplicationWindow::new(&*app);
+            let window = ApplicationWindow::new(&app);
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
