@@ -96,6 +96,27 @@ impl CameraPaintable {
             .unwrap();
         let paintable = sink.property::<gdk::Paintable>("paintable");
 
+        // create the appropriate sink depending on the environment we are running
+        // Check if the paintablesink initialized a gl-context, and if so put it
+        // behind a glsinkbin so we keep the buffers on the gpu
+        let (convert, sink) = if paintable
+            .property::<Option<gdk::GLContext>>("gl-context")
+            .is_some()
+        {
+            // FIXME: pw is currently giving us memory buffers instead of dmabufs
+            // let convert = gst::ElementFactory::make("glcolorconvert").build().unwrap();
+            let convert = gst::ElementFactory::make("videoconvert").build().unwrap();
+
+            let glsink = gst::ElementFactory::make("glsinkbin")
+                .property("sink", &sink)
+                .build()
+                .unwrap();
+            (convert, glsink)
+        } else {
+            let convert = gst::ElementFactory::make("videoconvert").build().unwrap();
+            (convert, sink.upcast())
+        };
+
         paintable.connect_invalidate_contents(clone!(@weak self as pt => move |_| {
             pt.invalidate_contents();
         }));
@@ -105,7 +126,6 @@ impl CameraPaintable {
         }));
         imp.sink_paintable.replace(Some(paintable));
 
-        let convert = gst::ElementFactory::make("videoconvert").build().unwrap();
         let queue1 = gst::ElementFactory::make("queue").build().unwrap();
         let queue2 = gst::ElementFactory::make("queue").build().unwrap();
         pipeline
