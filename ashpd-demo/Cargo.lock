@@ -38,7 +38,7 @@ checksum = "216261ddc8289130e551ddcd5ce8a064710c0d064a4d2895c67151c92b5443f6"
 [[package]]
 name = "ashpd"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/bilelmoussaoui/ashpd#623fcc81442c63b6ddcd44b81c19916e66b98256"
+source = "git+https://github.com/bilelmoussaoui/ashpd#604b35c99bc57087bbb79451343cb0808722c9f0"
 dependencies = [
  "async-std",
  "enumflags2",
@@ -1090,9 +1090,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f40988bfe4d324150d2cea1f3b5489d1aa47efcba85df81ec6affb04deac37ef"
 dependencies = [
  "fragile",
+ "gdk4-wayland",
+ "gdk4-x11",
  "gst-plugin-version-helper",
  "gstreamer",
  "gstreamer-base",
+ "gstreamer-gl",
+ "gstreamer-gl-egl",
+ "gstreamer-gl-wayland",
+ "gstreamer-gl-x11",
  "gstreamer-video",
  "gtk4",
  "once_cell",
@@ -1155,6 +1161,113 @@ dependencies = [
  "glib-sys",
  "gobject-sys",
  "gstreamer-sys",
+ "libc",
+ "system-deps",
+]
+
+[[package]]
+name = "gstreamer-gl"
+version = "0.19.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "663bc8388d9799f5f46589a0fdd46f23c2613508fb64837843d3fc79dbee7f99"
+dependencies = [
+ "bitflags",
+ "byteorder",
+ "glib",
+ "gstreamer",
+ "gstreamer-base",
+ "gstreamer-gl-sys",
+ "gstreamer-video",
+ "libc",
+ "once_cell",
+]
+
+[[package]]
+name = "gstreamer-gl-egl"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c231d35df818cc3c99b88a6296bee730d38349a33b53dad9ec460276acc5a64e"
+dependencies = [
+ "glib",
+ "gstreamer",
+ "gstreamer-gl",
+ "gstreamer-gl-egl-sys",
+ "libc",
+]
+
+[[package]]
+name = "gstreamer-gl-egl-sys"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8197da370a7fbdce967f9ca52b6b64affa39c29ab9a91cba95a11fbb1f74f2ee"
+dependencies = [
+ "glib-sys",
+ "gstreamer-gl-sys",
+ "libc",
+ "system-deps",
+]
+
+[[package]]
+name = "gstreamer-gl-sys"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b21f1634e2a7ba365b5df00e5c4c5077c1d624ef7ad7adbba74df648459dcf3"
+dependencies = [
+ "glib-sys",
+ "gobject-sys",
+ "gstreamer-base-sys",
+ "gstreamer-sys",
+ "gstreamer-video-sys",
+ "libc",
+ "system-deps",
+]
+
+[[package]]
+name = "gstreamer-gl-wayland"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44cf204c98f3e9bef47a7d62a8c01aa97c3d2e443bf27af3b8548f65e8e7bbfa"
+dependencies = [
+ "glib",
+ "gstreamer",
+ "gstreamer-gl",
+ "gstreamer-gl-wayland-sys",
+ "libc",
+]
+
+[[package]]
+name = "gstreamer-gl-wayland-sys"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "156bbb8915c654e4d4ea56f0dda3a3168091911a0231b3178a6d1941c0b1389e"
+dependencies = [
+ "glib-sys",
+ "gstreamer-gl-sys",
+ "libc",
+ "system-deps",
+]
+
+[[package]]
+name = "gstreamer-gl-x11"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08bae59810226654ba39ef9da23a09f1b16a1e341ab42017cba722c56ed55504"
+dependencies = [
+ "glib",
+ "gstreamer",
+ "gstreamer-gl",
+ "gstreamer-gl-x11-sys",
+ "libc",
+]
+
+[[package]]
+name = "gstreamer-gl-x11-sys"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc123fb91aa35bd41183ea23ab8292ac11c3dc567e286a0ecb34b3a7a5e22e96"
+dependencies = [
+ "glib-sys",
+ "gstreamer-gl-sys",
  "libc",
  "system-deps",
 ]
