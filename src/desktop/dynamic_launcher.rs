@@ -50,22 +50,17 @@ use crate::{
 };
 
 #[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
+#[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpLauncherType")]
 pub enum LauncherType {
     #[doc(alias = "XDP_LAUNCHER_APPLICATION")]
+    #[default]
     /// A launcher that represents an application
     Application,
     #[doc(alias = "XDP_LAUNCHER_WEBAPP")]
     /// A launcher that represents a web application
     WebApplication,
-}
-
-impl Default for LauncherType {
-    fn default() -> Self {
-        Self::Application
-    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Type)]

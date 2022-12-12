@@ -89,11 +89,12 @@ pub enum CursorMode {
     Metadata,
 }
 
-#[derive(Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
+#[derive(Default, Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]
 pub enum PersistMode {
     #[doc(alias = "XDP_PERSIST_MODE_NONE")]
+    #[default]
     /// Do not persist.
     DoNot = 0,
     #[doc(alias = "XDP_PERSIST_MODE_TRANSIENT")]
@@ -102,12 +103,6 @@ pub enum PersistMode {
     #[doc(alias = "XDP_PERSIST_MODE_PERSISTENT")]
     /// Persist until explicitly revoked.
     ExplicitlyRevoked = 2,
-}
-
-impl Default for PersistMode {
-    fn default() -> Self {
-        Self::DoNot
-    }
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]

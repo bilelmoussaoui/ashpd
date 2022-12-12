@@ -105,7 +105,7 @@ use zbus::zvariant::Type;
 ///
 /// let identifier = WindowIdentifier::default();
 /// ```
-#[derive(Type)]
+#[derive(Default, Type)]
 #[zvariant(signature = "s")]
 #[doc(alias = "XdpParent")]
 pub enum WindowIdentifier {
@@ -123,6 +123,7 @@ pub enum WindowIdentifier {
     #[doc(hidden)]
     X11(WindowIdentifierType),
     #[doc(hidden)]
+    #[default]
     None,
 }
 
@@ -158,12 +159,6 @@ impl std::fmt::Debug for WindowIdentifier {
         f.debug_tuple("WindowIdentifier")
             .field(&format!("{}", self))
             .finish()
-    }
-}
-
-impl Default for WindowIdentifier {
-    fn default() -> Self {
-        Self::None
     }
 }
 
