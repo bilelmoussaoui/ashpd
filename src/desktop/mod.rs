@@ -19,6 +19,8 @@ pub mod email;
 pub mod file_chooser;
 /// Enable/disable/query the status of Game Mode.
 pub mod game_mode;
+/// Register global shortcuts
+pub mod global_shortcuts;
 /// Inhibit the session from being restarted or the user from logging out.
 pub mod inhibit;
 /// Query the user's GPS location.
