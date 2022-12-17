@@ -116,16 +116,15 @@ impl FileChooserPage {
         let directory = imp.open_directory_switch.is_active();
         let modal = imp.open_modal_switch.is_active();
         let multiple = imp.open_multiple_switch.is_active();
+        let accept_label = is_empty(imp.open_accept_label_entry.text());
 
-        let mut request = OpenFileRequest::default()
+        let request = OpenFileRequest::default()
             .directory(directory)
             .identifier(identifier)
             .modal(modal)
-            .title(&title)
-            .multiple(multiple);
-        if let Some(accept_label) = is_empty(imp.open_accept_label_entry.text()) {
-            request.set_accept_label(&accept_label)
-        }
+            .title(&*title)
+            .multiple(multiple)
+            .accept_label(accept_label.as_deref());
         match request.build().await {
             Ok(files) => {
                 imp.open_response_group.show();
@@ -151,23 +150,18 @@ impl FileChooserPage {
         let imp = self.imp();
         let title = imp.save_file_title_entry.text();
         let modal = imp.save_file_modal_switch.is_active();
-        let mut request = SaveFileRequest::default()
+        let accept_label = is_empty(imp.save_file_accept_label_entry.text());
+        let current_name = is_empty(imp.save_file_current_name_entry.text());
+        let current_folder = is_empty(imp.save_file_current_folder_entry.text());
+        let current_file = is_empty(imp.save_file_current_file_entry.text());
+        let request = SaveFileRequest::default()
             .identifier(identifier)
             .modal(modal)
-            .title(&title);
-
-        if let Some(accept_label) = is_empty(imp.save_file_accept_label_entry.text()) {
-            request.set_accept_label(&accept_label);
-        }
-        if let Some(current_name) = is_empty(imp.save_file_current_name_entry.text()) {
-            request.set_current_name(&current_name);
-        }
-        if let Some(current_folder) = is_empty(imp.save_file_current_folder_entry.text()) {
-            request.set_current_folder(current_folder);
-        }
-        if let Some(current_file) = is_empty(imp.save_file_current_file_entry.text()) {
-            request.set_current_file(current_file);
-        }
+            .title(&*title)
+            .accept_label(accept_label.as_deref())
+            .current_name(current_name.as_deref())
+            .current_folder::<String>(current_folder)
+            .current_file::<String>(current_file);
         match request.build().await {
             Ok(files) => {
                 imp.save_file_response_group.show();
@@ -194,27 +188,17 @@ impl FileChooserPage {
         let imp = self.imp();
         let title = imp.save_files_title_entry.text();
         let modal = imp.save_files_modal_switch.is_active();
-        let mut request = SaveFilesRequest::default()
+        let accept_label = is_empty(imp.save_files_accept_label_entry.text());
+        let current_folder = is_empty(imp.save_files_current_folder_entry.text());
+        let files = is_empty(imp.save_files_files_entry.text()).map(split_comma);
+        let request = SaveFilesRequest::default()
             .identifier(identifier)
             .modal(modal)
-            .title(&title);
+            .title(&*title)
+            .accept_label(accept_label.as_deref())
+            .current_folder::<String>(current_folder)
+            .files::<Vec<_>>(files);
 
-        if let Some(accept_label) = is_empty(imp.save_files_accept_label_entry.text()) {
-            request.set_accept_label(&accept_label);
-        }
-        if let Some(current_folder) = is_empty(imp.save_files_current_folder_entry.text()) {
-            request.set_current_folder(current_folder);
-        }
-
-        if let Some(files) = is_empty(imp.save_files_files_entry.text()).map(split_comma) {
-            request.set_files(
-                files
-                    .iter()
-                    .map(|s| s.as_ref())
-                    .collect::<Vec<&str>>()
-                    .as_slice(),
-            );
-        };
         match request.build().await {
             Ok(files) => {
                 imp.save_files_response_group.show();

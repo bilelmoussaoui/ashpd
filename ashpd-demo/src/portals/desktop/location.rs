@@ -227,7 +227,9 @@ impl LocationPage {
         imp.longitude_label
             .set_label(&location.longitude().to_string());
 
-        let datetime: DateTime<Local> = Local.timestamp(location.timestamp().as_secs() as i64, 0);
+        let datetime: DateTime<Local> = Local
+            .timestamp_opt(location.timestamp().as_secs() as i64, 0)
+            .unwrap();
         let since = datetime.format("%Y-%m-%d %H:%M:%S");
         imp.timestamp_label.set_label(&since.to_string());
 

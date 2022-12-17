@@ -1,8 +1,5 @@
 use adw::prelude::*;
-use ashpd::{
-    desktop::notification::{Button, Notification, NotificationProxy, Priority},
-    zvariant::Value,
-};
+use ashpd::desktop::notification::{Button, Notification, NotificationProxy, Priority};
 use gtk::{glib, subclass::prelude::*};
 
 use self::button::NotificationButton;
@@ -124,9 +121,9 @@ impl NotificationPage {
         };
 
         let mut notification = Notification::new(&title)
-            .default_action(&default_action)
-            .default_action_target(Value::Str(default_action_target.as_str().into()).into())
-            .body(&body)
+            .default_action(&*default_action)
+            .default_action_target(&*default_action_target)
+            .body(&*body)
             .priority(priority);
 
         for button in self.buttons().into_iter() {
@@ -225,7 +222,7 @@ mod button {
             let label = imp.label_row.text();
             let action = imp.action_row.text();
             let target = imp.target_row.text();
-            Button::new(&label, &action).target(Value::Str(target.as_str().into()).into())
+            Button::new(&label, &action).target(&*target)
         }
 
         fn create_widgets(&self) {

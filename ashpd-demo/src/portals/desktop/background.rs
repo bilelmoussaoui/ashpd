@@ -74,20 +74,19 @@ impl BackgroundPage {
         let reason = imp.reason_entry.text();
         let auto_start = imp.auto_start_switch.is_active();
         let dbus_activatable = imp.dbus_activatable_switch.is_active();
-
-        let mut request = BackgroundResponse::builder()
-            .identifier(identifier)
-            .reason(&reason)
-            .auto_start(auto_start)
-            .dbus_activatable(dbus_activatable);
-
-        if let Some(command) = is_empty(imp.command_entry.text()).map(|txt| {
+        let command = is_empty(imp.command_entry.text()).map(|txt| {
             txt.split_whitespace()
                 .map(|s| s.to_string())
                 .collect::<Vec<String>>()
-        }) {
-            request.set_command(&command.iter().map(|s| s.as_str()).collect::<Vec<_>>());
-        }
+        });
+
+        let request = BackgroundResponse::builder()
+            .identifier(identifier)
+            .reason(&*reason)
+            .auto_start(auto_start)
+            .dbus_activatable(dbus_activatable)
+            .command::<Vec<_>, String>(command);
+
         self.send_notification("Requesting background access", NotificationKind::Info);
 
         match request.build().await {

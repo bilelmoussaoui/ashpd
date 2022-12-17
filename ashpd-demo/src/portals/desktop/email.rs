@@ -130,22 +130,13 @@ impl EmailPage {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        let mut request = EmailRequest::default().identifier(identifier);
-        if let Some(subject) = subject {
-            request.set_subject(&subject);
-        }
-        if let Some(addresses) = addresses {
-            request.set_addresses(&addresses);
-        }
-        if let Some(cc) = cc {
-            request.set_cc(&cc);
-        }
-        if let Some(bcc) = bcc {
-            request.set_bcc(&bcc);
-        }
-        if let Some(body) = body {
-            request.set_body(&body);
-        }
+        let mut request = EmailRequest::default()
+            .identifier(identifier)
+            .subject(subject.as_deref())
+            .addresses::<Vec<_>, String>(addresses)
+            .cc::<Vec<_>, String>(cc)
+            .bcc::<Vec<_>, String>(bcc)
+            .body(body.as_deref());
         let attachments = self.attachments();
         if !attachments.is_empty() {
             // TODO: add a request.set_attachments helper method
