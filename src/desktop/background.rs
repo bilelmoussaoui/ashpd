@@ -34,7 +34,7 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
-    helpers::{call_request_method, session_connection},
+    helpers::{call_method, call_request_method, session_connection},
     Error, WindowIdentifier,
 };
 
@@ -78,8 +78,14 @@ impl BackgroundResponse {
     }
 }
 
+#[derive(SerializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+struct SetStatusOptions {
+    message: String,
+}
+
 #[doc(alias = "org.freedesktop.portal.Background")]
-struct BackgroundProxy<'a>(zbus::Proxy<'a>);
+pub struct BackgroundProxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
     pub async fn new() -> Result<BackgroundProxy<'a>, Error> {
@@ -96,8 +102,29 @@ impl<'a> BackgroundProxy<'a> {
     pub fn inner(&self) -> &zbus::Proxy<'_> {
         &self.0
     }
+    ///  Sets the status of the application running in background.
+    ///
+    /// # Arguments
+    ///
+    /// * `message` - A string that will be used as the status message of the
+    ///   application.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`SetStatus`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-Background.SetStatus).
 
-    pub async fn request_background(
+    pub async fn set_status(&self, message: &str) -> Result<(), Error> {
+        call_method(
+            self.inner(),
+            "SetStatus",
+            &(SetStatusOptions {
+                message: message.to_owned(),
+            }),
+        )
+        .await
+    }
+
+    async fn request_background(
         &self,
         identifier: &WindowIdentifier,
         options: BackgroundOptions,
