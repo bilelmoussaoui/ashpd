@@ -170,7 +170,7 @@ pub(crate) async fn is_flatpak() -> bool {
 
 pub(crate) async fn is_snap() -> bool {
     let pid = std::process::id();
-    let path = format!("/proc/{}/cgroup", pid);
+    let path = format!("/proc/{pid}/cgroup");
     let mut file = match File::open(path).await {
         Ok(file) => file,
         Err(_) => return false,

@@ -215,8 +215,7 @@ impl<'a> Request<'a> {
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
         let path = ObjectPath::try_from(format!(
-            "/org/freedesktop/portal/desktop/request/{}/{}",
-            unique_identifier, handle_token
+            "/org/freedesktop/portal/desktop/request/{unique_identifier}/{handle_token}",
         ))
         .unwrap();
         #[cfg(feature = "tracing")]

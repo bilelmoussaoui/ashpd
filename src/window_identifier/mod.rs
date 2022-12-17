@@ -143,12 +143,12 @@ impl std::fmt::Display for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             #[cfg(feature = "gtk4")]
-            Self::Gtk4(identifier) => f.write_str(&format!("{}", identifier)),
+            Self::Gtk4(identifier) => f.write_str(&format!("{identifier}")),
             #[cfg(feature = "gtk3")]
-            Self::Gtk3(identifier) => f.write_str(&format!("{}", identifier)),
+            Self::Gtk3(identifier) => f.write_str(&format!("{identifier}")),
             #[cfg(feature = "wayland")]
-            Self::Wayland(identifier) => f.write_str(&format!("{}", identifier)),
-            Self::X11(identifier) => f.write_str(&format!("{}", identifier)),
+            Self::Wayland(identifier) => f.write_str(&format!("{identifier}")),
+            Self::X11(identifier) => f.write_str(&format!("{identifier}")),
             Self::None => f.write_str(""),
         }
     }
@@ -157,7 +157,7 @@ impl std::fmt::Display for WindowIdentifier {
 impl std::fmt::Debug for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("WindowIdentifier")
-            .field(&format!("{}", self))
+            .field(&format!("{self}"))
             .finish()
     }
 }
@@ -306,8 +306,8 @@ pub enum WindowIdentifierType {
 impl fmt::Display for WindowIdentifierType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::X11(xid) => f.write_str(&format!("x11:0x{:x}", xid)),
-            Self::Wayland(handle) => f.write_str(&format!("wayland:{}", handle)),
+            Self::X11(xid) => f.write_str(&format!("x11:0x{xid:x}")),
+            Self::Wayland(handle) => f.write_str(&format!("wayland:{handle}")),
         }
     }
 }
@@ -322,15 +322,13 @@ impl FromStr for WindowIdentifierType {
             "x11" => {
                 let handle = handle.trim_start_matches("0x");
                 Ok(Self::X11(
-                    std::os::raw::c_ulong::from_str_radix(handle, 16).map_err(|_| {
-                        PortalError::InvalidArgument(format!("Wrong XID {}", handle))
-                    })?,
+                    std::os::raw::c_ulong::from_str_radix(handle, 16)
+                        .map_err(|_| PortalError::InvalidArgument(format!("Wrong XID {handle}")))?,
                 ))
             }
             "wayland" => Ok(Self::Wayland(handle.to_owned())),
             t => Err(PortalError::InvalidArgument(format!(
-                "Invalid Window Identifier type {}",
-                t
+                "Invalid Window Identifier type {t}",
             ))),
         }
     }
@@ -343,7 +341,7 @@ impl<'de> Deserialize<'de> for WindowIdentifierType {
     {
         let handle = String::deserialize(deserializer)?;
         Self::from_str(&handle)
-            .map_err(|e| serde::de::Error::custom(format!("Invalid Window identifier {}", e)))
+            .map_err(|e| serde::de::Error::custom(format!("Invalid Window identifier {e}")))
     }
 }
 

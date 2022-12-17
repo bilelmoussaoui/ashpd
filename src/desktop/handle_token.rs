@@ -39,7 +39,7 @@ impl Default for HandleToken {
             .take(10)
             .map(char::from)
             .collect();
-        HandleToken::try_from(format!("ashpd_{}", token)).unwrap()
+        HandleToken::try_from(format!("ashpd_{token}")).unwrap()
     }
 }
 
