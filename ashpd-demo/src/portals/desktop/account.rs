@@ -34,9 +34,7 @@ mod imp {
             klass.install_action_async(
                 "account.information",
                 None,
-                move |page, _action, _target| async move {
-                    page.fetch_user_information().await;
-                },
+                move |page, _action, _target| async move { page.fetch_user_information().await },
             );
         }
 
@@ -73,14 +71,21 @@ impl AccountPage {
                 );
                 imp.id_label.set_text(user_info.id());
                 imp.name_label.set_text(user_info.name());
-                let path: std::path::PathBuf = user_info
+                match user_info
                     .image()
-                    .as_str()
-                    .trim_start_matches("file://")
-                    .into();
-                let pixbuf = gdk_pixbuf::Pixbuf::from_file(path).unwrap();
-
-                imp.avatar.set_from_pixbuf(Some(&pixbuf));
+                    .to_file_path()
+                    .map_err(|_| {
+                        glib::Error::new(glib::FileError::Failed, "Failed to retrieve file path")
+                    })
+                    .and_then(|path| gdk_pixbuf::Pixbuf::from_file(path))
+                {
+                    Ok(pixbuf) => {
+                        imp.avatar.set_from_pixbuf(Some(&pixbuf));
+                    }
+                    Err(err) => {
+                        tracing::error!("Failed to set user avatar {err}");
+                    }
+                };
                 imp.response_group.show();
             }
             Err(_err) => {
@@ -89,6 +94,6 @@ impl AccountPage {
                     NotificationKind::Error,
                 );
             }
-        }
+        };
     }
 }
