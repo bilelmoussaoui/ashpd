@@ -99,22 +99,29 @@ impl CameraPaintable {
         // create the appropriate sink depending on the environment we are running
         // Check if the paintablesink initialized a gl-context, and if so put it
         // behind a glsinkbin so we keep the buffers on the gpu
-        let (convert, sink) = if paintable
+        let sink = if paintable
             .property::<Option<gdk::GLContext>>("gl-context")
             .is_some()
         {
-            // FIXME: pw is currently giving us memory buffers instead of dmabufs
-            // let convert = gst::ElementFactory::make("glcolorconvert").build().unwrap();
-            let convert = gst::ElementFactory::make("videoconvert").build().unwrap();
-
-            let glsink = gst::ElementFactory::make("glsinkbin")
+            gst::ElementFactory::make("glsinkbin")
                 .property("sink", &sink)
                 .build()
-                .unwrap();
-            (convert, glsink)
+                .unwrap()
         } else {
+            let bin = gst::Bin::default();
             let convert = gst::ElementFactory::make("videoconvert").build().unwrap();
-            (convert, sink.upcast())
+
+            bin.add(&convert).unwrap();
+            bin.add(&sink).unwrap();
+            convert.link(&sink).unwrap();
+
+            bin.add_pad(
+                &gst::GhostPad::with_target(Some("sink"), &convert.static_pad("sink").unwrap())
+                    .unwrap(),
+            )
+            .unwrap();
+
+            bin.upcast()
         };
 
         paintable.connect_invalidate_contents(clone!(@weak self as pt => move |_| {
@@ -127,15 +134,12 @@ impl CameraPaintable {
         imp.sink_paintable.replace(Some(paintable));
 
         let queue1 = gst::ElementFactory::make("queue").build().unwrap();
-        let queue2 = gst::ElementFactory::make("queue").build().unwrap();
         pipeline
-            .add_many(&[&pipewire_src, &queue1, &convert, &queue2, &sink])
+            .add_many(&[&pipewire_src, &queue1, &sink])
             .unwrap();
 
         pipewire_src.link(&queue1).unwrap();
-        queue1.link(&convert).unwrap();
-        convert.link(&queue2).unwrap();
-        queue2.link(&sink).unwrap();
+        queue1.link(&sink).unwrap();
 
         let bus = pipeline.bus().unwrap();
         bus.add_watch_local(move |_, msg| {
