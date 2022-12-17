@@ -136,7 +136,7 @@ impl NotificationPage {
                 self.send_notification("Notification sent", NotificationKind::Success);
                 let action = proxy.receive_action_invoked().await?;
                 self.send_notification(
-                    &format!("User interacted with notification \"{}\"", notification_id),
+                    &format!("User interacted with notification \"{notification_id}\""),
                     NotificationKind::Info,
                 );
 

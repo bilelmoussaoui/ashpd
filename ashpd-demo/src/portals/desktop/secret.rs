@@ -61,7 +61,7 @@ impl SecretPage {
         let imp = self.imp();
 
         if let Ok(key) = retrieve_secret().await {
-            let key_str = format!("{:?}", key)
+            let key_str = format!("{key:?}")
                 .trim_start_matches('[')
                 .trim_end_matches(']')
                 .replace(',', " ");
