@@ -80,7 +80,6 @@
                 <property name="action-name">email.compose</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

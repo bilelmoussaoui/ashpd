@@ -47,7 +47,6 @@
                 <property name="action-name">wallpaper.select</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

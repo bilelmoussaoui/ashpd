@@ -32,7 +32,6 @@
                 <property name="action-name">proxy_resolver.resolve</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

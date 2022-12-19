@@ -2,7 +2,6 @@
 <interface>
   <template class="PrintPage" parent="PortalPage">
     <child>
-
       <object class="AdwClamp">
         <child>
           <object class="GtkBox">
@@ -40,7 +39,6 @@
                 <property name="action-name">print.select_file</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

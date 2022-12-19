@@ -109,7 +109,6 @@
                         <property name="action-name">screencast.start</property>
                         <style>
                           <class name="pill" />
-                          <class name="large-button" />
                           <class name="suggested-action" />
                         </style>
                       </object>
@@ -125,7 +124,7 @@
                         <property name="hexpand">True</property>
                         <style>
                           <class name="pill" />
-                          <class name="large-button" />
+                          <class name="" />
                           <class name="destructive-action" />
                         </style>
                       </object>

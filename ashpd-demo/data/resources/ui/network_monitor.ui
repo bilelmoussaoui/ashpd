@@ -90,7 +90,6 @@
                 <property name="action-name">network_monitor.can_reach</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

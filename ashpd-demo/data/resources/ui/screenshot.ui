@@ -46,7 +46,6 @@
                 <property name="action-name">screenshot.screenshot</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>
@@ -82,7 +81,6 @@
                         <property name="action-name">screenshot.pick-color</property>
                         <style>
                           <class name="pill" />
-                          <class name="large-button" />
                           <class name="suggested-action" />
                         </style>
                       </object>

@@ -6,9 +6,7 @@
         <property name="show-close-button">False</property>
         <property name="revealed">False</property>
         <child>
-          <object class="GtkLabel" id="message_label">
-
-          </object>
+          <object class="GtkLabel" id="message_label" />
         </child>
       </object>
     </child>

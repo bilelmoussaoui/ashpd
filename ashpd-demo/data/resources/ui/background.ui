@@ -54,7 +54,6 @@
                 <property name="action-name">background.request</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

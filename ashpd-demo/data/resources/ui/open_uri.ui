@@ -52,7 +52,6 @@
                 <property name="action-name">open_uri.uri</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

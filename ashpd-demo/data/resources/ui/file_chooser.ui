@@ -66,7 +66,6 @@
                 <property name="action-name">file_chooser.open_file</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>
@@ -130,7 +129,6 @@
                 <property name="action-name">file_chooser.save_file</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>
@@ -159,7 +157,7 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="title" translatable="yes" comments="Refersto the window modal property">Modal</property>
+                    <property name="title" translatable="yes" comments="Refers to the window modal property">Modal</property>
                     <property name="activatable-widget">save_files_modal_switch</property>
                     <child>
                       <object class="GtkSwitch" id="save_files_modal_switch">
@@ -189,7 +187,6 @@
                 <property name="action-name">file_chooser.save_files</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

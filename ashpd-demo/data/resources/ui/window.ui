@@ -150,7 +150,7 @@
                       </object>
                     </child>
                     <style>
-                      <class name="navigation-sidebar"/>
+                      <class name="navigation-sidebar" />
                     </style>
                   </object>
                 </child>
@@ -170,7 +170,7 @@
                       <object class="GtkSeparator">
                         <property name="orientation">vertical</property>
                         <style>
-                          <class name="sidebar"/>
+                          <class name="sidebar" />
                         </style>
                       </object>
                     </child>
@@ -181,7 +181,7 @@
                     <property name="orientation">vertical</property>
                     <property name="vexpand">True</property>
                     <style>
-                      <class name="sidebar"/>
+                      <class name="sidebar" />
                     </style>
                   </object>
                 </child>
@@ -221,6 +221,7 @@
                   <object class="GtkStack" id="stack">
                     <property name="hexpand">True</property>
                     <property name="vhomogeneous">False</property>
+                    <property name="hhomogeneous">False</property>
                     <child>
                       <object class="GtkStackPage">
                         <property name="name">account</property>
@@ -364,9 +365,9 @@
     <object class="GtkSizeGroup">
       <property name="mode">vertical</property>
       <widgets>
-        <widget name="sidebar_headerbar"/>
-        <widget name="main_headerbar"/>
-        <widget name="header_separator"/>
+        <widget name="sidebar_headerbar" />
+        <widget name="main_headerbar" />
+        <widget name="header_separator" />
       </widgets>
     </object>
   </template>

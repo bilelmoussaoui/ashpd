@@ -55,7 +55,6 @@
                 <property name="action-name">device.request</property>
                 <style>
                   <class name="pill" />
-                  <class name="large-button" />
                   <class name="suggested-action" />
                 </style>
               </object>

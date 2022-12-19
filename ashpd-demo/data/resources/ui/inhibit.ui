@@ -79,7 +79,6 @@
                     <property name="action-name">inhibit.start_session</property>
                     <style>
                       <class name="pill" />
-                      <class name="large-button" />
                       <class name="suggested-action" />
                     </style>
                   </object>
@@ -95,7 +94,6 @@
                     <property name="hexpand">True</property>
                     <style>
                       <class name="pill" />
-                      <class name="large-button" />
                       <class name="destructive-action" />
                     </style>
                   </object>
