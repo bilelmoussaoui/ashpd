@@ -77,7 +77,7 @@ impl AccountPage {
                     .map_err(|_| {
                         glib::Error::new(glib::FileError::Failed, "Failed to retrieve file path")
                     })
-                    .and_then(|path| gdk::Texture::from_filename(path))
+                    .and_then(gdk::Texture::from_filename)
                 {
                     Ok(texture) => {
                         imp.avatar.set_custom_image(Some(&texture));

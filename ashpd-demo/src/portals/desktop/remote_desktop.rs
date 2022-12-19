@@ -99,9 +99,17 @@ mod imp {
                     imp.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
                     imp.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
                     imp.window_check.set_sensitive(source_types.contains(SourceType::Window));
-                   // imp.hidden_check.set_sensitive(cursor_modes.contains(CursorMode::Hidden));
-                  //  imp.metadata_check.set_sensitive(cursor_modes.contains(CursorMode::Metadata));
-                   // imp.embedded_check.set_sensitive(cursor_modes.contains(CursorMode::Embedded));
+                    let model = gtk::StringList::default();
+                    if cursor_modes.contains(CursorMode::Hidden) {
+                        model.append("Hidden");
+                    }
+                    if cursor_modes.contains(CursorMode::Metadata) {
+                        model.append("Metadata");
+                    }
+                    if cursor_modes.contains(CursorMode::Embedded) {
+                        model.append("Embedded");
+                    }
+                    imp.cursor_mode_combo.set_model(Some(&model));
                 }
 
                 if let Ok(devices) = available_devices().await {
@@ -160,11 +168,19 @@ impl RemoteDesktopPage {
 
     /// Returns the selected CursorMode
     fn selected_cursor_mode(&self) -> CursorMode {
-        match self.imp().cursor_mode_combo.selected() {
-            0 => CursorMode::Hidden,
-            1 => CursorMode::Embedded,
-            2 => CursorMode::Metadata,
-            _ => unimplemented!(),
+        match self
+            .imp()
+            .cursor_mode_combo
+            .selected_item()
+            .and_downcast::<gtk::StringObject>()
+            .unwrap()
+            .string()
+            .as_ref()
+        {
+            "Hidden" => CursorMode::Hidden,
+            "Embedded" => CursorMode::Embedded,
+            "Metadata" => CursorMode::Metadata,
+            _ => unreachable!(),
         }
     }
 

@@ -30,15 +30,6 @@
                     <child>
                       <object class="AdwComboRow" id="cursor_mode_combo">
                         <property name="title" translatable="yes">Cursor Mode</property>
-                        <property name="model">
-                          <object class="GtkStringList">
-                            <items>
-                              <item translatable="yes">Hidden</item>
-                              <item translatable="yes">Embedded</item>
-                              <item translatable="yes">Metadata</item>
-                            </items>
-                          </object>
-                        </property>
                         <property name="selected">1</property>
                       </object>
                     </child>
@@ -124,7 +115,6 @@
                         <property name="hexpand">True</property>
                         <style>
                           <class name="pill" />
-                          <class name="" />
                           <class name="destructive-action" />
                         </style>
                       </object>
