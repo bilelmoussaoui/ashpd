@@ -173,6 +173,8 @@ impl EmailPage {
     pub async fn attach(&self) {
         let dialog = gtk::FileChooserNative::builder()
             .select_multiple(true)
+            .modal(true)
+            .transient_for(self.native().and_downcast_ref::<gtk::Window>().unwrap())
             .build();
         if dialog.run_future().await == gtk::ResponseType::Accept {
             let files = dialog.files();

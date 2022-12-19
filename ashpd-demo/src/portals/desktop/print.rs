@@ -61,7 +61,6 @@ impl PrintPage {
         let title = imp.title.text();
         let modal = imp.modal_switch.is_active();
         let root = self.native().unwrap();
-        let identifier = WindowIdentifier::from_native(&root).await;
 
         let file_chooser = gtk::FileChooserNative::builder()
             .accept_label("Select")
@@ -69,6 +68,7 @@ impl PrintPage {
             .modal(true)
             .transient_for(root.downcast_ref::<gtk::Window>().unwrap())
             .build();
+
         let filter = gtk::FileFilter::new();
         filter.add_pixbuf_formats();
         filter.set_name(Some("images"));
@@ -77,6 +77,7 @@ impl PrintPage {
         if file_chooser.run_future().await == gtk::ResponseType::Accept {
             let path = file_chooser.file().unwrap().path().unwrap();
             let file = std::fs::File::open(path).unwrap();
+            let identifier = WindowIdentifier::from_native(&root).await;
 
             match print(&identifier, &title, file, modal).await {
                 Ok(_) => {
