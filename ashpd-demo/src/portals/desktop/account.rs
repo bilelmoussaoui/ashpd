@@ -1,5 +1,5 @@
 use ashpd::{desktop::account::UserInformationResponse, WindowIdentifier};
-use gtk::{gdk_pixbuf, glib, prelude::*, subclass::prelude::*};
+use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -16,7 +16,7 @@ mod imp {
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
-        pub avatar: TemplateChild<gtk::Image>,
+        pub avatar: TemplateChild<adw::Avatar>,
         #[template_child]
         pub id_label: TemplateChild<gtk::Label>,
         #[template_child]
@@ -77,13 +77,15 @@ impl AccountPage {
                     .map_err(|_| {
                         glib::Error::new(glib::FileError::Failed, "Failed to retrieve file path")
                     })
-                    .and_then(|path| gdk_pixbuf::Pixbuf::from_file(path))
+                    .and_then(|path| gdk::Texture::from_filename(path))
                 {
-                    Ok(pixbuf) => {
-                        imp.avatar.set_from_pixbuf(Some(&pixbuf));
+                    Ok(texture) => {
+                        imp.avatar.set_custom_image(Some(&texture));
+                        imp.avatar.show();
                     }
                     Err(err) => {
                         tracing::error!("Failed to set user avatar {err}");
+                        imp.avatar.hide();
                     }
                 };
                 imp.response_group.show();
