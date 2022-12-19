@@ -14,7 +14,39 @@ use crate::{
     Error, WindowIdentifier,
 };
 
-#[derive(Clone, DeserializeDict, SerializeDict, Type, Debug, Default)]
+#[derive(Clone, SerializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+struct NewShortcutInfo {
+    /// User-readable text describing what the shortcut does.
+    description: String,
+    /// The preferred shortcut trigger, defined as described by the "shortcuts" XDG specification. Optional.
+    preferred_trigger: Option<String>,
+}
+
+/// Shortcut descriptor used to bind new shortcuts in [`GlobalShortcuts::bind_shortcuts`]
+#[derive(Clone, Serialize, Type, Debug)]
+pub struct NewShortcut(String, NewShortcutInfo);
+
+impl NewShortcut {
+    /// Construct new shortcut
+    pub fn new(id: impl Into<String>, description: impl Into<String>) -> Self {
+        Self(
+            id.into(),
+            NewShortcutInfo {
+                description: description.into(),
+                preferred_trigger: None,
+            },
+        )
+    }
+
+    /// Sets the preferred shortcut trigger, defined as described by the "shortcuts" XDG specification.
+    pub fn preferred_trigger(mut self, preferred_trigger: impl Into<Option<String>>) -> Self {
+        self.1.preferred_trigger = preferred_trigger.into();
+        self
+    }
+}
+
+#[derive(Clone, DeserializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct ShortcutInfo {
     /// User-readable text describing what the shortcut does.
@@ -23,7 +55,10 @@ struct ShortcutInfo {
     trigger_description: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, Type, Debug)]
+/// Struct that contains information about existing binded shortcut.
+///
+/// If you need to create a new shortcuts, take a look at [`NewShortcut`] instead.
+#[derive(Clone, Deserialize, Type, Debug)]
 pub struct Shortcut(String, ShortcutInfo);
 
 impl Shortcut {
@@ -204,7 +239,7 @@ impl<'a> GlobalShortcuts<'a> {
     pub async fn bind_shortcuts(
         &self,
         session: &Session<'_>,
-        shortcuts: &[Shortcut],
+        shortcuts: &[NewShortcut],
         parent_window: &WindowIdentifier,
     ) -> Result<Vec<Shortcut>, Error> {
         let options = BindShortcutsOptions::default();
