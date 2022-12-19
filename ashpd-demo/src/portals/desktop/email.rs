@@ -179,7 +179,7 @@ impl EmailPage {
         if dialog.run_future().await == gtk::ResponseType::Accept {
             let files = dialog.files();
             for file in files.into_iter() {
-                let file = file.unwrap().downcast::<gio::File>().unwrap();
+                let file = file.ok().and_downcast::<gio::File>().unwrap();
                 self.imp().model.append(&file);
             }
         }

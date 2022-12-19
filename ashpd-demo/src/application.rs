@@ -154,8 +154,7 @@ impl Application {
         let is_sandboxed = futures::executor::block_on(async { ashpd::is_sandboxed().await });
         // The restart app requires the Flatpak portal
         self.lookup_action("restart")
-            .unwrap()
-            .downcast_ref::<gio::SimpleAction>()
+            .and_downcast_ref::<gio::SimpleAction>()
             .unwrap()
             .set_enabled(is_sandboxed);
 

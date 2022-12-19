@@ -201,8 +201,7 @@ impl ScreenCastPage {
                 let picture = child.downcast_ref::<gtk::Picture>().unwrap();
                 let paintable = picture
                     .paintable()
-                    .unwrap()
-                    .downcast::<CameraPaintable>()
+                    .and_downcast::<CameraPaintable>()
                     .unwrap();
                 paintable.close_pipeline();
                 imp.streams_carousel.remove(picture);
