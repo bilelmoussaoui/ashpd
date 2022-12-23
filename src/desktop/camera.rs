@@ -19,10 +19,10 @@
 
 use std::{
     collections::HashMap,
-    os::unix::prelude::{IntoRawFd, RawFd},
+    os::fd::{FromRawFd, IntoRawFd, OwnedFd},
 };
 
-use zbus::zvariant::{OwnedFd, SerializeDict, Type, Value};
+use zbus::zvariant::{self, SerializeDict, Type, Value};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
@@ -92,12 +92,14 @@ impl<'a> Camera<'a> {
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
     #[doc(alias = "xdp_portal_open_pipewire_remote_for_camera")]
-    pub async fn open_pipe_wire_remote(&self) -> Result<RawFd, Error> {
+    pub async fn open_pipe_wire_remote(&self) -> Result<OwnedFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/camera.c#L178
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let fd: OwnedFd = call_method(self.inner(), "OpenPipeWireRemote", &(options)).await?;
-        Ok(fd.into_raw_fd())
+        let fd: zvariant::OwnedFd =
+            call_method(self.inner(), "OpenPipeWireRemote", &(options)).await?;
+        let raw_fd = fd.into_raw_fd();
+        unsafe { Ok(OwnedFd::from_raw_fd(raw_fd)) }
     }
 
     /// A boolean stating whether there is any cameras available.
@@ -147,7 +149,7 @@ impl Stream {
 
 #[cfg(feature = "pipewire")]
 fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone + 'static>(
-    fd: RawFd,
+    fd: OwnedFd,
     callback: F,
     done_callback: G,
 ) -> Result<(), pw::Error> {
@@ -155,7 +157,8 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 
     let mainloop = pw::MainLoop::new()?;
     let context = pw::Context::new(&mainloop)?;
-    let core = context.connect_fd(fd, None)?;
+    let raw_fd = fd.into_raw_fd();
+    let core = context.connect_fd(raw_fd, None)?;
     let registry = core.get_registry()?;
 
     let pending = core.sync(0).expect("sync failed");
@@ -209,13 +212,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 /// *Note* The socket referenced by `fd` must not be used while this function is
 /// running.
 #[cfg(feature = "pipewire")]
-pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
-    let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
-
-    if fd == -1 {
-        return Err(pw::Error::CreationFailed);
-    }
-
+pub async fn pipewire_streams(fd: OwnedFd) -> Result<Vec<Stream>, pw::Error> {
     let (sender, receiver) = futures_channel::oneshot::channel();
     let (streams_sender, mut streams_receiver) = futures_channel::mpsc::unbounded();
 
@@ -261,7 +258,7 @@ pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
 }
 
 #[cfg(not(feature = "pipewire"))]
-pub async fn request() -> Result<Option<RawFd>, Error> {
+pub async fn request() -> Result<Option<OwnedFd>, Error> {
     let proxy = Camera::new().await?;
     proxy.request_access().await?;
     if proxy.is_present().await? {
@@ -272,12 +269,13 @@ pub async fn request() -> Result<Option<RawFd>, Error> {
 }
 
 #[cfg(feature = "pipewire")]
-pub async fn request() -> Result<Option<(RawFd, Vec<Stream>)>, Error> {
+pub async fn request() -> Result<Option<(OwnedFd, Vec<Stream>)>, Error> {
     let proxy = Camera::new().await?;
     proxy.request_access().await?;
     if proxy.is_present().await? {
         let fd = proxy.open_pipe_wire_remote().await?;
-        let streams = pipewire_streams(fd).await?;
+        let dup_fd = fd.try_clone().unwrap();
+        let streams = pipewire_streams(dup_fd).await?;
         Ok(Some((fd, streams)))
     } else {
         Ok(None)

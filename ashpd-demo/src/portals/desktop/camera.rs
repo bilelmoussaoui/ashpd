@@ -1,6 +1,6 @@
-use std::os::unix::prelude::RawFd;
+use std::os::fd::{AsFd, OwnedFd};
 
-use ashpd::desktop::camera;
+use ashpd::desktop::camera::{self, Stream};
 use glib::clone;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
@@ -28,6 +28,7 @@ mod imp {
         pub revealer: TemplateChild<gtk::Revealer>,
 
         pub paintables: RefCell<Vec<CameraPaintable>>,
+        pub pw_fd: RefCell<Option<OwnedFd>>,
     }
 
     #[glib::object_subclass]
@@ -59,6 +60,10 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             self.obj().action_set_enabled("camera.stop", false);
+        }
+
+        fn dispose(&self) {
+            self.pw_fd.take();
         }
     }
     impl WidgetImpl for CameraPage {
@@ -97,9 +102,9 @@ impl CameraPage {
         self.action_set_enabled("camera.stop", true);
         self.action_set_enabled("camera.start", false);
         match stream().await {
-            Ok(stream_fd) => {
-                let streams = camera::pipewire_streams(stream_fd).await.unwrap();
+            Ok(Some((stream_fd, streams))) => {
                 let n_cameras = streams.len();
+                let borrowed_fd = stream_fd.as_fd();
                 for s in streams.iter() {
                     let picture = gtk::Picture::new();
                     let paintable = CameraPaintable::default();
@@ -118,7 +123,7 @@ impl CameraPage {
 
                     picture.set_vexpand(true);
                     picture.set_paintable(Some(&paintable));
-                    paintable.set_pipewire_node_id(stream_fd, Some(s.node_id()));
+                    paintable.set_pipewire_node_id(borrowed_fd, Some(s.node_id()));
 
                     self.imp()
                         .picture_stack
@@ -137,6 +142,15 @@ impl CameraPage {
                     "Camera stream started successfully",
                     NotificationKind::Success,
                 );
+                imp.pw_fd.replace(Some(stream_fd));
+            }
+            Ok(None) => {
+                tracing::error!("Failed to start a camera stream");
+                self.send_notification(
+                    "Request to start a camera stream failed",
+                    NotificationKind::Error,
+                );
+                self.stop_stream();
             }
             Err(err) => {
                 tracing::error!("Failed to start a camera stream {:#?}", err);
@@ -160,15 +174,14 @@ impl CameraPage {
         while let Some(child) = imp.picture_stack.first_child() {
             imp.picture_stack.remove(&child);
         }
+        imp.pw_fd.take();
 
         imp.revealer.set_reveal_child(false);
     }
 }
 
-async fn stream() -> ashpd::Result<RawFd> {
-    let proxy = camera::Camera::new().await?;
-    proxy.request_access().await?;
-    proxy.open_pipe_wire_remote().await
+async fn stream() -> ashpd::Result<Option<(OwnedFd, Vec<Stream>)>> {
+    camera::request().await
 }
 
 async fn camera_available() -> ashpd::Result<bool> {

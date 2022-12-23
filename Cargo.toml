@@ -9,6 +9,7 @@ license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
 version = "0.4.0-alpha.1"
+rust-version =  "1.63"
 
 [features]
 default = ["async-std"]
@@ -18,7 +19,7 @@ gtk3 = ["gtk3_x11", "gtk3_wayland"]
 gtk4_x11 = ["gdk4x11", "dep:gtk4"]
 gtk4_wayland = ["gdk4wayland", "dep:gtk4"]
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
-pipewire = ["pw", "libc"]
+pipewire = ["pw"]
 tokio = ["zbus/tokio", "dep:tokio"]
 raw_handle = ["raw-window-handle", "wayland"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
@@ -41,7 +42,6 @@ zbus = {version = "3.1", features = ["url"]}
 futures-util = "0.3"
 futures-channel = "0.3"
 tracing = {version = "0.1", optional = true}
-libc = {version = "0.2", optional = true}
 raw-window-handle = {version = "0.5", optional = true}
 wayland-client = {version = "0.30.0-beta.10", optional = true}
 wayland-protocols = {version = "0.30.0-beta.10", optional = true, features = ["unstable", "client"]}

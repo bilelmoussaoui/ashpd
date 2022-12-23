@@ -1,4 +1,6 @@
-use std::{os::unix::io::RawFd, sync::Arc};
+use std::cell::RefCell;
+use std::os::fd::OwnedFd;
+use std::sync::Arc;
 
 use adw::prelude::*;
 use ashpd::{
@@ -45,6 +47,7 @@ mod imp {
         #[template_child]
         pub persist_mode_combo: TemplateChild<adw::ComboRow>,
         pub session_token: Arc<Mutex<Option<String>>>,
+        pub pw_fd: RefCell<Option<OwnedFd>>,
     }
 
     #[glib::object_subclass]
@@ -185,12 +188,13 @@ impl ScreenCastPage {
                         .hexpand(true)
                         .vexpand(true)
                         .build();
-                    paintable.set_pipewire_node_id(fd, Some(stream.pipe_wire_node_id()));
+                    paintable.set_pipewire_node_id(&fd, Some(stream.pipe_wire_node_id()));
                     imp.streams_carousel.append(&picture);
                 });
 
                 imp.response_group.show();
                 imp.session.lock().await.replace(session);
+                imp.pw_fd.replace(Some(fd));
             }
             Err(err) => {
                 tracing::error!("{:#?}", err);
@@ -230,10 +234,11 @@ impl ScreenCastPage {
             }
         }
 
+        imp.pw_fd.take();
         imp.response_group.hide();
     }
 
-    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, RawFd, Session<'static>)> {
+    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, OwnedFd, Session<'static>)> {
         let imp = self.imp();
         let sources = self.selected_sources();
         let cursor_mode = self.selected_cursor_mode();

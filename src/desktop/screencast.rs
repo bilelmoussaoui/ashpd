@@ -39,14 +39,14 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    os::unix::prelude::{IntoRawFd, RawFd},
+    os::fd::{FromRawFd, IntoRawFd, OwnedFd},
 };
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::TryFutureExt;
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
+use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
 use super::{HandleToken, Session, DESTINATION, PATH};
 use crate::{
@@ -324,13 +324,14 @@ impl<'a> Screencast<'a> {
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.OpenPipeWireRemote).
     #[doc(alias = "OpenPipeWireRemote")]
-    pub async fn open_pipe_wire_remote(&self, session: &Session<'_>) -> Result<RawFd, Error> {
+    pub async fn open_pipe_wire_remote(&self, session: &Session<'_>) -> Result<OwnedFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let fd: OwnedFd =
+        let fd: zvariant::OwnedFd =
             call_method(self.inner(), "OpenPipeWireRemote", &(session, options)).await?;
-        Ok(fd.into_raw_fd())
+        let raw_fd = fd.into_raw_fd();
+        unsafe { Ok(OwnedFd::from_raw_fd(raw_fd)) }
     }
 
     /// Configure what the screen cast session should record.
