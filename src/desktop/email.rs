@@ -24,7 +24,7 @@
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::{AsFd, AsRawFd};
 
 use serde::Serialize;
 use zbus::zvariant::{Fd, SerializeDict, Type};
@@ -173,13 +173,13 @@ impl EmailRequest {
 
     /// Attaches a file to the email.
     #[must_use]
-    pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
+    pub fn attach(mut self, attachment: &impl AsFd) -> Self {
         self.add_attachment(attachment);
         self
     }
 
-    pub fn add_attachment(&mut self, attachment: &impl AsRawFd) {
-        let attachment = Fd::from(attachment.as_raw_fd());
+    pub fn add_attachment(&mut self, attachment: &impl AsFd) {
+        let attachment = Fd::from(attachment.as_fd().as_raw_fd());
         match self.options.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),
             None => {
