@@ -15,7 +15,10 @@
 //! }
 //! ```
 
-use std::{fmt::Debug, os::unix::io::AsRawFd};
+use std::{
+    fmt::Debug,
+    os::fd::{AsFd, AsRawFd},
+};
 
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{Fd, Type};
@@ -127,15 +130,15 @@ impl<'a> GameMode<'a> {
     #[doc(alias = "QueryStatusByPIDFd")]
     pub async fn query_status_by_pidfd(
         &self,
-        target: &impl AsRawFd,
-        requester: &impl AsRawFd,
+        target: &impl AsFd,
+        requester: &impl AsFd,
     ) -> Result<Status, Error> {
         call_method(
             self.inner(),
             "QueryStatusByPIDFd",
             &(
-                Fd::from(target.as_raw_fd()),
-                Fd::from(requester.as_raw_fd()),
+                Fd::from(target.as_fd().as_raw_fd()),
+                Fd::from(requester.as_fd().as_raw_fd()),
             ),
         )
         .await
@@ -192,15 +195,15 @@ impl<'a> GameMode<'a> {
     #[doc(alias = "RegisterGameByPIDFd")]
     pub async fn register_by_pidfd(
         &self,
-        target: &impl AsRawFd,
-        requester: &impl AsRawFd,
+        target: &impl AsFd,
+        requester: &impl AsFd,
     ) -> Result<(), Error> {
         let status = call_method(
             self.inner(),
             "RegisterGameByPIDFd",
             &(
-                Fd::from(target.as_raw_fd()),
-                Fd::from(requester.as_raw_fd()),
+                Fd::from(target.as_fd().as_raw_fd()),
+                Fd::from(requester.as_fd().as_raw_fd()),
             ),
         )
         .await?;
@@ -265,15 +268,15 @@ impl<'a> GameMode<'a> {
     #[doc(alias = "UnregisterGameByPIDFd")]
     pub async fn unregister_by_pidfd(
         &self,
-        target: &impl AsRawFd,
-        requester: &impl AsRawFd,
+        target: &impl AsFd,
+        requester: &impl AsFd,
     ) -> Result<(), Error> {
         let status = call_method(
             self.inner(),
             "UnregisterGameByPIDFd",
             &(
-                Fd::from(target.as_raw_fd()),
-                Fd::from(requester.as_raw_fd()),
+                Fd::from(target.as_fd().as_raw_fd()),
+                Fd::from(requester.as_fd().as_raw_fd()),
             ),
         )
         .await?;
