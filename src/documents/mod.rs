@@ -39,7 +39,8 @@ use std::{
     collections::HashMap,
     ffi::CString,
     fmt,
-    os::unix::{ffi::OsStrExt, prelude::AsRawFd},
+    os::fd::{AsFd, AsRawFd},
+    os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -203,14 +204,18 @@ impl<'a> Documents<'a> {
     #[doc(alias = "Add")]
     pub async fn add(
         &self,
-        o_path_fd: &(impl AsRawFd + fmt::Debug),
+        o_path_fd: &(impl AsFd + fmt::Debug),
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<OwnedDocumentID, Error> {
         call_method(
             self.inner(),
             "Add",
-            &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
+            &(
+                Fd::from(o_path_fd.as_fd().as_raw_fd()),
+                reuse_existing,
+                persistent,
+            ),
         )
         .await
     }
@@ -236,12 +241,15 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddFull")]
     pub async fn add_full(
         &self,
-        o_path_fds: &[&impl AsRawFd],
+        o_path_fds: &[&impl AsFd],
         flags: BitFlags<DocumentFlags>,
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, OwnedValue>), Error> {
-        let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        let o_path: Vec<Fd> = o_path_fds
+            .iter()
+            .map(|f| Fd::from(f.as_fd().as_raw_fd()))
+            .collect();
         call_method(
             self.inner(),
             "AddFull",
@@ -271,7 +279,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddNamed")]
     pub async fn add_named(
         &self,
-        o_path_parent_fd: &(impl AsRawFd + fmt::Debug),
+        o_path_parent_fd: &(impl AsFd + fmt::Debug),
         filename: impl AsRef<Path>,
         reuse_existing: bool,
         persistent: bool,
@@ -282,7 +290,7 @@ impl<'a> Documents<'a> {
             self.inner(),
             "AddNamed",
             &(
-                Fd::from(o_path_parent_fd.as_raw_fd()),
+                Fd::from(o_path_parent_fd.as_fd().as_raw_fd()),
                 cstr.as_bytes_with_nul(),
                 reuse_existing,
                 persistent,
@@ -313,7 +321,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddNamedFull")]
     pub async fn add_named_full(
         &self,
-        o_path_fd: &(impl AsRawFd + fmt::Debug),
+        o_path_fd: &(impl AsFd + fmt::Debug),
         filename: impl AsRef<Path>,
         flags: BitFlags<DocumentFlags>,
         app_id: ApplicationID<'_>,
@@ -325,7 +333,7 @@ impl<'a> Documents<'a> {
             self.inner(),
             "AddNamedFull",
             &(
-                Fd::from(o_path_fd.as_raw_fd()),
+                Fd::from(o_path_fd.as_fd().as_raw_fd()),
                 cstr.as_bytes_with_nul(),
                 flags,
                 app_id,
