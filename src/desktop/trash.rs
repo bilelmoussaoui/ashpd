@@ -30,7 +30,7 @@
 //! }
 //! ```
 
-use std::os::unix::io::AsRawFd;
+use std::os::fd::{AsFd, AsRawFd};
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
@@ -87,8 +87,13 @@ impl<'a> TrashProxy<'a> {
     /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Trash.TrashFile).
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
-    pub async fn trash_file(&self, fd: &impl AsRawFd) -> Result<(), Error> {
-        let status = call_method(self.inner(), "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
+    pub async fn trash_file(&self, fd: &impl AsFd) -> Result<(), Error> {
+        let status = call_method(
+            self.inner(),
+            "TrashFile",
+            &(Fd::from(fd.as_fd().as_raw_fd())),
+        )
+        .await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
             TrashStatus::Succeeded => Ok(()),
@@ -98,7 +103,7 @@ impl<'a> TrashProxy<'a> {
 
 #[doc(alias = "xdp_portal_trash_file")]
 /// A handy wrapper around [`TrashProxy::trash_file`].
-pub async fn trash_file(fd: &impl AsRawFd) -> Result<(), Error> {
+pub async fn trash_file(fd: &impl AsFd) -> Result<(), Error> {
     let proxy = TrashProxy::new().await?;
     proxy.trash_file(fd).await
 }
