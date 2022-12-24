@@ -49,7 +49,7 @@
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::{AsFd, AsRawFd};
 
 use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
@@ -98,14 +98,18 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_directory(
         &self,
         identifier: &WindowIdentifier,
-        directory: &impl AsRawFd,
+        directory: &impl AsFd,
         options: OpenDirOptions,
     ) -> Result<(), Error> {
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
             "OpenDirectory",
-            &(&identifier, Fd::from(directory.as_raw_fd()), &options),
+            &(
+                &identifier,
+                Fd::from(directory.as_fd().as_raw_fd()),
+                &options,
+            ),
         )
         .await
     }
@@ -113,14 +117,14 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_file(
         &self,
         identifier: &WindowIdentifier,
-        file: &impl AsRawFd,
+        file: &impl AsFd,
         options: OpenFileOptions,
     ) -> Result<(), Error> {
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
             "OpenFile",
-            &(&identifier, Fd::from(file.as_raw_fd()), &options),
+            &(&identifier, Fd::from(file.as_fd().as_raw_fd()), &options),
         )
         .await
     }
@@ -171,7 +175,7 @@ impl OpenFileRequest {
         self
     }
 
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn build_file(self, file: &impl AsFd) -> Result<(), Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_file(&self.identifier, file, self.options).await
     }
@@ -198,7 +202,7 @@ impl OpenDirectoryRequest {
         self
     }
 
-    pub async fn build(self, directory: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn build(self, directory: &impl AsFd) -> Result<(), Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
             .open_directory(&self.identifier, directory, self.options)
