@@ -22,7 +22,10 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+use std::{
+    collections::HashMap,
+    os::fd::{AsFd, AsRawFd},
+};
 
 use zbus::zvariant::{Fd, SerializeDict, Type, Value};
 
@@ -112,10 +115,13 @@ impl<'a> FileTransfer<'a> {
     ///
     /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.AddFiles).
     #[doc(alias = "AddFiles")]
-    pub async fn add_files(&self, key: &str, fds: &[&impl AsRawFd]) -> Result<(), Error> {
+    pub async fn add_files(&self, key: &str, fds: &[&impl AsFd]) -> Result<(), Error> {
         // `options` parameter doesn't seems to be used yet
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        let files: Vec<Fd> = fds
+            .iter()
+            .map(|f| Fd::from(f.as_fd().as_raw_fd()))
+            .collect();
 
         call_method(self.inner(), "AddFiles", &(key, files, options)).await
     }
