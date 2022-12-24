@@ -39,7 +39,11 @@
 //! }
 //! ```
 
-use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
+use std::{
+    fmt,
+    os::fd::{AsFd, AsRawFd},
+    str::FromStr,
+};
 
 use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, SerializeDict, Type};
@@ -136,14 +140,14 @@ impl<'a> WallpaperProxy<'a> {
     pub async fn set_wallpaper_file(
         &self,
         identifier: &WindowIdentifier,
-        file: &impl AsRawFd,
+        file: &impl AsFd,
         options: WallpaperOptions,
     ) -> Result<(), Error> {
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
             "SetWallpaperFile",
-            &(&identifier, Fd::from(file.as_raw_fd()), &options),
+            &(&identifier, Fd::from(file.as_fd().as_raw_fd()), &options),
         )
         .await
     }
@@ -208,7 +212,7 @@ impl WallpaperRequest {
     }
 
     /// Build using a file.
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn build_file(self, file: &impl AsFd) -> Result<(), Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
             .set_wallpaper_file(&self.identifier, file, self.options)
