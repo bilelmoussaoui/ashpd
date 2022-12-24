@@ -18,7 +18,7 @@
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::{AsFd, AsRawFd, FromRawFd, IntoRawFd, OwnedFd};
 
 #[cfg(feature = "async-std")]
 use async_std::{os::unix::net::UnixStream, prelude::*};
@@ -76,13 +76,13 @@ impl<'a> Secret<'a> {
     ///
     /// * `fd` - Writable file descriptor for transporting the secret.
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn retrieve(&self, fd: &impl AsFd) -> Result<(), Error> {
         let options = RetrieveOptions::default();
         call_basic_response_method(
             self.inner(),
             &options.handle_token,
             "RetrieveSecret",
-            &(Fd::from(fd.as_raw_fd()), &options),
+            &(Fd::from(fd.as_fd().as_raw_fd()), &options),
         )
         .await?;
         Ok(())
@@ -96,8 +96,9 @@ pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
 
     let (mut x1, x2) = UnixStream::pair()?;
-    proxy.retrieve(&x2).await?;
-    drop(x2);
+    let owned_x2 = unsafe { OwnedFd::from_raw_fd(x2.into_raw_fd()) };
+    proxy.retrieve(&owned_x2).await?;
+    drop(owned_x2);
     let mut buf = Vec::new();
     x1.read_to_end(&mut buf).await?;
 
