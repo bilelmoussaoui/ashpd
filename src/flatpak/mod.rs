@@ -32,10 +32,8 @@ use std::{
     collections::HashMap,
     ffi::CString,
     fmt::Debug,
-    os::unix::{
-        ffi::OsStrExt,
-        prelude::{AsRawFd, RawFd},
-    },
+    os::fd::{AsFd, AsRawFd, RawFd},
+    os::unix::ffi::OsStrExt,
     path::Path,
 };
 
@@ -176,26 +174,30 @@ impl SpawnOptions {
 
     /// Sets the list of file descriptors of files to expose the new sandbox.
     #[must_use]
-    pub fn sandbox_expose_fd<P: IntoIterator<Item = I>, I: AsRawFd + Type + Serialize>(
+    pub fn sandbox_expose_fd<P: IntoIterator<Item = I>, I: AsFd + Type + Serialize>(
         mut self,
         sandbox_expose_fd: impl Into<Option<P>>,
     ) -> Self {
-        self.sandbox_expose_fd = sandbox_expose_fd
-            .into()
-            .map(|a| a.into_iter().map(|s| Fd::from(s.as_raw_fd())).collect());
+        self.sandbox_expose_fd = sandbox_expose_fd.into().map(|a| {
+            a.into_iter()
+                .map(|s| Fd::from(s.as_fd().as_raw_fd()))
+                .collect()
+        });
         self
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox,
     /// read-only.
     #[must_use]
-    pub fn sandbox_expose_fd_ro<P: IntoIterator<Item = I>, I: AsRawFd + Type + Serialize>(
+    pub fn sandbox_expose_fd_ro<P: IntoIterator<Item = I>, I: AsFd + Type + Serialize>(
         mut self,
         sandbox_expose_fd_ro: impl Into<Option<P>>,
     ) -> Self {
-        self.sandbox_expose_fd_ro = sandbox_expose_fd_ro
-            .into()
-            .map(|a| a.into_iter().map(|s| Fd::from(s.as_raw_fd())).collect());
+        self.sandbox_expose_fd_ro = sandbox_expose_fd_ro.into().map(|a| {
+            a.into_iter()
+                .map(|s| Fd::from(s.as_fd().as_raw_fd()))
+                .collect()
+        });
         self
     }
 
@@ -224,16 +226,16 @@ impl SpawnOptions {
     /// Set a file descriptor of the directory that  will be used as `/usr` in
     /// the new sandbox.
     #[must_use]
-    pub fn usr_fd<F: AsRawFd>(mut self, fd: impl Into<Option<F>>) -> Self {
-        self.usr_fd = fd.into().map(|s| s.as_raw_fd());
+    pub fn usr_fd<F: AsFd>(mut self, fd: impl Into<Option<F>>) -> Self {
+        self.usr_fd = fd.into().map(|s| s.as_fd().as_raw_fd());
         self
     }
 
     /// Set a file descriptor of the directory that  will be used as `/app` in
     /// the new sandbox.
     #[must_use]
-    pub fn app_fd<F: AsRawFd>(mut self, fd: impl Into<Option<F>>) -> Self {
-        self.app_fd = fd.into().map(|s| s.as_raw_fd());
+    pub fn app_fd<F: AsFd>(mut self, fd: impl Into<Option<F>>) -> Self {
+        self.app_fd = fd.into().map(|s| s.as_fd().as_raw_fd());
         self
     }
 }
