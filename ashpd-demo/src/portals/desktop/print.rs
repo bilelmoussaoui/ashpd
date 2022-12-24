@@ -1,4 +1,4 @@
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::AsFd;
 
 use ashpd::{
     desktop::print::{PageSetup, PrintProxy, Settings},
@@ -97,7 +97,7 @@ impl PrintPage {
     }
 }
 
-async fn print<F: AsRawFd>(
+async fn print<F: AsFd>(
     identifier: &WindowIdentifier,
     title: &str,
     file: F,

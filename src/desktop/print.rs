@@ -30,7 +30,11 @@
 //! }
 //! ```
 
-use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
+use std::{
+    fmt,
+    os::fd::{AsFd, AsRawFd},
+    str::FromStr,
+};
 
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
@@ -690,7 +694,7 @@ impl<'a> PrintProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         title: &str,
-        fd: &impl AsRawFd,
+        fd: &impl AsFd,
         token: Option<u32>,
         modal: bool,
     ) -> Result<(), Error> {
@@ -701,7 +705,12 @@ impl<'a> PrintProxy<'a> {
             self.inner(),
             &options.handle_token,
             "Print",
-            &(&identifier, title, Fd::from(fd.as_raw_fd()), &options),
+            &(
+                &identifier,
+                title,
+                Fd::from(fd.as_fd().as_raw_fd()),
+                &options,
+            ),
         )
         .await
     }
