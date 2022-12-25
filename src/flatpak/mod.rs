@@ -134,7 +134,7 @@ pub struct SpawnOptions {
     /// A list of environment variables to remove.
     #[zvariant(rename = "unset-env")]
     unset_env: Option<Vec<String>>,
-    /// A file descriptor of the directory that  will be used as `/usr` in the
+    /// A file descriptor of the directory that will be used as `/usr` in the
     /// new sandbox.
     #[zvariant(rename = "usr-fd")]
     usr_fd: Option<RawFd>,
