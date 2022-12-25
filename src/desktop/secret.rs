@@ -18,12 +18,10 @@
 //! }
 //! ```
 
-use std::os::fd::{AsFd, AsRawFd, FromRawFd, IntoRawFd, OwnedFd};
+use std::io::Read;
+use std::os::fd::{AsFd, AsRawFd};
+use std::os::unix::net::UnixStream;
 
-#[cfg(feature = "async-std")]
-use async_std::{os::unix::net::UnixStream, prelude::*};
-#[cfg(feature = "tokio")]
-use tokio::{io::AsyncReadExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
@@ -95,12 +93,13 @@ impl<'a> Secret<'a> {
 pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
 
+    // FIXME Use async-std's UnixStream once
+    // https://github.com/async-rs/async-std/pull/1036 is in.
     let (mut x1, x2) = UnixStream::pair()?;
-    let owned_x2 = unsafe { OwnedFd::from_raw_fd(x2.into_raw_fd()) };
-    proxy.retrieve(&owned_x2).await?;
-    drop(owned_x2);
+    proxy.retrieve(&x2).await?;
+    drop(x2);
     let mut buf = Vec::new();
-    x1.read_to_end(&mut buf).await?;
+    x1.read_to_end(&mut buf)?;
 
     Ok(buf)
 }

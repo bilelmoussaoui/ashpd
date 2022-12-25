@@ -1,7 +1,4 @@
-use std::{
-    io::Read,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use ashpd::desktop::secret;
 use gtk::{glib, prelude::*, subclass::prelude::*};
@@ -60,7 +57,7 @@ impl SecretPage {
     async fn retrieve_secret(&self) {
         let imp = self.imp();
 
-        if let Ok(key) = retrieve_secret().await {
+        if let Ok(key) = secret::retrieve().await {
             let key_str = format!("{key:?}")
                 .trim_start_matches('[')
                 .trim_end_matches(']')
@@ -69,16 +66,4 @@ impl SecretPage {
             imp.response_group.show();
         }
     }
-}
-
-async fn retrieve_secret() -> ashpd::Result<Vec<u8>> {
-    let proxy = secret::Secret::new().await?;
-
-    let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
-    proxy.retrieve(&x2).await?;
-    drop(x2);
-    let mut buf = Vec::new();
-    x1.read_to_end(&mut buf)?;
-
-    Ok(buf)
 }
