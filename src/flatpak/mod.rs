@@ -4,6 +4,7 @@
 //!
 //! ```rust,no_run
 //! use std::collections::HashMap;
+//! use std::os::fd::BorrowedFd;
 //!
 //! use ashpd::flatpak::{Flatpak, SpawnFlags, SpawnOptions};
 //!
@@ -14,7 +15,7 @@
 //!         .spawn(
 //!             "/",
 //!             &["contrast"],
-//!             HashMap::new(),
+//!             HashMap::<_, BorrowedFd>::new(),
 //!             HashMap::new(),
 //!             SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
 //!             SpawnOptions::default(),
@@ -29,20 +30,17 @@ pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
 
 use std::{
-    collections::HashMap,
-    ffi::CString,
-    fmt::Debug,
-    os::fd::{AsFd, AsRawFd, RawFd},
-    os::unix::ffi::OsStrExt,
+    collections::HashMap, ffi::CString, fmt::Debug, os::fd::AsFd, os::unix::ffi::OsStrExt,
     path::Path,
 };
 
 use enumflags2::{bitflags, BitFlags};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{OwnedObjectPath, SerializeDict, Type};
 
 use crate::{
+    fd::Fd,
     helpers::{call_method, receive_signal, session_connection},
     Error,
 };
@@ -111,7 +109,7 @@ pub enum SupportsFlags {
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::spawn`] request.
 #[zvariant(signature = "dict")]
-pub struct SpawnOptions {
+pub struct SpawnOptions<'f> {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
     #[zvariant(rename = "sandbox-expose")]
@@ -123,11 +121,11 @@ pub struct SpawnOptions {
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
     #[zvariant(rename = "sandbox-expose-fd")]
-    sandbox_expose_fd: Option<Vec<Fd>>,
+    sandbox_expose_fd: Option<Vec<Fd<'f>>>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, read-only.
     #[zvariant(rename = "sandbox-expose-fd-ro")]
-    sandbox_expose_fd_ro: Option<Vec<Fd>>,
+    sandbox_expose_fd_ro: Option<Vec<Fd<'f>>>,
     /// Flags affecting the created sandbox.
     #[zvariant(rename = "sandbox-flags")]
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
@@ -137,14 +135,14 @@ pub struct SpawnOptions {
     /// A file descriptor of the directory that will be used as `/usr` in the
     /// new sandbox.
     #[zvariant(rename = "usr-fd")]
-    usr_fd: Option<RawFd>,
+    usr_fd: Option<Fd<'f>>,
     /// A file descriptor of the directory that  will be used as `/app` in the
     /// new sandbox.
     #[zvariant(rename = "app-fd")]
-    app_fd: Option<RawFd>,
+    app_fd: Option<Fd<'f>>,
 }
 
-impl SpawnOptions {
+impl<'f> SpawnOptions<'f> {
     /// Sets the list of filenames for files to expose the new sandbox.
     /// **Note** absolute paths or subdirectories are not allowed.
     #[must_use]
@@ -174,30 +172,26 @@ impl SpawnOptions {
 
     /// Sets the list of file descriptors of files to expose the new sandbox.
     #[must_use]
-    pub fn sandbox_expose_fd<P: IntoIterator<Item = I>, I: AsFd + Type + Serialize>(
+    pub fn sandbox_expose_fd<P: IntoIterator<Item = &'f I>, I: AsFd + 'f>(
         mut self,
         sandbox_expose_fd: impl Into<Option<P>>,
     ) -> Self {
-        self.sandbox_expose_fd = sandbox_expose_fd.into().map(|a| {
-            a.into_iter()
-                .map(|s| Fd::from(s.as_fd().as_raw_fd()))
-                .collect()
-        });
+        self.sandbox_expose_fd = sandbox_expose_fd
+            .into()
+            .map(|a| a.into_iter().map(Fd::from).collect());
         self
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox,
     /// read-only.
     #[must_use]
-    pub fn sandbox_expose_fd_ro<P: IntoIterator<Item = I>, I: AsFd + Type + Serialize>(
+    pub fn sandbox_expose_fd_ro<P: IntoIterator<Item = &'f I>, I: AsFd + 'f>(
         mut self,
         sandbox_expose_fd_ro: impl Into<Option<P>>,
     ) -> Self {
-        self.sandbox_expose_fd_ro = sandbox_expose_fd_ro.into().map(|a| {
-            a.into_iter()
-                .map(|s| Fd::from(s.as_fd().as_raw_fd()))
-                .collect()
-        });
+        self.sandbox_expose_fd_ro = sandbox_expose_fd_ro
+            .into()
+            .map(|a| a.into_iter().map(Fd::from).collect());
         self
     }
 
@@ -226,16 +220,16 @@ impl SpawnOptions {
     /// Set a file descriptor of the directory that  will be used as `/usr` in
     /// the new sandbox.
     #[must_use]
-    pub fn usr_fd<F: AsFd>(mut self, fd: impl Into<Option<F>>) -> Self {
-        self.usr_fd = fd.into().map(|s| s.as_fd().as_raw_fd());
+    pub fn usr_fd<F: AsFd>(mut self, fd: Option<&'f F>) -> Self {
+        self.usr_fd = fd.map(Fd::from);
         self
     }
 
     /// Set a file descriptor of the directory that  will be used as `/app` in
     /// the new sandbox.
     #[must_use]
-    pub fn app_fd<F: AsFd>(mut self, fd: impl Into<Option<F>>) -> Self {
-        self.app_fd = fd.into().map(|s| s.as_fd().as_raw_fd());
+    pub fn app_fd<F: AsFd>(mut self, fd: Option<&'f F>) -> Self {
+        self.app_fd = fd.map(Fd::from);
         self
     }
 }
@@ -309,6 +303,8 @@ impl<'a> Flatpak<'a> {
         receive_signal(self.inner(), "SpawnExited").await
     }
 
+    // FIXME Spawn should return a std::os::linux::process::PidFd
+    // see https://github.com/rust-lang/rust/issues/82971.
     /// This methods let you start a new instance of your application,
     /// optionally enabling a tighter sandbox.
     ///
@@ -332,14 +328,14 @@ impl<'a> Flatpak<'a> {
     /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
     #[doc(alias = "xdp_portal_spawn")]
-    pub async fn spawn(
+    pub async fn spawn<F: AsFd + 'a>(
         &self,
         cwd_path: impl AsRef<Path>,
         argv: &[impl AsRef<Path>],
-        fds: HashMap<u32, Fd>,
+        fds: HashMap<u32, F>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
-        options: SpawnOptions,
+        options: SpawnOptions<'a>,
     ) -> Result<u32, Error> {
         let cwd_path = CString::new(cwd_path.as_ref().as_os_str().as_bytes())
             .expect("The `cwd_path` should not contain a trailing 0 bytes");
@@ -350,6 +346,8 @@ impl<'a> Flatpak<'a> {
                     .expect("The `argv` should not contain a trailing 0 bytes")
             })
             .collect::<Vec<_>>();
+        let fds: HashMap<u32, Fd> = fds.iter().map(|(u, f)| (*u, Fd::from(f))).collect();
+
         call_method(
             self.inner(),
             "Spawn",

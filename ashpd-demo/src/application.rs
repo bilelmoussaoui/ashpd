@@ -1,4 +1,4 @@
-use std::{collections::HashMap, convert::TryFrom};
+use std::{collections::HashMap, convert::TryFrom, os::fd::BorrowedFd};
 
 use adw::prelude::*;
 use ashpd::{
@@ -229,7 +229,7 @@ impl Application {
             .spawn(
                 "/",
                 &["ashpd-demo", "--replace"],
-                HashMap::new(),
+                HashMap::<_, BorrowedFd>::new(),
                 HashMap::new(),
                 SpawnFlags::LatestVersion.into(),
                 SpawnOptions::default(),
