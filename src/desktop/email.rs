@@ -24,20 +24,21 @@
 //! }
 //! ```
 
-use std::os::fd::{AsFd, AsRawFd};
+use std::os::fd::AsFd;
 
 use serde::Serialize;
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use zbus::zvariant::{SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
+    fd::Fd,
     helpers::{call_basic_response_method, session_connection},
     Error, WindowIdentifier,
 };
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct EmailOptions {
+struct EmailOptions<'f> {
     handle_token: HandleToken,
     address: Option<String>,
     addresses: Option<Vec<String>>,
@@ -45,7 +46,7 @@ struct EmailOptions {
     bcc: Option<Vec<String>>,
     subject: Option<String>,
     body: Option<String>,
-    attachment_fds: Option<Vec<Fd>>,
+    attachment_fds: Option<Vec<Fd<'f>>>,
 }
 
 #[derive(Debug)]
@@ -87,7 +88,7 @@ impl<'a> EmailProxy<'a> {
     pub async fn compose(
         &self,
         identifier: &WindowIdentifier,
-        options: EmailOptions,
+        options: EmailOptions<'_>,
     ) -> Result<(), Error> {
         call_basic_response_method(
             self.inner(),
@@ -101,12 +102,12 @@ impl<'a> EmailProxy<'a> {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_compose_email")]
-pub struct EmailRequest {
+pub struct EmailRequest<'f> {
     identifier: WindowIdentifier,
-    options: EmailOptions,
+    options: EmailOptions<'f>,
 }
 
-impl EmailRequest {
+impl<'f> EmailRequest<'f> {
     /// Sets a window identifier.
     #[must_use]
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
@@ -173,13 +174,13 @@ impl EmailRequest {
 
     /// Attaches a file to the email.
     #[must_use]
-    pub fn attach(mut self, attachment: &impl AsFd) -> Self {
+    pub fn attach(mut self, attachment: &'f impl AsFd) -> Self {
         self.add_attachment(attachment);
         self
     }
 
-    pub fn add_attachment(&mut self, attachment: &impl AsFd) {
-        let attachment = Fd::from(attachment.as_fd().as_raw_fd());
+    pub fn add_attachment(&mut self, attachment: &'f impl AsFd) {
+        let attachment = Fd::from(attachment);
         match self.options.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),
             None => {

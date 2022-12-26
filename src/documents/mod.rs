@@ -39,7 +39,7 @@ use std::{
     collections::HashMap,
     ffi::CString,
     fmt,
-    os::fd::{AsFd, AsRawFd},
+    os::fd::AsFd,
     os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
     str::FromStr,
@@ -48,9 +48,10 @@ use std::{
 use enumflags2::{bitflags, BitFlags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, OwnedValue, Type};
+use zbus::zvariant::{OwnedValue, Type};
 
 use crate::{
+    fd::Fd,
     helpers::{call_method, path_from_null_terminated, session_connection},
     Error,
 };
@@ -211,11 +212,7 @@ impl<'a> Documents<'a> {
         call_method(
             self.inner(),
             "Add",
-            &(
-                Fd::from(o_path_fd.as_fd().as_raw_fd()),
-                reuse_existing,
-                persistent,
-            ),
+            &(Fd::from(o_path_fd), reuse_existing, persistent),
         )
         .await
     }
@@ -246,10 +243,7 @@ impl<'a> Documents<'a> {
         app_id: ApplicationID<'_>,
         permissions: &[Permission],
     ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, OwnedValue>), Error> {
-        let o_path: Vec<Fd> = o_path_fds
-            .iter()
-            .map(|f| Fd::from(f.as_fd().as_raw_fd()))
-            .collect();
+        let o_path: Vec<Fd> = o_path_fds.iter().map(Fd::from).collect();
         call_method(
             self.inner(),
             "AddFull",
@@ -290,7 +284,7 @@ impl<'a> Documents<'a> {
             self.inner(),
             "AddNamed",
             &(
-                Fd::from(o_path_parent_fd.as_fd().as_raw_fd()),
+                Fd::from(o_path_parent_fd),
                 cstr.as_bytes_with_nul(),
                 reuse_existing,
                 persistent,
@@ -333,7 +327,7 @@ impl<'a> Documents<'a> {
             self.inner(),
             "AddNamedFull",
             &(
-                Fd::from(o_path_fd.as_fd().as_raw_fd()),
+                Fd::from(o_path_fd),
                 cstr.as_bytes_with_nul(),
                 flags,
                 app_id,

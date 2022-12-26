@@ -39,17 +39,14 @@
 //! }
 //! ```
 
-use std::{
-    fmt,
-    os::fd::{AsFd, AsRawFd},
-    str::FromStr,
-};
+use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use zbus::zvariant::{SerializeDict, Type};
 
 use crate::{
     desktop::{HandleToken, DESTINATION, PATH},
+    fd::Fd,
     helpers::{call_basic_response_method, session_connection},
     Error, WindowIdentifier,
 };
@@ -147,7 +144,7 @@ impl<'a> WallpaperProxy<'a> {
             self.inner(),
             &options.handle_token,
             "SetWallpaperFile",
-            &(&identifier, Fd::from(file.as_fd().as_raw_fd()), &options),
+            &(&identifier, Fd::from(file), &options),
         )
         .await
     }

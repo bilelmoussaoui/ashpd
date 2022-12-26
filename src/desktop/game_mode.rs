@@ -15,17 +15,15 @@
 //! }
 //! ```
 
-use std::{
-    fmt::Debug,
-    os::fd::{AsFd, AsRawFd},
-};
+use std::{fmt::Debug, os::fd::AsFd};
 
 use serde_repr::Deserialize_repr;
-use zbus::zvariant::{Fd, Type};
+use zbus::zvariant::Type;
 
 use super::{DESTINATION, PATH};
 use crate::{
     error::PortalError,
+    fd::Fd,
     helpers::{call_method, session_connection},
     Error,
 };
@@ -136,10 +134,7 @@ impl<'a> GameMode<'a> {
         call_method(
             self.inner(),
             "QueryStatusByPIDFd",
-            &(
-                Fd::from(target.as_fd().as_raw_fd()),
-                Fd::from(requester.as_fd().as_raw_fd()),
-            ),
+            &(Fd::from(target), Fd::from(requester)),
         )
         .await
     }
@@ -201,10 +196,7 @@ impl<'a> GameMode<'a> {
         let status = call_method(
             self.inner(),
             "RegisterGameByPIDFd",
-            &(
-                Fd::from(target.as_fd().as_raw_fd()),
-                Fd::from(requester.as_fd().as_raw_fd()),
-            ),
+            &(Fd::from(target), Fd::from(requester)),
         )
         .await?;
         match status {
@@ -274,10 +266,7 @@ impl<'a> GameMode<'a> {
         let status = call_method(
             self.inner(),
             "UnregisterGameByPIDFd",
-            &(
-                Fd::from(target.as_fd().as_raw_fd()),
-                Fd::from(requester.as_fd().as_raw_fd()),
-            ),
+            &(Fd::from(target), Fd::from(requester)),
         )
         .await?;
         match status {

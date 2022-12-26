@@ -30,14 +30,15 @@
 //! }
 //! ```
 
-use std::os::fd::{AsFd, AsRawFd};
+use std::os::fd::AsFd;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, Type};
+use zbus::zvariant::Type;
 
 use super::{DESTINATION, PATH};
 use crate::{
     error::PortalError,
+    fd::Fd,
     helpers::{call_method, session_connection},
     Error,
 };
@@ -88,12 +89,7 @@ impl<'a> TrashProxy<'a> {
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
     pub async fn trash_file(&self, fd: &impl AsFd) -> Result<(), Error> {
-        let status = call_method(
-            self.inner(),
-            "TrashFile",
-            &(Fd::from(fd.as_fd().as_raw_fd())),
-        )
-        .await?;
+        let status = call_method(self.inner(), "TrashFile", &(Fd::from(fd))).await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
             TrashStatus::Succeeded => Ok(()),

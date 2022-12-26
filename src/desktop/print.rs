@@ -30,17 +30,14 @@
 //! }
 //! ```
 
-use std::{
-    fmt,
-    os::fd::{AsFd, AsRawFd},
-    str::FromStr,
-};
+use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
+    fd::Fd,
     helpers::{call_basic_response_method, call_request_method, session_connection},
     Error, WindowIdentifier,
 };
@@ -705,12 +702,7 @@ impl<'a> PrintProxy<'a> {
             self.inner(),
             &options.handle_token,
             "Print",
-            &(
-                &identifier,
-                title,
-                Fd::from(fd.as_fd().as_raw_fd()),
-                &options,
-            ),
+            &(&identifier, title, Fd::from(fd), &options),
         )
         .await
     }

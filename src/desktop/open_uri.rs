@@ -49,13 +49,14 @@
 //! }
 //! ```
 
-use std::os::fd::{AsFd, AsRawFd};
+use std::os::fd::AsFd;
 
 use url::Url;
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use zbus::zvariant::{SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
+    fd::Fd,
     helpers::{call_basic_response_method, session_connection},
     Error, WindowIdentifier,
 };
@@ -105,11 +106,7 @@ impl<'a> OpenURIProxy<'a> {
             self.inner(),
             &options.handle_token,
             "OpenDirectory",
-            &(
-                &identifier,
-                Fd::from(directory.as_fd().as_raw_fd()),
-                &options,
-            ),
+            &(&identifier, Fd::from(directory), &options),
         )
         .await
     }
@@ -124,7 +121,7 @@ impl<'a> OpenURIProxy<'a> {
             self.inner(),
             &options.handle_token,
             "OpenFile",
-            &(&identifier, Fd::from(file.as_fd().as_raw_fd()), &options),
+            &(&identifier, Fd::from(file), &options),
         )
         .await
     }

@@ -23,6 +23,7 @@ pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;
 mod error;
+mod fd;
 mod window_identifier;
 pub use self::window_identifier::WindowIdentifier;
 /// Spawn commands outside the sandbox or monitor if the running application has

@@ -22,15 +22,13 @@
 //! }
 //! ```
 
-use std::{
-    collections::HashMap,
-    os::fd::{AsFd, AsRawFd},
-};
+use std::{collections::HashMap, os::fd::AsFd};
 
-use zbus::zvariant::{Fd, SerializeDict, Type, Value};
+use zbus::zvariant::{SerializeDict, Type, Value};
 
 use super::{DESTINATION, PATH};
 use crate::{
+    fd::Fd,
     helpers::{call_method, receive_signal, session_connection},
     Error,
 };
@@ -118,10 +116,7 @@ impl<'a> FileTransfer<'a> {
     pub async fn add_files(&self, key: &str, fds: &[&impl AsFd]) -> Result<(), Error> {
         // `options` parameter doesn't seems to be used yet
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let files: Vec<Fd> = fds
-            .iter()
-            .map(|f| Fd::from(f.as_fd().as_raw_fd()))
-            .collect();
+        let files: Vec<Fd> = fds.iter().map(Fd::from).collect();
 
         call_method(self.inner(), "AddFiles", &(key, files, options)).await
     }

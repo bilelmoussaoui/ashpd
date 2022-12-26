@@ -19,13 +19,14 @@
 //! ```
 
 use std::io::Read;
-use std::os::fd::{AsFd, AsRawFd};
+use std::os::fd::AsFd;
 use std::os::unix::net::UnixStream;
 
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use zbus::zvariant::{SerializeDict, Type};
 
 use super::{HandleToken, DESTINATION, PATH};
 use crate::{
+    fd::Fd,
     helpers::{call_basic_response_method, session_connection},
     Error,
 };
@@ -80,7 +81,7 @@ impl<'a> Secret<'a> {
             self.inner(),
             &options.handle_token,
             "RetrieveSecret",
-            &(Fd::from(fd.as_fd().as_raw_fd()), &options),
+            &(Fd::from(fd), &options),
         )
         .await?;
         Ok(())
