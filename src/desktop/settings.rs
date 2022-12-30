@@ -24,7 +24,7 @@
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use zbus::zvariant::{OwnedValue, Type};
+use zbus::zvariant::{OwnedValue, Type, Value};
 
 use super::{DESTINATION, PATH};
 use crate::{
@@ -138,7 +138,7 @@ impl<'a> Settings<'a> {
     ///
     /// # Returns
     ///
-    /// The value `key` is to to as a `zvariant::OwnedValue`.
+    /// The value for `key` as a `zvariant::OwnedValue`.
     ///
     /// # Specifications
     ///
@@ -150,7 +150,11 @@ impl<'a> Settings<'a> {
         Error: From<<T as TryFrom<OwnedValue>>::Error>,
     {
         let value = call_method::<OwnedValue, _>(self.inner(), "Read", &(namespace, key)).await?;
-        T::try_from(value).map_err(From::from)
+        if let Some(v) = value.downcast_ref::<Value<'_>>() {
+            T::try_from(v.to_owned()).map_err(From::from)
+        } else {
+            T::try_from(value).map_err(From::from)
+        }
     }
 
     /// Reads the value of namespace: `org.freedesktop.appearance` and
