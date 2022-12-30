@@ -19,11 +19,13 @@ use crate::{
 struct NewShortcutInfo {
     /// User-readable text describing what the shortcut does.
     description: String,
-    /// The preferred shortcut trigger, defined as described by the "shortcuts" XDG specification. Optional.
+    /// The preferred shortcut trigger, defined as described by the "shortcuts"
+    /// XDG specification. Optional.
     preferred_trigger: Option<String>,
 }
 
-/// Shortcut descriptor used to bind new shortcuts in [`GlobalShortcuts::bind_shortcuts`]
+/// Shortcut descriptor used to bind new shortcuts in
+/// [`GlobalShortcuts::bind_shortcuts`]
 #[derive(Clone, Serialize, Type, Debug)]
 pub struct NewShortcut(String, NewShortcutInfo);
 
@@ -39,9 +41,11 @@ impl NewShortcut {
         )
     }
 
-    /// Sets the preferred shortcut trigger, defined as described by the "shortcuts" XDG specification.
-    pub fn preferred_trigger(mut self, preferred_trigger: impl Into<Option<String>>) -> Self {
-        self.1.preferred_trigger = preferred_trigger.into();
+    /// Sets the preferred shortcut trigger, defined as described by the
+    /// "shortcuts" XDG specification.
+    #[must_use]
+    pub fn preferred_trigger<'a>(mut self, preferred_trigger: impl Into<Option<&'a str>>) -> Self {
+        self.1.preferred_trigger = preferred_trigger.into().map(ToOwned::to_owned);
         self
     }
 }
@@ -51,13 +55,15 @@ impl NewShortcut {
 struct ShortcutInfo {
     /// User-readable text describing what the shortcut does.
     description: String,
-    /// User-readable text describing how to trigger the shortcut for the client to render.
+    /// User-readable text describing how to trigger the shortcut for the client
+    /// to render.
     trigger_description: String,
 }
 
 /// Struct that contains information about existing binded shortcut.
 ///
-/// If you need to create a new shortcuts, take a look at [`NewShortcut`] instead.
+/// If you need to create a new shortcuts, take a look at [`NewShortcut`]
+/// instead.
 #[derive(Clone, Deserialize, Type, Debug)]
 pub struct Shortcut(String, ShortcutInfo);
 
@@ -72,7 +78,8 @@ impl Shortcut {
         &self.1.description
     }
 
-    /// User-readable text describing how to trigger the shortcut for the client to render.
+    /// User-readable text describing how to trigger the shortcut for the client
+    /// to render.
     pub fn trigger_description(&self) -> &str {
         &self.1.trigger_description
     }
@@ -169,7 +176,8 @@ impl Deactivated {
     }
 }
 
-/// Indicates that the information associated with some of the shortcuts has changed.
+/// Indicates that the information associated with some of the shortcuts has
+/// changed.
 #[derive(Debug, Deserialize, Type)]
 pub struct ShortcutsChanged(OwnedObjectPath, Vec<Shortcut>);
 
@@ -293,7 +301,8 @@ impl<'a> GlobalShortcuts<'a> {
         receive_signal(self.inner(), "Deactivated").await
     }
 
-    /// Signal emitted when information associated with some of the shortcuts has changed.
+    /// Signal emitted when information associated with some of the shortcuts
+    /// has changed.
     ///
     /// # Specifications
     ///
