@@ -174,6 +174,13 @@ impl Choice {
         &self.1
     }
 
+    pub fn pairs(&self) -> Vec<(&str, &str)> {
+        self.2
+            .iter()
+            .map(|(x, y)| (x.as_str(), y.as_str()))
+            .collect::<Vec<_>>()
+    }
+
     /// The initially selected value.
     pub fn initial_selection(&self) -> &str {
         &self.3
