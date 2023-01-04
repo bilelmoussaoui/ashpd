@@ -24,23 +24,7 @@ const ZXDG_EXPORTER_V2: u32 = 1;
 
 #[derive(Debug)]
 pub struct WaylandWindowIdentifier {
-    exported: Exported,
     type_: WindowIdentifierType,
-}
-
-#[derive(Debug)]
-enum Exported {
-    V1(ZxdgExportedV1),
-    V2(ZxdgExportedV2),
-}
-
-impl Exported {
-    fn destroy(&self) {
-        match self {
-            Self::V1(exported) => exported.destroy(),
-            Self::V2(exported) => exported.destroy(),
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -103,15 +87,9 @@ impl fmt::Display for WaylandWindowIdentifier {
     }
 }
 
-impl Drop for WaylandWindowIdentifier {
-    fn drop(&mut self) {
-        self.exported.destroy();
-    }
-}
-
 #[derive(Default, Debug)]
 struct State {
-    handle: String,
+    handle: Option<String>,
     exporter: Option<Exporter>,
 }
 
@@ -125,7 +103,7 @@ impl wayland_client::Dispatch<ZxdgExportedV1, ()> for State {
         _qhandle: &QueueHandle<Self>,
     ) {
         if let zxdg_exported_v1::Event::Handle { handle } = event {
-            state.handle = handle;
+            state.handle = Some(handle);
         }
     }
 }
@@ -140,7 +118,7 @@ impl wayland_client::Dispatch<ZxdgExportedV2, ()> for State {
         _qhandle: &QueueHandle<Self>,
     ) {
         if let zxdg_exported_v2::Event::Handle { handle } = event {
-            state.handle = handle;
+            state.handle = Some(handle);
         }
     }
 }
@@ -230,34 +208,28 @@ fn wayland_export_handle(
     display.get_registry(&qhandle, ());
     event_queue.roundtrip(&mut state)?;
 
-    let exported = match state.exporter.take() {
+    match state.exporter.take() {
         Some(Exporter::V2(exporter)) => {
-            let exp = exporter.export_toplevel(surface, &qhandle, ());
+            exporter.export_toplevel(surface, &qhandle, ());
             event_queue.roundtrip(&mut state)?;
             exporter.destroy();
-
-            Some(Exported::V2(exp))
         }
         Some(Exporter::V1(exporter)) => {
-            let exp = exporter.export(surface, &qhandle, ());
+            exporter.export(surface, &qhandle, ());
             event_queue.roundtrip(&mut state)?;
             exporter.destroy();
-
-            Some(Exported::V1(exp))
         }
         None => {
             #[cfg(feature = "tracing")]
             tracing::error!(
                 "The compositor does not support the zxdg_exporter_v1 nor zxdg_exporter_v2 protocols"
             );
-            None
         }
     };
 
-    if let Some(exported) = exported {
+    if let Some(handle) = state.handle.take() {
         Ok(WaylandWindowIdentifier {
-            exported,
-            type_: WindowIdentifierType::Wayland(state.handle),
+            type_: WindowIdentifierType::Wayland(handle),
         })
     } else {
         Err(Box::new(crate::Error::NoResponse))
