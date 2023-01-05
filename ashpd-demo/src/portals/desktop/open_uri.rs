@@ -1,7 +1,10 @@
-use ashpd::{desktop::open_uri, WindowIdentifier};
+use ashpd::{desktop::open_uri, ActivationToken, WindowIdentifier};
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    config::APP_ID,
+    widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use adw::subclass::prelude::*;
@@ -59,11 +62,13 @@ impl OpenUriPage {
         let ask = imp.ask_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
+        let activation_token = ActivationToken::from_native(APP_ID, &root).await;
         match url::Url::parse(&imp.uri_entry.text()) {
             Ok(uri) => {
                 let request = open_uri::OpenFileRequest::default()
                     .ask(ask)
                     .writeable(writeable)
+                    .activation_token(activation_token)
                     .identifier(identifier);
                 match request.build_uri(&uri).await {
                     Ok(_) => {

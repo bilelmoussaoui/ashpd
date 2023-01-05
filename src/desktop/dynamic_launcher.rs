@@ -46,7 +46,7 @@ use zbus::zvariant::{self, SerializeDict, Type};
 use super::{HandleToken, Icon, DESTINATION, PATH};
 use crate::{
     helpers::{call_method, call_request_method, session_connection},
-    Error, WindowIdentifier,
+    ActivationToken, Error, WindowIdentifier,
 };
 
 #[bitflags]
@@ -248,9 +248,16 @@ impl<'a> DynamicLauncherProxy<'a> {
     /// See also [`Launch`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.Launch).
     #[doc(alias = "Launch")]
     #[doc(alias = "xdp_portal_dynamic_launcher_launch")]
-    pub async fn launch(&self, desktop_file_id: &str) -> Result<(), Error> {
-        // TODO: handle activation_token
-        let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
+    pub async fn launch(
+        &self,
+        desktop_file_id: &str,
+        activation_token: ActivationToken,
+    ) -> Result<(), Error> {
+        let mut options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
+        if activation_token.is_some() {
+            let token = activation_token.into_string();
+            options.insert("activation_token", token.into());
+        }
         call_method(self.inner(), "Launch", &(desktop_file_id, &options)).await
     }
 
