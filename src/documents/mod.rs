@@ -9,8 +9,8 @@
 //!     println!("{:#?}", proxy.mount_point().await?);
 //!
 //!     for (doc_id, host_path) in proxy.list("org.mozilla.firefox").await? {
-//!         if doc_id == "f2ee988d" {
-//!             let info = proxy.info(&doc_id.into()).await?;
+//!         if doc_id == "f2ee988d".into() {
+//!             let info = proxy.info(doc_id).await?;
 //!             println!("{:#?}", info);
 //!         }
 //!     }
@@ -49,12 +49,11 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
+pub use crate::app_id::DocumentID;
 use crate::{
     helpers::{call_method, path_from_null_terminated, session_connection},
     AppID, Error,
 };
-
-pub use crate::app_id::DocumentID;
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]

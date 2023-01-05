@@ -19,7 +19,6 @@ impl From<String> for AppID {
     }
 }
 
-
 /// The ID of a file in the document store.
 #[derive(Debug, Serialize, Deserialize, Type, PartialEq, Eq, Hash)]
 pub struct DocumentID(String);
