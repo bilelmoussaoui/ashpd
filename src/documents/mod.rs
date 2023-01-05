@@ -10,7 +10,7 @@
 //!
 //!     for (doc_id, host_path) in proxy.list("org.mozilla.firefox").await? {
 //!         if doc_id == "f2ee988d" {
-//!             let info = proxy.info(&doc_id).await?;
+//!             let info = proxy.info(&doc_id.into()).await?;
 //!             println!("{:#?}", info);
 //!         }
 //!     }
@@ -51,8 +51,10 @@ use zbus::zvariant::{Fd, OwnedValue, Type};
 
 use crate::{
     helpers::{call_method, path_from_null_terminated, session_connection},
-    Error,
+    AppID, Error,
 };
+
+pub use crate::app_id::DocumentID;
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -69,14 +71,9 @@ pub enum DocumentFlags {
     ExportDirectory,
 }
 
-pub type DocumentID<'a> = &'a str;
-pub type OwnedDocumentID = String;
-pub type ApplicationID<'a> = &'a str;
-pub type OwnedApplicationID = String;
-
 /// A [`HashMap`] mapping application IDs to the permissions for that
 /// application
-pub type Permissions = HashMap<OwnedApplicationID, Vec<Permission>>;
+pub type Permissions = HashMap<AppID, Vec<Permission>>;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq, Type)]
 #[zvariant(signature = "s")]
@@ -206,7 +203,7 @@ impl<'a> Documents<'a> {
         o_path_fd: &(impl AsRawFd + fmt::Debug),
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<OwnedDocumentID, Error> {
+    ) -> Result<DocumentID, Error> {
         call_method(
             self.inner(),
             "Add",
@@ -238,14 +235,14 @@ impl<'a> Documents<'a> {
         &self,
         o_path_fds: &[&impl AsRawFd],
         flags: BitFlags<DocumentFlags>,
-        app_id: ApplicationID<'_>,
+        app_id: impl Into<AppID>,
         permissions: &[Permission],
-    ) -> Result<(Vec<OwnedDocumentID>, HashMap<String, OwnedValue>), Error> {
+    ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
         call_method(
             self.inner(),
             "AddFull",
-            &(o_path, flags, app_id, permissions),
+            &(o_path, flags, app_id.into(), permissions),
         )
         .await
     }
@@ -275,7 +272,7 @@ impl<'a> Documents<'a> {
         filename: impl AsRef<Path>,
         reuse_existing: bool,
         persistent: bool,
-    ) -> Result<OwnedDocumentID, Error> {
+    ) -> Result<DocumentID, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         call_method(
@@ -316,9 +313,9 @@ impl<'a> Documents<'a> {
         o_path_fd: &(impl AsRawFd + fmt::Debug),
         filename: impl AsRef<Path>,
         flags: BitFlags<DocumentFlags>,
-        app_id: ApplicationID<'_>,
+        app_id: impl Into<AppID>,
         permissions: &[Permission],
-    ) -> Result<(OwnedDocumentID, HashMap<String, OwnedValue>), Error> {
+    ) -> Result<(DocumentID, HashMap<String, OwnedValue>), Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         call_method(
@@ -328,7 +325,7 @@ impl<'a> Documents<'a> {
                 Fd::from(o_path_fd.as_raw_fd()),
                 cstr.as_bytes_with_nul(),
                 flags,
-                app_id,
+                app_id.into(),
                 permissions,
             ),
         )
@@ -349,8 +346,8 @@ impl<'a> Documents<'a> {
     ///
     /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
     #[doc(alias = "Delete")]
-    pub async fn delete(&self, doc_id: DocumentID<'_>) -> Result<(), Error> {
-        call_method(self.inner(), "Delete", &(doc_id)).await
+    pub async fn delete(&self, doc_id: impl Into<DocumentID>) -> Result<(), Error> {
+        call_method(self.inner(), "Delete", &(doc_id.into())).await
     }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
@@ -384,14 +381,14 @@ impl<'a> Documents<'a> {
     #[doc(alias = "GrantPermissions")]
     pub async fn grant_permissions(
         &self,
-        doc_id: DocumentID<'_>,
-        app_id: ApplicationID<'_>,
+        doc_id: impl Into<DocumentID>,
+        app_id: impl Into<AppID>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         call_method(
             self.inner(),
             "GrantPermissions",
-            &(doc_id, app_id, permissions),
+            &(doc_id.into(), app_id.into(), permissions),
         )
         .await
     }
@@ -414,9 +411,12 @@ impl<'a> Documents<'a> {
     ///
     /// See also [`Info`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Info).
     #[doc(alias = "Info")]
-    pub async fn info(&self, doc_id: DocumentID<'_>) -> Result<(PathBuf, Permissions), Error> {
+    pub async fn info(
+        &self,
+        doc_id: impl Into<DocumentID>,
+    ) -> Result<(PathBuf, Permissions), Error> {
         let (bytes, permissions): (Vec<u8>, Permissions) =
-            call_method(self.inner(), "Info", &(doc_id)).await?;
+            call_method(self.inner(), "Info", &(doc_id.into())).await?;
         Ok((path_from_null_terminated(bytes), permissions))
     }
 
@@ -440,14 +440,14 @@ impl<'a> Documents<'a> {
     #[doc(alias = "List")]
     pub async fn list(
         &self,
-        app_id: ApplicationID<'_>,
-    ) -> Result<HashMap<OwnedDocumentID, PathBuf>, Error> {
+        app_id: impl Into<AppID>,
+    ) -> Result<HashMap<DocumentID, PathBuf>, Error> {
         let response: HashMap<String, Vec<u8>> =
-            call_method(self.inner(), "List", &(app_id)).await?;
+            call_method(self.inner(), "List", &(app_id.into())).await?;
 
-        let mut new_response: HashMap<String, PathBuf> = HashMap::new();
+        let mut new_response: HashMap<DocumentID, PathBuf> = HashMap::new();
         for (key, bytes) in response {
-            new_response.insert(key, path_from_null_terminated(bytes));
+            new_response.insert(DocumentID::from(key), path_from_null_terminated(bytes));
         }
 
         Ok(new_response)
@@ -470,10 +470,7 @@ impl<'a> Documents<'a> {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup(
-        &self,
-        filename: impl AsRef<Path>,
-    ) -> Result<Option<OwnedDocumentID>, Error> {
+    pub async fn lookup(&self, filename: impl AsRef<Path>) -> Result<Option<DocumentID>, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         let doc_id: String =
@@ -481,7 +478,7 @@ impl<'a> Documents<'a> {
         if doc_id.is_empty() {
             Ok(None)
         } else {
-            Ok(Some(doc_id))
+            Ok(Some(doc_id.into()))
         }
     }
 
@@ -504,14 +501,14 @@ impl<'a> Documents<'a> {
     #[doc(alias = "RevokePermissions")]
     pub async fn revoke_permissions(
         &self,
-        doc_id: DocumentID<'_>,
-        app_id: ApplicationID<'_>,
+        doc_id: impl Into<DocumentID>,
+        app_id: impl Into<AppID>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         call_method(
             self.inner(),
             "RevokePermissions",
-            &(doc_id, app_id, permissions),
+            &(doc_id.into(), app_id.into(), permissions),
         )
         .await
     }
