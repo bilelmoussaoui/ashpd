@@ -74,7 +74,7 @@ impl<'a> Secret<'a> {
     ///
     /// # Arguments
     ///
-    /// * `fd` - Writable file descriptor for transporting the secret.
+    /// * `fd` - Writaeble file descriptor for transporting the secret.
     #[doc(alias = "RetrieveSecret")]
     pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<(), Error> {
         let options = RetrieveOptions::default();

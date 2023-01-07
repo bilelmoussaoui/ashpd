@@ -123,7 +123,7 @@ impl<'a> FileTransfer<'a> {
     /// Retrieves files that were previously added to the session with
     /// [`add_files()`][`FileTransfer::add_files`]. The files will be
     /// exported in the document portal as-needed for the caller, and they
-    /// will be writable if the owner of the session allowed it.
+    /// will be writeable if the owner of the session allowed it.
     ///
     /// # Arguments
     ///
