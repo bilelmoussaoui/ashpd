@@ -44,14 +44,8 @@ use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
-use super::{HandleToken, Session, DESTINATION, PATH};
-use crate::{
-    helpers::{
-        call_basic_response_method, call_method, call_request_method, receive_signal,
-        session_connection,
-    },
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request, Session};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
@@ -149,24 +143,13 @@ pub enum SessionState {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Inhibit`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Inhibit).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Inhibit")]
-pub struct InhibitProxy<'a>(zbus::Proxy<'a>);
+pub struct InhibitProxy<'a>(Proxy<'a>);
 
 impl<'a> InhibitProxy<'a> {
     /// Create a new instance of [`InhibitProxy`].
     pub async fn new() -> Result<InhibitProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Inhibit")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Inhibit").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Creates a monitoring session.
@@ -188,12 +171,13 @@ impl<'a> InhibitProxy<'a> {
     ) -> Result<Session<'a>, Error> {
         let options = CreateMonitorOptions::default();
         let body = &(&identifier, &options);
-        let (monitor, proxy): (CreateMonitor, Session) = futures_util::try_join!(
-            call_request_method(self.inner(), &options.handle_token, "CreateMonitor", body)
+        let (monitor, proxy) = futures_util::try_join!(
+            self.0
+                .call_request_method::<CreateMonitor>(&options.handle_token, "CreateMonitor", body)
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
-        assert_eq!(proxy.inner().path().as_str(), &monitor.session_handle);
+        assert_eq!(proxy.path().as_str(), &monitor.response()?.session_handle);
         Ok(proxy)
     }
 
@@ -215,18 +199,18 @@ impl<'a> InhibitProxy<'a> {
         identifier: &WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         reason: &str,
-    ) -> Result<(), Error> {
+    ) -> Result<Request<'static, ()>, Error> {
         let options = InhibitOptions {
             reason: Some(reason.to_owned()),
             handle_token: Default::default(),
         };
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "Inhibit",
-            &(&identifier, flags, &options),
-        )
-        .await
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "Inhibit",
+                &(&identifier, flags, &options),
+            )
+            .await
     }
 
     /// Signal emitted when the session state changes.
@@ -237,7 +221,7 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "StateChanged")]
     #[doc(alias = "XdpPortal::session-state-changed")]
     pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
-        receive_signal(self.inner(), "StateChanged").await
+        self.0.signal("StateChanged").await
     }
 
     /// Acknowledges that the caller received the "state_changed" signal.
@@ -256,6 +240,6 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "QueryEndResponse")]
     #[doc(alias = "xdp_portal_session_monitor_query_end_response")]
     pub async fn query_end_response(&self, session: &Session<'_>) -> Result<(), Error> {
-        call_method(self.inner(), "QueryEndResponse", &(session)).await
+        self.0.call_method("QueryEndResponse", &(session)).await
     }
 }

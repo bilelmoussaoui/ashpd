@@ -26,11 +26,8 @@ use async_std::{os::unix::net::UnixStream, prelude::*};
 use tokio::{io::AsyncReadExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, session_connection},
-    Error,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.
@@ -50,24 +47,13 @@ struct RetrieveOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Secret).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Secret")]
-pub struct Secret<'a>(zbus::Proxy<'a>);
+pub struct Secret<'a>(Proxy<'a>);
 
 impl<'a> Secret<'a> {
     /// Create a new instance of [`Secret`].
     pub async fn new() -> Result<Secret<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Secret")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Secret").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Retrieves a master secret for a sandboxed application.
@@ -76,16 +62,15 @@ impl<'a> Secret<'a> {
     ///
     /// * `fd` - Writaeble file descriptor for transporting the secret.
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<Request<'static, ()>, Error> {
         let options = RetrieveOptions::default();
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "RetrieveSecret",
-            &(Fd::from(fd.as_raw_fd()), &options),
-        )
-        .await?;
-        Ok(())
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "RetrieveSecret",
+                &(Fd::from(fd.as_raw_fd()), &options),
+            )
+            .await
     }
 }
 

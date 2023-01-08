@@ -24,11 +24,8 @@ use std::{
 
 use zbus::zvariant::{OwnedFd, SerializeDict, Type, Value};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, session_connection},
-    Error,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -42,24 +39,13 @@ struct CameraAccessOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Camera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Camera).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Camera")]
-pub struct Camera<'a>(zbus::Proxy<'a>);
+pub struct Camera<'a>(Proxy<'a>);
 
 impl<'a> Camera<'a> {
     /// Create a new instance of [`Camera`].
     pub async fn new() -> Result<Camera<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Camera")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Camera").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Requests an access to the camera.
@@ -69,15 +55,11 @@ impl<'a> Camera<'a> {
     /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.AccessCamera).
     #[doc(alias = "AccessCamera")]
     #[doc(alias = "xdp_portal_access_camera")]
-    pub async fn request_access(&self) -> Result<(), Error> {
+    pub async fn request_access(&self) -> Result<Request<'static, ()>, Error> {
         let options = CameraAccessOptions::default();
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "AccessCamera",
-            &(&options),
-        )
-        .await
+        self.0
+            .call_basic_response_method(&options.handle_token, "AccessCamera", &options)
+            .await
     }
 
     /// Open a file descriptor to the PipeWire remote where the camera nodes are
@@ -96,7 +78,10 @@ impl<'a> Camera<'a> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/camera.c#L178
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let fd: OwnedFd = call_method(self.inner(), "OpenPipeWireRemote", &(options)).await?;
+        let fd = self
+            .0
+            .call_method::<OwnedFd>("OpenPipeWireRemote", &options)
+            .await?;
         Ok(fd.into_raw_fd())
     }
 
@@ -108,10 +93,7 @@ impl<'a> Camera<'a> {
     #[doc(alias = "IsCameraPresent")]
     #[doc(alias = "xdp_portal_is_camera_present")]
     pub async fn is_present(&self) -> Result<bool, Error> {
-        self.inner()
-            .get_property::<bool>("IsCameraPresent")
-            .await
-            .map_err(From::from)
+        self.0.property("IsCameraPresent").await
     }
 }
 

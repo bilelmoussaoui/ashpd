@@ -22,11 +22,7 @@ use std::fmt;
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{DeserializeDict, Type};
 
-use super::{DESTINATION, PATH};
-use crate::{
-    helpers::{call_method, receive_signal, session_connection},
-    Error,
-};
+use crate::{proxy::Proxy, Error};
 
 #[derive(DeserializeDict, Type, Debug)]
 /// The network status, composed of the availability, metered & connectivity
@@ -92,24 +88,13 @@ impl fmt::Display for Connectivity {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.NetworkMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.NetworkMonitor")]
-pub struct NetworkMonitor<'a>(zbus::Proxy<'a>);
+pub struct NetworkMonitor<'a>(Proxy<'a>);
 
 impl<'a> NetworkMonitor<'a> {
     /// Create a new instance of [`NetworkMonitor`].
     pub async fn new() -> Result<NetworkMonitor<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.NetworkMonitor")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.NetworkMonitor").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Returns whether the given hostname is believed to be reachable.
@@ -124,7 +109,7 @@ impl<'a> NetworkMonitor<'a> {
     /// See also [`CanReach`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.CanReach).
     #[doc(alias = "CanReach")]
     pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
-        call_method(self.inner(), "CanReach", &(hostname, port)).await
+        self.0.call_method("CanReach", &(hostname, port)).await
     }
 
     /// Returns whether the network is considered available.
@@ -137,7 +122,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetAvailable")]
     #[doc(alias = "get_available")]
     pub async fn is_available(&self) -> Result<bool, Error> {
-        call_method(self.inner(), "GetAvailable", &()).await
+        self.0.call_method("GetAvailable", &()).await
     }
 
     /// Returns more detailed information about the host's network connectivity.
@@ -148,7 +133,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetConnectivity")]
     #[doc(alias = "get_connectivity")]
     pub async fn connectivity(&self) -> Result<Connectivity, Error> {
-        call_method(self.inner(), "GetConnectivity", &()).await
+        self.0.call_method("GetConnectivity", &()).await
     }
 
     /// Returns whether the network is considered metered.
@@ -161,7 +146,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetMetered")]
     #[doc(alias = "get_metered")]
     pub async fn is_metered(&self) -> Result<bool, Error> {
-        call_method(self.inner(), "GetMetered", &()).await
+        self.0.call_method("GetMetered", &()).await
     }
 
     /// Returns the three values all at once.
@@ -172,7 +157,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetStatus")]
     #[doc(alias = "get_status")]
     pub async fn status(&self) -> Result<NetworkStatus, Error> {
-        call_method(self.inner(), "GetStatus", &()).await
+        self.0.call_method("GetStatus", &()).await
     }
 
     /// Emitted when the network configuration changes.
@@ -181,6 +166,6 @@ impl<'a> NetworkMonitor<'a> {
     ///
     /// See also [`changed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-NetworkMonitor.changed).
     pub async fn receive_changed(&self) -> Result<(), Error> {
-        receive_signal(self.inner(), "changed").await
+        self.0.signal("changed").await
     }
 }

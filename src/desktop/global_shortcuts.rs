@@ -8,11 +8,8 @@ use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,
 };
 
-use super::{HandleToken, Session, DESTINATION, PATH};
-use crate::{
-    helpers::{call_request_method, receive_signal, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request, Session};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -113,9 +110,15 @@ struct BindShortcutsOptions {
 /// A response to a [`GlobalShortcuts::bind_shortcuts`] request.
 #[derive(DeserializeDict, Type, Debug)]
 #[zvariant(signature = "dict")]
-struct BindShortcuts {
+pub struct BindShortcuts {
     /// A list of shortcuts.
     shortcuts: Vec<Shortcut>,
+}
+
+impl BindShortcuts {
+    pub fn shortcuts(&self) -> &[Shortcut] {
+        &self.shortcuts
+    }
 }
 
 /// Specified options for a [`GlobalShortcuts::list_shortcuts`] request.
@@ -129,9 +132,15 @@ struct ListShortcutsOptions {
 /// A response to a [`GlobalShortcuts::list_shortcuts`] request.
 #[derive(DeserializeDict, Type, Debug)]
 #[zvariant(signature = "dict")]
-struct ListShortcuts {
+pub struct ListShortcuts {
     /// A list of shortcuts.
     shortcuts: Vec<Shortcut>,
+}
+
+impl ListShortcuts {
+    pub fn shortcuts(&self) -> &[Shortcut] {
+        &self.shortcuts
+    }
 }
 
 /// Notifies about a shortcut becoming active.
@@ -196,24 +205,13 @@ impl ShortcutsChanged {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.GlobalShortcuts`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.GlobalShortcuts).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.GlobalShortcuts")]
-pub struct GlobalShortcuts<'a>(zbus::Proxy<'a>);
+pub struct GlobalShortcuts<'a>(Proxy<'a>);
 
 impl<'a> GlobalShortcuts<'a> {
     /// Create a new instance of [`GlobalShortcuts`].
     pub async fn new() -> Result<GlobalShortcuts<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.GlobalShortcuts")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.GlobalShortcuts").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Create a global shortcuts session.
@@ -224,17 +222,17 @@ impl<'a> GlobalShortcuts<'a> {
     #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default();
-        let (session, proxy) = futures_util::try_join!(
-            call_request_method::<CreateSession, _>(
-                self.inner(),
-                &options.handle_token,
-                "CreateSession",
-                &options
-            )
-            .into_future(),
+        let (request, proxy) = futures_util::try_join!(
+            self.0
+                .call_request_method::<CreateSession>(
+                    &options.handle_token,
+                    "CreateSession",
+                    &options
+                )
+                .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
-        assert_eq!(proxy.inner().path(), &session.session_handle.as_ref());
+        assert_eq!(proxy.path(), &request.response()?.session_handle.as_ref());
         Ok(proxy)
     }
 
@@ -249,17 +247,15 @@ impl<'a> GlobalShortcuts<'a> {
         session: &Session<'_>,
         shortcuts: &[NewShortcut],
         parent_window: &WindowIdentifier,
-    ) -> Result<Vec<Shortcut>, Error> {
+    ) -> Result<Request<'static, BindShortcuts>, Error> {
         let options = BindShortcutsOptions::default();
-        let shortcuts = call_request_method::<BindShortcuts, _>(
-            self.inner(),
-            &options.handle_token,
-            "BindShortcuts",
-            &(session, shortcuts, parent_window, &options),
-        )
-        .await?;
-
-        Ok(shortcuts.shortcuts)
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "BindShortcuts",
+                &(session, shortcuts, parent_window, &options),
+            )
+            .await
     }
 
     /// Lists all shortcuts.
@@ -268,17 +264,14 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// See also [`ListShortcuts`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-GlobalShortcuts.ListShortcuts).
     #[doc(alias = "ListShortcuts")]
-    pub async fn list_shortcuts(&self, session: &Session<'_>) -> Result<Vec<Shortcut>, Error> {
+    pub async fn list_shortcuts(
+        &self,
+        session: &Session<'_>,
+    ) -> Result<Request<'static, ListShortcuts>, Error> {
         let options = ListShortcutsOptions::default();
-        let shortcuts = call_request_method::<ListShortcuts, _>(
-            self.inner(),
-            &options.handle_token,
-            "ListShortcuts",
-            &(session, &options),
-        )
-        .await?;
-
-        Ok(shortcuts.shortcuts)
+        self.0
+            .call_request_method(&options.handle_token, "ListShortcuts", &(session, &options))
+            .await
     }
 
     /// Signal emitted when shortcut becomes active.
@@ -288,7 +281,7 @@ impl<'a> GlobalShortcuts<'a> {
     /// See also [`Activated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.Activated).
     #[doc(alias = "Activated")]
     pub async fn receive_activated(&self) -> Result<Activated, Error> {
-        receive_signal(self.inner(), "Activated").await
+        self.0.signal("Activated").await
     }
 
     /// Signal emitted when shortcut is not active anymore.
@@ -298,7 +291,7 @@ impl<'a> GlobalShortcuts<'a> {
     /// See also [`Deactivated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.Deactivated).
     #[doc(alias = "Deactivated")]
     pub async fn receive_deactivated(&self) -> Result<Deactivated, Error> {
-        receive_signal(self.inner(), "Deactivated").await
+        self.0.signal("Deactivated").await
     }
 
     /// Signal emitted when information associated with some of the shortcuts
@@ -309,6 +302,6 @@ impl<'a> GlobalShortcuts<'a> {
     /// See also [`ShortcutsChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.ShortcutsChanged).
     #[doc(alias = "ShortcutsChanged")]
     pub async fn receive_shortcuts_changed(&self) -> Result<ShortcutsChanged, Error> {
-        receive_signal(self.inner(), "ShortcutsChanged").await
+        self.0.signal("ShortcutsChanged").await
     }
 }

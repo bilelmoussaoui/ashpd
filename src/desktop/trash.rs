@@ -35,12 +35,7 @@ use std::os::unix::io::AsRawFd;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
-use super::{DESTINATION, PATH};
-use crate::{
-    error::PortalError,
-    helpers::{call_method, session_connection},
-    Error,
-};
+use crate::{error::PortalError, proxy::Proxy, Error};
 
 #[derive(Debug, Deserialize_repr, Serialize_repr, PartialEq, Type)]
 #[repr(u32)]
@@ -54,24 +49,13 @@ enum TrashStatus {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Trash`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Trash).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Trash")]
-pub struct TrashProxy<'a>(zbus::Proxy<'a>);
+pub struct TrashProxy<'a>(Proxy<'a>);
 
 impl<'a> TrashProxy<'a> {
     /// Create a new instance of [`TrashProxy`].
     pub async fn new() -> Result<TrashProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Trash")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Trash").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Sends a file to the trashcan.
@@ -88,7 +72,10 @@ impl<'a> TrashProxy<'a> {
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
     pub async fn trash_file(&self, fd: &impl AsRawFd) -> Result<(), Error> {
-        let status = call_method(self.inner(), "TrashFile", &(Fd::from(fd.as_raw_fd()))).await?;
+        let status = self
+            .0
+            .call_method("TrashFile", &(Fd::from(fd.as_raw_fd())))
+            .await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
             TrashStatus::Succeeded => Ok(()),

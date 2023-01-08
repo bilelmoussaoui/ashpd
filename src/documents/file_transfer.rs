@@ -26,11 +26,7 @@ use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 
 use zbus::zvariant::{Fd, SerializeDict, Type, Value};
 
-use super::{DESTINATION, PATH};
-use crate::{
-    helpers::{call_method, receive_signal, session_connection},
-    Error,
-};
+use crate::{proxy::Proxy, Error};
 
 #[derive(SerializeDict, Debug, Type, Default)]
 /// Specified options for a [`FileTransfer::start_transfer`] request.
@@ -78,24 +74,13 @@ impl TransferOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.FileTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileTransfer).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileTransfer")]
-pub struct FileTransfer<'a>(zbus::Proxy<'a>);
+pub struct FileTransfer<'a>(Proxy<'a>);
 
 impl<'a> FileTransfer<'a> {
     /// Create a new instance of [`FileTransfer`].
     pub async fn new() -> Result<FileTransfer<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.FileTransfer")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_documents("org.freedesktop.portal.FileTransfer").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Adds files to a session. This method can be called multiple times on a
@@ -117,7 +102,7 @@ impl<'a> FileTransfer<'a> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
 
-        call_method(self.inner(), "AddFiles", &(key, files, options)).await
+        self.0.call_method("AddFiles", &(key, files, options)).await
     }
 
     /// Retrieves files that were previously added to the session with
@@ -143,7 +128,7 @@ impl<'a> FileTransfer<'a> {
         // see https://github.com/GNOME/gtk/blob/master/gdk/filetransferportal.c#L284
         let options: HashMap<&str, Value<'_>> = HashMap::new();
 
-        call_method(self.inner(), "RetrieveFiles", &(key, options)).await
+        self.0.call_method("RetrieveFiles", &(key, options)).await
     }
 
     /// Starts a session for a file transfer.
@@ -170,7 +155,7 @@ impl<'a> FileTransfer<'a> {
         let options = TransferOptions::default()
             .writeable(writeable)
             .auto_stop(auto_stop);
-        call_method(self.inner(), "StartTransfer", &(options)).await
+        self.0.call_method("StartTransfer", &(options)).await
     }
 
     /// Ends the transfer.
@@ -188,7 +173,7 @@ impl<'a> FileTransfer<'a> {
     /// See also [`StopTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.StopTransfer).
     #[doc(alias = "StopTransfer")]
     pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
-        call_method(self.inner(), "StopTransfer", &(key)).await
+        self.0.call_method("StopTransfer", &(key)).await
     }
 
     /// Emitted when the transfer is closed.
@@ -203,6 +188,6 @@ impl<'a> FileTransfer<'a> {
     /// See also [`TransferClosed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-FileTransfer.TransferClosed).
     #[doc(alias = "TransferClosed")]
     pub async fn transfer_closed(&self) -> Result<String, Error> {
-        receive_signal(self.inner(), "TransferClosed").await
+        self.0.signal("TransferClosed").await
     }
 }

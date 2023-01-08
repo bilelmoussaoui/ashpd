@@ -25,9 +25,11 @@
 //!         )
 //!         .await?;
 //!
-//!     let (streams, token) = proxy.start(&session, &WindowIdentifier::default()).await?;
-//!
-//!     streams.iter().for_each(|stream| {
+//!     let response = proxy
+//!         .start(&session, &WindowIdentifier::default())
+//!         .await?
+//!         .response()?;
+//!     response.streams().iter().for_each(|stream| {
 //!         println!("node id: {}", stream.pipe_wire_node_id());
 //!         println!("size: {:?}", stream.size());
 //!         println!("position: {:?}", stream.position());
@@ -48,11 +50,8 @@ use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
-use super::{HandleToken, Session, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request, Session};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -187,9 +186,19 @@ struct CreateSession {
 #[derive(DeserializeDict, Type)]
 /// A response to a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
-struct Streams {
+pub struct Streams {
     streams: Vec<Stream>,
     restore_token: Option<String>,
+}
+
+impl Streams {
+    pub fn restore_token(&self) -> Option<&str> {
+        self.restore_token.as_deref()
+    }
+
+    pub fn streams(&self) -> &[Stream] {
+        &self.streams
+    }
 }
 
 impl Debug for Streams {
@@ -265,24 +274,13 @@ struct StreamProperties {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.ScreenCast).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ScreenCast")]
-pub struct Screencast<'a>(zbus::Proxy<'a>);
+pub struct Screencast<'a>(Proxy<'a>);
 
 impl<'a> Screencast<'a> {
     /// Create a new instance of [`Screencast`].
     pub async fn new() -> Result<Screencast<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.ScreenCast")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.ScreenCast").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Create a screen cast session.
@@ -294,17 +292,17 @@ impl<'a> Screencast<'a> {
     #[doc(alias = "xdp_portal_create_screencast_session")]
     pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default();
-        let (session, proxy) = futures_util::try_join!(
-            call_request_method::<CreateSession, _>(
-                self.inner(),
-                &options.handle_token,
-                "CreateSession",
-                &options
-            )
-            .into_future(),
+        let (request, proxy) = futures_util::try_join!(
+            self.0
+                .call_request_method::<CreateSession>(
+                    &options.handle_token,
+                    "CreateSession",
+                    &options
+                )
+                .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
-        assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
+        assert_eq!(proxy.path().as_str(), &request.response()?.session_handle);
         Ok(proxy)
     }
 
@@ -328,8 +326,10 @@ impl<'a> Screencast<'a> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let fd: OwnedFd =
-            call_method(self.inner(), "OpenPipeWireRemote", &(session, options)).await?;
+        let fd = self
+            .0
+            .call_method::<OwnedFd>("OpenPipeWireRemote", &(session, options))
+            .await?;
         Ok(fd.into_raw_fd())
     }
 
@@ -361,20 +361,20 @@ impl<'a> Screencast<'a> {
         multiple: bool,
         restore_token: Option<&str>,
         persist_mode: PersistMode,
-    ) -> Result<(), Error> {
+    ) -> Result<Request<'static, ()>, Error> {
         let options = SelectSourcesOptions::default()
             .cursor_mode(cursor_mode)
             .multiple(multiple)
             .types(types)
             .persist_mode(persist_mode)
             .restore_token(restore_token);
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "SelectSources",
-            &(session, &options),
-        )
-        .await
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "SelectSources",
+                &(session, &options),
+            )
+            .await
     }
 
     /// Start the screen cast session.
@@ -402,16 +402,15 @@ impl<'a> Screencast<'a> {
         &self,
         session: &Session<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<(Vec<Stream>, Option<String>), Error> {
+    ) -> Result<Request<'static, Streams>, Error> {
         let options = StartCastOptions::default();
-        let streams: Streams = call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "Start",
-            &(session, &identifier, &options),
-        )
-        .await?;
-        Ok((streams.streams.to_vec(), streams.restore_token))
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "Start",
+                &(session, &identifier, &options),
+            )
+            .await
     }
 
     /// Available cursor mode.
@@ -421,10 +420,7 @@ impl<'a> Screencast<'a> {
     /// See also [`AvailableCursorModes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableCursorModes).
     #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
-        self.inner()
-            .get_property::<BitFlags<CursorMode>>("AvailableCursorModes")
-            .await
-            .map_err(From::from)
+        self.0.property("AvailableCursorModes").await
     }
 
     /// Available source types.
@@ -434,9 +430,6 @@ impl<'a> Screencast<'a> {
     /// See also [`AvailableSourceTypes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableSourceTypes).
     #[doc(alias = "AvailableSourceTypes")]
     pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
-        self.inner()
-            .get_property::<BitFlags<SourceType>>("AvailableSourceTypes")
-            .await
-            .map_err(From::from)
+        self.0.property("AvailableSourceTypes").await
     }
 }

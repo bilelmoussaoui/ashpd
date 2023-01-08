@@ -26,11 +26,7 @@ use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
-use super::{DESTINATION, PATH};
-use crate::{
-    helpers::{call_method, receive_signal, session_connection},
-    Error,
-};
+use crate::{proxy::Proxy, Error};
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -84,24 +80,13 @@ pub enum ColorScheme {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Settings).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Settings")]
-pub struct Settings<'a>(zbus::Proxy<'a>);
+pub struct Settings<'a>(Proxy<'a>);
 
 impl<'a> Settings<'a> {
     /// Create a new instance of [`Settings`].
     pub async fn new() -> Result<Settings<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Settings")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Settings").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
@@ -126,7 +111,7 @@ impl<'a> Settings<'a> {
         &self,
         namespaces: &[impl AsRef<str> + Type + Serialize + Debug],
     ) -> Result<HashMap<String, Namespace>, Error> {
-        call_method(self.inner(), "ReadAll", &(namespaces)).await
+        self.0.call_method("ReadAll", &(namespaces)).await
     }
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
@@ -149,7 +134,10 @@ impl<'a> Settings<'a> {
         T: TryFrom<OwnedValue> + DeserializeOwned + Type,
         Error: From<<T as TryFrom<OwnedValue>>::Error>,
     {
-        let value = call_method::<OwnedValue, _>(self.inner(), "Read", &(namespace, key)).await?;
+        let value = self
+            .0
+            .call_method::<OwnedValue>("Read", &(namespace, key))
+            .await?;
         if let Some(v) = value.downcast_ref::<Value<'_>>() {
             T::try_from(v.to_owned()).map_err(From::from)
         } else {
@@ -195,6 +183,6 @@ impl<'a> Settings<'a> {
     /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
     #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<Setting, Error> {
-        receive_signal(self.inner(), "SettingChanged").await
+        self.0.signal("SettingChanged").await
     }
 }

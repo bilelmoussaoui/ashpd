@@ -44,11 +44,8 @@ use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
-use crate::{
-    desktop::{HandleToken, DESTINATION, PATH},
-    helpers::{call_basic_response_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::Request;
+use crate::{desktop::HandleToken, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
 #[zvariant(signature = "s")]
@@ -115,22 +112,12 @@ struct WallpaperOptions {
     set_on: Option<SetOn>,
 }
 
-struct WallpaperProxy<'a>(zbus::Proxy<'a>);
+struct WallpaperProxy<'a>(Proxy<'a>);
 
 impl<'a> WallpaperProxy<'a> {
     pub async fn new() -> Result<WallpaperProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Wallpaper")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Wallpaper").await?;
         Ok(Self(proxy))
-    }
-
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     pub async fn set_wallpaper_file(
@@ -138,14 +125,14 @@ impl<'a> WallpaperProxy<'a> {
         identifier: &WindowIdentifier,
         file: &impl AsRawFd,
         options: WallpaperOptions,
-    ) -> Result<(), Error> {
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "SetWallpaperFile",
-            &(&identifier, Fd::from(file.as_raw_fd()), &options),
-        )
-        .await
+    ) -> Result<Request<'static, ()>, Error> {
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "SetWallpaperFile",
+                &(&identifier, Fd::from(file.as_raw_fd()), &options),
+            )
+            .await
     }
 
     pub async fn set_wallpaper_uri(
@@ -153,14 +140,14 @@ impl<'a> WallpaperProxy<'a> {
         identifier: &WindowIdentifier,
         uri: &url::Url,
         options: WallpaperOptions,
-    ) -> Result<(), Error> {
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "SetWallpaperURI",
-            &(&identifier, uri, &options),
-        )
-        .await
+    ) -> Result<Request<'static, ()>, Error> {
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "SetWallpaperURI",
+                &(&identifier, uri, &options),
+            )
+            .await
     }
 }
 
@@ -200,7 +187,7 @@ impl WallpaperRequest {
     }
 
     /// Build using a URI.
-    pub async fn build_uri(self, uri: &url::Url) -> Result<(), Error> {
+    pub async fn build_uri(self, uri: &url::Url) -> Result<Request<'static, ()>, Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
             .set_wallpaper_uri(&self.identifier, uri, self.options)
@@ -208,7 +195,7 @@ impl WallpaperRequest {
     }
 
     /// Build using a file.
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<'static, ()>, Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
             .set_wallpaper_file(&self.identifier, file, self.options)

@@ -21,11 +21,8 @@ use std::{fmt, str::FromStr};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, session_connection},
-    Error,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -99,25 +96,13 @@ impl FromStr for Device {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Device).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Device")]
-pub struct DeviceProxy<'a>(zbus::Proxy<'a>);
+pub struct DeviceProxy<'a>(Proxy<'a>);
 
 impl<'a> DeviceProxy<'a> {
     /// Create a new instance of [`DeviceProxy`].
     pub async fn new() -> Result<DeviceProxy<'a>, Error> {
-        let connection = session_connection().await?;
-
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Device")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Device").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Asks for access to a device.
@@ -135,14 +120,18 @@ impl<'a> DeviceProxy<'a> {
     ///
     /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Device.AccessDevice).
     #[doc(alias = "AccessDevice")]
-    pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<(), Error> {
+    pub async fn access_device(
+        &self,
+        pid: u32,
+        devices: &[Device],
+    ) -> Result<Request<'static, ()>, Error> {
         let options = AccessDeviceOptions::default();
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "AccessDevice",
-            &(pid, devices, &options),
-        )
-        .await
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "AccessDevice",
+                &(pid, devices, &options),
+            )
+            .await
     }
 }

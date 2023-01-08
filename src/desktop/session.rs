@@ -3,11 +3,7 @@ use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 use serde::{Serialize, Serializer};
 use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
 
-use crate::{
-    desktop::{HandleToken, DESTINATION},
-    helpers::{call_method, receive_signal, session_connection},
-    Error,
-};
+use crate::{desktop::HandleToken, helpers::session_connection, proxy::Proxy, Error};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
 
@@ -24,20 +20,14 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Session).
 #[doc(alias = "org.freedesktop.portal.Session")]
-pub struct Session<'a>(zbus::Proxy<'a>);
+pub struct Session<'a>(Proxy<'a>);
 
 impl<'a> Session<'a> {
     /// Create a new instance of [`Session`].
     ///
     /// **Note** A [`Session`] is not supposed to be created manually.
     pub(crate) async fn new(path: ObjectPath<'a>) -> Result<Session<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Session")?
-            .path(path)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop_with_path("org.freedesktop.portal.Session", path).await?;
         Ok(Self(proxy))
     }
 
@@ -56,11 +46,6 @@ impl<'a> Session<'a> {
         Self::new(path).await
     }
 
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
-    }
-
     /// Emitted when a session is closed.
     ///
     /// # Specifications
@@ -68,7 +53,7 @@ impl<'a> Session<'a> {
     /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Session.Closed).
     #[doc(alias = "Closed")]
     pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
-        receive_signal(self.inner(), "Closed").await
+        self.0.signal("Closed").await
     }
 
     /// Closes the portal session to which this object refers and ends all
@@ -79,7 +64,11 @@ impl<'a> Session<'a> {
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Session.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        call_method(self.inner(), "Close", &()).await
+        self.0.call_method("Close", &()).await
+    }
+
+    pub(crate) fn path(&self) -> &ObjectPath<'_> {
+        self.0.path()
     }
 }
 
@@ -88,7 +77,7 @@ impl<'a> Serialize for Session<'a> {
     where
         S: Serializer,
     {
-        ObjectPath::serialize(self.inner().path(), serializer)
+        ObjectPath::serialize(self.path(), serializer)
     }
 }
 
@@ -101,7 +90,7 @@ impl<'a> Type for Session<'a> {
 impl<'a> Debug for Session<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("Session")
-            .field(&self.inner().path().as_str())
+            .field(&self.path().as_str())
             .finish()
     }
 }

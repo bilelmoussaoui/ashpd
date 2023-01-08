@@ -29,11 +29,8 @@ use std::os::unix::prelude::AsRawFd;
 use serde::Serialize;
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -50,24 +47,13 @@ struct EmailOptions {
 
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Email")]
-struct EmailProxy<'a>(zbus::Proxy<'a>);
+struct EmailProxy<'a>(Proxy<'a>);
 
 impl<'a> EmailProxy<'a> {
     /// Create a new instance of [`EmailProxy`].
     pub async fn new() -> Result<EmailProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Email")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Email").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Presents a window that lets the user compose an email.
@@ -88,14 +74,14 @@ impl<'a> EmailProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: EmailOptions,
-    ) -> Result<(), Error> {
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "ComposeEmail",
-            &(&identifier, &options),
-        )
-        .await
+    ) -> Result<Request<'static, ()>, Error> {
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "ComposeEmail",
+                &(&identifier, &options),
+            )
+            .await
     }
 }
 
@@ -188,7 +174,7 @@ impl EmailRequest {
         };
     }
 
-    pub async fn build(self) -> Result<(), Error> {
+    pub async fn build(self) -> Result<Request<'static, ()>, Error> {
         let proxy = EmailProxy::new().await?;
         proxy.compose(&self.identifier, self.options).await
     }

@@ -18,7 +18,8 @@
 //!             Icon::from_names(&["dialog-symbolic"]),
 //!             PrepareInstallOptions::default(),
 //!         )
-//!         .await?;
+//!         .await?
+//!         .response()?;
 //!
 //!     // Name and Icon will be overwritten from what we provided above
 //!     // Exec will be overridden to call `flatpak run our-app` if the application is sandboxed
@@ -43,11 +44,8 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, SerializeDict, Type};
 
-use super::{HandleToken, Icon, DESTINATION, PATH};
-use crate::{
-    helpers::{call_method, call_request_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Icon, Request};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[bitflags]
 #[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
@@ -134,24 +132,13 @@ impl PrepareInstallOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.DynamicLauncher`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.DynamicLauncher).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.DynamicLauncher")]
-pub struct DynamicLauncherProxy<'a>(zbus::Proxy<'a>);
+pub struct DynamicLauncherProxy<'a>(Proxy<'a>);
 
 impl<'a> DynamicLauncherProxy<'a> {
     /// Create a new instance of [`DynamicLauncherProxy`].
     pub async fn new() -> Result<DynamicLauncherProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.DynamicLauncher")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.DynamicLauncher").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// # Specifications
@@ -166,15 +153,14 @@ impl<'a> DynamicLauncherProxy<'a> {
         name: &str,
         icon: Icon,
         options: PrepareInstallOptions,
-    ) -> Result<(String, String), Error> {
-        let response = call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "PrepareInstall",
-            &(parent_window, name, icon, &options),
-        )
-        .await?;
-        Ok(response)
+    ) -> Result<Request<'static, (String, String)>, Error> {
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "PrepareInstall",
+                &(parent_window, name, icon, &options),
+            )
+            .await
     }
 
     /// # Specifications
@@ -185,10 +171,9 @@ impl<'a> DynamicLauncherProxy<'a> {
     pub async fn request_install_token(&self, name: &str, icon: Icon) -> Result<String, Error> {
         // No supported options for now
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
-        let token =
-            call_method::<String, _>(self.inner(), "RequestInstallToken", &(name, icon, options))
-                .await?;
-        Ok(token)
+        self.0
+            .call_method::<String>("RequestInstallToken", &(name, icon, options))
+            .await
     }
 
     /// # Specifications
@@ -204,13 +189,9 @@ impl<'a> DynamicLauncherProxy<'a> {
     ) -> Result<(), Error> {
         // No supported options for now
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "Install",
-            &(token, desktop_file_id, desktop_entry, options),
-        )
-        .await?;
-        Ok(())
+        self.0
+            .call_method::<()>("Install", &(token, desktop_file_id, desktop_entry, options))
+            .await
     }
 
     /// # Specifications
@@ -221,8 +202,9 @@ impl<'a> DynamicLauncherProxy<'a> {
     pub async fn uninstall(&self, desktop_file_id: &str) -> Result<(), Error> {
         // No supported options for now
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
-        call_method(self.inner(), "Uninstall", &(desktop_file_id, options)).await?;
-        Ok(())
+        self.0
+            .call_method::<()>("Uninstall", &(desktop_file_id, options))
+            .await
     }
 
     /// # Specifications
@@ -231,7 +213,9 @@ impl<'a> DynamicLauncherProxy<'a> {
     #[doc(alias = "GetDesktopEntry")]
     #[doc(alias = "xdp_portal_dynamic_launcher_get_desktop_entry")]
     pub async fn desktop_entry(&self, desktop_file_id: &str) -> Result<String, Error> {
-        call_method(self.inner(), "GetDesktopEntry", &(desktop_file_id)).await
+        self.0
+            .call_method("GetDesktopEntry", &(desktop_file_id))
+            .await
     }
 
     /// # Specifications
@@ -240,7 +224,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     #[doc(alias = "GetIcon")]
     #[doc(alias = "xdp_portal_dynamic_launcher_get_icon")]
     pub async fn icon(&self, desktop_file_id: &str) -> Result<LauncherIcon, Error> {
-        call_method(self.inner(), "GetIcon", &(desktop_file_id)).await
+        self.0.call_method("GetIcon", &(desktop_file_id)).await
     }
 
     /// # Specifications
@@ -251,7 +235,9 @@ impl<'a> DynamicLauncherProxy<'a> {
     pub async fn launch(&self, desktop_file_id: &str) -> Result<(), Error> {
         // TODO: handle activation_token
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
-        call_method(self.inner(), "Launch", &(desktop_file_id, &options)).await
+        self.0
+            .call_method("Launch", &(desktop_file_id, &options))
+            .await
     }
 
     /// # Specifications
@@ -259,10 +245,9 @@ impl<'a> DynamicLauncherProxy<'a> {
     /// See also [`SupportedLauncherTypes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-DynamicLauncher.SupportedLauncherTypes).
     #[doc(alias = "SupportedLauncherTypes")]
     pub async fn supported_launcher_types(&self) -> Result<BitFlags<LauncherType>, Error> {
-        self.inner()
-            .get_property::<BitFlags<LauncherType>>("SupportedLauncherTypes")
+        self.0
+            .property::<BitFlags<LauncherType>>("SupportedLauncherTypes")
             .await
-            .map_err(From::from)
     }
 }
 
