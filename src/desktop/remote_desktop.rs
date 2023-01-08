@@ -13,8 +13,11 @@
 //!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
 //!         .await?;
 //!
-//!     let (devices, _) = proxy.start(&session, &WindowIdentifier::default()).await?;
-//!     println!("{:#?}", devices);
+//!     let response = proxy
+//!         .start(&session, &WindowIdentifier::default())
+//!         .await?
+//!         .response()?;
+//!     println!("{:#?}", response.devices());
 //!
 //!     // 13 for Enter key code
 //!     proxy
@@ -60,9 +63,12 @@
 //!         )
 //!         .await?;
 //!
-//!     let (devices, streams) = remote_desktop.start(&session, &identifier).await?;
-//!     println!("{:#?}", devices);
-//!     println!("{:#?}", streams);
+//!     let response = remote_desktop
+//!         .start(&session, &identifier)
+//!         .await?
+//!         .response()?;
+//!     println!("{:#?}", response.devices());
+//!     println!("{:#?}", response.streams());
 //!
 //!     // 13 for Enter key code
 //!     remote_desktop
@@ -82,11 +88,8 @@ use futures_util::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type, Value};
 
-use super::{screencast::Stream, HandleToken, Session, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, call_request_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{screencast::Stream, HandleToken, Request, Session};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Eq, Debug, Type)]
 #[doc(alias = "XdpKeyState")]
@@ -180,11 +183,21 @@ struct StartRemoteOptions {
 #[derive(DeserializeDict, Type, Debug, Default)]
 /// A response to a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
-struct SelectedDevices {
-    /// The selected devices.
+pub struct SelectedDevices {
     devices: BitFlags<DeviceType>,
-    /// The selected streams if a ScreenCast portal is used on the same session
     streams: Option<Vec<Stream>>,
+}
+
+impl SelectedDevices {
+    /// The selected devices.
+    pub fn devices(&self) -> BitFlags<DeviceType> {
+        self.devices
+    }
+
+    /// The selected streams if a ScreenCast portal is used on the same session
+    pub fn streams(&self) -> Option<&[Stream]> {
+        self.streams.as_deref()
+    }
 }
 
 /// The interface lets sandboxed applications create remote desktop sessions.
@@ -192,24 +205,13 @@ struct SelectedDevices {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.RemoteDesktop).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.RemoteDesktop")]
-pub struct RemoteDesktop<'a>(zbus::Proxy<'a>);
+pub struct RemoteDesktop<'a>(Proxy<'a>);
 
 impl<'a> RemoteDesktop<'a> {
     /// Create a new instance of [`RemoteDesktop`].
     pub async fn new() -> Result<RemoteDesktop<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.RemoteDesktop")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.RemoteDesktop").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Create a remote desktop session.
@@ -223,17 +225,17 @@ impl<'a> RemoteDesktop<'a> {
     #[doc(alias = "xdp_portal_create_remote_desktop_session")]
     pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateRemoteOptions::default();
-        let (session, proxy) = futures_util::try_join!(
-            call_request_method::<CreateSession, _>(
-                self.inner(),
-                &options.handle_token,
-                "CreateSession",
-                &options
-            )
-            .into_future(),
+        let (request, proxy) = futures_util::try_join!(
+            self.0
+                .call_request_method::<CreateSession>(
+                    &options.handle_token,
+                    "CreateSession",
+                    &options
+                )
+                .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future()
         )?;
-        assert_eq!(proxy.inner().path().as_str(), &session.session_handle);
+        assert_eq!(proxy.path().as_str(), &request.response()?.session_handle);
         Ok(proxy)
     }
 
@@ -253,15 +255,15 @@ impl<'a> RemoteDesktop<'a> {
         &self,
         session: &Session<'_>,
         types: BitFlags<DeviceType>,
-    ) -> Result<(), Error> {
+    ) -> Result<Request<'static, ()>, Error> {
         let options = SelectDevicesOptions::default().types(types);
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "SelectDevices",
-            &(session, &options),
-        )
-        .await
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "SelectDevices",
+                &(session, &options),
+            )
+            .await
     }
 
     ///  Start the remote desktop session.
@@ -284,16 +286,15 @@ impl<'a> RemoteDesktop<'a> {
         &self,
         session: &Session<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<(BitFlags<DeviceType>, Vec<Stream>), Error> {
+    ) -> Result<Request<'static, SelectedDevices>, Error> {
         let options = StartRemoteOptions::default();
-        let response: SelectedDevices = call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "Start",
-            &(session, &identifier, &options),
-        )
-        .await?;
-        Ok((response.devices, response.streams.unwrap_or_default()))
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "Start",
+                &(session, &identifier, &options),
+            )
+            .await
     }
 
     /// Notify keyboard code.
@@ -321,12 +322,9 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyKeyboardKeycode",
-            &(session, options, keycode, state),
-        )
-        .await
+        self.0
+            .call_method("NotifyKeyboardKeycode", &(session, options, keycode, state))
+            .await
     }
 
     /// Notify keyboard symbol.
@@ -354,12 +352,9 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyKeyboardKeysym",
-            &(session, options, keysym, state),
-        )
-        .await
+        self.0
+            .call_method("NotifyKeyboardKeysym", &(session, options, keysym, state))
+            .await
     }
 
     /// Notify about a new touch up event.
@@ -381,7 +376,9 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(self.inner(), "NotifyTouchUp", &(session, options, slot)).await
+        self.0
+            .call_method("NotifyTouchUp", &(session, options, slot))
+            .await
     }
 
     /// Notify about a new touch down event.
@@ -415,12 +412,9 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyTouchDown",
-            &(session, options, stream, slot, x, y),
-        )
-        .await
+        self.0
+            .call_method("NotifyTouchDown", &(session, options, stream, slot, x, y))
+            .await
     }
 
     /// Notify about a new touch motion event.
@@ -454,12 +448,9 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyTouchMotion",
-            &(session, options, stream, slot, x, y),
-        )
-        .await
+        self.0
+            .call_method("NotifyTouchMotion", &(session, options, stream, slot, x, y))
+            .await
     }
 
     /// Notify about a new absolute pointer motion event.
@@ -488,12 +479,12 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyPointerMotionAbsolute",
-            &(session, options, stream, x, y),
-        )
-        .await
+        self.0
+            .call_method(
+                "NotifyPointerMotionAbsolute",
+                &(session, options, stream, x, y),
+            )
+            .await
     }
 
     /// Notify about a new relative pointer motion event.
@@ -520,12 +511,9 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyPointerMotion",
-            &(session, options, dx, dy),
-        )
-        .await
+        self.0
+            .call_method("NotifyPointerMotion", &(session, options, dx, dy))
+            .await
     }
 
     /// Notify pointer button.
@@ -555,12 +543,9 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyPointerButton",
-            &(session, options, button, state),
-        )
-        .await
+        self.0
+            .call_method("NotifyPointerButton", &(session, options, button, state))
+            .await
     }
 
     /// Notify pointer axis discrete.
@@ -587,12 +572,12 @@ impl<'a> RemoteDesktop<'a> {
         // The `notify` methods don't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        call_method(
-            self.inner(),
-            "NotifyPointerAxisDiscrete",
-            &(session, options, axis, steps),
-        )
-        .await
+        self.0
+            .call_method(
+                "NotifyPointerAxisDiscrete",
+                &(session, options, axis, steps),
+            )
+            .await
     }
 
     /// Notify pointer axis.
@@ -626,12 +611,9 @@ impl<'a> RemoteDesktop<'a> {
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L911
         let mut options: HashMap<&str, Value<'_>> = HashMap::new();
         options.insert("finish", Value::Bool(finish));
-        call_method(
-            self.inner(),
-            "NotifyPointerAxis",
-            &(session, options, dx, dy),
-        )
-        .await
+        self.0
+            .call_method("NotifyPointerAxis", &(session, options, dx, dy))
+            .await
     }
 
     /// Available source types.
@@ -641,9 +623,6 @@ impl<'a> RemoteDesktop<'a> {
     /// See also [`AvailableDeviceTypes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-RemoteDesktop.AvailableDeviceTypes).
     #[doc(alias = "AvailableDeviceTypes")]
     pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
-        self.inner()
-            .get_property::<BitFlags<DeviceType>>("AvailableDeviceTypes")
-            .await
-            .map_err(From::from)
+        self.0.property("AvailableDeviceTypes").await
     }
 }

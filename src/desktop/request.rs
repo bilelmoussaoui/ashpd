@@ -2,21 +2,21 @@ use std::{
     collections::HashMap,
     fmt::{self, Debug},
     marker::PhantomData,
+    sync::Mutex,
 };
 
+use futures_util::StreamExt;
 use serde::{
     de::{self, Error as SeError, Visitor},
     ser::SerializeTuple,
     Deserialize, Deserializer, Serialize,
 };
-use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
-
-use super::DESTINATION;
-use crate::{
-    desktop::HandleToken,
-    helpers::{call_method, receive_signal, session_connection},
-    Error,
+use zbus::{
+    zvariant::{ObjectPath, Signature, Type, Value},
+    SignalStream,
 };
+
+use crate::{desktop::HandleToken, helpers::session_connection, proxy::Proxy, Error};
 
 /// A typical response returned by the [`Request::receive_response`] signal
 /// of a [`Request`].
@@ -36,7 +36,7 @@ where
     T: for<'de> Deserialize<'de> + Type,
 {
     fn signature() -> Signature<'static> {
-        <(ResponseType, HashMap<&str, OwnedValue>)>::signature()
+        <(ResponseType, HashMap<&str, Value<'_>>)>::signature()
     }
 }
 
@@ -89,7 +89,7 @@ where
 
 impl<T> Serialize for Response<T>
 where
-    T: for<'de> Deserialize<'de> + Serialize + Type,
+    T: for<'de> Deserialize<'de> + Serialize + Type + Default,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -99,7 +99,7 @@ where
         match self {
             Self::Err(err) => {
                 map.serialize_element(&ResponseType::from(*err))?;
-                map.serialize_element(&BasicResponse::default())?;
+                map.serialize_element(&T::default())?;
             }
             Self::Ok(response) => {
                 map.serialize_element(&ResponseType::Success)?;
@@ -123,17 +123,6 @@ where
             ResponseType::Cancelled => Response::Err(ResponseError::Cancelled),
             ResponseType::Other => Response::Err(ResponseError::Other),
         }
-    }
-}
-
-#[derive(Default, Serialize, Deserialize, Type)]
-/// The most basic response. Used when only the status of the request is what we
-/// receive as a response.
-pub(crate) struct BasicResponse(HashMap<String, OwnedValue>);
-
-impl Debug for BasicResponse {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("BasicResponse").finish()
     }
 }
 
@@ -192,25 +181,31 @@ impl From<ResponseError> for ResponseType {
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Request).
 #[doc(alias = "org.freedesktop.portal.Request")]
-pub(crate) struct Request<'a>(zbus::Proxy<'a>);
+pub struct Request<'a, T>(
+    Proxy<'a>,
+    SignalStream<'a>,
+    Mutex<Option<Result<T, Error>>>,
+    PhantomData<T>,
+)
+where
+    T: for<'de> Deserialize<'de> + Type + Debug;
 
-impl<'a> Request<'a> {
-    pub async fn new<P>(path: P) -> Result<Request<'a>, Error>
+impl<'a, T> Request<'a, T>
+where
+    T: for<'de> Deserialize<'de> + Type + Debug,
+{
+    pub async fn new<P>(path: P) -> Result<Request<'a, T>, Error>
     where
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Request")?
-            .path(path)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
-        Ok(Self(proxy))
+        let proxy = Proxy::new_desktop_with_path("org.freedesktop.portal.Request", path).await?;
+        // Start listening for a response signal the moment request is created
+        let stream = proxy.receive_signal("Response").await?;
+        Ok(Self(proxy, stream, Default::default(), PhantomData))
     }
 
-    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<'a>, Error> {
+    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<'a, T>, Error> {
         let connection = session_connection().await?;
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
@@ -223,23 +218,25 @@ impl<'a> Request<'a> {
         Self::new(path).await
     }
 
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
-    }
-
-    /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Request.Response).
-    #[doc(alias = "Response")]
-    #[allow(dead_code)]
-    pub async fn receive_response<R>(&self) -> Result<R, Error>
-    where
-        R: for<'de> Deserialize<'de> + Type + Debug,
-    {
-        let response = receive_signal::<Response<R>>(self.inner(), "Response").await?;
-        match response {
+    pub(crate) async fn prepare_response(&mut self) -> Result<(), Error> {
+        let message = self.1.next().await.ok_or(Error::NoResponse)?;
+        #[cfg(feature = "tracing")]
+        tracing::info!("Received signal 'Response' on '{}'", self.0.interface());
+        let response = match message.body::<Response<T>>()? {
             Response::Err(e) => Err(e.into()),
             Response::Ok(r) => Ok(r),
-        }
+        };
+        #[cfg(feature = "tracing")]
+        tracing::debug!("Received response {:#?}", response);
+        let r = response as Result<T, Error>;
+        *self.2.get_mut().unwrap() = Some(r);
+        Ok(())
+    }
+
+    pub fn response(&self) -> Result<T, Error> {
+        // It should be safe to unwrap here as we are sure we have received a response
+        // by the time the user calls response
+        self.2.lock().unwrap().take().unwrap()
     }
 
     /// Closes the portal request to which this object refers and ends all
@@ -249,17 +246,23 @@ impl<'a> Request<'a> {
     /// # Specifications
     ///
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Request.Close).
-    #[allow(dead_code)]
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        call_method(self.inner(), "Close", &()).await
+        self.0.call_method("Close", &()).await
+    }
+
+    pub(crate) fn path(&self) -> &ObjectPath<'_> {
+        self.0.path()
     }
 }
 
-impl<'a> Debug for Request<'a> {
+impl<'a, T> Debug for Request<'a, T>
+where
+    T: for<'de> Deserialize<'de> + Type + Debug,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("Request")
-            .field(&self.inner().path().as_str())
+            .field(&self.path().as_str())
             .finish()
     }
 }

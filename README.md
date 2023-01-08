@@ -15,7 +15,7 @@ Ask the compositor to pick a color
 use ashpd::desktop::screenshot::ColorResponse;
 
 async fn run() -> ashpd::Result<()> {
-    let color = ColorResponse::builder().build().await?;
+    let color = ColorResponse::builder().build().await?.response()?;
     println!("({}, {}, {})", color.red(), color.green(), color.blue());
     Ok(())
 }

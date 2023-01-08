@@ -10,12 +10,13 @@
 //! use ashpd::desktop::screenshot::ScreenshotRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let uri = ScreenshotRequest::default()
+//!     let response = ScreenshotRequest::default()
 //!         .interactive(true)
 //!         .modal(true)
 //!         .build()
-//!         .await?;
-//!     println!("URI: {}", uri);
+//!         .await?
+//!         .response()?;
+//!     println!("URI: {}", response.uri());
 //!     Ok(())
 //! }
 //! ```
@@ -26,7 +27,7 @@
 //! use ashpd::desktop::screenshot::ColorResponse;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let color = ColorResponse::builder().build().await?;
+//!     let color = ColorResponse::builder().build().await?.response()?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -34,14 +35,10 @@
 //! ```
 use std::fmt::Debug;
 
-use url::Url;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_request_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -53,8 +50,14 @@ struct ScreenshotOptions {
 
 #[derive(DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
-struct ScreenshotResponse {
+pub struct ScreenshotResponse {
     uri: url::Url,
+}
+
+impl ScreenshotResponse {
+    pub fn uri(&self) -> &url::Url {
+        &self.uri
+    }
 }
 
 impl Debug for ScreenshotResponse {
@@ -144,24 +147,13 @@ impl std::fmt::Display for ColorResponse {
 
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
-struct ScreenshotProxy<'a>(zbus::Proxy<'a>);
+struct ScreenshotProxy<'a>(Proxy<'a>);
 
 impl<'a> ScreenshotProxy<'a> {
     /// Create a new instance of [`ScreenshotProxy`].
     pub async fn new() -> Result<ScreenshotProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Screenshot")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Screenshot").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Obtains the color of a single pixel.
@@ -179,14 +171,10 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: ColorOptions,
-    ) -> Result<ColorResponse, Error> {
-        call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "PickColor",
-            &(&identifier, &options),
-        )
-        .await
+    ) -> Result<Request<'static, ColorResponse>, Error> {
+        self.0
+            .call_request_method(&options.handle_token, "PickColor", &(&identifier, &options))
+            .await
     }
 
     /// Takes a screenshot.
@@ -211,15 +199,14 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: ScreenshotOptions,
-    ) -> Result<url::Url, Error> {
-        let response: ScreenshotResponse = call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "Screenshot",
-            &(&identifier, &options),
-        )
-        .await?;
-        Ok(response.uri)
+    ) -> Result<Request<'static, ScreenshotResponse>, Error> {
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "Screenshot",
+                &(&identifier, &options),
+            )
+            .await
     }
 }
 
@@ -242,7 +229,7 @@ impl ColorRequest {
     }
 
     /// Build the [`ColorResponse`].
-    pub async fn build(self) -> Result<ColorResponse, Error> {
+    pub async fn build(self) -> Result<Request<'static, ColorResponse>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.pick_color(&self.identifier, self.options).await
     }
@@ -282,7 +269,7 @@ impl ScreenshotRequest {
     }
 
     /// Build the [`Url`].
-    pub async fn build(self) -> Result<Url, Error> {
+    pub async fn build(self) -> Result<Request<'static, ScreenshotResponse>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.screenshot(&self.identifier, self.options).await
     }

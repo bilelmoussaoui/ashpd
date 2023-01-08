@@ -21,7 +21,8 @@
 //!             Default::default(),
 //!             true,
 //!         )
-//!         .await?;
+//!         .await?
+//!         .response()?;
 //!     proxy
 //!         .print(&identifier, "test", &file, Some(pre_print.token), true)
 //!         .await?;
@@ -35,11 +36,8 @@ use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_request_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
@@ -613,24 +611,13 @@ pub struct PreparePrint {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Print`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Print).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Print")]
-pub struct PrintProxy<'a>(zbus::Proxy<'a>);
+pub struct PrintProxy<'a>(Proxy<'a>);
 
 impl<'a> PrintProxy<'a> {
     /// Create a new instance of [`PrintProxy`].
     pub async fn new() -> Result<PrintProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Print")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Print").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Presents a print dialog to the user and returns print settings and page
@@ -656,15 +643,15 @@ impl<'a> PrintProxy<'a> {
         settings: Settings,
         page_setup: PageSetup,
         modal: bool,
-    ) -> Result<PreparePrint, Error> {
+    ) -> Result<Request<'static, PreparePrint>, Error> {
         let options = PreparePrintOptions::default().modal(modal);
-        call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "PreparePrint",
-            &(&identifier, title, settings, page_setup, &options),
-        )
-        .await
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "PreparePrint",
+                &(&identifier, title, settings, page_setup, &options),
+            )
+            .await
     }
 
     /// Asks to print a file.
@@ -693,16 +680,16 @@ impl<'a> PrintProxy<'a> {
         fd: &impl AsRawFd,
         token: Option<u32>,
         modal: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<Request<'static, ()>, Error> {
         let options = PrintOptions::default()
             .token(token.unwrap_or(0))
             .modal(modal);
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "Print",
-            &(&identifier, title, Fd::from(fd.as_raw_fd()), &options),
-        )
-        .await
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "Print",
+                &(&identifier, title, Fd::from(fd.as_raw_fd()), &options),
+            )
+            .await
     }
 }

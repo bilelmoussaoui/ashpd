@@ -26,7 +26,8 @@
 //!         .choice(Choice::boolean("re-encode", "Re-encode", false))
 //!         .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml"))
 //!         .build()
-//!         .await?;
+//!         .await?
+//!         .response()?;
 //!
 //!     println!("{:#?}", files);
 //!
@@ -47,7 +48,8 @@
 //!         .modal(true)
 //!         .filter(FileFilter::new("JPEG Image").glob("*.jpg"))
 //!         .build()
-//!         .await?;
+//!         .await?
+//!         .response()?;
 //!
 //!     println!("{:#?}", files);
 //!
@@ -68,7 +70,8 @@
 //!         .current_folder("/home/bilelmoussaoui/Pictures")
 //!         .files(&["test.jpg", "awesome.png"])
 //!         .build()
-//!         .await?;
+//!         .await?
+//!         .response()?;
 //!
 //!     println!("{:#?}", files);
 //!
@@ -82,11 +85,8 @@ use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_request_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Clone, Serialize, Type, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -240,24 +240,13 @@ impl SelectedFiles {
 }
 
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
-struct FileChooserProxy<'a>(zbus::Proxy<'a>);
+struct FileChooserProxy<'a>(Proxy<'a>);
 
 impl<'a> FileChooserProxy<'a> {
     /// Create a new instance of [`FileChooserProxy`].
     pub async fn new() -> Result<FileChooserProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.FileChooser")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.FileChooser").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     pub async fn open_file(
@@ -265,14 +254,14 @@ impl<'a> FileChooserProxy<'a> {
         identifier: &WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
-    ) -> Result<SelectedFiles, Error> {
-        call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "OpenFile",
-            &(&identifier, title, &options),
-        )
-        .await
+    ) -> Result<Request<'static, SelectedFiles>, Error> {
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "OpenFile",
+                &(&identifier, title, &options),
+            )
+            .await
     }
 
     pub async fn save_file(
@@ -280,14 +269,14 @@ impl<'a> FileChooserProxy<'a> {
         identifier: &WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
-    ) -> Result<SelectedFiles, Error> {
-        call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "SaveFile",
-            &(&identifier, title, &options),
-        )
-        .await
+    ) -> Result<Request<'static, SelectedFiles>, Error> {
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "SaveFile",
+                &(&identifier, title, &options),
+            )
+            .await
     }
 
     pub async fn save_files(
@@ -295,14 +284,14 @@ impl<'a> FileChooserProxy<'a> {
         identifier: &WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
-    ) -> Result<SelectedFiles, Error> {
-        call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "SaveFiles",
-            &(&identifier, title, &options),
-        )
-        .await
+    ) -> Result<Request<'static, SelectedFiles>, Error> {
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "SaveFiles",
+                &(&identifier, title, &options),
+            )
+            .await
     }
 }
 
@@ -390,7 +379,7 @@ impl OpenFileRequest {
         self
     }
 
-    pub async fn build(self) -> Result<SelectedFiles, Error> {
+    pub async fn build(self) -> Result<Request<'static, SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .open_file(&self.identifier, &self.title, self.options)
@@ -478,7 +467,7 @@ impl SaveFilesRequest {
         self
     }
 
-    pub async fn build(self) -> Result<SelectedFiles, Error> {
+    pub async fn build(self) -> Result<Request<'static, SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .save_files(&self.identifier, &self.title, self.options)
@@ -585,7 +574,7 @@ impl SaveFileRequest {
         self
     }
 
-    pub async fn build(self) -> Result<SelectedFiles, Error> {
+    pub async fn build(self) -> Result<Request<'static, SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .save_file(&self.identifier, &self.title, self.options)

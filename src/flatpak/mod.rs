@@ -25,9 +25,6 @@
 //! }
 //! ```
 
-pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Flatpak";
-pub(crate) const PATH: &str = "/org/freedesktop/portal/Flatpak";
-
 use std::{
     collections::HashMap,
     ffi::CString,
@@ -44,10 +41,7 @@ use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedObjectPath, SerializeDict, Type};
 
-use crate::{
-    helpers::{call_method, receive_signal, session_connection},
-    Error,
-};
+use crate::{proxy::Proxy, Error};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -252,24 +246,13 @@ struct CreateMonitorOptions {}
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Flatpak).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak")]
-pub struct Flatpak<'a>(zbus::Proxy<'a>);
+pub struct Flatpak<'a>(Proxy<'a>);
 
 impl<'a> Flatpak<'a> {
     /// Create a new instance of [`Flatpak`].
     pub async fn new() -> Result<Flatpak<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Flatpak")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_flatpak("org.freedesktop.portal.Flatpak").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Creates an update monitor object that will emit signals
@@ -283,8 +266,10 @@ impl<'a> Flatpak<'a> {
     #[doc(alias = "xdp_portal_update_monitor_start")]
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitor<'a>, Error> {
         let options = CreateMonitorOptions::default();
-        let path: OwnedObjectPath =
-            call_method(self.inner(), "CreateUpdateMonitor", &(options)).await?;
+        let path = self
+            .0
+            .call_method::<OwnedObjectPath>("CreateUpdateMonitor", &(options))
+            .await?;
 
         UpdateMonitor::new(path.into_inner()).await
     }
@@ -292,7 +277,7 @@ impl<'a> Flatpak<'a> {
     /// Emitted when a process starts by [`spawn()`][`Flatpak::spawn`].
     #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
-        receive_signal(self.inner(), "SpawnStarted").await
+        self.0.signal("SpawnStarted").await
     }
 
     /// Emitted when a process started by [`spawn()`][`Flatpak::spawn`]
@@ -304,7 +289,7 @@ impl<'a> Flatpak<'a> {
     #[doc(alias = "SpawnExited")]
     #[doc(alias = "XdpPortal::spawn-exited")]
     pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
-        receive_signal(self.inner(), "SpawnExited").await
+        self.0.signal("SpawnExited").await
     }
 
     /// This methods let you start a new instance of your application,
@@ -348,21 +333,21 @@ impl<'a> Flatpak<'a> {
                     .expect("The `argv` should not contain a trailing 0 bytes")
             })
             .collect::<Vec<_>>();
-        call_method(
-            self.inner(),
-            "Spawn",
-            &(
-                cwd_path.as_bytes_with_nul(),
-                argv.iter()
-                    .map(|c| c.as_bytes_with_nul())
-                    .collect::<Vec<_>>(),
-                fds,
-                envs,
-                flags,
-                options,
-            ),
-        )
-        .await
+        self.0
+            .call_method(
+                "Spawn",
+                &(
+                    cwd_path.as_bytes_with_nul(),
+                    argv.iter()
+                        .map(|c| c.as_bytes_with_nul())
+                        .collect::<Vec<_>>(),
+                    fds,
+                    envs,
+                    flags,
+                    options,
+                ),
+            )
+            .await
     }
 
     /// This methods let you send a Unix signal to a process that was started
@@ -385,12 +370,9 @@ impl<'a> Flatpak<'a> {
         signal: u32,
         to_process_group: bool,
     ) -> Result<(), Error> {
-        call_method(
-            self.inner(),
-            "SpawnSignal",
-            &(pid, signal, to_process_group),
-        )
-        .await
+        self.0
+            .call_method("SpawnSignal", &(pid, signal, to_process_group))
+            .await
     }
 
     /// Flags marking what optional features are available.
@@ -399,10 +381,7 @@ impl<'a> Flatpak<'a> {
     ///
     /// See also [`supports`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-Flatpak.supports).
     pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
-        self.inner()
-            .get_property::<BitFlags<SupportsFlags>>("supports")
-            .await
-            .map_err(From::from)
+        self.0.property::<BitFlags<SupportsFlags>>("supports").await
     }
 }
 

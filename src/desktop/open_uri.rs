@@ -54,11 +54,8 @@ use std::os::unix::prelude::AsRawFd;
 use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -77,22 +74,12 @@ struct OpenFileOptions {
 }
 
 #[derive(Debug)]
-struct OpenURIProxy<'a>(zbus::Proxy<'a>);
+struct OpenURIProxy<'a>(Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {
     pub async fn new() -> Result<OpenURIProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.OpenURI")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.OpenURI").await?;
         Ok(Self(proxy))
-    }
-
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     pub async fn open_directory(
@@ -100,14 +87,14 @@ impl<'a> OpenURIProxy<'a> {
         identifier: &WindowIdentifier,
         directory: &impl AsRawFd,
         options: OpenDirOptions,
-    ) -> Result<(), Error> {
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "OpenDirectory",
-            &(&identifier, Fd::from(directory.as_raw_fd()), &options),
-        )
-        .await
+    ) -> Result<Request<'static, ()>, Error> {
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "OpenDirectory",
+                &(&identifier, Fd::from(directory.as_raw_fd()), &options),
+            )
+            .await
     }
 
     pub async fn open_file(
@@ -115,14 +102,14 @@ impl<'a> OpenURIProxy<'a> {
         identifier: &WindowIdentifier,
         file: &impl AsRawFd,
         options: OpenFileOptions,
-    ) -> Result<(), Error> {
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "OpenFile",
-            &(&identifier, Fd::from(file.as_raw_fd()), &options),
-        )
-        .await
+    ) -> Result<Request<'static, ()>, Error> {
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "OpenFile",
+                &(&identifier, Fd::from(file.as_raw_fd()), &options),
+            )
+            .await
     }
 
     pub async fn open_uri(
@@ -130,14 +117,14 @@ impl<'a> OpenURIProxy<'a> {
         identifier: &WindowIdentifier,
         uri: &url::Url,
         options: OpenFileOptions,
-    ) -> Result<(), Error> {
-        call_basic_response_method(
-            self.inner(),
-            &options.handle_token,
-            "OpenURI",
-            &(&identifier, uri, &options),
-        )
-        .await
+    ) -> Result<Request<'static, ()>, Error> {
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "OpenURI",
+                &(&identifier, uri, &options),
+            )
+            .await
     }
 }
 
@@ -171,12 +158,12 @@ impl OpenFileRequest {
         self
     }
 
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<'static, ()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_file(&self.identifier, file, self.options).await
     }
 
-    pub async fn build_uri(self, uri: &Url) -> Result<(), Error> {
+    pub async fn build_uri(self, uri: &Url) -> Result<Request<'static, ()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_uri(&self.identifier, uri, self.options).await
     }
@@ -198,7 +185,7 @@ impl OpenDirectoryRequest {
         self
     }
 
-    pub async fn build(self, directory: &impl AsRawFd) -> Result<(), Error> {
+    pub async fn build(self, directory: &impl AsRawFd) -> Result<Request<'static, ()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
             .open_directory(&self.identifier, directory, self.options)

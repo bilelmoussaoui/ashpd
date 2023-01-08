@@ -11,11 +11,7 @@
 //! }
 //! ```
 
-use super::{DESTINATION, PATH};
-use crate::{
-    helpers::{receive_signal, session_connection},
-    Error,
-};
+use crate::{proxy::Proxy, Error};
 
 /// The interface provides information about low system memory to sandboxed
 /// applications.
@@ -26,24 +22,13 @@ use crate::{
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.MemoryMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.MemoryMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.MemoryMonitor")]
-pub struct MemoryMonitor<'a>(zbus::Proxy<'a>);
+pub struct MemoryMonitor<'a>(Proxy<'a>);
 
 impl<'a> MemoryMonitor<'a> {
     /// Create a new instance of [`MemoryMonitor`].
     pub async fn new() -> Result<MemoryMonitor<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.MemoryMonitor")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.MemoryMonitor").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Signal emitted when a particular low memory situation happens
@@ -55,6 +40,6 @@ impl<'a> MemoryMonitor<'a> {
     /// See also [`LowMemoryWarning`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-MemoryMonitor.LowMemoryWarning).
     #[doc(alias = "LowMemoryWarning")]
     pub async fn receive_low_memory_warning(&self) -> Result<i32, Error> {
-        receive_signal(self.inner(), "LowMemoryWarning").await
+        self.0.signal("LowMemoryWarning").await
     }
 }

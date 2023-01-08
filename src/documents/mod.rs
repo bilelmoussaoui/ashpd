@@ -32,9 +32,6 @@
 //! }
 //! ```
 
-pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Documents";
-pub(crate) const PATH: &str = "/org/freedesktop/portal/documents";
-
 use std::{
     collections::HashMap,
     ffi::CString,
@@ -50,10 +47,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
 pub use crate::app_id::DocumentID;
-use crate::{
-    helpers::{call_method, path_from_null_terminated, session_connection},
-    AppID, Error,
-};
+use crate::{helpers::path_from_null_terminated, proxy::Proxy, AppID, Error};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -157,24 +151,13 @@ impl FromStr for Permission {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Documents).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
-pub struct Documents<'a>(zbus::Proxy<'a>);
+pub struct Documents<'a>(Proxy<'a>);
 
 impl<'a> Documents<'a> {
     /// Create a new instance of [`Documents`].
     pub async fn new() -> Result<Documents<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Documents")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_documents("org.freedesktop.portal.Documents").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Adds a file to the document store.
@@ -203,12 +186,12 @@ impl<'a> Documents<'a> {
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<DocumentID, Error> {
-        call_method(
-            self.inner(),
-            "Add",
-            &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
-        )
-        .await
+        self.0
+            .call_method(
+                "Add",
+                &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
+            )
+            .await
     }
 
     /// Adds multiple files to the document store.
@@ -238,12 +221,9 @@ impl<'a> Documents<'a> {
         permissions: &[Permission],
     ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
-        call_method(
-            self.inner(),
-            "AddFull",
-            &(o_path, flags, app_id.into(), permissions),
-        )
-        .await
+        self.0
+            .call_method("AddFull", &(o_path, flags, app_id.into(), permissions))
+            .await
     }
 
     /// Creates an entry in the document store for writing a new file.
@@ -274,17 +254,17 @@ impl<'a> Documents<'a> {
     ) -> Result<DocumentID, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
-        call_method(
-            self.inner(),
-            "AddNamed",
-            &(
-                Fd::from(o_path_parent_fd.as_raw_fd()),
-                cstr.as_bytes_with_nul(),
-                reuse_existing,
-                persistent,
-            ),
-        )
-        .await
+        self.0
+            .call_method(
+                "AddNamed",
+                &(
+                    Fd::from(o_path_parent_fd.as_raw_fd()),
+                    cstr.as_bytes_with_nul(),
+                    reuse_existing,
+                    persistent,
+                ),
+            )
+            .await
     }
 
     /// Adds multiple files to the document store.
@@ -317,18 +297,18 @@ impl<'a> Documents<'a> {
     ) -> Result<(DocumentID, HashMap<String, OwnedValue>), Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
-        call_method(
-            self.inner(),
-            "AddNamedFull",
-            &(
-                Fd::from(o_path_fd.as_raw_fd()),
-                cstr.as_bytes_with_nul(),
-                flags,
-                app_id.into(),
-                permissions,
-            ),
-        )
-        .await
+        self.0
+            .call_method(
+                "AddNamedFull",
+                &(
+                    Fd::from(o_path_fd.as_raw_fd()),
+                    cstr.as_bytes_with_nul(),
+                    flags,
+                    app_id.into(),
+                    permissions,
+                ),
+            )
+            .await
     }
 
     /// Removes an entry from the document store. The file itself is not
@@ -346,7 +326,7 @@ impl<'a> Documents<'a> {
     /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
     #[doc(alias = "Delete")]
     pub async fn delete(&self, doc_id: impl Into<DocumentID>) -> Result<(), Error> {
-        call_method(self.inner(), "Delete", &(doc_id.into())).await
+        self.0.call_method("Delete", &(doc_id.into())).await
     }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
@@ -358,7 +338,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "GetMountPoint")]
     #[doc(alias = "get_mount_point")]
     pub async fn mount_point(&self) -> Result<PathBuf, Error> {
-        let bytes: Vec<u8> = call_method(self.inner(), "GetMountPoint", &()).await?;
+        let bytes: Vec<u8> = self.0.call_method("GetMountPoint", &()).await?;
         Ok(path_from_null_terminated(bytes))
     }
 
@@ -384,12 +364,12 @@ impl<'a> Documents<'a> {
         app_id: impl Into<AppID>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
-        call_method(
-            self.inner(),
-            "GrantPermissions",
-            &(doc_id.into(), app_id.into(), permissions),
-        )
-        .await
+        self.0
+            .call_method(
+                "GrantPermissions",
+                &(doc_id.into(), app_id.into(), permissions),
+            )
+            .await
     }
 
     /// Gets the filesystem path and application permissions for a document
@@ -415,7 +395,7 @@ impl<'a> Documents<'a> {
         doc_id: impl Into<DocumentID>,
     ) -> Result<(PathBuf, Permissions), Error> {
         let (bytes, permissions): (Vec<u8>, Permissions) =
-            call_method(self.inner(), "Info", &(doc_id.into())).await?;
+            self.0.call_method("Info", &(doc_id.into())).await?;
         Ok((path_from_null_terminated(bytes), permissions))
     }
 
@@ -442,7 +422,7 @@ impl<'a> Documents<'a> {
         app_id: impl Into<AppID>,
     ) -> Result<HashMap<DocumentID, PathBuf>, Error> {
         let response: HashMap<String, Vec<u8>> =
-            call_method(self.inner(), "List", &(app_id.into())).await?;
+            self.0.call_method("List", &(app_id.into())).await?;
 
         let mut new_response: HashMap<DocumentID, PathBuf> = HashMap::new();
         for (key, bytes) in response {
@@ -472,8 +452,10 @@ impl<'a> Documents<'a> {
     pub async fn lookup(&self, filename: impl AsRef<Path>) -> Result<Option<DocumentID>, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
-        let doc_id: String =
-            call_method(self.inner(), "Lookup", &(cstr.as_bytes_with_nul())).await?;
+        let doc_id: String = self
+            .0
+            .call_method("Lookup", &(cstr.as_bytes_with_nul()))
+            .await?;
         if doc_id.is_empty() {
             Ok(None)
         } else {
@@ -504,12 +486,12 @@ impl<'a> Documents<'a> {
         app_id: impl Into<AppID>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
-        call_method(
-            self.inner(),
-            "RevokePermissions",
-            &(doc_id.into(), app_id.into(), permissions),
-        )
-        .await
+        self.0
+            .call_method(
+                "RevokePermissions",
+                &(doc_id.into(), app_id.into(), permissions),
+            )
+            .await
     }
 }
 

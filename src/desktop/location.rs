@@ -36,11 +36,8 @@ use serde::Deserialize;
 use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
 
-use super::{HandleToken, Session, DESTINATION, PATH};
-use crate::{
-    helpers::{call_basic_response_method, call_method, receive_signal, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request, Session};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Serialize_repr, PartialEq, Eq, Clone, Copy, Debug, Type)]
 #[doc(alias = "XdpLocationAccuracy")]
@@ -196,24 +193,13 @@ struct LocationInner {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Location`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Location).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Location")]
-pub struct LocationProxy<'a>(zbus::Proxy<'a>);
+pub struct LocationProxy<'a>(Proxy<'a>);
 
 impl<'a> LocationProxy<'a> {
     /// Create a new instance of [`LocationProxy`].
     pub async fn new() -> Result<LocationProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Location")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Location").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Signal emitted when the user location is updated.
@@ -224,7 +210,7 @@ impl<'a> LocationProxy<'a> {
     #[doc(alias = "LocationUpdated")]
     #[doc(alias = "XdpPortal::location-updated")]
     pub async fn receive_location_updated(&self) -> Result<Location, Error> {
-        receive_signal(&self.0, "LocationUpdated").await
+        self.0.signal("LocationUpdated").await
     }
 
     /// Create a location session.
@@ -254,15 +240,12 @@ impl<'a> LocationProxy<'a> {
             ..Default::default()
         };
         let (path, proxy) = futures_util::try_join!(
-            call_method::<OwnedObjectPath, CreateSessionOptions>(
-                &self.0,
-                "CreateSession",
-                &(options)
-            )
-            .into_future(),
+            self.0
+                .call_method::<OwnedObjectPath>("CreateSession", &(options))
+                .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
-        assert_eq!(proxy.inner().path(), &path.into_inner());
+        assert_eq!(proxy.path(), &path.into_inner());
         Ok(proxy)
     }
 
@@ -284,14 +267,14 @@ impl<'a> LocationProxy<'a> {
         &self,
         session: &Session<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<(), Error> {
+    ) -> Result<Request<'static, ()>, Error> {
         let options = SessionStartOptions::default();
-        call_basic_response_method(
-            &self.0,
-            &options.handle_token,
-            "Start",
-            &(session, &identifier, &options),
-        )
-        .await
+        self.0
+            .call_basic_response_method(
+                &options.handle_token,
+                "Start",
+                &(session, &identifier, &options),
+            )
+            .await
     }
 }

@@ -17,7 +17,8 @@
 //!         .command(&["geary"])
 //!         .dbus_activatable(false)
 //!         .build()
-//!         .await?;
+//!         .await?
+//!         .response()?;
 //!
 //!     println!("{}", response.auto_start());
 //!     println!("{}", response.run_in_background());
@@ -32,11 +33,8 @@
 use serde::Serialize;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
-use super::{HandleToken, DESTINATION, PATH};
-use crate::{
-    helpers::{call_method, call_request_method, session_connection},
-    Error, WindowIdentifier,
-};
+use super::{HandleToken, Request};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -85,23 +83,14 @@ struct SetStatusOptions {
 }
 
 #[doc(alias = "org.freedesktop.portal.Background")]
-pub struct BackgroundProxy<'a>(zbus::Proxy<'a>);
+pub struct BackgroundProxy<'a>(Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
     pub async fn new() -> Result<BackgroundProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Background")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Background").await?;
         Ok(Self(proxy))
     }
 
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
-    }
     ///  Sets the status of the application running in background.
     ///
     /// # Arguments
@@ -114,28 +103,28 @@ impl<'a> BackgroundProxy<'a> {
     /// See also [`SetStatus`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-Background.SetStatus).
 
     pub async fn set_status(&self, message: &str) -> Result<(), Error> {
-        call_method(
-            self.inner(),
-            "SetStatus",
-            &(SetStatusOptions {
-                message: message.to_owned(),
-            }),
-        )
-        .await
+        self.0
+            .call_method(
+                "SetStatus",
+                &(SetStatusOptions {
+                    message: message.to_owned(),
+                }),
+            )
+            .await
     }
 
     async fn request_background(
         &self,
         identifier: &WindowIdentifier,
         options: BackgroundOptions,
-    ) -> Result<BackgroundResponse, Error> {
-        call_request_method(
-            self.inner(),
-            &options.handle_token,
-            "RequestBackground",
-            &(&identifier, &options),
-        )
-        .await
+    ) -> Result<Request<'static, BackgroundResponse>, Error> {
+        self.0
+            .call_request_method(
+                &options.handle_token,
+                "RequestBackground",
+                (&identifier, &options),
+            )
+            .await
     }
 }
 
@@ -193,7 +182,7 @@ impl BackgroundRequest {
     }
 
     /// Build the [`BackgroundResponse`].
-    pub async fn build(self) -> Result<BackgroundResponse, Error> {
+    pub async fn build(self) -> Result<Request<'static, BackgroundResponse>, Error> {
         let proxy = BackgroundProxy::new().await?;
         proxy
             .request_background(&self.identifier, self.options)

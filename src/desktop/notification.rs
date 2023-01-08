@@ -49,11 +49,8 @@ use std::{fmt, str::FromStr};
 use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, SerializeDict, Type, Value};
 
-use super::{Icon, DESTINATION, PATH};
-use crate::{
-    helpers::{call_method, receive_signal, session_connection},
-    Error,
-};
+use super::Icon;
+use crate::{proxy::Proxy, Error};
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
@@ -287,24 +284,13 @@ impl Action {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Notification).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Notification")]
-pub struct NotificationProxy<'a>(zbus::Proxy<'a>);
+pub struct NotificationProxy<'a>(Proxy<'a>);
 
 impl<'a> NotificationProxy<'a> {
     /// Create a new instance of [`NotificationProxy`].
     pub async fn new() -> Result<NotificationProxy<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Notification")?
-            .path(PATH)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy = Proxy::new_desktop("org.freedesktop.portal.Notification").await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// Signal emitted when a particular action is invoked.
@@ -315,7 +301,7 @@ impl<'a> NotificationProxy<'a> {
     #[doc(alias = "ActionInvoked")]
     #[doc(alias = "XdpPortal::notification-action-invoked")]
     pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
-        receive_signal(self.inner(), "ActionInvoked").await
+        self.0.signal("ActionInvoked").await
     }
 
     /// Sends a notification.
@@ -339,7 +325,9 @@ impl<'a> NotificationProxy<'a> {
         id: &str,
         notification: Notification,
     ) -> Result<(), Error> {
-        call_method(self.inner(), "AddNotification", &(id, notification)).await
+        self.0
+            .call_method("AddNotification", &(id, notification))
+            .await
     }
 
     /// Withdraws a notification.
@@ -354,6 +342,6 @@ impl<'a> NotificationProxy<'a> {
     #[doc(alias = "RemoveNotification")]
     #[doc(alias = "xdp_portal_remove_notification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
-        call_method(self.inner(), "RemoveNotification", &(id)).await
+        self.0.call_method("RemoveNotification", &(id)).await
     }
 }

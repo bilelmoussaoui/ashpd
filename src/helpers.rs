@@ -1,152 +1,15 @@
 use std::{
     ffi::OsStr,
-    fmt::Debug,
     os::unix::prelude::OsStrExt,
     path::{Path, PathBuf},
 };
 
 #[cfg(feature = "async-std")]
 use async_std::{fs::File, prelude::*};
-use futures_util::StreamExt;
-use serde::Deserialize;
 #[cfg(feature = "tokio")]
 use tokio::{fs::File, io::AsyncReadExt};
-use zbus::zvariant::{ObjectPath, OwnedObjectPath, Type};
 
-use crate::{
-    desktop::{
-        request::{BasicResponse, Request, Response},
-        HandleToken,
-    },
-    Error, PortalError, SESSION,
-};
-
-pub(crate) async fn call_request_method<R, B>(
-    proxy: &zbus::Proxy<'_>,
-    handle_token: &HandleToken,
-    method_name: &str,
-    body: &B,
-) -> Result<R, Error>
-where
-    R: for<'de> Deserialize<'de> + Type + Debug,
-    B: serde::ser::Serialize + Type + Debug,
-{
-    #[cfg(feature = "tracing")]
-    tracing::info!(
-        "Calling a request method '{}:{}'",
-        proxy.interface(),
-        method_name
-    );
-    #[cfg(feature = "tracing")]
-    tracing::debug!("The body is: {:#?}", body);
-    let request = Request::from_unique_name(handle_token).await?;
-    // We don't use receive_response because we want to create the stream in advance
-    #[cfg(feature = "tracing")]
-    tracing::info!(
-        "Listening to signal 'Response' on '{}'",
-        request.inner().interface()
-    );
-    let mut stream = request
-        .inner()
-        .receive_signal("Response")
-        .await
-        .map_err::<PortalError, _>(From::from)?;
-
-    let (response, path) = futures_util::try_join!(
-        async {
-            let message = stream.next().await.ok_or(Error::NoResponse)?;
-            #[cfg(feature = "tracing")]
-            tracing::info!(
-                "Received signal 'Response' on '{}'",
-                request.inner().interface()
-            );
-            let response = match message.body::<Response<R>>()? {
-                Response::Err(e) => Err(e.into()),
-                Response::Ok(r) => Ok(r),
-            };
-            #[cfg(feature = "tracing")]
-            tracing::debug!("Received response {:#?}", response);
-            response as Result<_, Error>
-        },
-        async {
-            let msg = proxy
-                .call_method(method_name, body)
-                .await
-                .map_err::<PortalError, _>(From::from)?;
-            let path = msg.body::<OwnedObjectPath>()?.into_inner();
-
-            #[cfg(feature = "tracing")]
-            tracing::debug!("Received request path {}", path.as_str());
-            Ok(path) as Result<ObjectPath<'_>, Error>
-        },
-    )?;
-    assert_eq!(&path, request.inner().path());
-    Ok(response)
-}
-
-pub(crate) async fn call_basic_response_method(
-    proxy: &zbus::Proxy<'_>,
-    handle_token: &HandleToken,
-    method_name: &str,
-    body: &(impl serde::ser::Serialize + Type + Debug),
-) -> Result<(), Error> {
-    call_request_method::<BasicResponse, _>(proxy, handle_token, method_name, body).await?;
-    Ok(())
-}
-
-pub(crate) async fn receive_signal<R>(
-    proxy: &zbus::Proxy<'_>,
-    signal_name: &'static str,
-) -> Result<R, Error>
-where
-    R: for<'de> Deserialize<'de> + Type + Debug,
-{
-    #[cfg(feature = "tracing")]
-    tracing::info!(
-        "Listening to signal '{}' on '{}'",
-        signal_name,
-        proxy.interface()
-    );
-    let mut stream = proxy
-        .receive_signal(signal_name)
-        .await
-        .map_err::<PortalError, _>(From::from)?;
-    let message = stream.next().await.ok_or(Error::NoResponse)?;
-    #[cfg(feature = "tracing")]
-    tracing::info!(
-        "Received signal '{}' on '{}'",
-        signal_name,
-        proxy.interface()
-    );
-    let content = message.body::<R>()?;
-    #[cfg(feature = "tracing")]
-    tracing::debug!("With body {:#?}", content);
-    Ok(content)
-}
-
-pub(crate) async fn call_method<R, B>(
-    proxy: &zbus::Proxy<'_>,
-    method_name: &str,
-    body: &B,
-) -> Result<R, Error>
-where
-    R: for<'de> Deserialize<'de> + Type,
-    B: serde::ser::Serialize + Type + Debug,
-{
-    #[cfg(feature = "tracing")]
-    {
-        tracing::info!("Calling method {}:{}", proxy.interface(), method_name);
-        tracing::debug!("With body {:#?}", body);
-    }
-    let msg = proxy
-        .call_method(method_name, body)
-        .await
-        .map_err::<PortalError, _>(From::from)?;
-    let reply = msg.body::<R>()?;
-    msg.take_fds();
-
-    Ok(reply)
-}
+use crate::SESSION;
 
 // Some portals returns paths which are bytes and not a typical string
 // as those might be null terminated. This might make sense to provide in form

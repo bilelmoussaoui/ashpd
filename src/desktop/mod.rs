@@ -1,11 +1,11 @@
-pub(crate) const DESTINATION: &str = "org.freedesktop.portal.Desktop";
-pub(crate) const PATH: &str = "/org/freedesktop/portal/desktop";
-
 mod handle_token;
 pub(crate) mod request;
 mod session;
 pub(crate) use self::handle_token::HandleToken;
-pub use self::{request::ResponseError, session::Session};
+pub use self::{
+    request::{Request, ResponseError},
+    session::Session,
+};
 mod icon;
 pub use icon::Icon;
 

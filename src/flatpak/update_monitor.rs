@@ -23,11 +23,7 @@
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
-use super::DESTINATION;
-use crate::{
-    helpers::{call_method, receive_signal, session_connection},
-    Error, WindowIdentifier,
-};
+use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.
@@ -109,7 +105,7 @@ pub struct UpdateProgress {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak.UpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Flatpak.UpdateMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak.UpdateMonitor")]
-pub struct UpdateMonitor<'a>(zbus::Proxy<'a>);
+pub struct UpdateMonitor<'a>(Proxy<'a>);
 
 impl<'a> UpdateMonitor<'a> {
     /// Create a new instance of [`UpdateMonitor`].
@@ -117,19 +113,10 @@ impl<'a> UpdateMonitor<'a> {
     /// **Note** A [`UpdateMonitor`] is not supposed to be created
     /// manually.
     pub(crate) async fn new(path: ObjectPath<'a>) -> Result<UpdateMonitor<'a>, Error> {
-        let connection = session_connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
-            .interface("org.freedesktop.portal.Flatpak.UpdateMonitor")?
-            .path(path)?
-            .destination(DESTINATION)?
-            .build()
-            .await?;
+        let proxy =
+            Proxy::new_flatpak_with_path("org.freedesktop.portal.Flatpak.UpdateMonitor", path)
+                .await?;
         Ok(Self(proxy))
-    }
-
-    /// Get a reference to the underlying Proxy.
-    pub fn inner(&self) -> &zbus::Proxy<'_> {
-        &self.0
     }
 
     /// A signal received when there's progress during the application update.
@@ -140,7 +127,7 @@ impl<'a> UpdateMonitor<'a> {
     #[doc(alias = "Progress")]
     #[doc(alias = "XdpPortal::update-progress")]
     pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
-        receive_signal(self.inner(), "Progress").await
+        self.0.signal("Progress").await
     }
 
     /// A signal received when there's an application update.
@@ -151,7 +138,7 @@ impl<'a> UpdateMonitor<'a> {
     #[doc(alias = "UpdateAvailable")]
     #[doc(alias = "XdpPortal::update-available")]
     pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
-        receive_signal(self.inner(), "UpdateAvailable").await
+        self.0.signal("UpdateAvailable").await
     }
 
     /// Asks to install an update of the calling app.
@@ -166,7 +153,7 @@ impl<'a> UpdateMonitor<'a> {
     #[doc(alias = "xdp_portal_update_install")]
     pub async fn update(&self, identifier: &WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
-        call_method(self.inner(), "Update", &(&identifier, options)).await
+        self.0.call_method("Update", &(&identifier, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.
@@ -176,6 +163,6 @@ impl<'a> UpdateMonitor<'a> {
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        call_method(self.inner(), "Close", &()).await
+        self.0.call_method("Close", &()).await
     }
 }
