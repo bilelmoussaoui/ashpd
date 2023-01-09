@@ -76,7 +76,7 @@ impl<'a> EmailProxy<'a> {
         options: EmailOptions,
     ) -> Result<Request<()>, Error> {
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "ComposeEmail",
                 &(&identifier, &options),

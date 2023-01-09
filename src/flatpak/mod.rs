@@ -268,7 +268,7 @@ impl<'a> Flatpak<'a> {
         let options = CreateMonitorOptions::default();
         let path = self
             .0
-            .call_method::<OwnedObjectPath>("CreateUpdateMonitor", &(options))
+            .call::<OwnedObjectPath>("CreateUpdateMonitor", &(options))
             .await?;
 
         UpdateMonitor::new(path.into_inner()).await
@@ -334,7 +334,7 @@ impl<'a> Flatpak<'a> {
             })
             .collect::<Vec<_>>();
         self.0
-            .call_method(
+            .call(
                 "Spawn",
                 &(
                     cwd_path.as_bytes_with_nul(),
@@ -371,7 +371,7 @@ impl<'a> Flatpak<'a> {
         to_process_group: bool,
     ) -> Result<(), Error> {
         self.0
-            .call_method("SpawnSignal", &(pid, signal, to_process_group))
+            .call("SpawnSignal", &(pid, signal, to_process_group))
             .await
     }
 

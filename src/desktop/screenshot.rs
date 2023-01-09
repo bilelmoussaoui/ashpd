@@ -173,7 +173,7 @@ impl<'a> ScreenshotProxy<'a> {
         options: ColorOptions,
     ) -> Result<Request<Color>, Error> {
         self.0
-            .call_request_method(&options.handle_token, "PickColor", &(&identifier, &options))
+            .request(&options.handle_token, "PickColor", &(&identifier, &options))
             .await
     }
 
@@ -201,7 +201,7 @@ impl<'a> ScreenshotProxy<'a> {
         options: ScreenshotOptions,
     ) -> Result<Request<Screenshot>, Error> {
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "Screenshot",
                 &(&identifier, &options),

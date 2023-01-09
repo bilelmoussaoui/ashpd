@@ -224,11 +224,7 @@ impl<'a> GlobalShortcuts<'a> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
-                .call_request_method::<CreateSession>(
-                    &options.handle_token,
-                    "CreateSession",
-                    &options
-                )
+                .request::<CreateSession>(&options.handle_token, "CreateSession", &options)
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
@@ -250,7 +246,7 @@ impl<'a> GlobalShortcuts<'a> {
     ) -> Result<Request<BindShortcuts>, Error> {
         let options = BindShortcutsOptions::default();
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "BindShortcuts",
                 &(session, shortcuts, parent_window, &options),
@@ -270,7 +266,7 @@ impl<'a> GlobalShortcuts<'a> {
     ) -> Result<Request<ListShortcuts>, Error> {
         let options = ListShortcutsOptions::default();
         self.0
-            .call_request_method(&options.handle_token, "ListShortcuts", &(session, &options))
+            .request(&options.handle_token, "ListShortcuts", &(session, &options))
             .await
     }
 

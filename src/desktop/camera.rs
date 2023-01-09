@@ -58,7 +58,7 @@ impl<'a> Camera<'a> {
     pub async fn request_access(&self) -> Result<Request<()>, Error> {
         let options = CameraAccessOptions::default();
         self.0
-            .call_basic_response_method(&options.handle_token, "AccessCamera", &options)
+            .empty_request(&options.handle_token, "AccessCamera", &options)
             .await
     }
 
@@ -80,7 +80,7 @@ impl<'a> Camera<'a> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
-            .call_method::<OwnedFd>("OpenPipeWireRemote", &options)
+            .call::<OwnedFd>("OpenPipeWireRemote", &options)
             .await?;
         Ok(fd.into_raw_fd())
     }

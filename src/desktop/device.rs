@@ -123,7 +123,7 @@ impl<'a> DeviceProxy<'a> {
     pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<Request<()>, Error> {
         let options = AccessDeviceOptions::default();
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "AccessDevice",
                 &(pid, devices, &options),

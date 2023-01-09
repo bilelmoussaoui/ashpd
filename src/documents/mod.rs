@@ -187,7 +187,7 @@ impl<'a> Documents<'a> {
         persistent: bool,
     ) -> Result<DocumentID, Error> {
         self.0
-            .call_method(
+            .call(
                 "Add",
                 &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
             )
@@ -222,7 +222,7 @@ impl<'a> Documents<'a> {
     ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
         self.0
-            .call_method("AddFull", &(o_path, flags, app_id.into(), permissions))
+            .call("AddFull", &(o_path, flags, app_id.into(), permissions))
             .await
     }
 
@@ -255,7 +255,7 @@ impl<'a> Documents<'a> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         self.0
-            .call_method(
+            .call(
                 "AddNamed",
                 &(
                     Fd::from(o_path_parent_fd.as_raw_fd()),
@@ -298,7 +298,7 @@ impl<'a> Documents<'a> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
         self.0
-            .call_method(
+            .call(
                 "AddNamedFull",
                 &(
                     Fd::from(o_path_fd.as_raw_fd()),
@@ -326,7 +326,7 @@ impl<'a> Documents<'a> {
     /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
     #[doc(alias = "Delete")]
     pub async fn delete(&self, doc_id: impl Into<DocumentID>) -> Result<(), Error> {
-        self.0.call_method("Delete", &(doc_id.into())).await
+        self.0.call("Delete", &(doc_id.into())).await
     }
 
     /// Returns the path at which the document store fuse filesystem is mounted.
@@ -338,7 +338,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "GetMountPoint")]
     #[doc(alias = "get_mount_point")]
     pub async fn mount_point(&self) -> Result<PathBuf, Error> {
-        let bytes: Vec<u8> = self.0.call_method("GetMountPoint", &()).await?;
+        let bytes: Vec<u8> = self.0.call("GetMountPoint", &()).await?;
         Ok(path_from_null_terminated(bytes))
     }
 
@@ -365,7 +365,7 @@ impl<'a> Documents<'a> {
         permissions: &[Permission],
     ) -> Result<(), Error> {
         self.0
-            .call_method(
+            .call(
                 "GrantPermissions",
                 &(doc_id.into(), app_id.into(), permissions),
             )
@@ -395,7 +395,7 @@ impl<'a> Documents<'a> {
         doc_id: impl Into<DocumentID>,
     ) -> Result<(PathBuf, Permissions), Error> {
         let (bytes, permissions): (Vec<u8>, Permissions) =
-            self.0.call_method("Info", &(doc_id.into())).await?;
+            self.0.call("Info", &(doc_id.into())).await?;
         Ok((path_from_null_terminated(bytes), permissions))
     }
 
@@ -421,8 +421,7 @@ impl<'a> Documents<'a> {
         &self,
         app_id: impl Into<AppID>,
     ) -> Result<HashMap<DocumentID, PathBuf>, Error> {
-        let response: HashMap<String, Vec<u8>> =
-            self.0.call_method("List", &(app_id.into())).await?;
+        let response: HashMap<String, Vec<u8>> = self.0.call("List", &(app_id.into())).await?;
 
         let mut new_response: HashMap<DocumentID, PathBuf> = HashMap::new();
         for (key, bytes) in response {
@@ -452,10 +451,7 @@ impl<'a> Documents<'a> {
     pub async fn lookup(&self, filename: impl AsRef<Path>) -> Result<Option<DocumentID>, Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
             .expect("`filename` should not be null terminated");
-        let doc_id: String = self
-            .0
-            .call_method("Lookup", &(cstr.as_bytes_with_nul()))
-            .await?;
+        let doc_id: String = self.0.call("Lookup", &(cstr.as_bytes_with_nul())).await?;
         if doc_id.is_empty() {
             Ok(None)
         } else {
@@ -487,7 +483,7 @@ impl<'a> Documents<'a> {
         permissions: &[Permission],
     ) -> Result<(), Error> {
         self.0
-            .call_method(
+            .call(
                 "RevokePermissions",
                 &(doc_id.into(), app_id.into(), permissions),
             )

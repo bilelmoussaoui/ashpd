@@ -294,11 +294,7 @@ impl<'a> Screencast<'a> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
-                .call_request_method::<CreateSession>(
-                    &options.handle_token,
-                    "CreateSession",
-                    &options
-                )
+                .request::<CreateSession>(&options.handle_token, "CreateSession", &options)
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
@@ -328,7 +324,7 @@ impl<'a> Screencast<'a> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
-            .call_method::<OwnedFd>("OpenPipeWireRemote", &(session, options))
+            .call::<OwnedFd>("OpenPipeWireRemote", &(session, options))
             .await?;
         Ok(fd.into_raw_fd())
     }
@@ -369,11 +365,7 @@ impl<'a> Screencast<'a> {
             .persist_mode(persist_mode)
             .restore_token(restore_token);
         self.0
-            .call_basic_response_method(
-                &options.handle_token,
-                "SelectSources",
-                &(session, &options),
-            )
+            .empty_request(&options.handle_token, "SelectSources", &(session, &options))
             .await
     }
 
@@ -405,7 +397,7 @@ impl<'a> Screencast<'a> {
     ) -> Result<Request<Streams>, Error> {
         let options = StartCastOptions::default();
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "Start",
                 &(session, &identifier, &options),

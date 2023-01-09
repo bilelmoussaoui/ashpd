@@ -74,7 +74,7 @@ impl<'a> TrashProxy<'a> {
     pub async fn trash_file(&self, fd: &impl AsRawFd) -> Result<(), Error> {
         let status = self
             .0
-            .call_method("TrashFile", &(Fd::from(fd.as_raw_fd())))
+            .call("TrashFile", &(Fd::from(fd.as_raw_fd())))
             .await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),

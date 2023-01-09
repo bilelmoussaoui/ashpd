@@ -173,7 +173,7 @@ impl<'a> InhibitProxy<'a> {
         let body = &(&identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
             self.0
-                .call_request_method::<CreateMonitor>(&options.handle_token, "CreateMonitor", body)
+                .request::<CreateMonitor>(&options.handle_token, "CreateMonitor", body)
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
@@ -205,7 +205,7 @@ impl<'a> InhibitProxy<'a> {
             handle_token: Default::default(),
         };
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "Inhibit",
                 &(&identifier, flags, &options),
@@ -240,6 +240,6 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "QueryEndResponse")]
     #[doc(alias = "xdp_portal_session_monitor_query_end_response")]
     pub async fn query_end_response(&self, session: &Session<'_>) -> Result<(), Error> {
-        self.0.call_method("QueryEndResponse", &(session)).await
+        self.0.call("QueryEndResponse", &(session)).await
     }
 }

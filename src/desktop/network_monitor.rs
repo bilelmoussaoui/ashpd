@@ -109,7 +109,7 @@ impl<'a> NetworkMonitor<'a> {
     /// See also [`CanReach`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.CanReach).
     #[doc(alias = "CanReach")]
     pub async fn can_reach(&self, hostname: &str, port: u32) -> Result<bool, Error> {
-        self.0.call_method("CanReach", &(hostname, port)).await
+        self.0.call("CanReach", &(hostname, port)).await
     }
 
     /// Returns whether the network is considered available.
@@ -122,7 +122,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetAvailable")]
     #[doc(alias = "get_available")]
     pub async fn is_available(&self) -> Result<bool, Error> {
-        self.0.call_method("GetAvailable", &()).await
+        self.0.call("GetAvailable", &()).await
     }
 
     /// Returns more detailed information about the host's network connectivity.
@@ -133,7 +133,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetConnectivity")]
     #[doc(alias = "get_connectivity")]
     pub async fn connectivity(&self) -> Result<Connectivity, Error> {
-        self.0.call_method("GetConnectivity", &()).await
+        self.0.call("GetConnectivity", &()).await
     }
 
     /// Returns whether the network is considered metered.
@@ -146,7 +146,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetMetered")]
     #[doc(alias = "get_metered")]
     pub async fn is_metered(&self) -> Result<bool, Error> {
-        self.0.call_method("GetMetered", &()).await
+        self.0.call("GetMetered", &()).await
     }
 
     /// Returns the three values all at once.
@@ -157,7 +157,7 @@ impl<'a> NetworkMonitor<'a> {
     #[doc(alias = "GetStatus")]
     #[doc(alias = "get_status")]
     pub async fn status(&self) -> Result<NetworkStatus, Error> {
-        self.0.call_method("GetStatus", &()).await
+        self.0.call("GetStatus", &()).await
     }
 
     /// Emitted when the network configuration changes.

@@ -64,7 +64,7 @@ impl<'a> Session<'a> {
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Session.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        self.0.call_method("Close", &()).await
+        self.0.call("Close", &()).await
     }
 
     pub(crate) fn path(&self) -> &ObjectPath<'_> {

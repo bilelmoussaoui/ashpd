@@ -241,7 +241,7 @@ impl<'a> LocationProxy<'a> {
         };
         let (path, proxy) = futures_util::try_join!(
             self.0
-                .call_method::<OwnedObjectPath>("CreateSession", &(options))
+                .call::<OwnedObjectPath>("CreateSession", &(options))
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
@@ -270,7 +270,7 @@ impl<'a> LocationProxy<'a> {
     ) -> Result<Request<()>, Error> {
         let options = SessionStartOptions::default();
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "Start",
                 &(session, &identifier, &options),

@@ -104,7 +104,7 @@ impl<'a> BackgroundProxy<'a> {
 
     pub async fn set_status(&self, message: &str) -> Result<(), Error> {
         self.0
-            .call_method(
+            .call(
                 "SetStatus",
                 &(SetStatusOptions {
                     message: message.to_owned(),
@@ -119,7 +119,7 @@ impl<'a> BackgroundProxy<'a> {
         options: BackgroundOptions,
     ) -> Result<Request<Background>, Error> {
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "RequestBackground",
                 (&identifier, &options),

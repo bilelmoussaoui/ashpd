@@ -155,7 +155,7 @@ impl<'a> DynamicLauncherProxy<'a> {
         options: PrepareInstallOptions,
     ) -> Result<Request<(String, String)>, Error> {
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "PrepareInstall",
                 &(parent_window, name, icon, &options),
@@ -172,7 +172,7 @@ impl<'a> DynamicLauncherProxy<'a> {
         // No supported options for now
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
         self.0
-            .call_method::<String>("RequestInstallToken", &(name, icon, options))
+            .call::<String>("RequestInstallToken", &(name, icon, options))
             .await
     }
 
@@ -190,7 +190,7 @@ impl<'a> DynamicLauncherProxy<'a> {
         // No supported options for now
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
         self.0
-            .call_method::<()>("Install", &(token, desktop_file_id, desktop_entry, options))
+            .call::<()>("Install", &(token, desktop_file_id, desktop_entry, options))
             .await
     }
 
@@ -203,7 +203,7 @@ impl<'a> DynamicLauncherProxy<'a> {
         // No supported options for now
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
         self.0
-            .call_method::<()>("Uninstall", &(desktop_file_id, options))
+            .call::<()>("Uninstall", &(desktop_file_id, options))
             .await
     }
 
@@ -213,9 +213,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     #[doc(alias = "GetDesktopEntry")]
     #[doc(alias = "xdp_portal_dynamic_launcher_get_desktop_entry")]
     pub async fn desktop_entry(&self, desktop_file_id: &str) -> Result<String, Error> {
-        self.0
-            .call_method("GetDesktopEntry", &(desktop_file_id))
-            .await
+        self.0.call("GetDesktopEntry", &(desktop_file_id)).await
     }
 
     /// # Specifications
@@ -224,7 +222,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     #[doc(alias = "GetIcon")]
     #[doc(alias = "xdp_portal_dynamic_launcher_get_icon")]
     pub async fn icon(&self, desktop_file_id: &str) -> Result<LauncherIcon, Error> {
-        self.0.call_method("GetIcon", &(desktop_file_id)).await
+        self.0.call("GetIcon", &(desktop_file_id)).await
     }
 
     /// # Specifications
@@ -235,9 +233,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     pub async fn launch(&self, desktop_file_id: &str) -> Result<(), Error> {
         // TODO: handle activation_token
         let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
-        self.0
-            .call_method("Launch", &(desktop_file_id, &options))
-            .await
+        self.0.call("Launch", &(desktop_file_id, &options)).await
     }
 
     /// # Specifications
