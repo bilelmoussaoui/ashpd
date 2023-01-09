@@ -251,8 +251,12 @@ impl RemoteDesktopPage {
         proxy.select_devices(&session, devices).await?;
 
         self.send_notification("Starting a remote desktop session", NotificationKind::Info);
-        let (devices, streams) = proxy.start(&session, &identifier).await?;
-        Ok((devices, streams, session))
+        let response = proxy.start(&session, &identifier).await?.response()?;
+        Ok((
+            response.devices(),
+            response.streams().unwrap_or_default().to_owned(),
+            session,
+        ))
     }
 }
 

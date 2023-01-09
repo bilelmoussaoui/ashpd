@@ -89,7 +89,7 @@ impl BackgroundPage {
 
         self.send_notification("Requesting background access", NotificationKind::Info);
 
-        match request.build().await {
+        match request.build().await.and_then(|r| r.response()) {
             Ok(response) => {
                 imp.response_group.show();
                 imp.auto_start_label

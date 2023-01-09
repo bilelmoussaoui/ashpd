@@ -1,4 +1,4 @@
-use ashpd::{desktop::account::UserInformationResponse, WindowIdentifier};
+use ashpd::{desktop::account::UserInformation, WindowIdentifier};
 use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
@@ -34,7 +34,9 @@ mod imp {
             klass.install_action_async(
                 "account.information",
                 None,
-                move |page, _action, _target| async move { page.fetch_user_information().await },
+                move |page, _action, _target| async move {
+                    page.fetch_user_information().await;
+                },
             );
         }
 
@@ -60,10 +62,10 @@ impl AccountPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = imp.reason_row.text();
         self.send_notification("Fetching user information...", NotificationKind::Info);
-        let request = UserInformationResponse::builder()
+        let request = UserInformation::builder()
             .identifier(identifier)
             .reason(&*reason);
-        match request.build().await {
+        match request.build().await.and_then(|r| r.response()) {
             Ok(user_info) => {
                 self.send_notification(
                     "User information request was successful",

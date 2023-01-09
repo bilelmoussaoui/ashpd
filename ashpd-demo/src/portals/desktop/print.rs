@@ -113,7 +113,8 @@ async fn print<F: AsRawFd>(
             PageSetup::default(),
             modal,
         )
-        .await?;
+        .await?
+        .response()?;
 
     proxy
         .print(identifier, title, &file, Some(out.token), modal)

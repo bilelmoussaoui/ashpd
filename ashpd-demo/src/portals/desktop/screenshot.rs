@@ -77,6 +77,7 @@ impl ScreenshotPage {
             .identifier(identifier)
             .build()
             .await
+            .and_then(|r| r.response())
         {
             Ok(color) => {
                 self.imp().color_widget.set_rgba(color.into());
@@ -106,9 +107,10 @@ impl ScreenshotPage {
             .modal(modal)
             .build()
             .await
+            .and_then(|r| r.response())
         {
-            Ok(uri) => {
-                let file = gio::File::for_uri(uri.as_str());
+            Ok(response) => {
+                let file = gio::File::for_uri(response.uri().as_str());
                 imp.screenshot_photo.set_file(Some(&file));
                 imp.revealer.show(); // Revealer has a weird issue where it still
                                      // takes space even if it's child is hidden
