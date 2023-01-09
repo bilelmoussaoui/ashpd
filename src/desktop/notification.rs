@@ -325,9 +325,7 @@ impl<'a> NotificationProxy<'a> {
         id: &str,
         notification: Notification,
     ) -> Result<(), Error> {
-        self.0
-            .call_method("AddNotification", &(id, notification))
-            .await
+        self.0.call("AddNotification", &(id, notification)).await
     }
 
     /// Withdraws a notification.
@@ -342,6 +340,6 @@ impl<'a> NotificationProxy<'a> {
     #[doc(alias = "RemoveNotification")]
     #[doc(alias = "xdp_portal_remove_notification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
-        self.0.call_method("RemoveNotification", &(id)).await
+        self.0.call("RemoveNotification", &(id)).await
     }
 }

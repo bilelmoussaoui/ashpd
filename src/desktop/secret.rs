@@ -65,7 +65,7 @@ impl<'a> Secret<'a> {
     pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<Request<()>, Error> {
         let options = RetrieveOptions::default();
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "RetrieveSecret",
                 &(Fd::from(fd.as_raw_fd()), &options),

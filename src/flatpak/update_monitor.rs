@@ -153,7 +153,7 @@ impl<'a> UpdateMonitor<'a> {
     #[doc(alias = "xdp_portal_update_install")]
     pub async fn update(&self, identifier: &WindowIdentifier) -> Result<(), Error> {
         let options = UpdateOptions::default();
-        self.0.call_method("Update", &(&identifier, options)).await
+        self.0.call("Update", &(&identifier, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.
@@ -163,6 +163,6 @@ impl<'a> UpdateMonitor<'a> {
     /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
-        self.0.call_method("Close", &()).await
+        self.0.call("Close", &()).await
     }
 }

@@ -127,7 +127,7 @@ impl<'a> WallpaperProxy<'a> {
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "SetWallpaperFile",
                 &(&identifier, Fd::from(file.as_raw_fd()), &options),
@@ -142,7 +142,7 @@ impl<'a> WallpaperProxy<'a> {
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "SetWallpaperURI",
                 &(&identifier, uri, &options),

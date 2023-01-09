@@ -102,7 +102,7 @@ impl<'a> FileTransfer<'a> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
 
-        self.0.call_method("AddFiles", &(key, files, options)).await
+        self.0.call("AddFiles", &(key, files, options)).await
     }
 
     /// Retrieves files that were previously added to the session with
@@ -128,7 +128,7 @@ impl<'a> FileTransfer<'a> {
         // see https://github.com/GNOME/gtk/blob/master/gdk/filetransferportal.c#L284
         let options: HashMap<&str, Value<'_>> = HashMap::new();
 
-        self.0.call_method("RetrieveFiles", &(key, options)).await
+        self.0.call("RetrieveFiles", &(key, options)).await
     }
 
     /// Starts a session for a file transfer.
@@ -155,7 +155,7 @@ impl<'a> FileTransfer<'a> {
         let options = TransferOptions::default()
             .writeable(writeable)
             .auto_stop(auto_stop);
-        self.0.call_method("StartTransfer", &(options)).await
+        self.0.call("StartTransfer", &(options)).await
     }
 
     /// Ends the transfer.
@@ -173,7 +173,7 @@ impl<'a> FileTransfer<'a> {
     /// See also [`StopTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-FileTransfer.StopTransfer).
     #[doc(alias = "StopTransfer")]
     pub async fn stop_transfer(&self, key: &str) -> Result<(), Error> {
-        self.0.call_method("StopTransfer", &(key)).await
+        self.0.call("StopTransfer", &(key)).await
     }
 
     /// Emitted when the transfer is closed.

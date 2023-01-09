@@ -70,7 +70,7 @@ impl<'a> Proxy<'a> {
         Self::new(interface, path, FLATPAK_DESTINATION).await
     }
 
-    pub async fn call_request_method<T>(
+    pub async fn request<T>(
         &self,
         handle_token: &HandleToken,
         method_name: &str,
@@ -81,25 +81,23 @@ impl<'a> Proxy<'a> {
     {
         let mut request = Request::from_unique_name(handle_token).await?;
         futures_util::try_join!(async { request.prepare_response().await }, async {
-            self.0
-                .call_method(method_name, &body)
+            self.call_method(method_name, &body)
                 .await
                 .map_err(From::from)
         })?;
         Ok(request)
     }
 
-    pub(crate) async fn call_basic_response_method(
+    pub(crate) async fn empty_request(
         &self,
         handle_token: &HandleToken,
         method_name: &str,
         body: impl Serialize + Type + Debug,
     ) -> Result<Request<()>, Error> {
-        self.call_request_method(handle_token, method_name, body)
-            .await
+        self.request(handle_token, method_name, body).await
     }
 
-    pub(crate) async fn call_method<R>(
+    pub(crate) async fn call<R>(
         &self,
         method_name: &str,
         body: impl Serialize + Type + Debug,
@@ -113,7 +111,6 @@ impl<'a> Proxy<'a> {
             tracing::debug!("With body {:#?}", body);
         }
         let msg = self
-            .0
             .call_method(method_name, &body)
             .await
             .map_err::<PortalError, _>(From::from)?;

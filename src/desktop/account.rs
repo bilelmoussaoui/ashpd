@@ -82,7 +82,7 @@ impl<'a> AccountProxy<'a> {
         options: UserInformationOptions,
     ) -> Result<Request<UserInformation>, Error> {
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "GetUserInformation",
                 (&identifier, &options),

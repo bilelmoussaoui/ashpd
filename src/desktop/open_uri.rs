@@ -89,7 +89,7 @@ impl<'a> OpenURIProxy<'a> {
         options: OpenDirOptions,
     ) -> Result<Request<()>, Error> {
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "OpenDirectory",
                 &(&identifier, Fd::from(directory.as_raw_fd()), &options),
@@ -104,7 +104,7 @@ impl<'a> OpenURIProxy<'a> {
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "OpenFile",
                 &(&identifier, Fd::from(file.as_raw_fd()), &options),
@@ -119,7 +119,7 @@ impl<'a> OpenURIProxy<'a> {
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "OpenURI",
                 &(&identifier, uri, &options),

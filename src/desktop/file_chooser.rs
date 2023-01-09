@@ -256,7 +256,7 @@ impl<'a> FileChooserProxy<'a> {
         options: OpenFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "OpenFile",
                 &(&identifier, title, &options),
@@ -271,7 +271,7 @@ impl<'a> FileChooserProxy<'a> {
         options: SaveFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "SaveFile",
                 &(&identifier, title, &options),
@@ -286,7 +286,7 @@ impl<'a> FileChooserProxy<'a> {
         options: SaveFilesOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "SaveFiles",
                 &(&identifier, title, &options),

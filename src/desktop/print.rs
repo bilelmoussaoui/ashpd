@@ -646,7 +646,7 @@ impl<'a> PrintProxy<'a> {
     ) -> Result<Request<PreparePrint>, Error> {
         let options = PreparePrintOptions::default().modal(modal);
         self.0
-            .call_request_method(
+            .request(
                 &options.handle_token,
                 "PreparePrint",
                 &(&identifier, title, settings, page_setup, &options),
@@ -685,7 +685,7 @@ impl<'a> PrintProxy<'a> {
             .token(token.unwrap_or(0))
             .modal(modal);
         self.0
-            .call_basic_response_method(
+            .empty_request(
                 &options.handle_token,
                 "Print",
                 &(&identifier, title, Fd::from(fd.as_raw_fd()), &options),

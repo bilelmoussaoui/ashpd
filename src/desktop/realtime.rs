@@ -23,7 +23,7 @@ impl<'a> Realtime<'a> {
         priority: u32,
     ) -> Result<(), Error> {
         self.0
-            .call_method("MakeThreadRealtimeWithPID", &(&process, &thread, &priority))
+            .call("MakeThreadRealtimeWithPID", &(&process, &thread, &priority))
             .await
     }
 
@@ -35,7 +35,7 @@ impl<'a> Realtime<'a> {
         priority: i32,
     ) -> Result<(), Error> {
         self.0
-            .call_method(
+            .call(
                 "MakeThreadHighPriorityWithPID",
                 &(&process, &thread, &priority),
             )

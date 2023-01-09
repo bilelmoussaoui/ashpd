@@ -111,7 +111,7 @@ impl<'a> Settings<'a> {
         &self,
         namespaces: &[impl AsRef<str> + Type + Serialize + Debug],
     ) -> Result<HashMap<String, Namespace>, Error> {
-        self.0.call_method("ReadAll", &(namespaces)).await
+        self.0.call("ReadAll", &(namespaces)).await
     }
 
     /// Reads a single value. Returns an error on any unknown namespace or key.
@@ -134,10 +134,7 @@ impl<'a> Settings<'a> {
         T: TryFrom<OwnedValue> + DeserializeOwned + Type,
         Error: From<<T as TryFrom<OwnedValue>>::Error>,
     {
-        let value = self
-            .0
-            .call_method::<OwnedValue>("Read", &(namespace, key))
-            .await?;
+        let value = self.0.call::<OwnedValue>("Read", &(namespace, key)).await?;
         if let Some(v) = value.downcast_ref::<Value<'_>>() {
             T::try_from(v.to_owned()).map_err(From::from)
         } else {
