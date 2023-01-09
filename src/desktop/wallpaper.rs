@@ -211,7 +211,7 @@ mod tests {
     fn serialize_deserialize() {
         let set_on = SetOn::Both;
         let string = serde_json::to_string(&set_on).unwrap();
-        assert_eq!(string, "\"Both\"");
+        assert_eq!(string, "\"both\"");
 
         let decoded = serde_json::from_str(&string).unwrap();
         assert_eq!(set_on, decoded);
