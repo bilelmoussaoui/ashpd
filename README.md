@@ -12,10 +12,10 @@ It provides an alternative to the C library [https://github.com/flatpak/libporta
 Ask the compositor to pick a color
 
 ```rust,no_run
-use ashpd::desktop::screenshot::ColorResponse;
+use ashpd::desktop::screenshot::Color;
 
 async fn run() -> ashpd::Result<()> {
-    let color = ColorResponse::builder().build().await?.response()?;
+    let color = Color::builder().build().await?.response()?;
     println!("({}, {}, {})", color.red(), color.green(), color.blue());
     Ok(())
 }

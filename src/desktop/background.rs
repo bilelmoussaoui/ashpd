@@ -51,14 +51,14 @@ struct BackgroundOptions {
 #[derive(DeserializeDict, Type, Debug)]
 /// The response of a [`BackgroundRequest`] request.
 #[zvariant(signature = "dict")]
-pub struct BackgroundResponse {
+pub struct Background {
     background: bool,
     autostart: bool,
 }
 
-impl BackgroundResponse {
+impl Background {
     /// Creates a new builder-pattern struct instance to construct
-    /// [`BackgroundResponse`].
+    /// [`Background`].
     ///
     /// This method returns an instance of [`BackgroundRequest`].
     pub fn builder() -> BackgroundRequest {
@@ -117,7 +117,7 @@ impl<'a> BackgroundProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: BackgroundOptions,
-    ) -> Result<Request<'static, BackgroundResponse>, Error> {
+    ) -> Result<Request<'static, Background>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -129,7 +129,7 @@ impl<'a> BackgroundProxy<'a> {
 }
 
 #[doc(alias = "xdp_portal_request_background")]
-/// A [builder-pattern] type to construct [`BackgroundResponse`].
+/// A [builder-pattern] type to construct [`Background`].
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 #[derive(Debug, Default)]
@@ -181,8 +181,8 @@ impl BackgroundRequest {
         self
     }
 
-    /// Build the [`BackgroundResponse`].
-    pub async fn build(self) -> Result<Request<'static, BackgroundResponse>, Error> {
+    /// Build the [`Background`].
+    pub async fn build(self) -> Result<Request<'static, Background>, Error> {
         let proxy = BackgroundProxy::new().await?;
         proxy
             .request_background(&self.identifier, self.options)
