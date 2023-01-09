@@ -24,10 +24,10 @@
 //! ## Picking a color
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screenshot::ColorResponse;
+//! use ashpd::desktop::screenshot::Color;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let color = ColorResponse::builder().build().await?.response()?;
+//!     let color = Color::builder().build().await?.response()?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -50,17 +50,17 @@ struct ScreenshotOptions {
 
 #[derive(DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
-pub struct ScreenshotResponse {
+pub struct Screenshot {
     uri: url::Url,
 }
 
-impl ScreenshotResponse {
+impl Screenshot {
     pub fn uri(&self) -> &url::Url {
         &self.uri
     }
 }
 
-impl Debug for ScreenshotResponse {
+impl Debug for Screenshot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.uri.as_str())
     }
@@ -77,11 +77,11 @@ struct ColorOptions {
 ///
 /// **Note** the values are normalized.
 #[zvariant(signature = "dict")]
-pub struct ColorResponse {
+pub struct Color {
     color: [f64; 3],
 }
 
-impl ColorResponse {
+impl Color {
     /// Red.
     pub fn red(&self) -> f64 {
         self.color[0]
@@ -98,7 +98,7 @@ impl ColorResponse {
     }
 
     /// Creates a new builder-pattern struct instance to construct
-    /// [`ColorResponse`].
+    /// [`Color`].
     ///
     /// This method returns an instance of [`ColorRequest`].
     pub fn builder() -> ColorRequest {
@@ -107,15 +107,15 @@ impl ColorResponse {
 }
 
 #[cfg(feature = "gtk3")]
-impl From<ColorResponse> for gtk3::gdk::RGBA {
-    fn from(color: ColorResponse) -> Self {
+impl From<Color> for gtk3::gdk::RGBA {
+    fn from(color: Color) -> Self {
         gtk3::gdk::RGBA::new(color.red(), color.green(), color.blue(), 1.0)
     }
 }
 
 #[cfg(feature = "gtk4")]
-impl From<ColorResponse> for gtk4::gdk::RGBA {
-    fn from(color: ColorResponse) -> Self {
+impl From<Color> for gtk4::gdk::RGBA {
+    fn from(color: Color) -> Self {
         gtk4::gdk::RGBA::builder()
             .red(color.red() as f32)
             .green(color.green() as f32)
@@ -124,9 +124,9 @@ impl From<ColorResponse> for gtk4::gdk::RGBA {
     }
 }
 
-impl std::fmt::Debug for ColorResponse {
+impl std::fmt::Debug for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ColorResponse")
+        f.debug_struct("Color")
             .field("red", &self.red())
             .field("green", &self.green())
             .field("blue", &self.blue())
@@ -134,7 +134,7 @@ impl std::fmt::Debug for ColorResponse {
     }
 }
 
-impl std::fmt::Display for ColorResponse {
+impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!(
             "({}, {}, {})",
@@ -171,7 +171,7 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: ColorOptions,
-    ) -> Result<Request<'static, ColorResponse>, Error> {
+    ) -> Result<Request<'static, Color>, Error> {
         self.0
             .call_request_method(&options.handle_token, "PickColor", &(&identifier, &options))
             .await
@@ -199,7 +199,7 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: ScreenshotOptions,
-    ) -> Result<Request<'static, ScreenshotResponse>, Error> {
+    ) -> Result<Request<'static, Screenshot>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -212,7 +212,7 @@ impl<'a> ScreenshotProxy<'a> {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_pick_color")]
-/// A [builder-pattern] type to construct [`ColorResponse`].
+/// A [builder-pattern] type to construct [`Color`].
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct ColorRequest {
@@ -228,8 +228,8 @@ impl ColorRequest {
         self
     }
 
-    /// Build the [`ColorResponse`].
-    pub async fn build(self) -> Result<Request<'static, ColorResponse>, Error> {
+    /// Build the [`Color`].
+    pub async fn build(self) -> Result<Request<'static, Color>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.pick_color(&self.identifier, self.options).await
     }
@@ -237,7 +237,7 @@ impl ColorRequest {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_take_screenshot")]
-/// A [builder-pattern] type to construct a screenshot [`Url`].
+/// A [builder-pattern] type to construct a screenshot [`Screenshot`].
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct ScreenshotRequest {
@@ -268,8 +268,8 @@ impl ScreenshotRequest {
         self
     }
 
-    /// Build the [`Url`].
-    pub async fn build(self) -> Result<Request<'static, ScreenshotResponse>, Error> {
+    /// Build the [`Screenshot`].
+    pub async fn build(self) -> Result<Request<'static, Screenshot>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.screenshot(&self.identifier, self.options).await
     }
