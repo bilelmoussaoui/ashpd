@@ -258,12 +258,12 @@ impl ScreenCastPage {
             )
             .await?;
         self.send_notification("Starting a screen cast session", NotificationKind::Info);
-        let (streams, new_token) = proxy.start(&session, &identifier).await?;
-        if let Some(t) = new_token {
-            token.replace(t);
+        let response = proxy.start(&session, &identifier).await?.response()?;
+        if let Some(t) = response.restore_token() {
+            token.replace(t.to_owned());
         }
         let fd = proxy.open_pipe_wire_remote(&session).await?;
-        Ok((streams, fd, session))
+        Ok((response.streams().to_owned(), fd, session))
     }
 }
 

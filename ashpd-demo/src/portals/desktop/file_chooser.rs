@@ -125,7 +125,7 @@ impl FileChooserPage {
             .title(&*title)
             .multiple(multiple)
             .accept_label(accept_label.as_deref());
-        match request.build().await {
+        match request.build().await.and_then(|r| r.response()) {
             Ok(files) => {
                 imp.open_response_group.show();
 
@@ -162,7 +162,7 @@ impl FileChooserPage {
             .current_name(current_name.as_deref())
             .current_folder::<String>(current_folder)
             .current_file::<String>(current_file);
-        match request.build().await {
+        match request.build().await.and_then(|r| r.response()) {
             Ok(files) => {
                 imp.save_file_response_group.show();
 
@@ -199,7 +199,7 @@ impl FileChooserPage {
             .current_folder::<String>(current_folder)
             .files::<Vec<_>>(files);
 
-        match request.build().await {
+        match request.build().await.and_then(|r| r.response()) {
             Ok(files) => {
                 imp.save_files_response_group.show();
 
