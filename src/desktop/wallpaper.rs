@@ -125,7 +125,7 @@ impl<'a> WallpaperProxy<'a> {
         identifier: &WindowIdentifier,
         file: &impl AsRawFd,
         options: WallpaperOptions,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         self.0
             .call_basic_response_method(
                 &options.handle_token,
@@ -140,7 +140,7 @@ impl<'a> WallpaperProxy<'a> {
         identifier: &WindowIdentifier,
         uri: &url::Url,
         options: WallpaperOptions,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         self.0
             .call_basic_response_method(
                 &options.handle_token,
@@ -187,7 +187,7 @@ impl WallpaperRequest {
     }
 
     /// Build using a URI.
-    pub async fn build_uri(self, uri: &url::Url) -> Result<Request<'static, ()>, Error> {
+    pub async fn build_uri(self, uri: &url::Url) -> Result<Request<()>, Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
             .set_wallpaper_uri(&self.identifier, uri, self.options)
@@ -195,7 +195,7 @@ impl WallpaperRequest {
     }
 
     /// Build using a file.
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<'static, ()>, Error> {
+    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
             .set_wallpaper_file(&self.identifier, file, self.options)

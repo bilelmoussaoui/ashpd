@@ -267,7 +267,7 @@ impl<'a> LocationProxy<'a> {
         &self,
         session: &Session<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         let options = SessionStartOptions::default();
         self.0
             .call_basic_response_method(

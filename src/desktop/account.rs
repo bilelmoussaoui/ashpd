@@ -80,7 +80,7 @@ impl<'a> AccountProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: UserInformationOptions,
-    ) -> Result<Request<'static, UserInformation>, Error> {
+    ) -> Result<Request<UserInformation>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -118,7 +118,7 @@ impl UserInformationRequest {
     }
 
     /// Build the [`UserInformation`].
-    pub async fn build(self) -> Result<Request<'static, UserInformation>, Error> {
+    pub async fn build(self) -> Result<Request<UserInformation>, Error> {
         let proxy = AccountProxy::new().await?;
         proxy.user_information(&self.identifier, self.options).await
     }

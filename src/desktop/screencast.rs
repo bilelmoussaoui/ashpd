@@ -361,7 +361,7 @@ impl<'a> Screencast<'a> {
         multiple: bool,
         restore_token: Option<&str>,
         persist_mode: PersistMode,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         let options = SelectSourcesOptions::default()
             .cursor_mode(cursor_mode)
             .multiple(multiple)
@@ -402,7 +402,7 @@ impl<'a> Screencast<'a> {
         &self,
         session: &Session<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<Request<'static, Streams>, Error> {
+    ) -> Result<Request<Streams>, Error> {
         let options = StartCastOptions::default();
         self.0
             .call_request_method(

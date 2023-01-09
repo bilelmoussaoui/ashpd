@@ -117,7 +117,7 @@ impl<'a> BackgroundProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: BackgroundOptions,
-    ) -> Result<Request<'static, Background>, Error> {
+    ) -> Result<Request<Background>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -182,7 +182,7 @@ impl BackgroundRequest {
     }
 
     /// Build the [`Background`].
-    pub async fn build(self) -> Result<Request<'static, Background>, Error> {
+    pub async fn build(self) -> Result<Request<Background>, Error> {
         let proxy = BackgroundProxy::new().await?;
         proxy
             .request_background(&self.identifier, self.options)

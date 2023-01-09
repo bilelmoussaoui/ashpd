@@ -75,7 +75,7 @@ impl<'a> Proxy<'a> {
         handle_token: &HandleToken,
         method_name: &str,
         body: impl Serialize + Type + Debug,
-    ) -> Result<Request<'static, T>, Error>
+    ) -> Result<Request<T>, Error>
     where
         T: for<'de> Deserialize<'de> + Type + Debug,
     {
@@ -94,7 +94,7 @@ impl<'a> Proxy<'a> {
         handle_token: &HandleToken,
         method_name: &str,
         body: impl Serialize + Type + Debug,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         self.call_request_method(handle_token, method_name, body)
             .await
     }

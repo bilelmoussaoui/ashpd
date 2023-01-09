@@ -55,7 +55,7 @@ impl<'a> Camera<'a> {
     /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Camera.AccessCamera).
     #[doc(alias = "AccessCamera")]
     #[doc(alias = "xdp_portal_access_camera")]
-    pub async fn request_access(&self) -> Result<Request<'static, ()>, Error> {
+    pub async fn request_access(&self) -> Result<Request<()>, Error> {
         let options = CameraAccessOptions::default();
         self.0
             .call_basic_response_method(&options.handle_token, "AccessCamera", &options)

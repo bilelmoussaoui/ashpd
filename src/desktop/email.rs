@@ -74,7 +74,7 @@ impl<'a> EmailProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: EmailOptions,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         self.0
             .call_basic_response_method(
                 &options.handle_token,
@@ -174,7 +174,7 @@ impl EmailRequest {
         };
     }
 
-    pub async fn build(self) -> Result<Request<'static, ()>, Error> {
+    pub async fn build(self) -> Result<Request<()>, Error> {
         let proxy = EmailProxy::new().await?;
         proxy.compose(&self.identifier, self.options).await
     }

@@ -199,7 +199,7 @@ impl<'a> InhibitProxy<'a> {
         identifier: &WindowIdentifier,
         flags: BitFlags<InhibitFlags>,
         reason: &str,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         let options = InhibitOptions {
             reason: Some(reason.to_owned()),
             handle_token: Default::default(),

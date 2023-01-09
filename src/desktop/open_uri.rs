@@ -87,7 +87,7 @@ impl<'a> OpenURIProxy<'a> {
         identifier: &WindowIdentifier,
         directory: &impl AsRawFd,
         options: OpenDirOptions,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         self.0
             .call_basic_response_method(
                 &options.handle_token,
@@ -102,7 +102,7 @@ impl<'a> OpenURIProxy<'a> {
         identifier: &WindowIdentifier,
         file: &impl AsRawFd,
         options: OpenFileOptions,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         self.0
             .call_basic_response_method(
                 &options.handle_token,
@@ -117,7 +117,7 @@ impl<'a> OpenURIProxy<'a> {
         identifier: &WindowIdentifier,
         uri: &url::Url,
         options: OpenFileOptions,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         self.0
             .call_basic_response_method(
                 &options.handle_token,
@@ -158,12 +158,12 @@ impl OpenFileRequest {
         self
     }
 
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<'static, ()>, Error> {
+    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_file(&self.identifier, file, self.options).await
     }
 
-    pub async fn build_uri(self, uri: &Url) -> Result<Request<'static, ()>, Error> {
+    pub async fn build_uri(self, uri: &Url) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_uri(&self.identifier, uri, self.options).await
     }
@@ -185,7 +185,7 @@ impl OpenDirectoryRequest {
         self
     }
 
-    pub async fn build(self, directory: &impl AsRawFd) -> Result<Request<'static, ()>, Error> {
+    pub async fn build(self, directory: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
             .open_directory(&self.identifier, directory, self.options)

@@ -120,11 +120,7 @@ impl<'a> DeviceProxy<'a> {
     ///
     /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Device.AccessDevice).
     #[doc(alias = "AccessDevice")]
-    pub async fn access_device(
-        &self,
-        pid: u32,
-        devices: &[Device],
-    ) -> Result<Request<'static, ()>, Error> {
+    pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<Request<()>, Error> {
         let options = AccessDeviceOptions::default();
         self.0
             .call_basic_response_method(

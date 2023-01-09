@@ -247,7 +247,7 @@ impl<'a> GlobalShortcuts<'a> {
         session: &Session<'_>,
         shortcuts: &[NewShortcut],
         parent_window: &WindowIdentifier,
-    ) -> Result<Request<'static, BindShortcuts>, Error> {
+    ) -> Result<Request<BindShortcuts>, Error> {
         let options = BindShortcutsOptions::default();
         self.0
             .call_request_method(
@@ -267,7 +267,7 @@ impl<'a> GlobalShortcuts<'a> {
     pub async fn list_shortcuts(
         &self,
         session: &Session<'_>,
-    ) -> Result<Request<'static, ListShortcuts>, Error> {
+    ) -> Result<Request<ListShortcuts>, Error> {
         let options = ListShortcutsOptions::default();
         self.0
             .call_request_method(&options.handle_token, "ListShortcuts", &(session, &options))
