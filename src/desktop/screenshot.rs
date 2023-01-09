@@ -171,7 +171,7 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: ColorOptions,
-    ) -> Result<Request<'static, Color>, Error> {
+    ) -> Result<Request<Color>, Error> {
         self.0
             .call_request_method(&options.handle_token, "PickColor", &(&identifier, &options))
             .await
@@ -199,7 +199,7 @@ impl<'a> ScreenshotProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         options: ScreenshotOptions,
-    ) -> Result<Request<'static, Screenshot>, Error> {
+    ) -> Result<Request<Screenshot>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -229,7 +229,7 @@ impl ColorRequest {
     }
 
     /// Build the [`Color`].
-    pub async fn build(self) -> Result<Request<'static, Color>, Error> {
+    pub async fn build(self) -> Result<Request<Color>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.pick_color(&self.identifier, self.options).await
     }
@@ -269,7 +269,7 @@ impl ScreenshotRequest {
     }
 
     /// Build the [`Screenshot`].
-    pub async fn build(self) -> Result<Request<'static, Screenshot>, Error> {
+    pub async fn build(self) -> Result<Request<Screenshot>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.screenshot(&self.identifier, self.options).await
     }

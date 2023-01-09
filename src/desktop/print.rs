@@ -643,7 +643,7 @@ impl<'a> PrintProxy<'a> {
         settings: Settings,
         page_setup: PageSetup,
         modal: bool,
-    ) -> Result<Request<'static, PreparePrint>, Error> {
+    ) -> Result<Request<PreparePrint>, Error> {
         let options = PreparePrintOptions::default().modal(modal);
         self.0
             .call_request_method(
@@ -680,7 +680,7 @@ impl<'a> PrintProxy<'a> {
         fd: &impl AsRawFd,
         token: Option<u32>,
         modal: bool,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         let options = PrintOptions::default()
             .token(token.unwrap_or(0))
             .modal(modal);

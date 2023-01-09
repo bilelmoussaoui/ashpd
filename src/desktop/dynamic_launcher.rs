@@ -153,7 +153,7 @@ impl<'a> DynamicLauncherProxy<'a> {
         name: &str,
         icon: Icon,
         options: PrepareInstallOptions,
-    ) -> Result<Request<'static, (String, String)>, Error> {
+    ) -> Result<Request<(String, String)>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,

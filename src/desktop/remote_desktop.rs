@@ -255,7 +255,7 @@ impl<'a> RemoteDesktop<'a> {
         &self,
         session: &Session<'_>,
         types: BitFlags<DeviceType>,
-    ) -> Result<Request<'static, ()>, Error> {
+    ) -> Result<Request<()>, Error> {
         let options = SelectDevicesOptions::default().types(types);
         self.0
             .call_basic_response_method(
@@ -286,7 +286,7 @@ impl<'a> RemoteDesktop<'a> {
         &self,
         session: &Session<'_>,
         identifier: &WindowIdentifier,
-    ) -> Result<Request<'static, SelectedDevices>, Error> {
+    ) -> Result<Request<SelectedDevices>, Error> {
         let options = StartRemoteOptions::default();
         self.0
             .call_request_method(

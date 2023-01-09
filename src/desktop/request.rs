@@ -181,22 +181,22 @@ impl From<ResponseError> for ResponseType {
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Request).
 #[doc(alias = "org.freedesktop.portal.Request")]
-pub struct Request<'a, T>(
-    Proxy<'a>,
-    SignalStream<'a>,
+pub struct Request<T>(
+    Proxy<'static>,
+    SignalStream<'static>,
     Mutex<Option<Result<T, Error>>>,
     PhantomData<T>,
 )
 where
     T: for<'de> Deserialize<'de> + Type + Debug;
 
-impl<'a, T> Request<'a, T>
+impl<T> Request<T>
 where
     T: for<'de> Deserialize<'de> + Type + Debug,
 {
-    pub async fn new<P>(path: P) -> Result<Request<'a, T>, Error>
+    pub async fn new<P>(path: P) -> Result<Request<T>, Error>
     where
-        P: TryInto<ObjectPath<'a>>,
+        P: TryInto<ObjectPath<'static>>,
         P::Error: Into<zbus::Error>,
     {
         let proxy = Proxy::new_desktop_with_path("org.freedesktop.portal.Request", path).await?;
@@ -205,7 +205,7 @@ where
         Ok(Self(proxy, stream, Default::default(), PhantomData))
     }
 
-    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<'a, T>, Error> {
+    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<T>, Error> {
         let connection = session_connection().await?;
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
@@ -256,7 +256,7 @@ where
     }
 }
 
-impl<'a, T> Debug for Request<'a, T>
+impl<T> Debug for Request<T>
 where
     T: for<'de> Deserialize<'de> + Type + Debug,
 {

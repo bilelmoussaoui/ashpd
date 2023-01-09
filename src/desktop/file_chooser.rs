@@ -254,7 +254,7 @@ impl<'a> FileChooserProxy<'a> {
         identifier: &WindowIdentifier,
         title: &str,
         options: OpenFileOptions,
-    ) -> Result<Request<'static, SelectedFiles>, Error> {
+    ) -> Result<Request<SelectedFiles>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -269,7 +269,7 @@ impl<'a> FileChooserProxy<'a> {
         identifier: &WindowIdentifier,
         title: &str,
         options: SaveFileOptions,
-    ) -> Result<Request<'static, SelectedFiles>, Error> {
+    ) -> Result<Request<SelectedFiles>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -284,7 +284,7 @@ impl<'a> FileChooserProxy<'a> {
         identifier: &WindowIdentifier,
         title: &str,
         options: SaveFilesOptions,
-    ) -> Result<Request<'static, SelectedFiles>, Error> {
+    ) -> Result<Request<SelectedFiles>, Error> {
         self.0
             .call_request_method(
                 &options.handle_token,
@@ -379,7 +379,7 @@ impl OpenFileRequest {
         self
     }
 
-    pub async fn build(self) -> Result<Request<'static, SelectedFiles>, Error> {
+    pub async fn build(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .open_file(&self.identifier, &self.title, self.options)
@@ -467,7 +467,7 @@ impl SaveFilesRequest {
         self
     }
 
-    pub async fn build(self) -> Result<Request<'static, SelectedFiles>, Error> {
+    pub async fn build(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .save_files(&self.identifier, &self.title, self.options)
@@ -574,7 +574,7 @@ impl SaveFileRequest {
         self
     }
 
-    pub async fn build(self) -> Result<Request<'static, SelectedFiles>, Error> {
+    pub async fn build(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .save_file(&self.identifier, &self.title, self.options)
