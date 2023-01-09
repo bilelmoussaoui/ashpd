@@ -9,8 +9,6 @@ use async_std::{fs::File, prelude::*};
 #[cfg(feature = "tokio")]
 use tokio::{fs::File, io::AsyncReadExt};
 
-use crate::SESSION;
-
 // Some portals returns paths which are bytes and not a typical string
 // as those might be null terminated. This might make sense to provide in form
 // of a helper in zvariant
@@ -64,16 +62,6 @@ fn cgroup_v2_is_snap(cgroups: &str) -> bool {
             Some(scope.starts_with("snap."))
         })
         .any(|x| x.unwrap_or(false))
-}
-
-pub(crate) async fn session_connection() -> zbus::Result<zbus::Connection> {
-    if let Some(cnx) = SESSION.get() {
-        Ok(cnx.clone())
-    } else {
-        let cnx = zbus::Connection::session().await?;
-        SESSION.set(cnx.clone()).expect("Can't reset a OnceCell");
-        Ok(cnx)
-    }
 }
 
 #[cfg(test)]

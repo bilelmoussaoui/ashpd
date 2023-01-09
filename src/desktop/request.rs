@@ -16,7 +16,7 @@ use zbus::{
     SignalStream,
 };
 
-use crate::{desktop::HandleToken, helpers::session_connection, proxy::Proxy, Error};
+use crate::{desktop::HandleToken, proxy::Proxy, Error};
 
 /// A typical response returned by the [`Request::receive_response`] signal
 /// of a [`Request`].
@@ -206,13 +206,8 @@ where
     }
 
     pub async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<T>, Error> {
-        let connection = session_connection().await?;
-        let unique_name = connection.unique_name().unwrap();
-        let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
-        let path = ObjectPath::try_from(format!(
-            "/org/freedesktop/portal/desktop/request/{unique_identifier}/{handle_token}",
-        ))
-        .unwrap();
+        let path =
+            Proxy::unique_name("/org/freedesktop/portal/desktop/request", handle_token).await?;
         #[cfg(feature = "tracing")]
         tracing::info!("Creating a org.freedesktop.portal.Request {}", path);
         Self::new(path).await

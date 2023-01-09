@@ -1,9 +1,9 @@
-use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
+use std::{collections::HashMap, fmt::Debug};
 
 use serde::{Serialize, Serializer};
 use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
 
-use crate::{desktop::HandleToken, helpers::session_connection, proxy::Proxy, Error};
+use crate::{desktop::HandleToken, proxy::Proxy, Error};
 
 pub type SessionDetails = HashMap<String, OwnedValue>;
 
@@ -34,13 +34,8 @@ impl<'a> Session<'a> {
     pub(crate) async fn from_unique_name(
         handle_token: &HandleToken,
     ) -> Result<Session<'a>, crate::Error> {
-        let connection = session_connection().await?;
-        let unique_name = connection.unique_name().unwrap();
-        let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
-        let path = ObjectPath::try_from(format!(
-            "/org/freedesktop/portal/desktop/session/{unique_identifier}/{handle_token}",
-        ))
-        .unwrap();
+        let path =
+            Proxy::unique_name("/org/freedesktop/portal/desktop/session", handle_token).await?;
         #[cfg(feature = "tracing")]
         tracing::info!("Creating a org.freedesktop.portal.Session {}", path);
         Self::new(path).await

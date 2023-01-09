@@ -1,12 +1,12 @@
 use std::{fmt::Debug, ops::Deref};
 
 use futures_util::StreamExt;
+use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{ObjectPath, OwnedValue, Type};
 
 use crate::{
     desktop::{HandleToken, Request},
-    helpers::session_connection,
     Error, PortalError,
 };
 
@@ -19,10 +19,33 @@ pub(crate) const DOCUMENTS_PATH: &str = "/org/freedesktop/portal/documents";
 pub(crate) const FLATPAK_DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const FLATPAK_PATH: &str = "/org/freedesktop/portal/Flatpak";
 
+static SESSION: OnceCell<zbus::Connection> = OnceCell::new();
+
 #[derive(Debug)]
 pub struct Proxy<'a>(zbus::Proxy<'a>);
 
 impl<'a> Proxy<'a> {
+    pub(crate) async fn connection() -> zbus::Result<zbus::Connection> {
+        if let Some(cnx) = SESSION.get() {
+            Ok(cnx.clone())
+        } else {
+            let cnx = zbus::Connection::session().await?;
+            SESSION.set(cnx.clone()).expect("Can't reset a OnceCell");
+            Ok(cnx)
+        }
+    }
+
+    pub async fn unique_name(
+        prefix: &str,
+        handle_token: &HandleToken,
+    ) -> Result<ObjectPath<'static>, Error> {
+        let connection = Self::connection().await?;
+        let unique_name = connection.unique_name().unwrap();
+        let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
+        ObjectPath::try_from(format!("{prefix}/{unique_identifier}/{handle_token}"))
+            .map_err(From::from)
+    }
+
     pub async fn new<P>(
         interface: &'a str,
         path: P,
@@ -32,7 +55,7 @@ impl<'a> Proxy<'a> {
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
-        let connection = session_connection().await?;
+        let connection = Self::connection().await?;
         let proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface(interface)?
             .path(path)?
