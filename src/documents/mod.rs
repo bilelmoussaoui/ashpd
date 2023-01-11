@@ -32,14 +32,7 @@
 //! }
 //! ```
 
-use std::{
-    collections::HashMap,
-    ffi::CString,
-    fmt,
-    os::unix::{ffi::OsStrExt, prelude::AsRawFd},
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{collections::HashMap, fmt, os::unix::prelude::AsRawFd, path::Path, str::FromStr};
 
 use enumflags2::{bitflags, BitFlags};
 use serde::{Deserialize, Serialize};
@@ -47,7 +40,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
 pub use crate::app_id::DocumentID;
-use crate::{helpers::path_from_null_terminated, proxy::Proxy, AppID, Error};
+use crate::{proxy::Proxy, AppID, Error, FilePath};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -252,14 +245,13 @@ impl<'a> Documents<'a> {
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<DocumentID, Error> {
-        let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
-            .expect("`filename` should not be null terminated");
+        let filename = FilePath::new(filename)?;
         self.0
             .call(
                 "AddNamed",
                 &(
                     Fd::from(o_path_parent_fd.as_raw_fd()),
-                    cstr.as_bytes_with_nul(),
+                    filename,
                     reuse_existing,
                     persistent,
                 ),
@@ -295,14 +287,13 @@ impl<'a> Documents<'a> {
         app_id: impl TryInto<AppID, Error = Error>,
         permissions: &[Permission],
     ) -> Result<(DocumentID, HashMap<String, OwnedValue>), Error> {
-        let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
-            .expect("`filename` should not be null terminated");
+        let filename = FilePath::new(filename)?;
         self.0
             .call(
                 "AddNamedFull",
                 &(
                     Fd::from(o_path_fd.as_raw_fd()),
-                    cstr.as_bytes_with_nul(),
+                    filename,
                     flags,
                     app_id.try_into()?,
                     permissions,
@@ -337,9 +328,8 @@ impl<'a> Documents<'a> {
     /// See also [`GetMountPoint`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.GetMountPoint).
     #[doc(alias = "GetMountPoint")]
     #[doc(alias = "get_mount_point")]
-    pub async fn mount_point(&self) -> Result<PathBuf, Error> {
-        let bytes: Vec<u8> = self.0.call("GetMountPoint", &()).await?;
-        Ok(path_from_null_terminated(bytes))
+    pub async fn mount_point(&self) -> Result<FilePath, Error> {
+        self.0.call("GetMountPoint", &()).await
     }
 
     /// Grants access permissions for a file in the document store to an
@@ -393,10 +383,8 @@ impl<'a> Documents<'a> {
     pub async fn info(
         &self,
         doc_id: impl Into<DocumentID>,
-    ) -> Result<(PathBuf, Permissions), Error> {
-        let (bytes, permissions): (Vec<u8>, Permissions) =
-            self.0.call("Info", &(doc_id.into())).await?;
-        Ok((path_from_null_terminated(bytes), permissions))
+    ) -> Result<(FilePath, Permissions), Error> {
+        self.0.call("Info", &(doc_id.into())).await
     }
 
     /// Lists documents in the document store for an application (or for all
@@ -420,12 +408,13 @@ impl<'a> Documents<'a> {
     pub async fn list(
         &self,
         app_id: impl TryInto<AppID, Error = Error>,
-    ) -> Result<HashMap<DocumentID, PathBuf>, Error> {
-        let response: HashMap<String, Vec<u8>> = self.0.call("List", &(app_id.try_into()?)).await?;
+    ) -> Result<HashMap<DocumentID, FilePath>, Error> {
+        let response: HashMap<String, FilePath> =
+            self.0.call("List", &(app_id.try_into()?)).await?;
 
-        let mut new_response: HashMap<DocumentID, PathBuf> = HashMap::new();
-        for (key, bytes) in response {
-            new_response.insert(DocumentID::from(key), path_from_null_terminated(bytes));
+        let mut new_response: HashMap<DocumentID, FilePath> = HashMap::new();
+        for (key, file_name) in response {
+            new_response.insert(DocumentID::from(key), file_name);
         }
 
         Ok(new_response)
@@ -449,9 +438,8 @@ impl<'a> Documents<'a> {
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
     #[doc(alias = "Lookup")]
     pub async fn lookup(&self, filename: impl AsRef<Path>) -> Result<Option<DocumentID>, Error> {
-        let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
-            .expect("`filename` should not be null terminated");
-        let doc_id: String = self.0.call("Lookup", &(cstr.as_bytes_with_nul())).await?;
+        let filename = FilePath::new(filename)?;
+        let doc_id: String = self.0.call("Lookup", &(filename)).await?;
         if doc_id.is_empty() {
             Ok(None)
         } else {

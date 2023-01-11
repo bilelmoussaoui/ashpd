@@ -27,12 +27,8 @@
 
 use std::{
     collections::HashMap,
-    ffi::CString,
     fmt::Debug,
-    os::unix::{
-        ffi::OsStrExt,
-        prelude::{AsRawFd, RawFd},
-    },
+    os::unix::prelude::{AsRawFd, RawFd},
     path::Path,
 };
 
@@ -41,7 +37,7 @@ use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedObjectPath, SerializeDict, Type};
 
-use crate::{proxy::Proxy, Error};
+use crate::{proxy::Proxy, Error, FilePath};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -324,29 +320,13 @@ impl<'a> Flatpak<'a> {
         flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
     ) -> Result<u32, Error> {
-        let cwd_path = CString::new(cwd_path.as_ref().as_os_str().as_bytes())
-            .expect("The `cwd_path` should not contain a trailing 0 bytes");
+        let cwd_path = FilePath::new(cwd_path)?;
         let argv = argv
             .iter()
-            .map(|s| {
-                CString::new(s.as_ref().as_os_str().as_bytes())
-                    .expect("The `argv` should not contain a trailing 0 bytes")
-            })
-            .collect::<Vec<_>>();
+            .map(FilePath::new)
+            .collect::<Result<Vec<FilePath>, _>>()?;
         self.0
-            .call(
-                "Spawn",
-                &(
-                    cwd_path.as_bytes_with_nul(),
-                    argv.iter()
-                        .map(|c| c.as_bytes_with_nul())
-                        .collect::<Vec<_>>(),
-                    fds,
-                    envs,
-                    flags,
-                    options,
-                ),
-            )
+            .call("Spawn", &(cwd_path, argv, fds, envs, flags, options))
             .await
     }
 

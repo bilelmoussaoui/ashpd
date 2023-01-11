@@ -67,8 +67,8 @@
 //!         .title("open files to write")
 //!         .accept_label("write files")
 //!         .modal(true)
-//!         .current_folder("/home/bilelmoussaoui/Pictures")
-//!         .files(&["test.jpg", "awesome.png"])
+//!         .current_folder("/home/bilelmoussaoui/Pictures")?
+//!         .files(&["test.jpg", "awesome.png"])?
 //!         .build()
 //!         .await?
 //!         .response()?;
@@ -79,14 +79,14 @@
 //! }
 //! ```
 
-use std::{ffi::CString, os::unix::ffi::OsStrExt, path::Path};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, Error, FilePath, WindowIdentifier};
 
 #[derive(Clone, Serialize, Type, Debug)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -200,8 +200,8 @@ struct SaveFileOptions {
     accept_label: Option<String>,
     modal: Option<bool>,
     current_name: Option<String>,
-    current_folder: Option<Vec<u8>>,
-    current_file: Option<Vec<u8>>,
+    current_folder: Option<FilePath>,
+    current_file: Option<FilePath>,
     filters: Vec<FileFilter>,
     current_filter: Option<FileFilter>,
     choices: Vec<Choice>,
@@ -214,8 +214,8 @@ struct SaveFilesOptions {
     accept_label: Option<String>,
     modal: Option<bool>,
     choices: Vec<Choice>,
-    current_folder: Option<Vec<u8>>,
-    files: Option<Vec<Vec<u8>>>,
+    current_folder: Option<FilePath>,
+    files: Option<Vec<FilePath>>,
 }
 
 #[derive(Debug, Type, DeserializeDict)]
@@ -438,33 +438,27 @@ impl SaveFilesRequest {
     }
 
     /// Specifies the current folder path.
-    #[must_use]
-    pub fn current_folder<P: AsRef<Path>>(mut self, current_folder: impl Into<Option<P>>) -> Self {
-        self.options.current_folder = current_folder.into().map(|c| {
-            CString::new(c.as_ref().as_os_str().as_bytes())
-                .expect("`current_folder` should not be null terminated")
-                .into_bytes_with_nul()
-        });
-        self
+    pub fn current_folder<P: AsRef<Path>>(
+        mut self,
+        current_folder: impl Into<Option<P>>,
+    ) -> Result<Self, crate::Error> {
+        self.options.current_folder = current_folder
+            .into()
+            .map(|c| FilePath::new(c))
+            .transpose()?;
+        Ok(self)
     }
 
     /// Sets a list of files to save.
-    #[must_use]
     pub fn files<P: IntoIterator<Item = impl AsRef<Path>>>(
         mut self,
         files: impl Into<Option<P>>,
-    ) -> Self {
-        self.options.files = files.into().map(|files| {
-            files
-                .into_iter()
-                .map(|s| {
-                    let cstr = CString::new(s.as_ref().as_os_str().as_bytes())
-                        .expect("`files` should not be null terminated");
-                    cstr.into_bytes_with_nul()
-                })
-                .collect()
-        });
-        self
+    ) -> Result<Self, crate::Error> {
+        self.options.files = files
+            .into()
+            .map(|files| files.into_iter().map(|s| FilePath::new(s)).collect())
+            .transpose()?;
+        Ok(self)
     }
 
     pub async fn build(self) -> Result<Request<SelectedFiles>, Error> {
@@ -520,25 +514,24 @@ impl SaveFileRequest {
     }
 
     /// Sets the current folder.
-    #[must_use]
-    pub fn current_folder<P: AsRef<Path>>(mut self, current_folder: impl Into<Option<P>>) -> Self {
-        self.options.current_folder = current_folder.into().map(|c| {
-            CString::new(c.as_ref().as_os_str().as_bytes())
-                .expect("`current_folder` should not be null terminated")
-                .into_bytes_with_nul()
-        });
-        self
+    pub fn current_folder<P: AsRef<Path>>(
+        mut self,
+        current_folder: impl Into<Option<P>>,
+    ) -> Result<Self, crate::Error> {
+        self.options.current_folder = current_folder
+            .into()
+            .map(|c| FilePath::new(c))
+            .transpose()?;
+        Ok(self)
     }
 
     /// Sets the absolute path of the file.
-    #[must_use]
-    pub fn current_file<P: AsRef<Path>>(mut self, current_file: impl Into<Option<P>>) -> Self {
-        self.options.current_file = current_file.into().map(|c| {
-            CString::new(c.as_ref().as_os_str().as_bytes())
-                .expect("`current_folder` should not be null terminated")
-                .into_bytes_with_nul()
-        });
-        self
+    pub fn current_file<P: AsRef<Path>>(
+        mut self,
+        current_file: impl Into<Option<P>>,
+    ) -> Result<Self, crate::Error> {
+        self.options.current_file = current_file.into().map(|c| FilePath::new(c)).transpose()?;
+        Ok(self)
     }
 
     /// Adds a files filter.

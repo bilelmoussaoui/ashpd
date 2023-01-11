@@ -23,6 +23,8 @@ mod window_identifier;
 pub use self::window_identifier::WindowIdentifier;
 mod app_id;
 pub use self::app_id::AppID;
+mod file_path;
+pub use self::file_path::FilePath;
 
 mod proxy;
 

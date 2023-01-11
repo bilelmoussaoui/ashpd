@@ -51,6 +51,8 @@ pub enum Error {
     ///
     /// See <https://developer.gnome.org/documentation/tutorials/application-id.html#rules-for-application-ids>
     InvalidAppID,
+    /// An error indicating that an interior nul byte was found
+    NulTerminated(usize),
 }
 
 impl std::error::Error for Error {}
@@ -67,6 +69,7 @@ impl std::fmt::Display for Error {
             Self::Pipewire(e) => f.write_str(&format!("Pipewire: {e}")),
             Self::ParseError(e) => f.write_str(e),
             Self::InvalidAppID => f.write_str("Invalid app id"),
+            Self::NulTerminated(u) => write!(f, "Nul byte found in provided data at position {u}"),
         }
     }
 }
