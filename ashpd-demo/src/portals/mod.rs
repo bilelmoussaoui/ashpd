@@ -8,7 +8,7 @@ pub fn is_empty(txt: gtk::glib::GString) -> Option<String> {
 
 pub fn split_comma(txt: String) -> Vec<String> {
     txt.split(',')
-        .filter(|e| e.len() > 1)
+        .filter(|e| !e.is_empty())
         .map(|s| s.to_string())
         .collect::<Vec<_>>()
 }
