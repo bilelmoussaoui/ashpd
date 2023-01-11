@@ -1,20 +1,7 @@
-use std::{
-    ffi::OsStr,
-    os::unix::prelude::OsStrExt,
-    path::{Path, PathBuf},
-};
-
 #[cfg(feature = "async-std")]
 use async_std::{fs::File, prelude::*};
 #[cfg(feature = "tokio")]
 use tokio::{fs::File, io::AsyncReadExt};
-
-// Some portals returns paths which are bytes and not a typical string
-// as those might be null terminated. This might make sense to provide in form
-// of a helper in zvariant
-pub(crate) fn path_from_null_terminated(bytes: Vec<u8>) -> PathBuf {
-    Path::new(OsStr::from_bytes(bytes.split_last().unwrap().1)).to_path_buf()
-}
 
 pub(crate) async fn is_flatpak() -> bool {
     #[cfg(feature = "async-std")]
