@@ -217,12 +217,12 @@ impl<'a> Documents<'a> {
         &self,
         o_path_fds: &[&impl AsRawFd],
         flags: BitFlags<DocumentFlags>,
-        app_id: impl Into<AppID>,
+        app_id: impl TryInto<AppID, Error = Error>,
         permissions: &[Permission],
     ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
         self.0
-            .call("AddFull", &(o_path, flags, app_id.into(), permissions))
+            .call("AddFull", &(o_path, flags, app_id.try_into()?, permissions))
             .await
     }
 
@@ -292,7 +292,7 @@ impl<'a> Documents<'a> {
         o_path_fd: &(impl AsRawFd + fmt::Debug),
         filename: impl AsRef<Path>,
         flags: BitFlags<DocumentFlags>,
-        app_id: impl Into<AppID>,
+        app_id: impl TryInto<AppID, Error = Error>,
         permissions: &[Permission],
     ) -> Result<(DocumentID, HashMap<String, OwnedValue>), Error> {
         let cstr = CString::new(filename.as_ref().as_os_str().as_bytes())
@@ -304,7 +304,7 @@ impl<'a> Documents<'a> {
                     Fd::from(o_path_fd.as_raw_fd()),
                     cstr.as_bytes_with_nul(),
                     flags,
-                    app_id.into(),
+                    app_id.try_into()?,
                     permissions,
                 ),
             )
@@ -361,13 +361,13 @@ impl<'a> Documents<'a> {
     pub async fn grant_permissions(
         &self,
         doc_id: impl Into<DocumentID>,
-        app_id: impl Into<AppID>,
+        app_id: impl TryInto<AppID, Error = Error>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         self.0
             .call(
                 "GrantPermissions",
-                &(doc_id.into(), app_id.into(), permissions),
+                &(doc_id.into(), app_id.try_into()?, permissions),
             )
             .await
     }
@@ -419,9 +419,9 @@ impl<'a> Documents<'a> {
     #[doc(alias = "List")]
     pub async fn list(
         &self,
-        app_id: impl Into<AppID>,
+        app_id: impl TryInto<AppID, Error = Error>,
     ) -> Result<HashMap<DocumentID, PathBuf>, Error> {
-        let response: HashMap<String, Vec<u8>> = self.0.call("List", &(app_id.into())).await?;
+        let response: HashMap<String, Vec<u8>> = self.0.call("List", &(app_id.try_into()?)).await?;
 
         let mut new_response: HashMap<DocumentID, PathBuf> = HashMap::new();
         for (key, bytes) in response {
@@ -479,13 +479,13 @@ impl<'a> Documents<'a> {
     pub async fn revoke_permissions(
         &self,
         doc_id: impl Into<DocumentID>,
-        app_id: impl Into<AppID>,
+        app_id: impl TryInto<AppID, Error = Error>,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         self.0
             .call(
                 "RevokePermissions",
-                &(doc_id.into(), app_id.into(), permissions),
+                &(doc_id.into(), app_id.try_into()?, permissions),
             )
             .await
     }
