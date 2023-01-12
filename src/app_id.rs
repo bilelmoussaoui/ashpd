@@ -46,7 +46,7 @@ impl std::fmt::Display for AppID {
 }
 
 /// The ID of a file in the document store.
-#[derive(Debug, Serialize, Deserialize, Type, PartialEq, Eq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct DocumentID(String);
 
 impl From<&str> for DocumentID {
@@ -58,6 +58,24 @@ impl From<&str> for DocumentID {
 impl From<String> for DocumentID {
     fn from(value: String) -> Self {
         Self(value)
+    }
+}
+
+impl From<DocumentID> for String {
+    fn from(value: DocumentID) -> String {
+        value.0
+    }
+}
+
+impl AsRef<str> for DocumentID {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl std::fmt::Display for DocumentID {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_ref())
     }
 }
 
