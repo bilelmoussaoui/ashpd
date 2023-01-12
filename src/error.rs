@@ -47,6 +47,10 @@ pub enum Error {
     /// A pipewire error
     #[cfg(feature = "pipewire")]
     Pipewire(pw::Error),
+    /// Invalid AppId
+    ///
+    /// See <https://developer.gnome.org/documentation/tutorials/application-id.html#rules-for-application-ids>
+    InvalidAppID,
 }
 
 impl std::error::Error for Error {}
@@ -62,6 +66,7 @@ impl std::fmt::Display for Error {
             #[cfg(feature = "pipewire")]
             Self::Pipewire(e) => f.write_str(&format!("Pipewire: {e}")),
             Self::ParseError(e) => f.write_str(e),
+            Self::InvalidAppID => f.write_str("Invalid app id"),
         }
     }
 }
