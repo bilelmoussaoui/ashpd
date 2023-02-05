@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y gtk3-devel pipewire-devel-0.3.59-2.fc37 clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y gtk3-devel pipewire-devel-0.3.59-2.fc37 clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y gtk3-devel pipewire-devel-0.3.59-2.fc37 clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y gtk3-devel pipewire-devel-0.3.59-2.fc37 clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
