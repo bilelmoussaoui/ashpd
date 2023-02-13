@@ -1,5 +1,5 @@
 {
-    "app-id": "com.belmoussaoui.ashpd.demo.Devel",
+    "id": "com.belmoussaoui.ashpd.demo.Devel",
     "runtime": "org.gnome.Platform",
     "runtime-version": "43",
     "sdk": "org.gnome.Sdk",
