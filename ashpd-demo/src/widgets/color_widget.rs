@@ -3,13 +3,14 @@ use gtk::{gdk, glib, graphene, prelude::*, subclass::prelude::*};
 mod imp {
     use std::cell::RefCell;
 
-    use glib::{ParamSpec, ParamSpecBoxed};
-    use once_cell::sync::Lazy;
+    use glib::{ParamSpec, Properties};
 
     use super::*;
 
-    #[derive(Debug, Default)]
+    #[derive(Debug, Properties, Default)]
+    #[properties(wrapper_type = super::ColorWidget)]
     pub struct ColorWidget {
+        #[property(get, set = Self::set_rgba)]
         pub rgba: RefCell<Option<gdk::RGBA>>,
     }
 
@@ -26,25 +27,15 @@ mod imp {
 
     impl ObjectImpl for ColorWidget {
         fn properties() -> &'static [ParamSpec] {
-            static PROPS: Lazy<Vec<ParamSpec>> =
-                Lazy::new(|| vec![ParamSpecBoxed::builder::<gdk::RGBA>("rgba").build()]);
-            PROPS.as_ref()
+            Self::derived_properties()
         }
 
-        fn property(&self, _id: usize, pspec: &ParamSpec) -> glib::Value {
-            match pspec.name() {
-                "rgba" => self.rgba.borrow().to_value(),
-                _ => unimplemented!(),
-            }
+        fn property(&self, id: usize, pspec: &ParamSpec) -> glib::Value {
+            self.derived_property(id, pspec)
         }
 
-        fn set_property(&self, _id: usize, value: &glib::Value, pspec: &ParamSpec) {
-            match pspec.name() {
-                "rgba" => {
-                    self.rgba.borrow_mut().replace(value.get().unwrap());
-                }
-                _ => unimplemented!(),
-            }
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &ParamSpec) {
+            self.derived_set_property(id, value, pspec)
         }
 
         fn constructed(&self) {
@@ -69,16 +60,16 @@ mod imp {
             snapshot.append_color(&color, &graphene::Rect::new(0.0, 0.0, width, height));
         }
     }
+
+    impl ColorWidget {
+        pub fn set_rgba(&self, rgba: gdk::RGBA) {
+            self.rgba.replace(Some(rgba));
+            self.obj().queue_draw();
+        }
+    }
 }
 
 glib::wrapper! {
     pub struct ColorWidget(ObjectSubclass<imp::ColorWidget>)
         @extends gtk::Widget;
-}
-
-impl ColorWidget {
-    pub fn set_rgba(&self, rgba: gdk::RGBA) {
-        self.set_property("rgba", &rgba);
-        self.queue_draw();
-    }
 }

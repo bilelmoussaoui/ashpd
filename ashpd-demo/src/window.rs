@@ -230,11 +230,10 @@ impl ApplicationWindow {
 
         let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
         imp.leaflet.navigate(adw::NavigationDirection::Forward);
-        let page_name = sidebar_row.name();
+        let page_name = sidebar_row.page_name();
         if imp.stack.child_by_name(&page_name).is_some() {
             imp.stack.set_visible_child_name(&page_name);
-            imp.window_title
-                .set_title(&sidebar_row.title().unwrap_or_default());
+            imp.window_title.set_title(&sidebar_row.title());
         } else {
             imp.window_title.set_title("");
             imp.stack.set_visible_child_name("welcome");

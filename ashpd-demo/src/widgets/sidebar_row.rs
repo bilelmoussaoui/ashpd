@@ -1,20 +1,27 @@
 use gtk::{glib, prelude::*};
 
 mod imp {
-    use std::cell::RefCell;
+    use std::{cell::RefCell, marker::PhantomData};
 
-    use glib::{ParamSpec, ParamSpecString, Value};
+    use glib::{ParamSpec, Properties};
     use gtk::subclass::prelude::*;
-    use once_cell::sync::Lazy;
 
     use super::*;
 
-    #[derive(Debug, gtk::CompositeTemplate, Default)]
+    #[derive(Debug, Properties, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/sidebar_row.ui")]
+    #[properties(wrapper_type = super::SidebarRow)]
     pub struct SidebarRow {
         #[template_child]
-        pub title: TemplateChild<gtk::Label>,
-        pub name: RefCell<Option<String>>,
+        pub title_label: TemplateChild<gtk::Label>,
+        #[property(
+            type = String,
+            get = |r: &Self| r.title_label.label().to_string(),
+            set = Self::set_title,
+            construct)]
+        title: PhantomData<String>,
+        #[property(name = "page-name", get, set, construct, default = "welcome")]
+        pub name: RefCell<String>,
     }
 
     #[glib::object_subclass]
@@ -33,40 +40,23 @@ mod imp {
     }
     impl ObjectImpl for SidebarRow {
         fn properties() -> &'static [ParamSpec] {
-            static PROPS: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
-                vec![
-                    ParamSpecString::builder("title").construct().build(),
-                    ParamSpecString::builder("page-name")
-                        .default_value(Some("welcome"))
-                        .construct()
-                        .build(),
-                ]
-            });
-            PROPS.as_ref()
+            Self::derived_properties()
         }
-        fn property(&self, _id: usize, pspec: &ParamSpec) -> Value {
-            match pspec.name() {
-                "title" => self.title.label().to_value(),
-                "page-name" => self.name.borrow().to_value(),
-                _ => unimplemented!(),
-            }
+        fn property(&self, id: usize, pspec: &ParamSpec) -> glib::Value {
+            self.derived_property(id, pspec)
         }
-        fn set_property(&self, _id: usize, value: &Value, pspec: &ParamSpec) {
-            match pspec.name() {
-                "title" => {
-                    self.title.set_text(&value.get::<String>().unwrap());
-                }
-                "page-name" => {
-                    self.name
-                        .borrow_mut()
-                        .replace(value.get::<String>().unwrap());
-                }
-                _ => unimplemented!(),
-            }
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &ParamSpec) {
+            self.derived_set_property(id, value, pspec)
         }
     }
     impl WidgetImpl for SidebarRow {}
     impl ListBoxRowImpl for SidebarRow {}
+
+    impl SidebarRow {
+        fn set_title(&self, title: &str) {
+            self.title_label.set_text(title);
+        }
+    }
 }
 
 glib::wrapper! {
@@ -81,13 +71,5 @@ impl SidebarRow {
             .property("title", &title)
             .property("page-name", &page_name)
             .build()
-    }
-
-    pub fn title(&self) -> Option<String> {
-        self.property("title")
-    }
-
-    pub fn name(&self) -> String {
-        self.property("page-name")
     }
 }

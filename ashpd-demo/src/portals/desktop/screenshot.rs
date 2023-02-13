@@ -1,5 +1,5 @@
 use ashpd::{desktop::screenshot, WindowIdentifier};
-use gtk::{gio, glib, prelude::*, subclass::prelude::*};
+use gtk::{gdk, gio, glib, prelude::*, subclass::prelude::*};
 
 use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -80,7 +80,7 @@ impl ScreenshotPage {
             .and_then(|r| r.response())
         {
             Ok(color) => {
-                self.imp().color_widget.set_rgba(color.into());
+                self.imp().color_widget.set_rgba(gdk::RGBA::from(color));
                 self.send_notification(
                     "Color pick request was successful",
                     NotificationKind::Success,

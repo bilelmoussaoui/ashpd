@@ -2,7 +2,7 @@
 <interface>
   <template class="SidebarRow" parent="GtkListBoxRow">
     <child>
-      <object class="GtkLabel" id="title">
+      <object class="GtkLabel" id="title_label">
         <property name="halign">start</property>
       </object>
     </child>
