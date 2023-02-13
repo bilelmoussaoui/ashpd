@@ -121,7 +121,7 @@ glib::wrapper! {
 impl ScreenCastPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[])
+        glib::Object::new()
     }
 
     /// Returns the selected SourceType

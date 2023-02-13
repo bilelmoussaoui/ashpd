@@ -69,6 +69,6 @@ impl RemovableRow {
 
 impl Default for RemovableRow {
     fn default() -> Self {
-        glib::Object::new(&[])
+        glib::Object::new()
     }
 }

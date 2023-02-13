@@ -1,4 +1,4 @@
-use ashpd::{desktop::background::BackgroundResponse, WindowIdentifier};
+use ashpd::{desktop::background::Background, WindowIdentifier};
 use gtk::{glib, prelude::*, subclass::prelude::*};
 
 use crate::{
@@ -64,7 +64,7 @@ glib::wrapper! {
 impl BackgroundPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[])
+        glib::Object::new()
     }
 
     async fn request_background(&self) {
@@ -80,7 +80,7 @@ impl BackgroundPage {
                 .collect::<Vec<String>>()
         });
 
-        let request = BackgroundResponse::builder()
+        let request = Background::builder()
             .identifier(identifier)
             .reason(&*reason)
             .auto_start(auto_start)

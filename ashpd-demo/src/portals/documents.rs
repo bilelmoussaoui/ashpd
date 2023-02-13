@@ -1,7 +1,6 @@
 use ashpd::documents::Documents;
 use gtk::{
     glib::{self, clone},
-    prelude::*,
     subclass::prelude::*,
 };
 

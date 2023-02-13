@@ -1,5 +1,5 @@
 use ashpd::desktop::device::{Device, DeviceProxy};
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{glib, subclass::prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -69,7 +69,7 @@ glib::wrapper! {
 impl DevicePage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[])
+        glib::Object::new()
     }
 
     async fn request(&self) -> ashpd::Result<()> {

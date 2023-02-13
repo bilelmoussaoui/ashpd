@@ -201,7 +201,7 @@ mod button {
     impl NotificationButton {
         #[allow(clippy::new_without_default)]
         pub fn new() -> Self {
-            glib::Object::new(&[])
+            glib::Object::new()
         }
 
         pub fn connect_removed<F>(&self, callback: F) -> glib::SignalHandlerId

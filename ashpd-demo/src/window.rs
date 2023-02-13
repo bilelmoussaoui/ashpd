@@ -207,7 +207,9 @@ glib::wrapper! {
 
 impl ApplicationWindow {
     pub fn new(app: &Application) -> Self {
-        glib::Object::new(&[("application", &app)])
+        glib::Object::builder()
+            .property("application", &app)
+            .build()
     }
 
     fn save_window_size(&self) -> Result<(), glib::BoolError> {

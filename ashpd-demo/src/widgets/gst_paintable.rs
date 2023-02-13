@@ -166,6 +166,6 @@ impl CameraPaintable {
 
 impl Default for CameraPaintable {
     fn default() -> Self {
-        glib::Object::new(&[])
+        glib::Object::new()
     }
 }

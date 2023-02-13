@@ -5,7 +5,6 @@ use ashpd::{
     flatpak::{Flatpak, SpawnFlags, SpawnOptions},
     zbus, zvariant,
 };
-use gio::ApplicationFlags;
 use glib::{clone, WeakRef};
 use gtk::{gio, glib, subclass::prelude::*};
 use once_cell::sync::OnceCell;
@@ -108,11 +107,10 @@ glib::wrapper! {
 impl Application {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[
-            ("application-id", &Some(config::APP_ID)),
-            ("flags", &ApplicationFlags::FLAGS_NONE),
-            ("resource-base-path", &Some("/com/belmoussaoui/ashpd/demo/")),
-        ])
+        glib::Object::builder()
+            .property("application-id", &Some(config::APP_ID))
+            .property("resource-base-path", &Some("/com/belmoussaoui/ashpd/demo/"))
+            .build()
     }
 
     fn main_window(&self) -> ApplicationWindow {
@@ -148,8 +146,7 @@ impl Application {
             })
             .build();
 
-        self.add_action_entries([about_action, quit_action, restart_action])
-            .unwrap();
+        self.add_action_entries([about_action, quit_action, restart_action]);
 
         let is_sandboxed = futures::executor::block_on(async { ashpd::is_sandboxed().await });
         // The restart app requires the Flatpak portal

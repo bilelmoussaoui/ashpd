@@ -73,7 +73,7 @@ impl ScreenshotPage {
         // used for retrieving a window identifier
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        match screenshot::ColorResponse::builder()
+        match screenshot::Color::builder()
             .identifier(identifier)
             .build()
             .await

@@ -79,7 +79,7 @@ glib::wrapper! {
 impl NetworkMonitorPage {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        glib::Object::new(&[])
+        glib::Object::new()
     }
 
     async fn refresh(&self) -> ashpd::Result<()> {
