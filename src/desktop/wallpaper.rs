@@ -49,6 +49,7 @@ use crate::{desktop::HandleToken, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
 /// Where to set the wallpaper on.
 pub enum SetOn {
     /// Set the wallpaper only on the lock-screen.
@@ -210,7 +211,7 @@ mod tests {
     fn serialize_deserialize() {
         let set_on = SetOn::Both;
         let string = serde_json::to_string(&set_on).unwrap();
-        assert_eq!(string, "\"Both\"");
+        assert_eq!(string, "\"both\"");
 
         let decoded = serde_json::from_str(&string).unwrap();
         assert_eq!(set_on, decoded);
