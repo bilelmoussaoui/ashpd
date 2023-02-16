@@ -31,6 +31,24 @@ where
     Err(ResponseError),
 }
 
+#[cfg(feature = "backend")]
+impl<T> Response<T>
+where
+    T: for<'de> Deserialize<'de> + Type,
+{
+    pub fn ok(inner: T) -> Self {
+        Self::Ok(inner)
+    }
+
+    pub fn cancelled() -> Self {
+        Self::Err(ResponseError::Cancelled)
+    }
+
+    pub fn other() -> Self {
+        Self::Err(ResponseError::Other)
+    }
+}
+
 impl<T> Type for Response<T>
 where
     T: for<'de> Deserialize<'de> + Type,
