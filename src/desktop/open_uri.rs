@@ -131,6 +131,9 @@ impl<'a> OpenURIProxy<'a> {
 #[derive(Debug, Default)]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
 #[doc(alias = "xdp_portal_open_uri")]
+/// A [builder-pattern] type to open a file.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct OpenFileRequest {
     identifier: WindowIdentifier,
     options: OpenFileOptions,
@@ -158,11 +161,13 @@ impl OpenFileRequest {
         self
     }
 
+    /// Send the request for a file.
     pub async fn send_file(self, file: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_file(&self.identifier, file, self.options).await
     }
 
+    /// Send the request for a URI.
     pub async fn send_uri(self, uri: &Url) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_uri(&self.identifier, uri, self.options).await
@@ -172,6 +177,9 @@ impl OpenFileRequest {
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_open_directory")]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
+/// A [builder-pattern] type to open a directory.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct OpenDirectoryRequest {
     identifier: WindowIdentifier,
     options: OpenDirOptions,
@@ -185,6 +193,7 @@ impl OpenDirectoryRequest {
         self
     }
 
+    /// Send the request.
     pub async fn send(self, directory: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy

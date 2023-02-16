@@ -4,6 +4,9 @@
 
 use crate::{proxy::Proxy, Error};
 
+/// Interface for setting a thread to realtime from within the sandbox.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Realtime).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Realtime")]
 pub struct Realtime<'a>(Proxy<'a>);
@@ -16,6 +19,7 @@ impl<'a> Realtime<'a> {
     }
 
     #[doc(alias = "MakeThreadRealtimeWithPID")]
+    #[allow(missing_docs)]
     pub async fn max_thread_realtime_with_pid(
         &self,
         process: u64,
@@ -28,6 +32,7 @@ impl<'a> Realtime<'a> {
     }
 
     #[doc(alias = "MakeThreadHighPriorityWithPID")]
+    #[allow(missing_docs)]
     pub async fn max_thread_high_priority_with_pid(
         &self,
         process: u64,
@@ -43,16 +48,19 @@ impl<'a> Realtime<'a> {
     }
 
     #[doc(alias = "MaxRealtimePriority")]
+    #[allow(missing_docs)]
     pub async fn max_realtime_priority(&self) -> Result<i64, Error> {
         self.0.property("MaxRealtimePriority").await
     }
 
     #[doc(alias = "MinNiceLevel")]
+    #[allow(missing_docs)]
     pub async fn min_nice_level(&self) -> Result<u32, Error> {
         self.0.property("MinNiceLevel").await
     }
 
     #[doc(alias = "RTTimeUSecMax")]
+    #[allow(missing_docs)]
     pub async fn rt_time_usec_max(&self) -> Result<u32, Error> {
         self.0.property("RTTimeUSecMax").await
     }

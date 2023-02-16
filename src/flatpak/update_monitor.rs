@@ -37,25 +37,25 @@ struct UpdateOptions {}
 #[zvariant(signature = "dict")]
 pub struct UpdateInfo {
     #[zvariant(rename = "running-commit")]
-    /// The currently running OSTree commit.
     running_commit: String,
     #[zvariant(rename = "local-commit")]
-    /// The locally installed OSTree commit.
     local_commit: String,
     #[zvariant(rename = "remote-commit")]
-    /// The available commit to install.
     remote_commit: String,
 }
 
 impl UpdateInfo {
+    /// The currently running OSTree commit.
     pub fn running_commit(&self) -> &str {
         &self.running_commit
     }
 
+    /// The locally installed OSTree commit.
     pub fn local_commit(&self) -> &str {
         &self.local_commit
     }
 
+    /// The available commit to install.
     pub fn remote_commit(&self) -> &str {
         &self.remote_commit
     }

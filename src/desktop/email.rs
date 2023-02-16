@@ -87,6 +87,9 @@ impl<'a> EmailProxy<'a> {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_compose_email")]
+/// A [builder-pattern] type to compose an email.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct EmailRequest {
     identifier: WindowIdentifier,
     options: EmailOptions,
@@ -164,6 +167,7 @@ impl EmailRequest {
         self
     }
 
+    /// A different variant of [`Self::attach`].
     pub fn add_attachment(&mut self, attachment: &impl AsRawFd) {
         let attachment = Fd::from(attachment.as_raw_fd());
         match self.options.attachment_fds {
@@ -174,6 +178,7 @@ impl EmailRequest {
         };
     }
 
+    /// Send the request.
     pub async fn send(self) -> Result<Request<()>, Error> {
         let proxy = EmailProxy::new().await?;
         proxy.compose(&self.identifier, self.options).await

@@ -212,7 +212,7 @@ impl<T> Request<T>
 where
     T: for<'de> Deserialize<'de> + Type + Debug,
 {
-    pub async fn new<P>(path: P) -> Result<Request<T>, Error>
+    pub(crate) async fn new<P>(path: P) -> Result<Request<T>, Error>
     where
         P: TryInto<ObjectPath<'static>>,
         P::Error: Into<zbus::Error>,
@@ -223,7 +223,7 @@ where
         Ok(Self(proxy, stream, Default::default(), PhantomData))
     }
 
-    pub async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<T>, Error> {
+    pub(crate) async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<T>, Error> {
         let path =
             Proxy::unique_name("/org/freedesktop/portal/desktop/request", handle_token).await?;
         #[cfg(feature = "tracing")]
@@ -246,6 +246,7 @@ where
         Ok(())
     }
 
+    /// The corresponding response if the request was successful.
     pub fn response(&self) -> Result<T, Error> {
         // It should be safe to unwrap here as we are sure we have received a response
         // by the time the user calls response

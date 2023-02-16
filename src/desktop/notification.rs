@@ -21,7 +21,7 @@
 //!                 .default_action_target(100)
 //!                 .body("color copied to clipboard")
 //!                 .priority(Priority::High)
-//!                 .icon(Icon::from_names(&["dialog-question-symbolic"]))
+//!                 .icon(Icon::with_names(&["dialog-question-symbolic"]))
 //!                 .button(Button::new("Copy", "copy").target(32))
 //!                 .button(Button::new("Delete", "delete").target(40)),
 //!         )

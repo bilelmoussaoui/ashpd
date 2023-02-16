@@ -50,15 +50,21 @@ struct ScreenshotOptions {
 
 #[derive(DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
+/// The response of a [`ScreenshotRequest`] request.
 pub struct Screenshot {
     uri: url::Url,
 }
 
 impl Screenshot {
+    /// Creates a new builder-pattern struct instance to construct
+    /// [`Screenshot`].
+    ///
+    /// This method returns an instance of [`ScreenshotRequest`].
     pub fn request() -> ScreenshotRequest {
         ScreenshotRequest::default()
     }
 
+    /// The screenshot URI.
     pub fn uri(&self) -> &url::Url {
         &self.uri
     }

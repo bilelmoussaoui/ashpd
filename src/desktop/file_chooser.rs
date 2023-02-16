@@ -138,10 +138,12 @@ impl FileFilter {
 }
 
 impl FileFilter {
+    /// The label of the filter.
     pub fn label(&self) -> &str {
         &self.0
     }
 
+    /// List of mimetypes filters.
     pub fn mimetype_filters(&self) -> Vec<&str> {
         self.1
             .iter()
@@ -149,6 +151,7 @@ impl FileFilter {
             .collect()
     }
 
+    /// List of glob patterns filters.
     pub fn pattern_filters(&self) -> Vec<&str> {
         self.1
             .iter()
@@ -206,6 +209,7 @@ impl Choice {
         &self.1
     }
 
+    /// Pairs of choices.
     pub fn pairs(&self) -> Vec<(&str, &str)> {
         self.2
             .iter()
@@ -351,6 +355,9 @@ impl<'a> FileChooserProxy<'a> {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_open_file")]
+/// A [builder-pattern] type to open a file.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct OpenFileRequest {
     identifier: WindowIdentifier,
     title: String,
@@ -408,6 +415,7 @@ impl OpenFileRequest {
     }
 
     #[must_use]
+    /// Adds a list of files filters.
     pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
         self.options.filters = filters.into_iter().collect();
         self
@@ -428,11 +436,13 @@ impl OpenFileRequest {
     }
 
     #[must_use]
+    /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
         self.options.choices = choices.into_iter().collect();
         self
     }
 
+    /// Send the request.
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
@@ -443,6 +453,9 @@ impl OpenFileRequest {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_save_files")]
+/// A [builder-pattern] type to save multiple files.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct SaveFilesRequest {
     identifier: WindowIdentifier,
     title: String,
@@ -486,6 +499,7 @@ impl SaveFilesRequest {
     }
 
     #[must_use]
+    /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
         self.options.choices = choices.into_iter().collect();
         self
@@ -515,6 +529,7 @@ impl SaveFilesRequest {
         Ok(self)
     }
 
+    /// Send the request.
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
@@ -525,6 +540,9 @@ impl SaveFilesRequest {
 
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_save_file")]
+/// A [builder-pattern] type to save a file.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct SaveFileRequest {
     identifier: WindowIdentifier,
     title: String,
@@ -596,6 +614,7 @@ impl SaveFileRequest {
     }
 
     #[must_use]
+    /// Adds a list of files filters.
     pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
         self.options.filters = filters.into_iter().collect();
         self
@@ -616,11 +635,13 @@ impl SaveFileRequest {
     }
 
     #[must_use]
+    /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
         self.options.choices = choices.into_iter().collect();
         self
     }
 
+    /// Send the request.
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy

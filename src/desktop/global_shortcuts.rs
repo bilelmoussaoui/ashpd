@@ -111,11 +111,11 @@ struct BindShortcutsOptions {
 #[derive(DeserializeDict, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct BindShortcuts {
-    /// A list of shortcuts.
     shortcuts: Vec<Shortcut>,
 }
 
 impl BindShortcuts {
+    /// A list of shortcuts.
     pub fn shortcuts(&self) -> &[Shortcut] {
         &self.shortcuts
     }
@@ -138,6 +138,7 @@ pub struct ListShortcuts {
 }
 
 impl ListShortcuts {
+    /// A list of shortcuts.
     pub fn shortcuts(&self) -> &[Shortcut] {
         &self.shortcuts
     }

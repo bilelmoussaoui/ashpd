@@ -243,6 +243,8 @@ pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
 }
 
 #[cfg(not(feature = "pipewire"))]
+/// Request access to the camera and return a file descriptor if one is
+/// available.
 pub async fn request() -> Result<Option<RawFd>, Error> {
     let proxy = Camera::new().await?;
     proxy.request_access().await?;
@@ -254,6 +256,8 @@ pub async fn request() -> Result<Option<RawFd>, Error> {
 }
 
 #[cfg(feature = "pipewire")]
+/// Request access to the camera and return a file descriptor and a list of the
+/// available streams, one per camera.
 pub async fn request() -> Result<Option<(RawFd, Vec<Stream>)>, Error> {
     let proxy = Camera::new().await?;
     proxy.request_access().await?;

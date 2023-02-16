@@ -9,20 +9,25 @@ use crate::Error;
 
 #[derive(Debug, PartialEq, Eq, Type)]
 #[zvariant(signature = "(sv)")]
+/// A representation of an icon.
+///
+/// Used by both the Notification & Dynamic launcher portals.
 pub enum Icon {
+    /// An icon URI.
     Uri(url::Url),
+    /// A list of icon names.
     Names(Vec<String>),
+    /// Icon bytes.
     Bytes(Vec<u8>),
 }
 
 impl Icon {
-    pub fn from_names(names: &[&str]) -> Self {
-        Self::Names(
-            names
-                .iter()
-                .map(|name| name.to_owned().to_owned())
-                .collect(),
-        )
+    /// Create an icon from a list of names.
+    pub fn with_names<N>(names: impl IntoIterator<Item = N>) -> Self
+    where
+        N: ToString,
+    {
+        Self::Names(names.into_iter().map(|name| name.to_string()).collect())
     }
 }
 
@@ -149,7 +154,7 @@ mod test {
     fn serialize_deserialize() {
         let ctxt = Context::<LE>::new_dbus(0);
 
-        let icon = Icon::from_names(&["dialog-symbolic"]);
+        let icon = Icon::with_names(&["dialog-symbolic"]);
 
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = from_slice(&encoded, ctxt).unwrap();

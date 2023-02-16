@@ -15,7 +15,7 @@
 //!         .prepare_install(
 //!             &WindowIdentifier::default(),
 //!             "My App",
-//!             Icon::from_names(&["dialog-symbolic"]),
+//!             Icon::with_names(&["dialog-symbolic"]),
 //!             PrepareInstallOptions::default(),
 //!         )
 //!         .await?
@@ -51,6 +51,7 @@ use crate::{proxy::Proxy, Error, WindowIdentifier};
 #[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[repr(u32)]
 #[doc(alias = "XdpLauncherType")]
+/// The type of the launcher.
 pub enum LauncherType {
     #[doc(alias = "XDP_LAUNCHER_APPLICATION")]
     #[default]
@@ -64,25 +65,33 @@ pub enum LauncherType {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]
+/// The icon format.
 pub enum IconType {
+    /// PNG.
     Png,
+    /// JPEG.
     Jpeg,
+    /// SVG.
     Svg,
 }
 
 #[derive(Deserialize, Type)]
 #[zvariant(signature = "(vsu)")]
+/// The icon of the launcher.
 pub struct LauncherIcon(Icon, IconType, u32);
 
 impl LauncherIcon {
+    /// The actual icon.
     pub fn icon(&self) -> &Icon {
         &self.0
     }
 
+    /// The icon type.
     pub fn type_(&self) -> IconType {
         self.1
     }
 
+    /// The icon size.
     pub fn size(&self) -> u32 {
         self.2
     }
@@ -90,6 +99,7 @@ impl LauncherIcon {
 
 #[derive(Debug, Default, SerializeDict, Type)]
 #[zvariant(signature = "dict")]
+/// Options to pass to [`DynamicLauncherProxy::prepare_install`]
 pub struct PrepareInstallOptions {
     handle_token: HandleToken,
     modal: Option<bool>,
@@ -100,26 +110,32 @@ pub struct PrepareInstallOptions {
 }
 
 impl PrepareInstallOptions {
+    /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
     }
 
+    /// Sets the launcher type.
     pub fn launcher_type(mut self, launcher_type: LauncherType) -> Self {
         self.launcher_type = launcher_type;
         self
     }
 
+    /// The URL for a [`LauncherType::WebApplication`] otherwise it is not
+    /// needed.
     pub fn target<'a>(mut self, target: impl Into<Option<&'a str>>) -> Self {
         self.target = target.into().map(ToOwned::to_owned);
         self
     }
 
+    /// Sets whether the name should be editable.
     pub fn editable_name(mut self, editable_name: impl Into<Option<bool>>) -> Self {
         self.editable_name = editable_name.into();
         self
     }
 
+    /// Sets whether the icon should be editable.
     pub fn editable_icon(mut self, editable_icon: impl Into<Option<bool>>) -> Self {
         self.editable_icon = editable_icon.into();
         self

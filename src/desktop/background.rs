@@ -82,10 +82,16 @@ struct SetStatusOptions {
     message: String,
 }
 
+/// The interface lets sandboxed applications request that the application
+/// is allowed to run in the background or started automatically when the user
+/// logs in.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
 #[doc(alias = "org.freedesktop.portal.Background")]
 pub struct BackgroundProxy<'a>(Proxy<'a>);
 
 impl<'a> BackgroundProxy<'a> {
+    /// Create a new instance of [`BackgroundProxy`].
     pub async fn new() -> Result<BackgroundProxy<'a>, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Background").await?;
         Ok(Self(proxy))

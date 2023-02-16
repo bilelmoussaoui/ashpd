@@ -91,6 +91,7 @@ pub enum CursorMode {
 #[derive(Default, Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]
+/// Persistance mode for a screencast session.
 pub enum PersistMode {
     #[doc(alias = "XDP_PERSIST_MODE_NONE")]
     #[default]
@@ -192,10 +193,12 @@ pub struct Streams {
 }
 
 impl Streams {
+    /// The session restore token.
     pub fn restore_token(&self) -> Option<&str> {
         self.restore_token.as_deref()
     }
 
+    /// The list of streams.
     pub fn streams(&self) -> &[Stream] {
         &self.streams
     }
@@ -239,10 +242,12 @@ impl Stream {
         self.1.size
     }
 
+    /// The source type of the stream.
     pub fn source_type(&self) -> Option<SourceType> {
         self.1.source_type
     }
 
+    /// The stream identifier.
     pub fn id(&self) -> Option<&str> {
         self.1.id.as_deref()
     }
