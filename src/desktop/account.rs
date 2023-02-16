@@ -34,7 +34,7 @@ struct UserInformationOptions {
     reason: Option<String>,
 }
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, DeserializeDict, SerializeDict, Type)]
 /// The response of a [`UserInformationRequest`] request.
 #[zvariant(signature = "dict")]
 pub struct UserInformation {
