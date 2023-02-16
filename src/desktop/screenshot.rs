@@ -10,7 +10,7 @@
 //! use ashpd::desktop::screenshot::ScreenshotRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = ScreenshotRequest::default()
+//!     let response = Screenshot::builder()
 //!         .interactive(true)
 //!         .modal(true)
 //!         .build()
@@ -55,6 +55,10 @@ pub struct Screenshot {
 }
 
 impl Screenshot {
+    pub fn builder() -> ScreenshotRequest {
+        ScreenshotRequest::default()
+    }
+
     pub fn uri(&self) -> &url::Url {
         &self.uri
     }

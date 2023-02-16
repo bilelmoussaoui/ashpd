@@ -8,10 +8,10 @@
 //! ### Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::background::BackgroundRequest;
+//! use ashpd::desktop::background::Background;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = BackgroundRequest::default()
+//!     let response = Background::builder()
 //!         .reason("Automatically fetch your latest mails")
 //!         .auto_start(true)
 //!         .command(&["geary"])

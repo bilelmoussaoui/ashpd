@@ -6,10 +6,10 @@
 //! ### Examples
 //!
 //! ```rust, no_run
-//! use ashpd::desktop::account::UserInformationRequest;
+//! use ashpd::desktop::account::UserInformation;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = UserInformationRequest::default()
+//!     let response = UserInformation::builder()
 //!         .reason("App would like to access user information")
 //!         .build()
 //!         .await?

@@ -9,10 +9,10 @@
 //! #### Opening a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{Choice, FileFilter, OpenFileRequest};
+//! use ashpd::desktop::file_chooser::{Choice, FileFilter, SelectedFiles};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let files = OpenFileRequest::default()
+//!     let files = SelectedFiles::open_file()
 //!         .title("open a file to read")
 //!         .accept_label("read")
 //!         .modal(true)
@@ -38,10 +38,10 @@
 //! #### Ask to save a file
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::{FileFilter, SaveFileRequest};
+//! use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let files = SaveFileRequest::default()
+//!     let files = SelectedFiles::save_file()
 //!         .title("open a file to write")
 //!         .accept_label("write")
 //!         .current_name("image.jpg")
@@ -60,10 +60,10 @@
 //! #### Ask to save multiple files
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::file_chooser::SaveFilesRequest;
+//! use ashpd::desktop::file_chooser::SelectedFiles;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let files = SaveFilesRequest::default()
+//!     let files = SelectedFiles::save_files()
 //!         .title("open files to write")
 //!         .accept_label("write files")
 //!         .modal(true)
@@ -267,6 +267,21 @@ pub struct SelectedFiles {
 }
 
 impl SelectedFiles {
+    /// Start an open file request.
+    pub fn open_file() -> OpenFileRequest {
+        OpenFileRequest::default()
+    }
+
+    /// Start a save file request.
+    pub fn save_file() -> SaveFileRequest {
+        SaveFileRequest::default()
+    }
+
+    /// Start a save files request.
+    pub fn save_files() -> SaveFilesRequest {
+        SaveFilesRequest::default()
+    }
+
     /// The selected files uris.
     pub fn uris(&self) -> &[url::Url] {
         self.uris.as_slice()
