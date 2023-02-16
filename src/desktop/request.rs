@@ -89,7 +89,7 @@ where
 
 impl<T> Serialize for Response<T>
 where
-    T: for<'de> Deserialize<'de> + Serialize + Type + Default,
+    T: for<'de> Deserialize<'de> + Serialize + Type,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -99,7 +99,7 @@ where
         match self {
             Self::Err(err) => {
                 map.serialize_element(&ResponseType::from(*err))?;
-                map.serialize_element(&T::default())?;
+                map.serialize_element(&HashMap::<&str, Value<'_>>::new())?;
             }
             Self::Ok(response) => {
                 map.serialize_element(&ResponseType::Success)?;
