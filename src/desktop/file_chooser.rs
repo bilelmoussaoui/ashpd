@@ -88,16 +88,28 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 use super::{HandleToken, Request};
 use crate::{proxy::Proxy, Error, FilePath, WindowIdentifier};
 
-#[derive(Clone, Serialize, Type, Debug)]
+#[derive(Clone, Serialize, Type, Debug, PartialEq)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
 /// pattern.
 pub struct FileFilter(String, Vec<(FilterType, String)>);
 
-#[derive(Clone, Serialize_repr, Debug, Type)]
+#[derive(Clone, Serialize_repr, Debug, Type, PartialEq)]
 #[repr(u32)]
 enum FilterType {
     GlobPattern = 0,
     MimeType = 1,
+}
+
+impl FilterType {
+    /// Whether it is a mime type filter.
+    fn is_mimetype(&self) -> bool {
+        matches!(self, FilterType::MimeType)
+    }
+
+    /// Whether it is a glib pattern type filter.
+    fn is_pattern(&self) -> bool {
+        matches!(self, FilterType::GlobPattern)
+    }
 }
 
 impl FileFilter {
@@ -122,6 +134,26 @@ impl FileFilter {
     pub fn glob(mut self, pattern: &str) -> Self {
         self.1.push((FilterType::GlobPattern, pattern.to_owned()));
         self
+    }
+}
+
+impl FileFilter {
+    pub fn label(&self) -> &str {
+        &self.0
+    }
+
+    pub fn mimetype_filters(&self) -> Vec<&str> {
+        self.1
+            .iter()
+            .filter_map(|(type_, string)| type_.is_mimetype().then_some(string.as_str()))
+            .collect()
+    }
+
+    pub fn pattern_filters(&self) -> Vec<&str> {
+        self.1
+            .iter()
+            .filter_map(|(type_, string)| type_.is_pattern().then_some(string.as_str()))
+            .collect()
     }
 }
 
