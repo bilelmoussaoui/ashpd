@@ -9,9 +9,9 @@
 //! use ashpd::desktop::account::UserInformation;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = UserInformation::builder()
+//!     let response = UserInformation::request()
 //!         .reason("App would like to access user information")
-//!         .build()
+//!         .send()
 //!         .await?
 //!         .response()?;
 //!
@@ -63,7 +63,7 @@ impl UserInformation {
     /// [`UserInformation`].
     ///
     /// This method returns an instance of [`UserInformationRequest`].
-    pub fn builder() -> UserInformationRequest {
+    pub fn request() -> UserInformationRequest {
         UserInformationRequest::default()
     }
 }
@@ -118,7 +118,7 @@ impl UserInformationRequest {
     }
 
     /// Build the [`UserInformation`].
-    pub async fn build(self) -> Result<Request<UserInformation>, Error> {
+    pub async fn send(self) -> Result<Request<UserInformation>, Error> {
         let proxy = AccountProxy::new().await?;
         proxy.user_information(&self.identifier, self.options).await
     }

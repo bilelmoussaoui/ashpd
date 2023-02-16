@@ -11,12 +11,12 @@
 //! use ashpd::desktop::background::Background;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = Background::builder()
+//!     let response = Background::request()
 //!         .reason("Automatically fetch your latest mails")
 //!         .auto_start(true)
 //!         .command(&["geary"])
 //!         .dbus_activatable(false)
-//!         .build()
+//!         .send()
 //!         .await?
 //!         .response()?;
 //!
@@ -61,7 +61,7 @@ impl Background {
     /// [`Background`].
     ///
     /// This method returns an instance of [`BackgroundRequest`].
-    pub fn builder() -> BackgroundRequest {
+    pub fn request() -> BackgroundRequest {
         BackgroundRequest::default()
     }
 
@@ -182,7 +182,7 @@ impl BackgroundRequest {
     }
 
     /// Build the [`Background`].
-    pub async fn build(self) -> Result<Request<Background>, Error> {
+    pub async fn send(self) -> Result<Request<Background>, Error> {
         let proxy = BackgroundProxy::new().await?;
         proxy
             .request_background(&self.identifier, self.options)

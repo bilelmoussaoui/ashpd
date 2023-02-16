@@ -25,7 +25,7 @@
 //!         // A trick to have a checkbox
 //!         .choice(Choice::boolean("re-encode", "Re-encode", false))
 //!         .filter(FileFilter::new("SVG Image").mimetype("image/svg+xml"))
-//!         .build()
+//!         .send()
 //!         .await?
 //!         .response()?;
 //!
@@ -47,7 +47,7 @@
 //!         .current_name("image.jpg")
 //!         .modal(true)
 //!         .filter(FileFilter::new("JPEG Image").glob("*.jpg"))
-//!         .build()
+//!         .send()
 //!         .await?
 //!         .response()?;
 //!
@@ -69,7 +69,7 @@
 //!         .modal(true)
 //!         .current_folder("/home/bilelmoussaoui/Pictures")?
 //!         .files(&["test.jpg", "awesome.png"])?
-//!         .build()
+//!         .send()
 //!         .await?
 //!         .response()?;
 //!
@@ -433,7 +433,7 @@ impl OpenFileRequest {
         self
     }
 
-    pub async fn build(self) -> Result<Request<SelectedFiles>, Error> {
+    pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .open_file(&self.identifier, &self.title, self.options)
@@ -515,7 +515,7 @@ impl SaveFilesRequest {
         Ok(self)
     }
 
-    pub async fn build(self) -> Result<Request<SelectedFiles>, Error> {
+    pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .save_files(&self.identifier, &self.title, self.options)
@@ -621,7 +621,7 @@ impl SaveFileRequest {
         self
     }
 
-    pub async fn build(self) -> Result<Request<SelectedFiles>, Error> {
+    pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
             .save_file(&self.identifier, &self.title, self.options)

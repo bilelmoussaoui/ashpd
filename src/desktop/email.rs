@@ -18,7 +18,7 @@
 //!         .subject("email subject")
 //!         .body("the pre-filled email body")
 //!         .attach(&file)
-//!         .build()
+//!         .send()
 //!         .await;
 //!     Ok(())
 //! }
@@ -174,7 +174,7 @@ impl EmailRequest {
         };
     }
 
-    pub async fn build(self) -> Result<Request<()>, Error> {
+    pub async fn send(self) -> Result<Request<()>, Error> {
         let proxy = EmailProxy::new().await?;
         proxy.compose(&self.identifier, self.options).await
     }

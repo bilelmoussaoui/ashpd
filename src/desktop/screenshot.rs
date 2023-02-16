@@ -7,13 +7,13 @@
 //! ## Taking a screenshot
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screenshot::ScreenshotRequest;
+//! use ashpd::desktop::screenshot::Screenshot;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let response = Screenshot::builder()
+//!     let response = Screenshot::request()
 //!         .interactive(true)
 //!         .modal(true)
-//!         .build()
+//!         .send()
 //!         .await?
 //!         .response()?;
 //!     println!("URI: {}", response.uri());
@@ -27,7 +27,7 @@
 //! use ashpd::desktop::screenshot::Color;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let color = Color::builder().build().await?.response()?;
+//!     let color = Color::request().send().await?.response()?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -55,7 +55,7 @@ pub struct Screenshot {
 }
 
 impl Screenshot {
-    pub fn builder() -> ScreenshotRequest {
+    pub fn request() -> ScreenshotRequest {
         ScreenshotRequest::default()
     }
 
@@ -105,7 +105,7 @@ impl Color {
     /// [`Color`].
     ///
     /// This method returns an instance of [`ColorRequest`].
-    pub fn builder() -> ColorRequest {
+    pub fn request() -> ColorRequest {
         ColorRequest::default()
     }
 }
@@ -233,7 +233,7 @@ impl ColorRequest {
     }
 
     /// Build the [`Color`].
-    pub async fn build(self) -> Result<Request<Color>, Error> {
+    pub async fn send(self) -> Result<Request<Color>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.pick_color(&self.identifier, self.options).await
     }
@@ -273,7 +273,7 @@ impl ScreenshotRequest {
     }
 
     /// Build the [`Screenshot`].
-    pub async fn build(self) -> Result<Request<Screenshot>, Error> {
+    pub async fn send(self) -> Result<Request<Screenshot>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.screenshot(&self.identifier, self.options).await
     }

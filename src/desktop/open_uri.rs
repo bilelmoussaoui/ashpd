@@ -15,7 +15,7 @@
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!     OpenFileRequest::default()
 //!         .ask(true)
-//!         .build_file(&file)
+//!         .send_file(&file)
 //!         .await?;
 //!     Ok(())
 //! }
@@ -30,7 +30,7 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri =
 //!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     OpenFileRequest::default().ask(true).build_uri(&uri).await?;
+//!     OpenFileRequest::default().ask(true).send_uri(&uri).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -44,7 +44,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
-//!     OpenDirectoryRequest::default().build(&directory).await?;
+//!     OpenDirectoryRequest::default().send(&directory).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -158,12 +158,12 @@ impl OpenFileRequest {
         self
     }
 
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<()>, Error> {
+    pub async fn send_file(self, file: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_file(&self.identifier, file, self.options).await
     }
 
-    pub async fn build_uri(self, uri: &Url) -> Result<Request<()>, Error> {
+    pub async fn send_uri(self, uri: &Url) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_uri(&self.identifier, uri, self.options).await
     }
@@ -185,7 +185,7 @@ impl OpenDirectoryRequest {
         self
     }
 
-    pub async fn build(self, directory: &impl AsRawFd) -> Result<Request<()>, Error> {
+    pub async fn send(self, directory: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
             .open_directory(&self.identifier, directory, self.options)
