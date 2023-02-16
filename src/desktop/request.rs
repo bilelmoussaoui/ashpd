@@ -21,7 +21,7 @@ use crate::{desktop::HandleToken, proxy::Proxy, Error};
 /// A typical response returned by the [`Request::receive_response`] signal
 /// of a [`Request`].
 #[derive(Debug)]
-pub(crate) enum Response<T>
+pub enum Response<T>
 where
     T: for<'de> Deserialize<'de> + Type,
 {

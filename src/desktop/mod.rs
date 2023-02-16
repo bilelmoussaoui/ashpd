@@ -3,7 +3,7 @@ pub(crate) mod request;
 mod session;
 pub(crate) use self::handle_token::HandleToken;
 pub use self::{
-    request::{Request, ResponseError},
+    request::{Request, Response, ResponseError},
     session::Session,
 };
 mod icon;
