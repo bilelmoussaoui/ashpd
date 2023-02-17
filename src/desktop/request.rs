@@ -18,7 +18,7 @@ use zbus::{
 
 use crate::{desktop::HandleToken, proxy::Proxy, Error};
 
-/// A typical response returned by the [`Request::receive_response`] signal
+/// A typical response returned by the [`Request::response`].
 /// of a [`Request`].
 #[derive(Debug)]
 pub enum Response<T>
