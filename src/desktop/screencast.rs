@@ -91,7 +91,7 @@ pub enum CursorMode {
 #[derive(Default, Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]
-/// Persistance mode for a screencast session.
+/// Persistence mode for a screencast session.
 pub enum PersistMode {
     #[doc(alias = "XDP_PERSIST_MODE_NONE")]
     #[default]
