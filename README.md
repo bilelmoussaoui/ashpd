@@ -43,7 +43,7 @@ pub async fn run() -> ashpd::Result<()> {
 | ---     | ----------- | ------- |
 | tracing | Record various debug information using the `tracing` library | No |
 | tokio | Enable tokio runtime on zbus dependency | No |
-| async-std | Enable the use of the async-std rumtime | Yes |
+| async-std | Enable the use of the async-std runtime | Yes |
 | gtk3 | Implement `From<Color>` for [`gdk3::RGBA`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.RGBA.html) Provides `WindowIdentifier::from_window` that takes a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) | No |
 | gtk3_wayland |Provides `WindowIdentifier::from_window` that takes a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) with Wayland backend support only | No |
 | gtk3_x11 |Provides `WindowIdentifier::from_window` that takes a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) with X11 backend support only | No |
