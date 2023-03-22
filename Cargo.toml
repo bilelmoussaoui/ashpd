@@ -20,6 +20,7 @@ gtk4_wayland = ["gdk4wayland", "dep:gtk4"]
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
 pipewire = ["pw", "libc"]
 tokio = ["zbus/tokio", "dep:tokio"]
+async-std = ["zbus/async-io", "dep:async-std"]
 raw_handle = ["raw-window-handle", "wayland"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 
@@ -37,7 +38,7 @@ pw = {package= "pipewire", version = "0.6", optional = true}
 serde = {version = "1.0", features = ["derive"]}
 serde_repr = "0.1"
 rand = {version = "0.8", default-features = false}
-zbus = {version = "3.1", features = ["url"]}
+zbus = {version = "3.1", default-features = false, features = ["url"]}
 futures-util = "0.3"
 futures-channel = "0.3"
 tracing = {version = "0.1", optional = true}
