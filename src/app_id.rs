@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::Type;
 
@@ -39,6 +41,14 @@ impl AsRef<str> for AppID {
     }
 }
 
+impl Deref for AppID {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl std::fmt::Display for AppID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.as_ref())
@@ -70,6 +80,14 @@ impl From<DocumentID> for String {
 impl AsRef<str> for DocumentID {
     fn as_ref(&self) -> &str {
         self.0.as_ref()
+    }
+}
+
+impl Deref for DocumentID {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
