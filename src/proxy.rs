@@ -103,7 +103,7 @@ impl<'a> Proxy<'a> {
         T: for<'de> Deserialize<'de> + Type + Debug,
     {
         let mut request = Request::from_unique_name(handle_token).await?;
-        futures_util::try_join!(async { request.prepare_response().await }, async {
+        futures_util::try_join!(request.prepare_response(), async {
             self.call_method(method_name, &body)
                 .await
                 .map_err(From::from)
