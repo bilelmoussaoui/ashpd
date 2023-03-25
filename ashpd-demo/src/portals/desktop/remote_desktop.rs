@@ -120,11 +120,6 @@ glib::wrapper! {
 }
 
 impl RemoteDesktopPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new()
-    }
-
     /// Returns the selected DeviceType
     fn selected_devices(&self) -> BitFlags<DeviceType> {
         let imp = self.imp();

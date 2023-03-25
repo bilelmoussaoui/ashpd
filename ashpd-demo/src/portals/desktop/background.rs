@@ -58,11 +58,6 @@ glib::wrapper! {
 }
 
 impl BackgroundPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new()
-    }
-
     async fn request_background(&self) {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -104,5 +99,11 @@ impl BackgroundPage {
                 );
             }
         }
+    }
+}
+
+impl Default for BackgroundPage {
+    fn default() -> Self {
+        glib::Object::new()
     }
 }

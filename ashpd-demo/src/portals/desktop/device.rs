@@ -63,11 +63,6 @@ glib::wrapper! {
 }
 
 impl DevicePage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new()
-    }
-
     async fn request(&self) -> ashpd::Result<()> {
         let proxy = DeviceProxy::new().await?;
 
@@ -93,5 +88,11 @@ impl DevicePage {
             devices.push(Device::Microphone);
         }
         devices
+    }
+}
+
+impl Default for DevicePage {
+    fn default() -> Self {
+        glib::Object::new()
     }
 }

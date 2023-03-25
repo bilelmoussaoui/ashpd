@@ -111,11 +111,6 @@ glib::wrapper! {
 }
 
 impl ScreenCastPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new()
-    }
-
     /// Returns the selected SourceType
     fn selected_sources(&self) -> BitFlags<SourceType> {
         let imp = self.imp();

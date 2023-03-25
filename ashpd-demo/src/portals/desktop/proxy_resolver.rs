@@ -50,11 +50,6 @@ glib::wrapper! {
 }
 
 impl ProxyResolverPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new()
-    }
-
     async fn resolve(&self) -> ashpd::Result<()> {
         let imp = self.imp();
         let proxy = ProxyResolver::new().await?;
@@ -85,5 +80,11 @@ impl ProxyResolverPage {
         };
 
         Ok(())
+    }
+}
+
+impl Default for ProxyResolverPage {
+    fn default() -> Self {
+        glib::Object::new()
     }
 }

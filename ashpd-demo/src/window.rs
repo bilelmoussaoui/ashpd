@@ -134,18 +134,18 @@ mod imp {
                 self.sidebar
                     .insert(&SidebarRow::new(&gettext("Background"), "background"), 1);
                 self.stack
-                    .add_named(&BackgroundPage::new(), Some("background"));
+                    .add_named(&BackgroundPage::default(), Some("background"));
             } else {
                 self.sidebar
                     .insert(&SidebarRow::new(&gettext("Device"), "device"), 2);
-                self.stack.add_named(&DevicePage::new(), Some("device"));
+                self.stack.add_named(&DevicePage::default(), Some("device"));
 
                 self.sidebar.insert(
                     &SidebarRow::new(&gettext("Network Monitor"), "network_monitor"),
                     7,
                 );
                 self.stack
-                    .add_named(&NetworkMonitorPage::new(), Some("network_monitor"));
+                    .add_named(&NetworkMonitorPage::default(), Some("network_monitor"));
 
                 self.sidebar.insert(
                     &SidebarRow::new(&gettext("Proxy Resolver"), "proxy_resolver"),
@@ -153,7 +153,7 @@ mod imp {
                 );
 
                 self.stack
-                    .add_named(&ProxyResolverPage::new(), Some("proxy_resolver"));
+                    .add_named(&ProxyResolverPage::default(), Some("proxy_resolver"));
             }
 
             let row = self.sidebar.row_at_index(0).unwrap();

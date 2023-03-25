@@ -77,11 +77,6 @@ glib::wrapper! {
 }
 
 impl NetworkMonitorPage {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::new()
-    }
-
     async fn refresh(&self) -> ashpd::Result<()> {
         let imp = self.imp();
         let proxy = NetworkMonitor::new().await?;
@@ -117,5 +112,11 @@ impl NetworkMonitorPage {
         }
 
         Ok(())
+    }
+}
+
+impl Default for NetworkMonitorPage {
+    fn default() -> Self {
+        glib::Object::new()
     }
 }

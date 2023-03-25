@@ -73,7 +73,7 @@ glib::wrapper! {
 
 impl NotificationPage {
     fn add_button(&self) {
-        let button = NotificationButton::new();
+        let button = NotificationButton::default();
         button.connect_removed(glib::clone!(@weak self as page => move |button| {
             page.imp().buttons_box.remove(button);
         }));
@@ -195,11 +195,6 @@ mod button {
     }
 
     impl NotificationButton {
-        #[allow(clippy::new_without_default)]
-        pub fn new() -> Self {
-            glib::Object::new()
-        }
-
         pub fn connect_removed<F>(&self, callback: F) -> glib::SignalHandlerId
         where
             F: Fn(&Self) + 'static,
@@ -253,6 +248,11 @@ mod button {
             container.append(&remove_button);
 
             self.set_child(Some(&container));
+        }
+    }
+    impl Default for NotificationButton {
+        fn default() -> Self {
+            glib::Object::new()
         }
     }
 }
