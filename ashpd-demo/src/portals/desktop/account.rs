@@ -1,11 +1,10 @@
+use adw::subclass::prelude::*;
 use ashpd::{desktop::account::UserInformation, WindowIdentifier};
-use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
+use gtk::{gdk, glib, prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]

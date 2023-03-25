@@ -1,8 +1,11 @@
 use std::fs::File;
 
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{desktop::email::EmailRequest, WindowIdentifier};
-use gtk::{gio, glib, subclass::prelude::*};
+use gtk::{
+    gio,
+    glib::{self, clone},
+};
 
 use crate::{
     portals::{is_empty, split_comma},
@@ -10,8 +13,6 @@ use crate::{
 };
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
     use crate::widgets::RemovableRow;
 
@@ -72,7 +73,7 @@ mod imp {
             let obj = self.obj();
             self.attachments_listbox.bind_model(
                 Some(&self.model),
-                glib::clone!(@strong self.model as model => move |obj| {
+                clone!(@strong self.model as model => move |obj| {
                     let attachment = obj.downcast_ref::<gio::File>().unwrap();
                     let display_name = attachment
                         .query_info(
@@ -84,7 +85,7 @@ mod imp {
                         .display_name();
 
                     let row = RemovableRow::default();
-                    row.connect_removed(glib::clone!(@strong model => move |row| {
+                    row.connect_removed(clone!(@strong model => move |row| {
                         let index = row.index();
                         model.remove(index as u32);
                     }));
@@ -95,7 +96,7 @@ mod imp {
             );
 
             self.model
-                .connect_items_changed(glib::clone!(@weak obj => move |model, _, _, _| {
+                .connect_items_changed(clone!(@weak obj => move |model, _, _, _| {
                     obj.imp().attachments_listbox.set_visible(model.n_items() > 0);
                 }));
         }

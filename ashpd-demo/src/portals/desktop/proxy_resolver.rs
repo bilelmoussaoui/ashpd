@@ -1,12 +1,10 @@
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::proxy_resolver::ProxyResolver;
-use gtk::{glib, subclass::prelude::*};
+use gtk::glib;
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]

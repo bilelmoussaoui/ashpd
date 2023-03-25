@@ -1,8 +1,11 @@
 use std::os::unix::prelude::RawFd;
 
+use adw::subclass::prelude::*;
 use ashpd::desktop::camera;
-use glib::clone;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{
+    glib::{self, clone},
+    prelude::*,
+};
 
 use crate::widgets::{
     CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
@@ -10,8 +13,6 @@ use crate::widgets::{
 
 mod imp {
     use std::cell::RefCell;
-
-    use adw::subclass::prelude::*;
 
     use super::*;
 

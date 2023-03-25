@@ -1,13 +1,12 @@
+use adw::subclass::prelude::*;
 use ashpd::{desktop::background::Background, WindowIdentifier};
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{glib, prelude::*};
 
 use crate::{
     portals::is_empty,
     widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl},
 };
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]

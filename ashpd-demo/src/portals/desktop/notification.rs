@@ -1,13 +1,11 @@
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::notification::{Button, Notification, NotificationProxy, Priority};
-use gtk::{glib, subclass::prelude::*};
+use gtk::glib;
 
 use self::button::NotificationButton;
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]

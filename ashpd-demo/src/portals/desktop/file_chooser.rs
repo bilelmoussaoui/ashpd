@@ -1,9 +1,9 @@
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::file_chooser::{OpenFileRequest, SaveFileRequest, SaveFilesRequest},
     WindowIdentifier,
 };
-use gtk::{glib, subclass::prelude::*};
+use gtk::glib;
 
 use crate::{
     portals::{is_empty, split_comma},
@@ -11,8 +11,6 @@ use crate::{
 };
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]

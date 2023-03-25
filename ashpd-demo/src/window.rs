@@ -1,12 +1,10 @@
+use adw::subclass::prelude::*;
 use gettextrs::gettext;
-use glib::signal::Inhibit;
 use gtk::{
-    self, gio,
+    gio,
     glib::{self, clone},
     prelude::*,
-    subclass::prelude::*,
 };
-use tracing::warn;
 
 use crate::{
     application::Application,
@@ -24,7 +22,6 @@ use crate::{
 };
 
 mod imp {
-    use adw::subclass::prelude::*;
 
     use super::*;
 
@@ -187,9 +184,9 @@ mod imp {
     impl WidgetImpl for ApplicationWindow {}
     impl WindowImpl for ApplicationWindow {
         // save window state on delete event
-        fn close_request(&self) -> Inhibit {
+        fn close_request(&self) -> gtk::Inhibit {
             if let Err(err) = self.obj().save_window_size() {
-                warn!("Failed to save window state, {}", &err);
+                tracing::warn!("Failed to save window state, {}", &err);
             }
             self.parent_close_request()
         }

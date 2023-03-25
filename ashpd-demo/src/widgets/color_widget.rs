@@ -3,11 +3,9 @@ use gtk::{gdk, glib, graphene, prelude::*, subclass::prelude::*};
 mod imp {
     use std::cell::RefCell;
 
-    use glib::{ParamSpec, Properties};
-
     use super::*;
 
-    #[derive(Debug, Properties, Default)]
+    #[derive(Debug, glib::Properties, Default)]
     #[properties(wrapper_type = super::ColorWidget)]
     pub struct ColorWidget {
         #[property(get, set = Self::set_rgba)]
@@ -26,15 +24,15 @@ mod imp {
     }
 
     impl ObjectImpl for ColorWidget {
-        fn properties() -> &'static [ParamSpec] {
+        fn properties() -> &'static [glib::ParamSpec] {
             Self::derived_properties()
         }
 
-        fn property(&self, id: usize, pspec: &ParamSpec) -> glib::Value {
+        fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             self.derived_property(id, pspec)
         }
 
-        fn set_property(&self, id: usize, value: &glib::Value, pspec: &ParamSpec) {
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
             self.derived_set_property(id, value, pspec)
         }
 

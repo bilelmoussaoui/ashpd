@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::{
         location::{Accuracy, Location, LocationProxy},
@@ -13,15 +13,12 @@ use futures::{
     future::{AbortHandle, Abortable},
     lock::Mutex,
 };
-use glib::clone;
-use gtk::{glib, subclass::prelude::*};
+use gtk::glib::{self, clone};
 use shumate::prelude::*;
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]

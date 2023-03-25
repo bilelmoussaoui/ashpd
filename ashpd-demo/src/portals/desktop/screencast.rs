@@ -1,6 +1,6 @@
 use std::{os::unix::io::RawFd, sync::Arc};
 
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::{
         screencast::{CursorMode, PersistMode, Screencast, SourceType, Stream},
@@ -10,18 +10,13 @@ use ashpd::{
     WindowIdentifier,
 };
 use futures::lock::Mutex;
-use gtk::{
-    glib::{self, clone},
-    subclass::prelude::*,
-};
+use gtk::glib::{self, clone};
 
 use crate::widgets::{
     CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
 };
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]

@@ -8,7 +8,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct RemovableRow {}
+    pub struct RemovableRow;
 
     #[glib::object_subclass]
     impl ObjectSubclass for RemovableRow {

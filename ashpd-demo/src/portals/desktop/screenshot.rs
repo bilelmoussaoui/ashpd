@@ -1,11 +1,10 @@
+use adw::subclass::prelude::*;
 use ashpd::{desktop::screenshot, WindowIdentifier};
-use gtk::{gdk, gio, glib, prelude::*, subclass::prelude::*};
+use gtk::{gdk, gio, glib, prelude::*};
 
 use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]

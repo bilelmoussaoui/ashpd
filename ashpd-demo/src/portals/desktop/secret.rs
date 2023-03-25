@@ -3,14 +3,13 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use adw::subclass::prelude::*;
 use ashpd::desktop::secret;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{glib, prelude::*};
 
 use crate::widgets::{PortalPage, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]

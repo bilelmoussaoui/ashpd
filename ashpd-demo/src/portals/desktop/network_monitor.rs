@@ -1,15 +1,10 @@
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::network_monitor::NetworkMonitor;
-use gtk::{
-    glib::{self, clone},
-    subclass::prelude::*,
-};
+use gtk::glib::{self, clone};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]

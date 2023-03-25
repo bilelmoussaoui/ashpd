@@ -3,12 +3,11 @@ use gtk::{glib, prelude::*};
 mod imp {
     use std::{cell::RefCell, marker::PhantomData};
 
-    use glib::{ParamSpec, Properties};
     use gtk::subclass::prelude::*;
 
     use super::*;
 
-    #[derive(Debug, Properties, gtk::CompositeTemplate, Default)]
+    #[derive(Debug, glib::Properties, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/sidebar_row.ui")]
     #[properties(wrapper_type = super::SidebarRow)]
     pub struct SidebarRow {
@@ -39,13 +38,13 @@ mod imp {
         }
     }
     impl ObjectImpl for SidebarRow {
-        fn properties() -> &'static [ParamSpec] {
+        fn properties() -> &'static [glib::ParamSpec] {
             Self::derived_properties()
         }
-        fn property(&self, id: usize, pspec: &ParamSpec) -> glib::Value {
+        fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             self.derived_property(id, pspec)
         }
-        fn set_property(&self, id: usize, value: &glib::Value, pspec: &ParamSpec) {
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
             self.derived_set_property(id, value, pspec)
         }
     }

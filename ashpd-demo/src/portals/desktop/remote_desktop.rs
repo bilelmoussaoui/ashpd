@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktop},
@@ -11,16 +11,11 @@ use ashpd::{
     WindowIdentifier,
 };
 use futures::lock::Mutex;
-use gtk::{
-    glib::{self, clone},
-    subclass::prelude::*,
-};
+use gtk::glib::{self, clone};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
     use crate::portals::desktop::screencast::available_types;
 

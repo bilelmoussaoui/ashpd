@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use adw::subclass::prelude::*;
 use ashpd::{
     desktop::{
         inhibit::{InhibitFlags, InhibitProxy, SessionState},
@@ -9,13 +10,11 @@ use ashpd::{
     WindowIdentifier,
 };
 use futures::lock::Mutex;
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{glib, prelude::*};
 
 use crate::widgets::{PortalPage, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]

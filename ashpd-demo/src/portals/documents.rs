@@ -1,14 +1,10 @@
+use adw::subclass::prelude::*;
 use ashpd::documents::Documents;
-use gtk::{
-    glib::{self, clone},
-    subclass::prelude::*,
-};
+use gtk::glib::{self, clone};
 
 use crate::widgets::{PortalPage, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]

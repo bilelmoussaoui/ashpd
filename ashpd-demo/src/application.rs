@@ -1,20 +1,20 @@
 use std::{collections::HashMap, convert::TryFrom};
 
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     flatpak::{Flatpak, SpawnFlags, SpawnOptions},
     zbus, zvariant,
 };
-use glib::{clone, WeakRef};
-use gtk::{gio, glib, subclass::prelude::*};
-use once_cell::sync::OnceCell;
-use serde::Serialize;
-use tracing::{debug, info};
+use gtk::{
+    gio,
+    glib::{self, clone},
+};
 
 use crate::{config, window::ApplicationWindow};
 
 mod imp {
-    use adw::subclass::prelude::*;
+    use glib::WeakRef;
+    use once_cell::sync::OnceCell;
 
     use super::*;
 
@@ -59,7 +59,7 @@ mod imp {
         fn activate(&self) {
             self.parent_activate();
             let app = self.obj();
-            debug!("Application::activate");
+            tracing::debug!("Application::activate");
 
             if let Some(window) = self.window.get() {
                 let window = window.upgrade().unwrap();
@@ -80,7 +80,7 @@ mod imp {
         fn startup(&self) {
             self.parent_startup();
             let app = self.obj();
-            debug!("Application::startup");
+            tracing::debug!("Application::startup");
             // Set icons for shell
             gtk::Window::set_default_icon_name(config::APP_ID);
             self.settings.connect_changed(
@@ -177,7 +177,7 @@ impl Application {
             .interface("org.gtk.Actions")?
             .destination(config::APP_ID)?
             .build()?;
-        #[derive(Debug, Serialize)]
+        #[derive(Debug, serde::Serialize)]
         pub struct Params(
             String,
             Vec<zvariant::OwnedValue>,
@@ -247,9 +247,9 @@ impl Application {
     }
 
     pub fn run(&self) -> glib::ExitCode {
-        info!("ASHPD Demo ({})", config::APP_ID);
-        info!("Version: {} ({})", config::VERSION, config::PROFILE);
-        info!("Datadir: {}", config::PKGDATADIR);
+        tracing::info!("ASHPD Demo ({})", config::APP_ID);
+        tracing::info!("Version: {} ({})", config::VERSION, config::PROFILE);
+        tracing::info!("Datadir: {}", config::PKGDATADIR);
 
         ApplicationExtManual::run(self)
     }
