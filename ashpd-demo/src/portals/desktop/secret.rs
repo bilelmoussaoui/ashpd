@@ -32,13 +32,9 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "secret.retrieve",
-                None,
-                move |page, _action, _target| async move {
-                    page.retrieve_secret().await;
-                },
-            );
+            klass.install_action_async("secret.retrieve", None, |page, _, _| async move {
+                page.retrieve_secret().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -66,7 +62,7 @@ impl SecretPage {
                 .trim_end_matches(']')
                 .replace(',', " ");
             imp.token_label.set_text(&key_str);
-            imp.response_group.show();
+            imp.response_group.set_visible(true);
         }
     }
 }

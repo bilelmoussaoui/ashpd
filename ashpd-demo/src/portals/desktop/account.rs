@@ -31,13 +31,9 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.install_action_async(
-                "account.information",
-                None,
-                move |page, _action, _target| async move {
-                    page.fetch_user_information().await;
-                },
-            );
+            klass.install_action_async("account.information", None, |page, _, _| async move {
+                page.fetch_user_information().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -83,14 +79,14 @@ impl AccountPage {
                 {
                     Ok(texture) => {
                         imp.avatar.set_custom_image(Some(&texture));
-                        imp.avatar.show();
+                        imp.avatar.set_visible(true);
                     }
                     Err(err) => {
                         tracing::error!("Failed to set user avatar {err}");
-                        imp.avatar.hide();
+                        imp.avatar.set_visible(false);
                     }
                 };
-                imp.response_group.show();
+                imp.response_group.set_visible(true);
             }
             Err(_err) => {
                 self.send_notification(

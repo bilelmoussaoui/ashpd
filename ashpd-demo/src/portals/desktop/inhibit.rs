@@ -45,22 +45,14 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "inhibit.start_session",
-                None,
-                move |page, _action, _target| async move {
-                    if let Err(err) = page.start_session().await {
-                        tracing::error!("Failed to inhibit {}", err);
-                    }
-                },
-            );
-            klass.install_action_async(
-                "inhibit.stop",
-                None,
-                move |page, _action, _target| async move {
-                    page.stop().await;
-                },
-            );
+            klass.install_action_async("inhibit.start_session", None, |page, _, _| async move {
+                if let Err(err) = page.start_session().await {
+                    tracing::error!("Failed to inhibit {}", err);
+                }
+            });
+            klass.install_action_async("inhibit.stop", None, |page, _, _| async move {
+                page.stop().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

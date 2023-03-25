@@ -56,21 +56,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "screencast.start",
-                None,
-                move |page, _action, _target| async move {
-                    page.start_session().await;
-                },
-            );
-            klass.install_action_async(
-                "screencast.stop",
-                None,
-                move |page, _action, _target| async move {
-                    page.stop_session().await;
-                    page.send_notification("Screen cast session stopped", NotificationKind::Info);
-                },
-            );
+            klass.install_action_async("screencast.start", None, |page, _, _| async move {
+                page.start_session().await;
+            });
+            klass.install_action_async("screencast.stop", None, |page, _, _| async move {
+                page.stop_session().await;
+                page.send_notification("Screen cast session stopped", NotificationKind::Info);
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -189,7 +181,7 @@ impl ScreenCastPage {
                     imp.streams_carousel.append(&picture);
                 });
 
-                imp.response_group.show();
+                imp.response_group.set_visible(true);
                 imp.session.lock().await.replace(session);
             }
             Err(err) => {
@@ -230,7 +222,7 @@ impl ScreenCastPage {
             }
         }
 
-        imp.response_group.hide();
+        imp.response_group.set_visible(false);
     }
 
     async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, RawFd, Session<'static>)> {

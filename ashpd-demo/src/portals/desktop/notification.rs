@@ -46,16 +46,12 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "notification.send",
-                None,
-                move |page, _action, _target| async move {
-                    if let Err(err) = page.send().await {
-                        tracing::error!("Failed to send a notification {}", err);
-                    }
-                },
-            );
-            klass.install_action("notification.add_button", None, move |page, _, _| {
+            klass.install_action_async("notification.send", None, |page, _, _| async move {
+                if let Err(err) = page.send().await {
+                    tracing::error!("Failed to send a notification {}", err);
+                }
+            });
+            klass.install_action("notification.add_button", None, |page, _, _| {
                 page.add_button();
             });
         }
@@ -140,7 +136,7 @@ impl NotificationPage {
                     NotificationKind::Info,
                 );
 
-                imp.response_group.show();
+                imp.response_group.set_visible(true);
                 imp.id_label.set_text(action.id());
                 imp.action_name_label.set_text(action.name());
                 imp.parameters_label

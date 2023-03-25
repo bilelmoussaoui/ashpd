@@ -32,20 +32,12 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "screenshot.pick-color",
-                None,
-                move |page, _action, _target| async move {
-                    page.pick_color().await;
-                },
-            );
-            klass.install_action_async(
-                "screenshot.screenshot",
-                None,
-                move |page, _action, _target| async move {
-                    page.screenshot().await;
-                },
-            );
+            klass.install_action_async("screenshot.pick-color", None, |page, _, _| async move {
+                page.pick_color().await;
+            });
+            klass.install_action_async("screenshot.screenshot", None, |page, _, _| async move {
+                page.screenshot().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -112,8 +104,8 @@ impl ScreenshotPage {
             Ok(response) => {
                 let file = gio::File::for_uri(response.uri().as_str());
                 imp.screenshot_photo.set_file(Some(&file));
-                imp.revealer.show(); // Revealer has a weird issue where it still
-                                     // takes space even if it's child is hidden
+                imp.revealer.set_visible(true); // Revealer has a weird issue where it still
+                                                // takes space even if it's child is hidden
 
                 imp.revealer.set_reveal_child(true);
                 self.send_notification(

@@ -42,7 +42,7 @@ mod imp {
             klass.install_action_async(
                 "network_monitor.can_reach",
                 None,
-                move |page, _action, _target| async move {
+                |page, _, _| async move {
                     if let Err(err) = page.can_reach().await {
                         tracing::error!("Failed to call can reach on NetworkMonitor {}", err);
                     }
@@ -105,7 +105,7 @@ impl NetworkMonitorPage {
         match proxy.can_reach(&hostname, port).await {
             Ok(response) => {
                 imp.can_reach_row.set_title(&response.to_string());
-                imp.response_group.show();
+                imp.response_group.set_visible(true);
                 self.send_notification(
                     "Can reach request was successful",
                     NotificationKind::Success,

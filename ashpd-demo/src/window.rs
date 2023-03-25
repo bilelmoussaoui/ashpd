@@ -168,7 +168,7 @@ mod imp {
             let style_manager = adw::StyleManager::default();
 
             if !style_manager.system_supports_color_schemes() {
-                button.show();
+                button.set_visible(true);
 
                 style_manager.connect_dark_notify(
                     clone!(@weak obj as window, @weak button => move |manager| {

@@ -81,21 +81,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "location.start",
-                None,
-                move |page, _action, _target| async move {
-                    page.locate().await;
-                },
-            );
+            klass.install_action_async("location.start", None, |page, _, _| async move {
+                page.locate().await;
+            });
 
-            klass.install_action_async(
-                "location.stop",
-                None,
-                move |page, _action, _target| async move {
-                    page.stop_session().await;
-                },
-            );
+            klass.install_action_async("location.stop", None, |page, _, _| async move {
+                page.stop_session().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -107,7 +99,7 @@ mod imp {
             self.parent_constructed();
             let obj = self.obj();
             let registry = shumate::MapSourceRegistry::with_defaults();
-            let source = registry.by_id(&shumate::MAP_SOURCE_OSM_MAPNIK).unwrap();
+            let source = registry.by_id(shumate::MAP_SOURCE_OSM_MAPNIK).unwrap();
             obj.action_set_enabled("location.stop", false);
             obj.action_set_enabled("location.start", true);
 
@@ -207,7 +199,7 @@ impl LocationPage {
 
     fn on_location_updated(&self, location: Location) {
         let imp = self.imp();
-        imp.response_group.show();
+        imp.response_group.set_visible(true);
         imp.accuracy_label
             .set_label(&location.accuracy().to_string());
         if let Some(altitude) = location.altitude() {

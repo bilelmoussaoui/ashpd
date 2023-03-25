@@ -1,6 +1,7 @@
 picture {
     border-radius: 12px;
 }
+
 color {
     border-radius: 4px;
 }
@@ -12,10 +13,7 @@ color {
     margin-right: 12px;
 }
 
-notification .success {
-    background-color: @success_bg_color;
-    color: @success_fg_color;
-}
+
 
 notification infobar label {
     padding: 6px;
@@ -23,4 +21,13 @@ notification infobar label {
 
 .map-marker {
     color: #e01b24;
+}
+
+banner.error revealer widget {
+    background-color: @error_bg_color;
+    color: @error_fg_color;
+}
+banner.success revealer widget {
+    background-color: @success_bg_color;
+    color: @success_fg_color;
 }

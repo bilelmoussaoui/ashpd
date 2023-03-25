@@ -28,27 +28,23 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "device.request",
-                None,
-                move |page, _action, _target| async move {
-                    match page.request().await {
-                        Ok(_) => {
-                            page.send_notification(
-                                "Device access request was successful",
-                                NotificationKind::Success,
-                            );
-                        }
-                        Err(err) => {
-                            tracing::error!("Failed to request device access {}", err);
-                            page.send_notification(
-                                "Request to access a device failed",
-                                NotificationKind::Error,
-                            );
-                        }
+            klass.install_action_async("device.request", None, |page, _, _| async move {
+                match page.request().await {
+                    Ok(_) => {
+                        page.send_notification(
+                            "Device access request was successful",
+                            NotificationKind::Success,
+                        );
                     }
-                },
-            );
+                    Err(err) => {
+                        tracing::error!("Failed to request device access {}", err);
+                        page.send_notification(
+                            "Request to access a device failed",
+                            NotificationKind::Error,
+                        );
+                    }
+                }
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

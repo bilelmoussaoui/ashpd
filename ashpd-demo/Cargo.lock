@@ -54,6 +54,7 @@ dependencies = [
 name = "ashpd-demo"
 version = "0.2.3"
 dependencies = [
+ "anyhow",
  "ashpd",
  "chrono",
  "futures",

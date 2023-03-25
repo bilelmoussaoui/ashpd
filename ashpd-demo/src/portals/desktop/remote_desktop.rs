@@ -59,24 +59,13 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "remote_desktop.start",
-                None,
-                move |page, _action, _target| async move {
-                    page.start_session().await;
-                },
-            );
-            klass.install_action_async(
-                "remote_desktop.stop",
-                None,
-                move |page, _action, _target| async move {
-                    page.stop_session().await;
-                    page.send_notification(
-                        "Remote desktop session stopped",
-                        NotificationKind::Info,
-                    );
-                },
-            );
+            klass.install_action_async("remote_desktop.start", None, |page, _, _| async move {
+                page.start_session().await;
+            });
+            klass.install_action_async("remote_desktop.stop", None, |page, _, _| async move {
+                page.stop_session().await;
+                page.send_notification("Remote desktop session stopped", NotificationKind::Info);
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -192,7 +181,7 @@ impl RemoteDesktopPage {
 
         match self.remote().await {
             Ok((_selected_devices, _streams, session)) => {
-                imp.response_group.show();
+                imp.response_group.set_visible(true);
                 imp.session.lock().await.replace(session);
                 self.action_set_enabled("remote_desktop.start", false);
                 self.action_set_enabled("remote_desktop.stop", true);
@@ -220,7 +209,7 @@ impl RemoteDesktopPage {
         if let Some(session) = imp.session.lock().await.take() {
             let _ = session.close().await;
         }
-        imp.response_group.hide();
+        imp.response_group.set_visible(false);
     }
 
     async fn remote(&self) -> ashpd::Result<(BitFlags<DeviceType>, Vec<Stream>, Session<'static>)> {

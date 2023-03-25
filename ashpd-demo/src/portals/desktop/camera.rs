@@ -39,14 +39,10 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "camera.start",
-                None,
-                move |page, _action, _target| async move {
-                    page.start_stream().await;
-                },
-            );
-            klass.install_action("camera.stop", None, move |page, _, _| {
+            klass.install_action_async("camera.start", None, |page, _, _| async move {
+                page.start_stream().await;
+            });
+            klass.install_action("camera.stop", None, |page, _, _| {
                 page.stop_stream();
             });
         }

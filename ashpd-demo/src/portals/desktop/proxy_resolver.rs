@@ -27,15 +27,11 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "proxy_resolver.resolve",
-                None,
-                move |page, _action, _target| async move {
-                    if let Err(err) = page.resolve().await {
-                        tracing::error!("Failed to resolve proxy {}", err);
-                    }
-                },
-            );
+            klass.install_action_async("proxy_resolver.resolve", None, |page, _, _| async move {
+                if let Err(err) = page.resolve().await {
+                    tracing::error!("Failed to resolve proxy {}", err);
+                }
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -70,7 +66,7 @@ impl ProxyResolverPage {
                         let row = adw::ActionRow::builder().title(uri.as_str()).build();
                         imp.response_group.add(&row);
                     });
-                    imp.response_group.show();
+                    imp.response_group.set_visible(true);
                     self.send_notification(
                         "Lookup request was successful",
                         NotificationKind::Success,

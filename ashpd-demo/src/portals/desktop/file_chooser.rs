@@ -69,27 +69,19 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "file_chooser.open_file",
-                None,
-                move |page, _action, _target| async move {
-                    page.open_file().await;
-                },
-            );
-            klass.install_action_async(
-                "file_chooser.save_file",
-                None,
-                move |page, _action, _target| async move {
-                    page.save_file().await;
-                },
-            );
-            klass.install_action_async(
-                "file_chooser.save_files",
-                None,
-                move |page, _action, _target| async move {
-                    page.save_files().await;
-                },
-            );
+            klass.install_action_async("file_chooser.open_file", None, |page, _, _| async move {
+                page.open_file().await;
+            });
+            klass.install_action_async("file_chooser.save_file", None, |page, _, _| async move {
+                if let Err(err) = page.save_file().await {
+                    tracing::error!("Failed to pick a file {err}");
+                }
+            });
+            klass.install_action_async("file_chooser.save_files", None, |page, _, _| async move {
+                if let Err(err) = page.save_files().await {
+                    tracing::error!("Failed to pick files {err}");
+                }
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -127,7 +119,7 @@ impl FileChooserPage {
             .accept_label(accept_label.as_deref());
         match request.send().await.and_then(|r| r.response()) {
             Ok(files) => {
-                imp.open_response_group.show();
+                imp.open_response_group.set_visible(true);
 
                 for uri in files.uris() {
                     imp.open_response_group
@@ -164,7 +156,7 @@ impl FileChooserPage {
             .current_file::<String>(current_file)?;
         match request.send().await.and_then(|r| r.response()) {
             Ok(files) => {
-                imp.save_file_response_group.show();
+                imp.save_file_response_group.set_visible(true);
 
                 for uri in files.uris() {
                     imp.save_file_response_group
@@ -202,7 +194,7 @@ impl FileChooserPage {
 
         match request.send().await.and_then(|r| r.response()) {
             Ok(files) => {
-                imp.save_files_response_group.show();
+                imp.save_files_response_group.set_visible(true);
 
                 for uri in files.uris() {
                     imp.save_files_response_group

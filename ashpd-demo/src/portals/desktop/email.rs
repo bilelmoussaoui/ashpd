@@ -54,20 +54,12 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "email.compose",
-                None,
-                move |page, _action, _target| async move {
-                    page.compose_mail().await;
-                },
-            );
-            klass.install_action_async(
-                "email.attach",
-                None,
-                move |page, _action, _target| async move {
-                    page.attach().await;
-                },
-            );
+            klass.install_action_async("email.compose", None, |page, _, _| async move {
+                page.compose_mail().await;
+            });
+            klass.install_action_async("email.attach", None, |page, _, _| async move {
+                page.attach().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -84,7 +76,7 @@ mod imp {
                     let attachment = obj.downcast_ref::<gio::File>().unwrap();
                     let display_name = attachment
                         .query_info(
-                            &gio::FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+                            gio::FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
                             gio::FileQueryInfoFlags::NONE,
                             gio::Cancellable::NONE,
                         )
@@ -171,16 +163,24 @@ impl EmailPage {
     }
 
     pub async fn attach(&self) {
-        let dialog = gtk::FileChooserNative::builder()
-            .select_multiple(true)
-            .modal(true)
-            .transient_for(self.native().and_downcast_ref::<gtk::Window>().unwrap())
-            .build();
-        if dialog.run_future().await == gtk::ResponseType::Accept {
-            let files = dialog.files();
-            for file in files.into_iter() {
-                let file = file.ok().and_downcast::<gio::File>().unwrap();
-                self.imp().model.append(&file);
+        let dialog = gtk::FileDialog::builder().modal(true).build();
+
+        match dialog
+            .open_multiple_future(
+                self.native()
+                    .and_then(|n| n.downcast::<gtk::Window>().ok())
+                    .as_ref(),
+            )
+            .await
+        {
+            Ok(files) => {
+                for file in files.into_iter() {
+                    let file = file.ok().and_downcast::<gio::File>().unwrap();
+                    self.imp().model.append(&file);
+                }
+            }
+            Err(err) => {
+                tracing::error!("Failed to open files {err}");
             }
         }
     }

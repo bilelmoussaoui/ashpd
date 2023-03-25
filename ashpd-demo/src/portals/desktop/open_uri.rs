@@ -28,13 +28,9 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "open_uri.uri",
-                None,
-                move |page, _action, _target| async move {
-                    page.open_uri().await;
-                },
-            );
+            klass.install_action_async("open_uri.uri", None, |page, _, _| async move {
+                page.open_uri().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {

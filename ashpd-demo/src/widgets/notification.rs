@@ -1,8 +1,5 @@
-use gtk::{
-    glib::{self, clone},
-    prelude::*,
-    subclass::prelude::*,
-};
+use adw::{prelude::*, subclass::prelude::*};
+use gtk::glib::{self, clone};
 
 pub enum NotificationKind {
     Info,
@@ -11,17 +8,14 @@ pub enum NotificationKind {
 }
 
 mod imp {
-    use adw::subclass::prelude::*;
+    use std::cell::RefCell;
 
     use super::*;
 
-    #[derive(Debug, gtk::CompositeTemplate, Default)]
-    #[template(resource = "/com/belmoussaoui/ashpd/demo/notification_widget.ui")]
+    #[derive(Debug, Default)]
     pub struct Notification {
-        #[template_child]
-        pub info_bar: TemplateChild<gtk::InfoBar>,
-        #[template_child]
-        pub message_label: TemplateChild<gtk::Label>,
+        pub banner: adw::Banner,
+        pub(super) source_id: RefCell<Option<glib::SourceId>>,
     }
 
     #[glib::object_subclass]
@@ -31,15 +25,16 @@ mod imp {
         type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
-            klass.bind_template();
             klass.set_css_name("notification");
         }
+    }
+    impl ObjectImpl for Notification {
+        fn constructed(&self) {
+            self.parent_constructed();
 
-        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
-            obj.init_template();
+            self.obj().set_child(Some(&self.banner));
         }
     }
-    impl ObjectImpl for Notification {}
     impl WidgetImpl for Notification {}
     impl BinImpl for Notification {}
 }
@@ -52,36 +47,42 @@ glib::wrapper! {
 impl Notification {
     pub fn send(&self, text: &str, kind: NotificationKind) {
         let imp = self.imp();
-        imp.info_bar.remove_css_class("error");
-        imp.info_bar.remove_css_class("info");
-        imp.info_bar.remove_css_class("success");
+        imp.banner.remove_css_class("error");
+        imp.banner.remove_css_class("info");
+        imp.banner.remove_css_class("success");
 
         match kind {
             NotificationKind::Error => {
-                imp.info_bar.set_message_type(gtk::MessageType::Error);
-                imp.info_bar.add_css_class("error");
+                imp.banner.add_css_class("error");
             }
             NotificationKind::Info => {
-                imp.info_bar.set_message_type(gtk::MessageType::Info);
-                imp.info_bar.add_css_class("info");
+                imp.banner.add_css_class("info");
             }
             NotificationKind::Success => {
-                imp.info_bar.set_message_type(gtk::MessageType::Other);
-                imp.info_bar.add_css_class("success");
+                imp.banner.add_css_class("success");
             }
         }
-        imp.info_bar.set_revealed(true);
-        imp.message_label.set_label(text);
+        imp.banner.set_revealed(true);
+        imp.banner.set_title(text);
 
-        glib::timeout_add_seconds_local_once(
+        if let Some(source_id) = imp.source_id.take() {
+            source_id.remove();
+        }
+
+        let source_id = glib::timeout_add_seconds_local_once(
             3,
             clone!(@weak self as widget => move || {
                 widget.close();
             }),
         );
+        imp.source_id.replace(Some(source_id));
     }
 
     pub fn close(&self) {
-        self.imp().info_bar.set_revealed(false);
+        let imp = self.imp();
+        imp.banner.set_revealed(false);
+        if let Some(source_id) = imp.source_id.take() {
+            source_id.remove();
+        }
     }
 }

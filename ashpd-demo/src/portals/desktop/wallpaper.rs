@@ -1,20 +1,15 @@
-use std::cell::RefCell;
-
-use adw::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{desktop::wallpaper, WindowIdentifier};
-use gtk::{glib, subclass::prelude::*};
+use gtk::{gio, glib};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/wallpaper.ui")]
     pub struct WallpaperPage {
-        pub dialog: RefCell<Option<gtk::FileChooserNative>>,
         #[template_child]
         pub preview_switch: TemplateChild<gtk::Switch>,
         #[template_child]
@@ -30,13 +25,11 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "wallpaper.select",
-                None,
-                move |page, _action, _target| async move {
-                    page.pick_wallpaper().await;
-                },
-            );
+            klass.install_action_async("wallpaper.select", None, |page, _, _| async move {
+                if let Err(err) = page.pick_wallpaper().await {
+                    tracing::error!("Failed to pick wallpaper {err}");
+                }
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -55,20 +48,26 @@ glib::wrapper! {
 }
 
 impl WallpaperPage {
-    async fn pick_wallpaper(&self) {
+    async fn pick_wallpaper(&self) -> anyhow::Result<()> {
         let imp = self.imp();
         let root = self.native().unwrap();
 
-        let file_chooser = gtk::FileChooserNative::builder()
-            .accept_label("Select")
-            .action(gtk::FileChooserAction::Open)
-            .modal(true)
-            .transient_for(root.downcast_ref::<gtk::Window>().unwrap())
-            .build();
         let filter = gtk::FileFilter::new();
         filter.add_pixbuf_formats();
         filter.set_name(Some("images"));
-        file_chooser.add_filter(&filter);
+
+        let filters = gio::ListStore::new(gtk::FileFilter::static_type());
+        filters.append(&filter);
+
+        let dialog = gtk::FileDialog::builder()
+            .modal(true)
+            .accept_label("Select")
+            .filters(&filters)
+            .build();
+
+        let file = dialog
+            .open_future(root.downcast_ref::<gtk::Window>())
+            .await?;
 
         let show_preview = imp.preview_switch.is_active();
         let set_on = match imp.set_on_combo.selected() {
@@ -77,36 +76,27 @@ impl WallpaperPage {
             2 => wallpaper::SetOn::Both,
             _ => unimplemented!(),
         };
-        if file_chooser.run_future().await == gtk::ResponseType::Accept {
-            let identifier = WindowIdentifier::from_native(&root).await;
-            match url::Url::parse(&file_chooser.file().unwrap().uri()) {
-                Ok(wallpaper_uri) => {
-                    match wallpaper::WallpaperRequest::default()
-                        .identifier(identifier)
-                        .show_preview(show_preview)
-                        .set_on(set_on)
-                        .build_uri(&wallpaper_uri)
-                        .await
-                    {
-                        Err(err) => {
-                            tracing::error!("Failed to set wallpaper {}", err);
-                            self.send_notification(
-                                "Request to set a wallpaper failed",
-                                NotificationKind::Error,
-                            );
-                        }
-                        Ok(_) => self.send_notification(
-                            "Set a wallpaper request was successful",
-                            NotificationKind::Success,
-                        ),
-                    }
-                }
-                Err(_err) => {
-                    self.send_notification("Wallpaper URI malformed", NotificationKind::Error);
-                }
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let uri = url::Url::parse(&file.uri())?;
+        match wallpaper::WallpaperRequest::default()
+            .identifier(identifier)
+            .show_preview(show_preview)
+            .set_on(set_on)
+            .build_uri(&uri)
+            .await
+        {
+            Err(err) => {
+                tracing::error!("Failed to set wallpaper {}", err);
+                self.send_notification(
+                    "Request to set a wallpaper failed",
+                    NotificationKind::Error,
+                );
             }
-        };
-        file_chooser.destroy();
-        imp.dialog.replace(Some(file_chooser));
+            Ok(_) => self.send_notification(
+                "Set a wallpaper request was successful",
+                NotificationKind::Success,
+            ),
+        }
+        Ok(())
     }
 }

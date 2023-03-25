@@ -37,13 +37,9 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.install_action_async(
-                "background.request",
-                None,
-                move |page, _action, _target| async move {
-                    page.request_background().await;
-                },
-            );
+            klass.install_action_async("background.request", None, |page, _, _| async move {
+                page.request_background().await;
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -91,7 +87,7 @@ impl BackgroundPage {
 
         match request.send().await.and_then(|r| r.response()) {
             Ok(response) => {
-                imp.response_group.show();
+                imp.response_group.set_visible(true);
                 imp.auto_start_label
                     .set_label(&response.auto_start().to_string());
                 imp.run_bg_label

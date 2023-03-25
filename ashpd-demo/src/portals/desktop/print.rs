@@ -1,16 +1,15 @@
 use std::os::unix::prelude::AsRawFd;
 
+use adw::subclass::prelude::*;
 use ashpd::{
     desktop::print::{PageSetup, PrintProxy, Settings},
     WindowIdentifier,
 };
-use gtk::{glib, prelude::*, subclass::prelude::*};
+use gtk::{gio, glib, prelude::*};
 
 use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
-    use adw::subclass::prelude::*;
-
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
@@ -31,13 +30,11 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
 
-            klass.install_action_async(
-                "print.select_file",
-                None,
-                move |page, _action, _target| async move {
-                    page.select_file().await;
-                },
-            );
+            klass.install_action_async("print.select_file", None, |page, _, _| async move {
+                if let Err(err) = page.select_file().await {
+                    tracing::error!("Failed to pick a file {err}");
+                }
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -56,44 +53,43 @@ glib::wrapper! {
 }
 
 impl PrintPage {
-    async fn select_file(&self) {
+    async fn select_file(&self) -> anyhow::Result<()> {
         let imp = self.imp();
         let title = imp.title.text();
         let modal = imp.modal_switch.is_active();
         let root = self.native().unwrap();
 
-        let file_chooser = gtk::FileChooserNative::builder()
-            .accept_label("Select")
-            .action(gtk::FileChooserAction::Open)
-            .modal(true)
-            .transient_for(root.downcast_ref::<gtk::Window>().unwrap())
-            .build();
-
         let filter = gtk::FileFilter::new();
         filter.add_pixbuf_formats();
         filter.set_name(Some("images"));
-        file_chooser.add_filter(&filter);
 
-        if file_chooser.run_future().await == gtk::ResponseType::Accept {
-            let path = file_chooser.file().unwrap().path().unwrap();
-            let file = std::fs::File::open(path).unwrap();
-            let identifier = WindowIdentifier::from_native(&root).await;
+        let filters = gio::ListStore::new(gtk::FileFilter::static_type());
+        filters.append(&filter);
 
-            match print(&identifier, &title, file, modal).await {
-                Ok(_) => {
-                    self.send_notification(
-                        "Print request was successful",
-                        NotificationKind::Success,
-                    );
-                }
-                Err(err) => {
-                    tracing::error!("Failed to print {}", err);
-                    self.send_notification("Request to print failed", NotificationKind::Error);
-                }
+        let dialog = gtk::FileDialog::builder()
+            .accept_label("Select")
+            .modal(true)
+            .filters(&filters)
+            .build();
+
+        let path = dialog
+            .open_future(root.downcast_ref::<gtk::Window>())
+            .await?
+            .path()
+            .unwrap();
+        let file = std::fs::File::open(path).unwrap();
+        let identifier = WindowIdentifier::from_native(&root).await;
+
+        match print(&identifier, &title, file, modal).await {
+            Ok(_) => {
+                self.send_notification("Print request was successful", NotificationKind::Success);
             }
-        };
-
-        file_chooser.destroy();
+            Err(err) => {
+                tracing::error!("Failed to print {}", err);
+                self.send_notification("Request to print failed", NotificationKind::Error);
+            }
+        }
+        Ok(())
     }
 }
 
