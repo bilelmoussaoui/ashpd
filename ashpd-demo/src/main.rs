@@ -8,9 +8,9 @@ mod window;
 use application::Application;
 use config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
 use gettextrs::*;
-use gtk::gio;
+use gtk::{gio, glib};
 
-fn main() {
+fn main() -> glib::ExitCode {
     // Initialize logger, debug is carried out via debug!, info!, and warn!.
     tracing_subscriber::fmt::init();
 
@@ -35,5 +35,5 @@ fn main() {
     }
 
     let app = Application::new();
-    app.run();
+    app.run()
 }

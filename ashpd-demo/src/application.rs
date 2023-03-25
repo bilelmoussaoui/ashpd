@@ -246,11 +246,11 @@ impl Application {
         }
     }
 
-    pub fn run(&self) {
+    pub fn run(&self) -> glib::ExitCode {
         info!("ASHPD Demo ({})", config::APP_ID);
         info!("Version: {} ({})", config::VERSION, config::PROFILE);
         info!("Datadir: {}", config::PKGDATADIR);
 
-        ApplicationExtManual::run(self);
+        ApplicationExtManual::run(self)
     }
 }
