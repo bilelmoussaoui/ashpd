@@ -125,7 +125,7 @@ impl FileChooserPage {
             .title(&*title)
             .multiple(multiple)
             .accept_label(accept_label.as_deref());
-        match request.build().await.and_then(|r| r.response()) {
+        match request.send().await.and_then(|r| r.response()) {
             Ok(files) => {
                 imp.open_response_group.show();
 
@@ -144,7 +144,7 @@ impl FileChooserPage {
         }
     }
 
-    async fn save_file(&self) {
+    async fn save_file(&self) -> ashpd::Result<()> {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
         let imp = self.imp();
@@ -160,9 +160,9 @@ impl FileChooserPage {
             .title(&*title)
             .accept_label(accept_label.as_deref())
             .current_name(current_name.as_deref())
-            .current_folder::<String>(current_folder)
-            .current_file::<String>(current_file);
-        match request.build().await.and_then(|r| r.response()) {
+            .current_folder::<String>(current_folder)?
+            .current_file::<String>(current_file)?;
+        match request.send().await.and_then(|r| r.response()) {
             Ok(files) => {
                 imp.save_file_response_group.show();
 
@@ -180,9 +180,10 @@ impl FileChooserPage {
                 self.send_notification("Request to save a file failed", NotificationKind::Error);
             }
         }
+        Ok(())
     }
 
-    async fn save_files(&self) {
+    async fn save_files(&self) -> ashpd::Result<()> {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
         let imp = self.imp();
@@ -196,10 +197,10 @@ impl FileChooserPage {
             .modal(modal)
             .title(&*title)
             .accept_label(accept_label.as_deref())
-            .current_folder::<String>(current_folder)
-            .files::<Vec<_>>(files);
+            .current_folder::<String>(current_folder)?
+            .files::<Vec<_>>(files)?;
 
-        match request.build().await.and_then(|r| r.response()) {
+        match request.send().await.and_then(|r| r.response()) {
             Ok(files) => {
                 imp.save_files_response_group.show();
 
@@ -216,5 +217,6 @@ impl FileChooserPage {
                 self.send_notification("Request to save files failed", NotificationKind::Error);
             }
         }
+        Ok(())
     }
 }

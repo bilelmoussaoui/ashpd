@@ -62,7 +62,7 @@ impl DocumentsPage {
         let mount_point = proxy.mount_point().await?;
         self.imp()
             .mount_point
-            .set_label(mount_point.to_str().unwrap());
+            .set_label(mount_point.as_ref().to_str().unwrap());
 
         Ok(())
     }

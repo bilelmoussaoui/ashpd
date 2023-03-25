@@ -1,9 +1,9 @@
 {
     "id": "com.belmoussaoui.ashpd.demo.Devel",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "43",
+    "runtime-version": "44",
     "sdk": "org.gnome.Sdk",
-    "sdk-extensions": ["org.freedesktop.Sdk.Extension.rust-stable", "org.freedesktop.Sdk.Extension.llvm14"],
+    "sdk-extensions": ["org.freedesktop.Sdk.Extension.rust-stable", "org.freedesktop.Sdk.Extension.llvm15"],
     "command": "ashpd-demo",
     "finish-args" : [
         "--socket=fallback-x11",
@@ -17,8 +17,8 @@
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
-        "prepend-path": "/usr/lib/sdk/llvm14/bin",
-        "prepend-ld-library-path": "/usr/lib/sdk/llvm14/lib",
+        "prepend-path": "/usr/lib/sdk/llvm15/bin",
+        "prepend-ld-library-path": "/usr/lib/sdk/llvm15/lib",
         "build-args" : [
             "--share=network"
         ],
@@ -40,7 +40,7 @@
                 {
                     "type": "git",
                     "url": "https://gitlab.gnome.org/GNOME/libshumate/",
-                    "commit": "d4e23adc49e1f31ef413525c538f1ef686820d1f"
+                    "tag": "1.0.3"
                 }
             ]
         },

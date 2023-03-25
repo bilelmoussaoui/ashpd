@@ -62,10 +62,10 @@ impl AccountPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = imp.reason_row.text();
         self.send_notification("Fetching user information...", NotificationKind::Info);
-        let request = UserInformation::builder()
+        let request = UserInformation::request()
             .identifier(identifier)
             .reason(&*reason);
-        match request.build().await.and_then(|r| r.response()) {
+        match request.send().await.and_then(|r| r.response()) {
             Ok(user_info) => {
                 self.send_notification(
                     "User information request was successful",

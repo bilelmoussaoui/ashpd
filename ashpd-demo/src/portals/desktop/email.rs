@@ -144,7 +144,7 @@ impl EmailPage {
                 request.add_attachment(attachment);
             });
         }
-        match request.build().await {
+        match request.send().await {
             Ok(_) => {
                 self.send_notification(
                     "Compose an email request was successful",

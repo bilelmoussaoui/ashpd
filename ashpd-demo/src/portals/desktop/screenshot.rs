@@ -73,9 +73,9 @@ impl ScreenshotPage {
         // used for retrieving a window identifier
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        match screenshot::Color::builder()
+        match screenshot::Color::request()
             .identifier(identifier)
-            .build()
+            .send()
             .await
             .and_then(|r| r.response())
         {
@@ -105,7 +105,7 @@ impl ScreenshotPage {
             .identifier(identifier)
             .interactive(interactive)
             .modal(modal)
-            .build()
+            .send()
             .await
             .and_then(|r| r.response())
         {

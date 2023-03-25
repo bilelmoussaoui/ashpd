@@ -65,7 +65,7 @@ impl OpenUriPage {
                     .ask(ask)
                     .writeable(writeable)
                     .identifier(identifier);
-                match request.build_uri(&uri).await {
+                match request.send_uri(&uri).await {
                     Ok(_) => {
                         self.send_notification(
                             "Open URI request was successful",
