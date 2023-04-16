@@ -64,7 +64,6 @@ glib::wrapper! {
 }
 
 impl SidebarRow {
-    #[allow(clippy::new_without_default)]
     pub fn new(title: &str, page_name: &str) -> Self {
         glib::Object::builder()
             .property("title", &title)

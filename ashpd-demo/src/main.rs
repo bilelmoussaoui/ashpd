@@ -34,6 +34,5 @@ fn main() -> glib::ExitCode {
         };
     }
 
-    let app = Application::new();
-    app.run()
+    Application::run()
 }
