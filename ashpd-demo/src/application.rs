@@ -104,14 +104,6 @@ glib::wrapper! {
 }
 
 impl Application {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        glib::Object::builder()
-            .property("application-id", &Some(config::APP_ID))
-            .property("resource-base-path", &Some("/com/belmoussaoui/ashpd/demo/"))
-            .build()
-    }
-
     fn main_window(&self) -> ApplicationWindow {
         self.imp().window.get().unwrap().upgrade().unwrap()
     }
@@ -246,11 +238,20 @@ impl Application {
         }
     }
 
-    pub fn run(&self) -> glib::ExitCode {
+    pub fn run() -> glib::ExitCode {
         tracing::info!("ASHPD Demo ({})", config::APP_ID);
         tracing::info!("Version: {} ({})", config::VERSION, config::PROFILE);
         tracing::info!("Datadir: {}", config::PKGDATADIR);
 
-        ApplicationExtManual::run(self)
+        Self::default().run()
+    }
+}
+
+impl Default for Application {
+    fn default() -> Self {
+        glib::Object::builder()
+            .property("application-id", config::APP_ID)
+            .property("resource-base-path", "/com/belmoussaoui/ashpd/demo/")
+            .build()
     }
 }
