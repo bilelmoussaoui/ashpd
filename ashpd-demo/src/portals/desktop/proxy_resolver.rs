@@ -56,7 +56,10 @@ impl ProxyResolverPage {
             Ok(uri) => match proxy.lookup(&uri).await {
                 Ok(resolved_uris) => {
                     resolved_uris.iter().for_each(|uri| {
-                        let row = adw::ActionRow::builder().title(uri.as_str()).build();
+                        let row = adw::ActionRow::builder()
+                            .title(uri.as_str())
+                            .selectable(true)
+                            .build();
                         imp.response_group.add(&row);
                     });
                     imp.response_group.set_visible(true);

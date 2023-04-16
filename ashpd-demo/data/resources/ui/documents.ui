@@ -18,6 +18,7 @@
                       <object class="GtkLabel" id="mount_point">
                         <property name="label">Undefined</property>
                         <property name="halign">start</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>
