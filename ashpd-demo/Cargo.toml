@@ -13,7 +13,7 @@ futures = "0.3"
 gst = {package="gstreamer", version = "0.20"}
 gst4gtk = { package = "gst-plugin-gtk4", version = "0.10", features = ["wayland", "x11egl", "x11glx"] }
 gtk = {package = "gtk4", version = "0.6", features=["gnome_44"]}
-adw = {version = "0.3", package = "libadwaita", features=["v1_3"]}
+adw = {version = "0.4", package = "libadwaita", features=["v1_3"]}
 serde = {version = "1.0", features = ["derive"]}
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
 url = {version = "2.3", features = ["serde"]}
