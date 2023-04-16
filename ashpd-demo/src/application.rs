@@ -151,15 +151,6 @@ impl Application {
     }
 
     pub fn stop_current_instance() -> ashpd::Result<()> {
-        let bus = gio::bus_get_sync(gio::BusType::Session, gio::Cancellable::NONE).unwrap();
-        gio::bus_watch_name_on_connection(
-            &bus,
-            config::APP_ID,
-            gio::BusNameWatcherFlags::NONE,
-            move |_bus, _, _| tracing::info!("Name owned"),
-            move |_bus, _| tracing::info!("Name unowned"),
-        );
-
         let cnx = zbus::blocking::Connection::session()?;
         let proxy: zbus::blocking::Proxy = zbus::blocking::ProxyBuilder::new_bare(&cnx)
             .path(format!(
