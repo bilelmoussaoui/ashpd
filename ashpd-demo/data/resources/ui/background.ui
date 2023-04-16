@@ -70,6 +70,7 @@
                     <child>
                       <object class="GtkLabel" id="run_bg_label">
                         <property name="valign">center</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>
@@ -85,6 +86,7 @@
                       <object class="GtkLabel" id="auto_start_label">
                         <property name="valign">center</property>
                         <property name="ellipsize">end</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>

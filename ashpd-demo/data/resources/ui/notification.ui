@@ -103,6 +103,7 @@
                     <child>
                       <object class="GtkLabel" id="id_label">
                         <property name="valign">center</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>
@@ -117,6 +118,7 @@
                       <object class="GtkLabel" id="action_name_label">
                         <property name="valign">center</property>
                         <property name="ellipsize">end</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>
@@ -131,6 +133,7 @@
                       <object class="GtkLabel" id="parameters_label">
                         <property name="valign">center</property>
                         <property name="ellipsize">end</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>

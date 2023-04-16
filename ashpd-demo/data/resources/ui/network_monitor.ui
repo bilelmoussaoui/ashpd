@@ -19,6 +19,7 @@
                       <object class="GtkLabel" id="network_available">
                         <property name="label">Undefined</property>
                         <property name="halign">start</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>
@@ -33,6 +34,7 @@
                       <object class="GtkLabel" id="metered">
                         <property name="label">Undefined</property>
                         <property name="halign">start</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>
@@ -47,6 +49,7 @@
                       <object class="GtkLabel" id="connectivity">
                         <property name="label">Undefined</property>
                         <property name="halign">start</property>
+                        <property name="selectable">True</property>
                         <style>
                           <class name="dim-label" />
                         </style>
