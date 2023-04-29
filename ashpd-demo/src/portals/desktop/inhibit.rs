@@ -9,7 +9,7 @@ use ashpd::{
     enumflags2::BitFlags,
     WindowIdentifier,
 };
-use futures::lock::Mutex;
+use futures_util::lock::Mutex;
 use gtk::{glib, prelude::*};
 
 use crate::widgets::{PortalPage, PortalPageImpl};

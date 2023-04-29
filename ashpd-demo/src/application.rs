@@ -139,7 +139,7 @@ impl Application {
 
         self.add_action_entries([about_action, quit_action, restart_action]);
 
-        let is_sandboxed = futures::executor::block_on(async { ashpd::is_sandboxed().await });
+        let is_sandboxed = glib::MainContext::default().block_on(async { ashpd::is_sandboxed().await });
         // The restart app requires the Flatpak portal
         self.lookup_action("restart")
             .and_downcast_ref::<gio::SimpleAction>()

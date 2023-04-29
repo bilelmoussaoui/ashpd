@@ -9,9 +9,9 @@ use ashpd::{
     WindowIdentifier,
 };
 use chrono::{DateTime, Local, TimeZone};
-use futures::{
+use futures_util::{
     future::{AbortHandle, Abortable},
-    lock::Mutex,
+    lock::Mutex
 };
 use gtk::glib::{self, clone};
 use shumate::prelude::*;
