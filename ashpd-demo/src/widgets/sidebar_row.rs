@@ -66,8 +66,8 @@ glib::wrapper! {
 impl SidebarRow {
     pub fn new(title: &str, page_name: &str) -> Self {
         glib::Object::builder()
-            .property("title", &title)
-            .property("page-name", &page_name)
+            .property("title", title)
+            .property("page-name", page_name)
             .build()
     }
 }

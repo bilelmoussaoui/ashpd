@@ -205,7 +205,7 @@ glib::wrapper! {
 impl ApplicationWindow {
     pub fn new(app: &Application) -> Self {
         glib::Object::builder()
-            .property("application", &app)
+            .property("application", app)
             .build()
     }
 
