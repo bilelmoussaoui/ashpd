@@ -8,7 +8,7 @@
 //!
 //!     println!("{:#?}", proxy.mount_point().await?);
 //!
-//!     for (doc_id, host_path) in proxy.list("org.mozilla.firefox").await? {
+//!     for (doc_id, host_path) in proxy.list(Some("org.mozilla.firefox".try_into()?)).await? {
 //!         if doc_id == "f2ee988d".into() {
 //!             let info = proxy.info(doc_id).await?;
 //!             println!("{:#?}", info);
@@ -18,12 +18,14 @@
 //!     proxy
 //!         .grant_permissions(
 //!             "f2ee988d",
-//!             "org.mozilla.firefox",
+//!             "org.mozilla.firefox".try_into().unwrap(),
 //!             &[Permission::GrantPermissions],
 //!         )
 //!         .await?;
 //!     proxy
-//!         .revoke_permissions("f2ee988d", "org.mozilla.firefox", &[Permission::Write])
+//!         .revoke_permissions("f2ee988d",
+//!              "org.mozilla.firefox".try_into()?,
+//!              &[Permission::Write])
 //!         .await?;
 //!
 //!     proxy.delete("f2ee988d").await?;
@@ -195,7 +197,7 @@ impl<'a> Documents<'a> {
     ///
     /// * `o_path_fds` - Open file descriptors for the files to export.
     /// * `flags` - A [`DocumentFlags`].
-    /// * `app_id` - An application ID, or empty string.
+    /// * `app_id` - An application ID, or `None`.
     /// * `permissions` - The permissions to grant.
     ///
     /// # Returns
@@ -210,12 +212,13 @@ impl<'a> Documents<'a> {
         &self,
         o_path_fds: &[&impl AsRawFd],
         flags: BitFlags<DocumentFlags>,
-        app_id: impl TryInto<AppID, Error = Error>,
+        app_id: Option<AppID>,
         permissions: &[Permission],
     ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        let app_id = app_id.as_deref().unwrap_or("");
         self.0
-            .call("AddFull", &(o_path, flags, app_id.try_into()?, permissions))
+            .call("AddFull", &(o_path, flags, app_id, permissions))
             .await
     }
 
@@ -268,7 +271,7 @@ impl<'a> Documents<'a> {
     /// * `o_path_fd` - Open file descriptor for the parent directory.
     /// * `filename` - The basename for the file.
     /// * `flags` - A [`DocumentFlags`].
-    /// * `app_id` - An application ID, or empty string.
+    /// * `app_id` - An application ID, or `None`.
     /// * `permissions` - The permissions to grant.
     ///
     /// # Returns
@@ -284,9 +287,10 @@ impl<'a> Documents<'a> {
         o_path_fd: &(impl AsRawFd + fmt::Debug),
         filename: impl AsRef<Path>,
         flags: BitFlags<DocumentFlags>,
-        app_id: impl TryInto<AppID, Error = Error>,
+        app_id: Option<AppID>,
         permissions: &[Permission],
     ) -> Result<(DocumentID, HashMap<String, OwnedValue>), Error> {
+        let app_id = app_id.as_deref().unwrap_or("");
         let filename = FilePath::new(filename)?;
         self.0
             .call(
@@ -295,7 +299,7 @@ impl<'a> Documents<'a> {
                     Fd::from(o_path_fd.as_raw_fd()),
                     filename,
                     flags,
-                    app_id.try_into()?,
+                    app_id,
                     permissions,
                 ),
             )
@@ -351,14 +355,11 @@ impl<'a> Documents<'a> {
     pub async fn grant_permissions(
         &self,
         doc_id: impl Into<DocumentID>,
-        app_id: impl TryInto<AppID, Error = Error>,
+        app_id: AppID,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         self.0
-            .call(
-                "GrantPermissions",
-                &(doc_id.into(), app_id.try_into()?, permissions),
-            )
+            .call("GrantPermissions", &(doc_id.into(), app_id, permissions))
             .await
     }
 
@@ -394,7 +395,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Arguments
     ///
-    /// * `app-id` - The application ID, or '' to list all documents.
+    /// * `app-id` - The application ID, or `None` to list all documents.
     ///
     /// # Returns
     ///
@@ -407,10 +408,10 @@ impl<'a> Documents<'a> {
     #[doc(alias = "List")]
     pub async fn list(
         &self,
-        app_id: impl TryInto<AppID, Error = Error>,
+        app_id: Option<AppID>,
     ) -> Result<HashMap<DocumentID, FilePath>, Error> {
-        let response: HashMap<String, FilePath> =
-            self.0.call("List", &(app_id.try_into()?)).await?;
+        let app_id = app_id.as_deref().unwrap_or("");
+        let response: HashMap<String, FilePath> = self.0.call("List", &(app_id)).await?;
 
         let mut new_response: HashMap<DocumentID, FilePath> = HashMap::new();
         for (key, file_name) in response {
@@ -467,14 +468,11 @@ impl<'a> Documents<'a> {
     pub async fn revoke_permissions(
         &self,
         doc_id: impl Into<DocumentID>,
-        app_id: impl TryInto<AppID, Error = Error>,
+        app_id: AppID,
         permissions: &[Permission],
     ) -> Result<(), Error> {
         self.0
-            .call(
-                "RevokePermissions",
-                &(doc_id.into(), app_id.try_into()?, permissions),
-            )
+            .call("RevokePermissions", &(doc_id.into(), app_id, permissions))
             .await
     }
 }
