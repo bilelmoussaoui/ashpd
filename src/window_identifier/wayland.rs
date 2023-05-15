@@ -107,7 +107,7 @@ impl Drop for WaylandWindowIdentifier {
     fn drop(&mut self) {
         self.exported.destroy();
         #[cfg(feature = "tracing")]
-        if let WindowIdentifierType::Wayland(handle) = self.type_ {
+        if let WindowIdentifierType::Wayland(ref handle) = self.type_ {
             tracing::debug!("Unexporting handle: {handle}");
         }
     }
