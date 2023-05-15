@@ -106,6 +106,10 @@ impl fmt::Display for WaylandWindowIdentifier {
 impl Drop for WaylandWindowIdentifier {
     fn drop(&mut self) {
         self.exported.destroy();
+        #[cfg(feature = "tracing")]
+        if let WindowIdentifierType::Wayland(handle) = self.type_ {
+            tracing::debug!("Unexporting handle: {handle}");
+        }
     }
 }
 
