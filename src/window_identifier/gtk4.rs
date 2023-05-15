@@ -172,6 +172,8 @@ impl Drop for Gtk4WindowIdentifier {
                         return;
                     }
                     top_level.unexport_handle();
+                    #[cfg(feature = "tracing")]
+                    tracing::debug!("Unexporting handle: {_handle}");
                     let _ = top_level.steal_data::<(Option<String>, u8)>(WINDOW_HANDLE_KEY);
                 }
             }
