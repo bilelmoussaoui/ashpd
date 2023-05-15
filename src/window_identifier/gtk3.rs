@@ -175,7 +175,7 @@ impl Drop for Gtk3WindowIdentifier {
                 }
                 wayland_win.unexport_handle();
                 #[cfg(feature = "tracing")]
-                tracing::debug!("Unexporting handle: {_handle}");
+                tracing::debug!("Unexporting handle: {_handle:?}");
                 let _ = wayland_win.steal_data::<(Option<String>, u8)>(WINDOW_HANDLE_KEY);
             },
             _ => (),
