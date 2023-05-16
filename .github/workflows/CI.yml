@@ -23,11 +23,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features "gtk4,pipewire,wayland,raw_handle"
+          args: --features "gtk4,pipewire,wayland,raw_handle,tracing"
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features "gtk3,pipewire,wayland,raw_handle"
+          args: --features "gtk3,pipewire,wayland,raw_handle,tracing"
 
   test:
     name: Test Suite
@@ -46,11 +46,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --features "gtk4,pipewire,wayland,raw_handle"
+          args: --features "gtk4,pipewire,wayland,raw_handle,tracing"
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --features "gtk3,pipewire,wayland,raw_handle"
+          args: --features "gtk3,pipewire,wayland,raw_handle,tracing"
 
   fmt:
     name: Rustfmt
@@ -90,8 +90,8 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features "gtk4,pipewire,wayland,raw_handle" -- -D warnings
+          args: --features "gtk4,pipewire,wayland,raw_handle,tracing" -- -D warnings
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features "gtk3,pipewire,wayland,raw_handle" -- -D warnings
+          args: --features "gtk3,pipewire,wayland,raw_handle,tracing" -- -D warnings
