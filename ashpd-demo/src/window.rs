@@ -125,7 +125,8 @@ mod imp {
             if config::PROFILE == "Devel" {
                 obj.add_css_class("devel");
             }
-            let is_sandboxed: bool = glib::MainContext::default().block_on(async { ashpd::is_sandboxed().await });
+            let is_sandboxed: bool =
+                glib::MainContext::default().block_on(async { ashpd::is_sandboxed().await });
             // Add pages based on whether the app is sandboxed
             if is_sandboxed {
                 self.sidebar
@@ -204,9 +205,7 @@ glib::wrapper! {
 
 impl ApplicationWindow {
     pub fn new(app: &Application) -> Self {
-        glib::Object::builder()
-            .property("application", app)
-            .build()
+        glib::Object::builder().property("application", app).build()
     }
 
     fn save_window_size(&self) -> Result<(), glib::BoolError> {

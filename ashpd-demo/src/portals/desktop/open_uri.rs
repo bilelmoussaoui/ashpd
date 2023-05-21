@@ -60,7 +60,27 @@ impl OpenUriPage {
                     .ask(ask)
                     .writeable(writeable)
                     .identifier(identifier);
-                match request.send_uri(&uri).await {
+                let response = if uri.scheme() == "file" {
+                    let file_path = uri.to_file_path().unwrap();
+                    match std::fs::File::open(&file_path) {
+                        Ok(fd) => request.send_file(&fd).await,
+                        Err(err) => {
+                            tracing::error!("File doesn't exists {err}");
+                            self.send_notification(
+                                &format!(
+                                    "File or directory '{}' doesn't exists",
+                                    file_path.display()
+                                ),
+                                NotificationKind::Error,
+                            );
+                            return;
+                        }
+                    }
+                } else {
+                    request.send_uri(&uri).await
+                }
+                .and_then(|r| r.response());
+                match response {
                     Ok(_) => {
                         self.send_notification(
                             "Open URI request was successful",
