@@ -2,7 +2,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{desktop::wallpaper, WindowIdentifier};
 use gtk::{gio, glib};
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -26,9 +26,7 @@ mod imp {
             klass.bind_template();
 
             klass.install_action_async("wallpaper.select", None, |page, _, _| async move {
-                if let Err(err) = page.pick_wallpaper().await {
-                    tracing::error!("Failed to pick wallpaper {err}");
-                }
+                page.pick_wallpaper().await;
             });
         }
 
@@ -48,10 +46,8 @@ glib::wrapper! {
 }
 
 impl WallpaperPage {
-    async fn pick_wallpaper(&self) -> anyhow::Result<()> {
-        let imp = self.imp();
+    async fn open_file(&self) -> anyhow::Result<url::Url> {
         let root = self.native().unwrap();
-
         let filter = gtk::FileFilter::new();
         filter.add_pixbuf_formats();
         filter.set_name(Some("images"));
@@ -68,6 +64,21 @@ impl WallpaperPage {
         let file = dialog
             .open_future(root.downcast_ref::<gtk::Window>())
             .await?;
+        let uri = url::Url::parse(&file.uri())?;
+        Ok(uri)
+    }
+
+    async fn pick_wallpaper(&self) {
+        let imp = self.imp();
+        let root = self.native().unwrap();
+        let uri = match self.open_file().await {
+            Ok(uri) => uri,
+            Err(err) => {
+                tracing::error!("Failed to open a file: {err}");
+                self.error("Failed to open a file");
+                return;
+            }
+        };
 
         let show_preview = imp.preview_switch.is_active();
         let set_on = match imp.set_on_combo.selected() {
@@ -77,7 +88,6 @@ impl WallpaperPage {
             _ => unimplemented!(),
         };
         let identifier = WindowIdentifier::from_native(&root).await;
-        let uri = url::Url::parse(&file.uri())?;
         match wallpaper::WallpaperRequest::default()
             .identifier(identifier)
             .show_preview(show_preview)
@@ -86,17 +96,10 @@ impl WallpaperPage {
             .await
         {
             Err(err) => {
-                tracing::error!("Failed to set wallpaper {}", err);
-                self.send_notification(
-                    "Request to set a wallpaper failed",
-                    NotificationKind::Error,
-                );
+                tracing::error!("Failed to set wallpaper: {err}");
+                self.error("Request to set a wallpaper failed");
             }
-            Ok(_) => self.send_notification(
-                "Set a wallpaper request was successful",
-                NotificationKind::Success,
-            ),
+            Ok(_) => self.success("Set a wallpaper request was successful"),
         }
-        Ok(())
     }
 }

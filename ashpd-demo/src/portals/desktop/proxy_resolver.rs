@@ -2,7 +2,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::proxy_resolver::ProxyResolver;
 use gtk::glib;
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -63,20 +63,16 @@ impl ProxyResolverPage {
                         imp.response_group.add(&row);
                     });
                     imp.response_group.set_visible(true);
-                    self.send_notification(
-                        "Lookup request was successful",
-                        NotificationKind::Success,
-                    );
+                    self.success("Lookup request was successful");
                 }
-                Err(_err) => {
-                    self.send_notification(
-                        "Request to lookup a URI failed",
-                        NotificationKind::Error,
-                    );
+                Err(err) => {
+                    tracing::error!("Failed to lookup URI: {err}");
+                    self.error("Request to lookup a URI failed");
                 }
             },
-            Err(_err) => {
-                self.send_notification("Request to lookup a URI failed", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Failed to parse URI: {err}");
+                self.error("Request to lookup a URI failed");
             }
         };
 

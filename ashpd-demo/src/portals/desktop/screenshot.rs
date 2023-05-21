@@ -2,7 +2,7 @@ use adw::subclass::prelude::*;
 use ashpd::{desktop::screenshot, WindowIdentifier};
 use gtk::{gdk, gio, glib, prelude::*};
 
-use crate::widgets::{ColorWidget, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{ColorWidget, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -72,13 +72,11 @@ impl ScreenshotPage {
         {
             Ok(color) => {
                 self.imp().color_widget.set_rgba(gdk::RGBA::from(color));
-                self.send_notification(
-                    "Color pick request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Color pick request was successful");
             }
-            Err(_err) => {
-                self.send_notification("Request to pick a color failed", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Failed to pick color: {err}");
+                self.error("Request to pick a color failed");
             }
         }
     }
@@ -103,20 +101,16 @@ impl ScreenshotPage {
             Ok(response) => {
                 let file = gio::File::for_uri(response.uri().as_str());
                 imp.screenshot_photo.set_file(Some(&file));
-                imp.revealer.set_visible(true); // Revealer has a weird issue where it still
-                                                // takes space even if it's child is hidden
+                // Revealer has a weird issue where it still
+                // takes space even if it's child is hidden
+                imp.revealer.set_visible(true);
 
                 imp.revealer.set_reveal_child(true);
-                self.send_notification(
-                    "Screenshot request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Screenshot request was successful");
             }
-            Err(_err) => {
-                self.send_notification(
-                    "Request to take a screenshot failed",
-                    NotificationKind::Error,
-                );
+            Err(err) => {
+                tracing::error!("Failed to take a screenshot {err}");
+                self.error("Request to take a screenshot failed");
             }
         }
     }

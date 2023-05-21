@@ -13,7 +13,7 @@ use ashpd::{
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -59,7 +59,7 @@ mod imp {
             });
             klass.install_action_async("remote_desktop.stop", None, |page, _, _| async move {
                 page.stop_session().await;
-                page.send_notification("Remote desktop session stopped", NotificationKind::Info);
+                page.info("Remote desktop session stopped");
             });
         }
 
@@ -175,17 +175,11 @@ impl RemoteDesktopPage {
                 imp.session.lock().await.replace(session);
                 self.action_set_enabled("remote_desktop.start", false);
                 self.action_set_enabled("remote_desktop.stop", true);
-                self.send_notification(
-                    "Remote desktop session started successfully",
-                    NotificationKind::Success,
-                );
+                self.success("Remote desktop session started successfully");
             }
             Err(err) => {
-                tracing::error!("{:#?}", err);
-                self.send_notification(
-                    "Failed to start a remote desktop session",
-                    NotificationKind::Error,
-                );
+                tracing::error!("Failed to start remote desktop session: {err}");
+                self.error("Failed to start a remote desktop session");
                 self.stop_session().await;
             }
         };
@@ -229,7 +223,7 @@ impl RemoteDesktopPage {
         }
         proxy.select_devices(&session, devices).await?;
 
-        self.send_notification("Starting a remote desktop session", NotificationKind::Info);
+        self.info("Starting a remote desktop session");
         let response = proxy.start(&session, &identifier).await?.response()?;
         Ok((
             response.devices(),

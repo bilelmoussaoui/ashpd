@@ -12,9 +12,7 @@ use ashpd::{
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 
-use crate::widgets::{
-    CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
-};
+use crate::widgets::{CameraPaintable, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -56,7 +54,7 @@ mod imp {
             });
             klass.install_action_async("screencast.stop", None, |page, _, _| async move {
                 page.stop_session().await;
-                page.send_notification("Screen cast session stopped", NotificationKind::Info);
+                page.info("Screen cast session stopped");
             });
         }
 
@@ -156,10 +154,7 @@ impl ScreenCastPage {
 
         match self.screencast().await {
             Ok((streams, fd, session)) => {
-                self.send_notification(
-                    "Screen cast session started successfully",
-                    NotificationKind::Success,
-                );
+                self.success("Screen cast session started successfully");
                 streams.iter().for_each(|stream| {
                     let paintable = CameraPaintable::default();
                     let picture = gtk::Picture::builder()
@@ -175,11 +170,8 @@ impl ScreenCastPage {
                 imp.session.lock().await.replace(session);
             }
             Err(err) => {
-                tracing::error!("{:#?}", err);
-                self.send_notification(
-                    "Failed to start a screen cast session",
-                    NotificationKind::Error,
-                );
+                tracing::error!("Failed to start screen cast session: {err}");
+                self.error("Failed to start a screen cast session");
                 self.stop_session().await;
             }
         };
@@ -239,7 +231,7 @@ impl ScreenCastPage {
                 persist_mode,
             )
             .await?;
-        self.send_notification("Starting a screen cast session", NotificationKind::Info);
+        self.info("Starting a screen cast session");
         let response = proxy.start(&session, &identifier).await?.response()?;
         if let Some(t) = response.restore_token() {
             token.replace(t.to_owned());

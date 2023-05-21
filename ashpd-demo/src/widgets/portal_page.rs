@@ -61,6 +61,16 @@ glib::wrapper! {
 
 pub trait PortalPageExt {
     fn send_notification(&self, message: &str, kind: NotificationKind);
+
+    fn error(&self, message: &str) {
+        self.send_notification(message, NotificationKind::Error);
+    }
+    fn info(&self, message: &str) {
+        self.send_notification(message, NotificationKind::Info);
+    }
+    fn success(&self, message: &str) {
+        self.send_notification(message, NotificationKind::Success);
+    }
 }
 
 impl<O: IsA<PortalPage>> PortalPageExt for O {

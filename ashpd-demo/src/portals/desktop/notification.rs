@@ -3,7 +3,7 @@ use ashpd::desktop::notification::{Button, Notification, NotificationProxy, Prio
 use gtk::glib;
 
 use self::button::NotificationButton;
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -127,12 +127,11 @@ impl NotificationPage {
         let proxy = NotificationProxy::new().await?;
         match proxy.add_notification(&notification_id, notification).await {
             Ok(_) => {
-                self.send_notification("Notification sent", NotificationKind::Success);
+                self.success("Notification sent");
                 let action = proxy.receive_action_invoked().await?;
-                self.send_notification(
-                    &format!("User interacted with notification \"{notification_id}\""),
-                    NotificationKind::Info,
-                );
+                self.info(&format!(
+                    "User interacted with notification \"{notification_id}\""
+                ));
 
                 imp.response_group.set_visible(true);
                 imp.id_label.set_text(action.id());
@@ -140,8 +139,9 @@ impl NotificationPage {
                 imp.parameters_label
                     .set_text(action.parameter()[0].downcast_ref::<str>().unwrap());
             }
-            Err(_) => {
-                self.send_notification("Failed to send a notification", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Failed to send a notification: {err}");
+                self.error("Failed to send a notification");
             }
         }
         Ok(())

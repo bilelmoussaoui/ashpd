@@ -2,7 +2,7 @@ use adw::subclass::prelude::*;
 use ashpd::{desktop::account::UserInformation, WindowIdentifier};
 use gtk::{gdk, glib, prelude::*};
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -56,16 +56,13 @@ impl AccountPage {
         let imp = self.imp();
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = imp.reason_row.text();
-        self.send_notification("Fetching user information...", NotificationKind::Info);
+        self.info("Fetching user information...");
         let request = UserInformation::request()
             .identifier(identifier)
             .reason(&*reason);
         match request.send().await.and_then(|r| r.response()) {
             Ok(user_info) => {
-                self.send_notification(
-                    "User information request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("User information request was successful");
                 imp.id_label.set_text(user_info.id());
                 imp.name_label.set_text(user_info.name());
                 match user_info
@@ -81,17 +78,15 @@ impl AccountPage {
                         imp.avatar.set_visible(true);
                     }
                     Err(err) => {
-                        tracing::error!("Failed to set user avatar {err}");
+                        tracing::error!("Failed to load user avatar: {err}");
                         imp.avatar.set_visible(false);
                     }
                 };
                 imp.response_group.set_visible(true);
             }
-            Err(_err) => {
-                self.send_notification(
-                    "Request to fetch user information failed",
-                    NotificationKind::Error,
-                );
+            Err(err) => {
+                tracing::error!("Failed to retrieve user information: {err}");
+                self.error("Request to fetch user information failed");
             }
         };
     }
