@@ -2,7 +2,7 @@ use adw::subclass::prelude::*;
 use ashpd::desktop::device::{Device, DeviceProxy};
 use gtk::glib;
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -30,17 +30,11 @@ mod imp {
             klass.install_action_async("device.request", None, |page, _, _| async move {
                 match page.request().await {
                     Ok(_) => {
-                        page.send_notification(
-                            "Device access request was successful",
-                            NotificationKind::Success,
-                        );
+                        page.success("Device access request was successful");
                     }
                     Err(err) => {
-                        tracing::error!("Failed to request device access {}", err);
-                        page.send_notification(
-                            "Request to access a device failed",
-                            NotificationKind::Error,
-                        );
+                        tracing::error!("Failed to request device access: {err}");
+                        page.error("Request to access a device failed");
                     }
                 }
             });

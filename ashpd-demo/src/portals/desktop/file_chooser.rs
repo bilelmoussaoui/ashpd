@@ -7,7 +7,7 @@ use gtk::glib;
 
 use crate::{
     portals::{is_empty, split_comma},
-    widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl},
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
 mod imp {
@@ -127,13 +127,11 @@ impl FileChooserPage {
                             .build(),
                     );
                 }
-                self.send_notification(
-                    "Open file request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Open file request was successful");
             }
-            Err(_err) => {
-                self.send_notification("Request to open a file failed", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Failed to open a file: {err}");
+                self.error("Request to open a file failed");
             }
         }
     }
@@ -169,13 +167,11 @@ impl FileChooserPage {
                     );
                 }
 
-                self.send_notification(
-                    "Save file request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Save file request was successful");
             }
-            Err(_err) => {
-                self.send_notification("Request to save a file failed", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Failed to save a file: {err}");
+                self.error("Request to save a file failed");
             }
         }
         Ok(())
@@ -210,13 +206,11 @@ impl FileChooserPage {
                             .build(),
                     );
                 }
-                self.send_notification(
-                    "Save files request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Save files request was successful");
             }
-            Err(_err) => {
-                self.send_notification("Request to save files failed", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Failed to save files: {err}");
+                self.error("Request to save files failed");
             }
         }
         Ok(())

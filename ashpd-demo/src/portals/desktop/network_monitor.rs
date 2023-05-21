@@ -2,7 +2,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::network_monitor::NetworkMonitor;
 use gtk::glib::{self, clone};
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -96,13 +96,11 @@ impl NetworkMonitorPage {
             Ok(response) => {
                 imp.can_reach_row.set_title(&response.to_string());
                 imp.response_group.set_visible(true);
-                self.send_notification(
-                    "Can reach request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Can reach request was successful");
             }
-            Err(_err) => {
-                self.send_notification("Request failed", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Can reach request failed: {err}");
+                self.error("Request failed");
             }
         }
 

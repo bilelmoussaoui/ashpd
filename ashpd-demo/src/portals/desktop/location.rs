@@ -16,7 +16,7 @@ use futures_util::{
 use gtk::glib::{self, clone};
 use shumate::prelude::*;
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -174,10 +174,11 @@ impl LocationPage {
                     let _ = future.await;
                 }
             }
-            Err(_err) => {
+            Err(err) => {
+                tracing::error!("Failed to locate: {err}");
                 self.action_set_enabled("location.stop", false);
                 self.action_set_enabled("location.start", true);
-                self.send_notification("Failed to locate", NotificationKind::Error);
+                self.error("Failed to locate");
             }
         }
     }
@@ -225,7 +226,7 @@ impl LocationPage {
         imp.map.center_on(location.latitude(), location.longitude());
         imp.marker
             .set_location(location.latitude(), location.longitude());
-        self.send_notification("Position updated", NotificationKind::Success);
+        self.success("Position updated");
     }
 }
 

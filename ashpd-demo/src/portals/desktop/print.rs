@@ -7,7 +7,7 @@ use ashpd::{
 };
 use gtk::{gio, glib, prelude::*};
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -82,11 +82,11 @@ impl PrintPage {
 
         match print(&identifier, &title, file, modal).await {
             Ok(_) => {
-                self.send_notification("Print request was successful", NotificationKind::Success);
+                self.success("Print request was successful");
             }
             Err(err) => {
                 tracing::error!("Failed to print {}", err);
-                self.send_notification("Request to print failed", NotificationKind::Error);
+                self.error("Request to print failed");
             }
         }
         Ok(())

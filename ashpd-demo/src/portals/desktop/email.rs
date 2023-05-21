@@ -9,7 +9,7 @@ use gtk::{
 
 use crate::{
     portals::{is_empty, split_comma},
-    widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl},
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
 mod imp {
@@ -139,15 +139,12 @@ impl EmailPage {
         }
         match request.send().await {
             Ok(_) => {
-                self.send_notification(
-                    "Compose an email request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Compose an email request was successful");
             }
-            Err(_err) => self.send_notification(
-                "Request to compose an email failed",
-                NotificationKind::Error,
-            ),
+            Err(err) => {
+                tracing::error!("Failed to compose email: {err}");
+                self.error("Request to compose an email failed");
+            }
         }
     }
 
@@ -181,7 +178,7 @@ impl EmailPage {
                 }
             }
             Err(err) => {
-                tracing::error!("Failed to open files {err}");
+                tracing::error!("Failed to open files: {err}");
             }
         }
     }

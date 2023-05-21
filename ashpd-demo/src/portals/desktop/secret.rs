@@ -7,7 +7,7 @@ use adw::subclass::prelude::*;
 use ashpd::desktop::secret;
 use gtk::{glib, prelude::*};
 
-use crate::widgets::{PortalPage, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -55,13 +55,19 @@ impl SecretPage {
     async fn retrieve_secret(&self) {
         let imp = self.imp();
 
-        if let Ok(key) = retrieve_secret().await {
-            let key_str = format!("{key:?}")
-                .trim_start_matches('[')
-                .trim_end_matches(']')
-                .replace(',', " ");
-            imp.token_label.set_text(&key_str);
-            imp.response_group.set_visible(true);
+        match retrieve_secret().await {
+            Ok(key) => {
+                let key_str = format!("{key:?}")
+                    .trim_start_matches('[')
+                    .trim_end_matches(']')
+                    .replace(',', " ");
+                imp.token_label.set_text(&key_str);
+                imp.response_group.set_visible(true);
+            }
+            Err(err) => {
+                tracing::error!("Failed to retrieve secret: {err}");
+                self.error("Failed to retrieve secret");
+            }
         }
     }
 }

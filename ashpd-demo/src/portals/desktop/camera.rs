@@ -7,9 +7,7 @@ use gtk::{
     prelude::*,
 };
 
-use crate::widgets::{
-    CameraPaintable, NotificationKind, PortalPage, PortalPageExt, PortalPageImpl,
-};
+use crate::widgets::{CameraPaintable, PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use std::cell::RefCell;
@@ -130,17 +128,11 @@ impl CameraPage {
                     imp.camera_available.set_text("No");
                 }
 
-                self.send_notification(
-                    "Camera stream started successfully",
-                    NotificationKind::Success,
-                );
+                self.success("Camera stream started successfully");
             }
             Err(err) => {
-                tracing::error!("Failed to start a camera stream {:#?}", err);
-                self.send_notification(
-                    "Request to start a camera stream failed",
-                    NotificationKind::Error,
-                );
+                tracing::error!("Failed to start a camera stream: {err}");
+                self.error("Request to start a camera stream failed");
                 self.stop_stream();
             }
         }

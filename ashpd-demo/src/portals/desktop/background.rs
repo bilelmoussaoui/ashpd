@@ -4,7 +4,7 @@ use gtk::{glib, prelude::*};
 
 use crate::{
     portals::is_empty,
-    widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl},
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 mod imp {
     use super::*;
@@ -77,7 +77,7 @@ impl BackgroundPage {
             .dbus_activatable(dbus_activatable)
             .command::<Vec<_>, String>(command);
 
-        self.send_notification("Requesting background access", NotificationKind::Info);
+        self.info("Requesting background access");
 
         match request.send().await.and_then(|r| r.response()) {
             Ok(response) => {
@@ -86,16 +86,11 @@ impl BackgroundPage {
                     .set_label(&response.auto_start().to_string());
                 imp.run_bg_label
                     .set_label(&response.run_in_background().to_string());
-                self.send_notification(
-                    "Background request was successful",
-                    NotificationKind::Success,
-                );
+                self.success("Background request was successful");
             }
-            Err(_err) => {
-                self.send_notification(
-                    "Request to run in background failed",
-                    NotificationKind::Error,
-                );
+            Err(err) => {
+                tracing::error!("Failed to request running in background: {err}");
+                self.error("Request to run in background failed");
             }
         }
     }

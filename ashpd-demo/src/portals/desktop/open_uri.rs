@@ -2,7 +2,7 @@ use adw::subclass::prelude::*;
 use ashpd::{desktop::open_uri, WindowIdentifier};
 use gtk::{glib, prelude::*};
 
-use crate::widgets::{NotificationKind, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
 mod imp {
     use super::*;
@@ -65,14 +65,11 @@ impl OpenUriPage {
                     match std::fs::File::open(&file_path) {
                         Ok(fd) => request.send_file(&fd).await,
                         Err(err) => {
-                            tracing::error!("File doesn't exists {err}");
-                            self.send_notification(
-                                &format!(
-                                    "File or directory '{}' doesn't exists",
-                                    file_path.display()
-                                ),
-                                NotificationKind::Error,
-                            );
+                            tracing::error!("Failed to open file: {err}");
+                            self.error(&format!(
+                                "File or directory '{}' doesn't exists",
+                                file_path.display()
+                            ));
                             return;
                         }
                     }
@@ -82,21 +79,17 @@ impl OpenUriPage {
                 .and_then(|r| r.response());
                 match response {
                     Ok(_) => {
-                        self.send_notification(
-                            "Open URI request was successful",
-                            NotificationKind::Success,
-                        );
+                        self.success("Open URI request was successful");
                     }
-                    Err(_err) => {
-                        self.send_notification(
-                            "Request to open URI failed",
-                            NotificationKind::Error,
-                        );
+                    Err(err) => {
+                        tracing::error!("Failed to open URI: {err}");
+                        self.error("Request to open URI failed");
                     }
                 }
             }
-            Err(_err) => {
-                self.send_notification("Malformed URI", NotificationKind::Error);
+            Err(err) => {
+                tracing::error!("Failed to parse URI: {err}");
+                self.error("Malformed URI");
             }
         }
     }
