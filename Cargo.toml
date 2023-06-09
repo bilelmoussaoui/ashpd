@@ -26,7 +26,7 @@ wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 
 [dependencies]
 async-std = {version = "1.12", optional = true}
-enumflags2 = "0.7"
+enumflags2 = "0.7.7"
 futures-channel = "0.3"
 futures-util = "0.3"
 gdk3wayland = {package = "gdkwayland", version = "0.17", optional = true}
