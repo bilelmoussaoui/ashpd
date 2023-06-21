@@ -55,7 +55,7 @@ use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{helpers, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -88,11 +88,12 @@ impl<'a> OpenURIProxy<'a> {
         directory: &impl AsRawFd,
         options: OpenDirOptions,
     ) -> Result<Request<()>, Error> {
+        let fd = helpers::dup_to_owned_fd(directory)?;
         self.0
             .empty_request(
                 &options.handle_token,
                 "OpenDirectory",
-                &(&identifier, Fd::from(directory.as_raw_fd()), &options),
+                &(&identifier, Fd::from(&fd), &options),
             )
             .await
     }
@@ -103,11 +104,12 @@ impl<'a> OpenURIProxy<'a> {
         file: &impl AsRawFd,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
+        let fd = helpers::dup_to_owned_fd(file)?;
         self.0
             .empty_request(
                 &options.handle_token,
                 "OpenFile",
-                &(&identifier, Fd::from(file.as_raw_fd()), &options),
+                &(&identifier, Fd::from(&fd), &options),
             )
             .await
     }
@@ -196,8 +198,9 @@ impl OpenDirectoryRequest {
     /// Send the request.
     pub async fn send(self, directory: &impl AsRawFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
+        let fd = helpers::dup_to_owned_fd(directory)?;
         proxy
-            .open_directory(&self.identifier, directory, self.options)
+            .open_directory(&self.identifier, &fd, self.options)
             .await
     }
 }

@@ -27,7 +27,7 @@ use tokio::{io::AsyncReadExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error};
+use crate::{helpers, proxy::Proxy, Error};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.
@@ -63,12 +63,13 @@ impl<'a> Secret<'a> {
     /// * `fd` - Writaeble file descriptor for transporting the secret.
     #[doc(alias = "RetrieveSecret")]
     pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<Request<()>, Error> {
+        let fd = helpers::dup_to_owned_fd(fd)?;
         let options = RetrieveOptions::default();
         self.0
             .empty_request(
                 &options.handle_token,
                 "RetrieveSecret",
-                &(Fd::from(fd.as_raw_fd()), &options),
+                &(Fd::from(&fd), &options),
             )
             .await
     }

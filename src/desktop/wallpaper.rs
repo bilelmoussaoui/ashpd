@@ -45,7 +45,7 @@ use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::Request;
-use crate::{desktop::HandleToken, proxy::Proxy, Error, WindowIdentifier};
+use crate::{desktop::HandleToken, helpers, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
 #[zvariant(signature = "s")]
@@ -127,11 +127,12 @@ impl<'a> WallpaperProxy<'a> {
         file: &impl AsRawFd,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
+        let fd = helpers::dup_to_owned_fd(file)?;
         self.0
             .empty_request(
                 &options.handle_token,
                 "SetWallpaperFile",
-                &(&identifier, Fd::from(file.as_raw_fd()), &options),
+                &(&identifier, Fd::from(&fd), &options),
             )
             .await
     }

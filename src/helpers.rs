@@ -1,7 +1,11 @@
+use std::os::unix::prelude::{AsRawFd, BorrowedFd, OwnedFd};
+
 #[cfg(feature = "async-std")]
 use async_std::{fs::File, prelude::*};
 #[cfg(feature = "tokio")]
 use tokio::{fs::File, io::AsyncReadExt};
+
+use crate::Error;
 
 pub(crate) async fn is_flatpak() -> bool {
     #[cfg(feature = "async-std")]
@@ -49,6 +53,12 @@ fn cgroup_v2_is_snap(cgroups: &str) -> bool {
             Some(scope.starts_with("snap."))
         })
         .any(|x| x.unwrap_or(false))
+}
+
+pub(crate) fn dup_to_owned_fd(fd: &impl AsRawFd) -> Result<OwnedFd, Error> {
+    let borrowed = unsafe { BorrowedFd::borrow_raw(fd.as_raw_fd()) };
+
+    Ok(borrowed.try_clone_to_owned()?)
 }
 
 #[cfg(test)]

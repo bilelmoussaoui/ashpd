@@ -35,7 +35,7 @@ use std::os::unix::io::AsRawFd;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
-use crate::{error::PortalError, proxy::Proxy, Error};
+use crate::{error::PortalError, helpers, proxy::Proxy, Error};
 
 #[derive(Debug, Deserialize_repr, Serialize_repr, PartialEq, Type)]
 #[repr(u32)]
@@ -72,10 +72,8 @@ impl<'a> TrashProxy<'a> {
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
     pub async fn trash_file(&self, fd: &impl AsRawFd) -> Result<(), Error> {
-        let status = self
-            .0
-            .call("TrashFile", &(Fd::from(fd.as_raw_fd())))
-            .await?;
+        let fd = helpers::dup_to_owned_fd(fd)?;
+        let status = self.0.call("TrashFile", &(Fd::from(&fd))).await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
             TrashStatus::Succeeded => Ok(()),

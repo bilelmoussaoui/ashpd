@@ -20,7 +20,7 @@ use std::{fmt::Debug, os::unix::io::AsRawFd};
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{Fd, Type};
 
-use crate::{error::PortalError, proxy::Proxy, Error};
+use crate::{error::PortalError, helpers, proxy::Proxy, Error};
 
 #[derive(Deserialize_repr, PartialEq, Eq, Debug, Type)]
 /// The status of the game mode.
@@ -114,13 +114,12 @@ impl<'a> GameMode<'a> {
         target: &impl AsRawFd,
         requester: &impl AsRawFd,
     ) -> Result<Status, Error> {
+        let target = helpers::dup_to_owned_fd(target)?;
+        let requester = helpers::dup_to_owned_fd(requester)?;
         self.0
             .call(
                 "QueryStatusByPIDFd",
-                &(
-                    Fd::from(target.as_raw_fd()),
-                    Fd::from(requester.as_raw_fd()),
-                ),
+                &(Fd::from(&target), Fd::from(&requester)),
             )
             .await
     }
@@ -179,14 +178,13 @@ impl<'a> GameMode<'a> {
         target: &impl AsRawFd,
         requester: &impl AsRawFd,
     ) -> Result<(), Error> {
+        let target = helpers::dup_to_owned_fd(target)?;
+        let requester = helpers::dup_to_owned_fd(requester)?;
         let status = self
             .0
             .call(
                 "RegisterGameByPIDFd",
-                &(
-                    Fd::from(target.as_raw_fd()),
-                    Fd::from(requester.as_raw_fd()),
-                ),
+                &(Fd::from(&target), Fd::from(&requester)),
             )
             .await?;
         match status {
@@ -256,14 +254,13 @@ impl<'a> GameMode<'a> {
         target: &impl AsRawFd,
         requester: &impl AsRawFd,
     ) -> Result<(), Error> {
+        let target = helpers::dup_to_owned_fd(target)?;
+        let requester = helpers::dup_to_owned_fd(requester)?;
         let status = self
             .0
             .call(
                 "UnregisterGameByPIDFd",
-                &(
-                    Fd::from(target.as_raw_fd()),
-                    Fd::from(requester.as_raw_fd()),
-                ),
+                &(Fd::from(&target), Fd::from(&requester)),
             )
             .await?;
         match status {

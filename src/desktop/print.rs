@@ -37,7 +37,7 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{helpers, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
@@ -684,11 +684,12 @@ impl<'a> PrintProxy<'a> {
         let options = PrintOptions::default()
             .token(token.unwrap_or(0))
             .modal(modal);
+        let fd = helpers::dup_to_owned_fd(fd)?;
         self.0
             .empty_request(
                 &options.handle_token,
                 "Print",
-                &(&identifier, title, Fd::from(fd.as_raw_fd()), &options),
+                &(&identifier, title, Fd::from(&fd), &options),
             )
             .await
     }

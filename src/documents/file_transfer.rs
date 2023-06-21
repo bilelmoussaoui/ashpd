@@ -22,11 +22,14 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+use std::{
+    collections::HashMap,
+    os::unix::prelude::{AsRawFd, OwnedFd},
+};
 
 use zbus::zvariant::{Fd, SerializeDict, Type, Value};
 
-use crate::{proxy::Proxy, Error};
+use crate::{helpers, proxy::Proxy, Error};
 
 #[derive(SerializeDict, Debug, Type, Default)]
 /// Specified options for a [`FileTransfer::start_transfer`] request.
@@ -100,7 +103,11 @@ impl<'a> FileTransfer<'a> {
     pub async fn add_files(&self, key: &str, fds: &[&impl AsRawFd]) -> Result<(), Error> {
         // `options` parameter doesn't seems to be used yet
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        let fds = fds
+            .iter()
+            .filter_map(|fd| helpers::dup_to_owned_fd(&fd.as_raw_fd()).ok())
+            .collect::<Vec<OwnedFd>>();
+        let files: Vec<Fd> = fds.iter().map(Fd::from).collect();
 
         self.0.call("AddFiles", &(key, files, options)).await
     }

@@ -42,7 +42,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
 pub use crate::app_id::DocumentID;
-use crate::{proxy::Proxy, AppID, Error, FilePath};
+use crate::{helpers, proxy::Proxy, AppID, Error, FilePath};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -181,11 +181,9 @@ impl<'a> Documents<'a> {
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<DocumentID, Error> {
+        let fd = helpers::dup_to_owned_fd(o_path_fd)?;
         self.0
-            .call(
-                "Add",
-                &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
-            )
+            .call("Add", &(Fd::from(&fd), reuse_existing, persistent))
             .await
     }
 
@@ -215,7 +213,11 @@ impl<'a> Documents<'a> {
         app_id: Option<AppID>,
         permissions: &[Permission],
     ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
-        let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        let fds = o_path_fds
+            .iter()
+            .filter_map(|fd| helpers::dup_to_owned_fd(&fd.as_raw_fd()).ok())
+            .collect::<Vec<_>>();
+        let o_path: Vec<Fd> = fds.iter().map(Fd::from).collect();
         let app_id = app_id.as_deref().unwrap_or("");
         self.0
             .call("AddFull", &(o_path, flags, app_id, permissions))
@@ -249,15 +251,11 @@ impl<'a> Documents<'a> {
         persistent: bool,
     ) -> Result<DocumentID, Error> {
         let filename = FilePath::new(filename)?;
+        let fd = helpers::dup_to_owned_fd(o_path_parent_fd)?;
         self.0
             .call(
                 "AddNamed",
-                &(
-                    Fd::from(o_path_parent_fd.as_raw_fd()),
-                    filename,
-                    reuse_existing,
-                    persistent,
-                ),
+                &(Fd::from(&fd), filename, reuse_existing, persistent),
             )
             .await
     }
@@ -292,16 +290,11 @@ impl<'a> Documents<'a> {
     ) -> Result<(DocumentID, HashMap<String, OwnedValue>), Error> {
         let app_id = app_id.as_deref().unwrap_or("");
         let filename = FilePath::new(filename)?;
+        let fd = helpers::dup_to_owned_fd(o_path_fd)?;
         self.0
             .call(
                 "AddNamedFull",
-                &(
-                    Fd::from(o_path_fd.as_raw_fd()),
-                    filename,
-                    flags,
-                    app_id,
-                    permissions,
-                ),
+                &(Fd::from(&fd), filename, flags, app_id, permissions),
             )
             .await
     }
