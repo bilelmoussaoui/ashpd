@@ -294,7 +294,7 @@ impl<'a> Flatpak<'a> {
     /// # Arguments
     ///
     /// * `cwd_path` - The working directory for the new process.
-    /// * `arvg` - The argv for the new process, starting with the executable to
+    /// * `argv` - The argv for the new process, starting with the executable to
     ///   launch.
     /// * `fds` - Array of file descriptors to pass to the new process.
     /// * `envs` - Array of variable/value pairs for the environment of the new
