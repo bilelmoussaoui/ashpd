@@ -17,6 +17,8 @@
 //! }
 //! ```
 
+#[cfg(feature = "pipewire")]
+use std::os::unix::prelude::{AsRawFd, OwnedFd as StdOwnedFd};
 use std::{
     collections::HashMap,
     os::unix::prelude::{IntoRawFd, RawFd},
@@ -25,6 +27,8 @@ use std::{
 use zbus::zvariant::{OwnedFd, SerializeDict, Type, Value};
 
 use super::{HandleToken, Request};
+#[cfg(feature = "pipewire")]
+use crate::helpers;
 use crate::{proxy::Proxy, Error};
 
 #[derive(SerializeDict, Type, Debug, Default)]
@@ -129,7 +133,7 @@ impl Stream {
 
 #[cfg(feature = "pipewire")]
 fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone + 'static>(
-    fd: RawFd,
+    fd: StdOwnedFd,
     callback: F,
     done_callback: G,
 ) -> Result<(), pw::Error> {
@@ -137,7 +141,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 
     let mainloop = pw::MainLoop::new()?;
     let context = pw::Context::new(&mainloop)?;
-    let core = context.connect_fd(fd, None)?;
+    let core = context.connect_fd(fd.as_raw_fd(), None)?;
     let registry = core.get_registry()?;
 
     let pending = core.sync(0).expect("sync failed");
@@ -192,11 +196,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 /// running.
 #[cfg(feature = "pipewire")]
 pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
-    let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
-
-    if fd == -1 {
-        return Err(pw::Error::CreationFailed);
-    }
+    let fd = helpers::dup_to_owned_fd(&fd).map_err(|_| pw::Error::CreationFailed)?;
 
     let (sender, receiver) = futures_channel::oneshot::channel();
     let (streams_sender, mut streams_receiver) = futures_channel::mpsc::unbounded();
