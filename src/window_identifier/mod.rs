@@ -358,7 +358,7 @@ mod gtk3;
 #[cfg(feature = "gtk3")]
 pub use self::gtk3::Gtk3WindowIdentifier;
 
-#[cfg(any(feature = "wayland"))]
+#[cfg(feature = "wayland")]
 mod wayland;
 
 #[cfg(feature = "wayland")]
