@@ -23,29 +23,17 @@
                 <property name="title" translatable="yes">Request the User Location</property>
                 <property name="description">Communicates with org.freedesktop.portal.Location</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSpinRow" id="distance_spin">
                     <property name="title" translatable="yes">Distance Threshold</property>
                     <property name="subtitle" translatable="yes">In meters</property>
-                    <property name="activatable-widget">distance_spin</property>
-                    <child>
-                      <object class="GtkSpinButton" id="distance_spin">
-                        <property name="valign">center</property>
-                        <property name="adjustment">distance_adjustment</property>
-                      </object>
-                    </child>
+                    <property name="adjustment">distance_adjustment</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSpinRow" id="time_spin">
                     <property name="title" translatable="yes">Time Threshold</property>
                     <property name="subtitle" translatable="yes">In meters</property>
-                    <property name="activatable-widget">time_spin</property>
-                    <child>
-                      <object class="GtkSpinButton" id="time_spin">
-                        <property name="valign">center</property>
-                        <property name="adjustment">time_adjustment</property>
-                      </object>
-                    </child>
+                    <property name="adjustment">time_adjustment</property>
                   </object>
                 </child>
                 <child>

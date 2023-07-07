@@ -27,9 +27,9 @@ mod imp {
         #[template_child]
         pub accuracy_combo: TemplateChild<adw::ComboRow>,
         #[template_child]
-        pub distance_spin: TemplateChild<gtk::SpinButton>,
+        pub distance_spin: TemplateChild<adw::SpinRow>,
         #[template_child]
-        pub time_spin: TemplateChild<gtk::SpinButton>,
+        pub time_spin: TemplateChild<adw::SpinRow>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
