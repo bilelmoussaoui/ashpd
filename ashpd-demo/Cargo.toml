@@ -7,7 +7,7 @@ version = "0.3.0"
 [dependencies]
 adw = {version = "0.4", package = "libadwaita", features = ["v1_4"]}
 anyhow = "1.0"
-ashpd = {version = "0.4", features = ["gtk4", "pipewire", "tracing"]}
+ashpd = {version = "0.4", features = ["gtk4", "tracing"]}
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
 futures-util = "0.3"
 gettext-rs = {version = "0.7", features = ["gettext-system"]}
