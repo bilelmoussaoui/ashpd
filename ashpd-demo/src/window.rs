@@ -35,7 +35,7 @@ mod imp {
         #[template_child]
         pub window_title: TemplateChild<adw::WindowTitle>,
         #[template_child]
-        pub leaflet: TemplateChild<adw::Leaflet>,
+        pub split_view: TemplateChild<adw::NavigationSplitView>,
         #[template_child]
         pub documents: TemplateChild<DocumentsPage>,
         #[template_child]
@@ -83,7 +83,7 @@ mod imp {
                 stack: TemplateChild::default(),
                 sidebar: TemplateChild::default(),
                 window_title: TemplateChild::default(),
-                leaflet: TemplateChild::default(),
+                split_view: TemplateChild::default(),
                 camera: TemplateChild::default(),
                 wallpaper: TemplateChild::default(),
                 location: TemplateChild::default(),
@@ -106,10 +106,6 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
             SidebarRow::static_type();
-
-            klass.install_action("win.back", None, |win, _, _| {
-                win.imp().leaflet.navigate(adw::NavigationDirection::Back);
-            });
         }
 
         // You must call `Widget`'s `init_template()` within `instance_init()`.
@@ -225,7 +221,7 @@ impl ApplicationWindow {
         let imp = self.imp();
 
         let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
-        imp.leaflet.navigate(adw::NavigationDirection::Forward);
+        imp.split_view.set_show_content(true);
         let page_name = sidebar_row.page_name();
         if imp.stack.child_by_name(&page_name).is_some() {
             imp.stack.set_visible_child_name(&page_name);
