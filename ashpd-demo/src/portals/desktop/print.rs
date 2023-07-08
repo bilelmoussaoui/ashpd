@@ -18,7 +18,7 @@ mod imp {
         #[template_child]
         pub title: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub modal_switch: TemplateChild<gtk::Switch>,
+        pub modal_switch: TemplateChild<adw::SwitchRow>,
     }
 
     #[glib::object_subclass]

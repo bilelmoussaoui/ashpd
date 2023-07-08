@@ -19,27 +19,15 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="writeable_switch">
                     <property name="title" translatable="yes">Writeable</property>
                     <property name="subtitle" translatable="yes">Whether the file should be writeable or not</property>
-                    <property name="activatable-widget">writeable_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="writeable_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="ask_switch">
                     <property name="title" translatable="yes">Ask</property>
                     <property name="subtitle" translatable="yes">Whether to always ask the user which application to use or not</property>
-                    <property name="activatable-widget">ask_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="ask_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

@@ -25,7 +25,7 @@ mod imp {
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
-        pub multiple_switch: TemplateChild<gtk::Switch>,
+        pub multiple_switch: TemplateChild<adw::SwitchRow>,
         pub session: Arc<Mutex<Option<Session<'static>>>>,
         #[template_child]
         pub monitor_check: TemplateChild<gtk::CheckButton>,

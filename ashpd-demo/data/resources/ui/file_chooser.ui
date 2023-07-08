@@ -23,37 +23,18 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="open_modal_switch">
                     <property name="title" translatable="yes">Modal</property>
-                    <property name="activatable-widget">open_modal_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="open_modal_switch">
-                        <property name="valign">center</property>
-                        <property name="active">True</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="open_multiple_switch">
                     <property name="title" translatable="yes">Multiple</property>
-                    <property name="activatable-widget">open_multiple_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="open_multiple_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="open_directory_switch">
                     <property name="title" translatable="yes">Directory</property>
-                    <property name="activatable-widget">open_directory_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="open_directory_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
@@ -93,15 +74,8 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="save_file_modal_switch">
                     <property name="title" translatable="yes">Modal</property>
-                    <property name="activatable-widget">save_file_modal_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="save_file_modal_switch">
-                        <property name="valign">center</property>
-                        <property name="active">True</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
@@ -156,15 +130,8 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="save_files_modal_switch">
                     <property name="title" translatable="yes" comments="Refers to the window modal property">Modal</property>
-                    <property name="activatable-widget">save_files_modal_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="save_files_modal_switch">
-                        <property name="valign">center</property>
-                        <property name="active">True</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>

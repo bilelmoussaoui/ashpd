@@ -13,26 +13,13 @@
                 <property name="title" translatable="yes">Take a Screenshot</property>
                 <property name="description">Calls Screenshot on org.freedesktop.portal.Screenshot</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="interactive_switch">
                     <property name="title" translatable="yes">Interactive</property>
-                    <property name="activatable-widget">interactive_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="interactive_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="modal_switch">
                     <property name="title" translatable="yes">Modal</property>
-                    <property name="activatable-widget">modal_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="modal_switch">
-                        <property name="valign">center</property>
-                        <property name="active">True</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
