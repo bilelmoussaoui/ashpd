@@ -21,11 +21,11 @@ mod imp {
         #[template_child]
         pub open_accept_label_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub open_modal_switch: TemplateChild<gtk::Switch>,
+        pub open_modal_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
-        pub open_multiple_switch: TemplateChild<gtk::Switch>,
+        pub open_multiple_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
-        pub open_directory_switch: TemplateChild<gtk::Switch>,
+        pub open_directory_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub open_response_group: TemplateChild<adw::PreferencesGroup>,
 
@@ -40,7 +40,7 @@ mod imp {
         #[template_child]
         pub save_file_current_folder_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_file_modal_switch: TemplateChild<gtk::Switch>,
+        pub save_file_modal_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub save_file_response_group: TemplateChild<adw::PreferencesGroup>,
 
@@ -51,7 +51,7 @@ mod imp {
         #[template_child]
         pub save_files_current_folder_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub save_files_modal_switch: TemplateChild<gtk::Switch>,
+        pub save_files_modal_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub save_files_files_entry: TemplateChild<adw::EntryRow>,
         #[template_child]

@@ -11,9 +11,9 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/screenshot.ui")]
     pub struct ScreenshotPage {
         #[template_child]
-        pub interactive_switch: TemplateChild<gtk::Switch>,
+        pub interactive_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
-        pub modal_switch: TemplateChild<gtk::Switch>,
+        pub modal_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub color_widget: TemplateChild<ColorWidget>,
         #[template_child]

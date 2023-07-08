@@ -13,14 +13,8 @@
                 <property name="title" translatable="yes">Set a File as a Wallpaper</property>
                 <property name="description">Calls SetWallpaperURI on org.freedesktop.portal.Wallpaper</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="preview_switch">
                     <property name="title" translatable="yes">Show Preview</property>
-                    <property name="activatable-widget">preview_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="preview_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>

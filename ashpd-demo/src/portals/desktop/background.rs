@@ -15,9 +15,9 @@ mod imp {
         #[template_child]
         pub reason_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub auto_start_switch: TemplateChild<gtk::Switch>,
+        pub auto_start_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
-        pub dbus_activatable_switch: TemplateChild<gtk::Switch>,
+        pub dbus_activatable_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub command_entry: TemplateChild<adw::EntryRow>,
         #[template_child]

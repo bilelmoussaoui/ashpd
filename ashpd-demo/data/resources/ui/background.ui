@@ -18,25 +18,13 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="auto_start_switch">
                     <property name="title" translatable="yes">Auto Start</property>
-                    <property name="activatable-widget">auto_start_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="auto_start_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="dbus_activatable_switch">
                     <property name="title" translatable="yes">DBus Activatable</property>
-                    <property name="activatable-widget">dbus_activatable_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="dbus_activatable_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>

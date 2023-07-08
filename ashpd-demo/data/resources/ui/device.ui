@@ -13,37 +13,18 @@
                 <property name="title" translatable="yes">Device Access</property>
                 <property name="description" translatable="yes">Calls AccessDevice on org.freedesktop.portal.Device. Asking for multiple devices at the same time may or may not be supported.</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="camera_switch">
                     <property name="title" translatable="yes">Camera</property>
-                    <property name="activatable-widget">camera_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="camera_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="speakers_switch">
                     <property name="title" translatable="yes">Speakers</property>
-                    <property name="activatable-widget">speakers_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="speakers_switch">
-                        <property name="active">True</property>
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="microphone_switch">
                     <property name="title" translatable="yes">Microphone</property>
-                    <property name="activatable-widget">microphone_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="microphone_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

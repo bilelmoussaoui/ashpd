@@ -11,11 +11,11 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/device.ui")]
     pub struct DevicePage {
         #[template_child]
-        pub camera_switch: TemplateChild<gtk::Switch>,
+        pub camera_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
-        pub microphone_switch: TemplateChild<gtk::Switch>,
+        pub microphone_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
-        pub speakers_switch: TemplateChild<gtk::Switch>,
+        pub speakers_switch: TemplateChild<adw::SwitchRow>,
     }
 
     #[glib::object_subclass]

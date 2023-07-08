@@ -11,9 +11,9 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/open_uri.ui")]
     pub struct OpenUriPage {
         #[template_child]
-        pub writeable_switch: TemplateChild<gtk::Switch>,
+        pub writeable_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
-        pub ask_switch: TemplateChild<gtk::Switch>,
+        pub ask_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub uri_entry: TemplateChild<adw::EntryRow>,
     }

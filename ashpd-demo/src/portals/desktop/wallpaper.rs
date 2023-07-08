@@ -11,7 +11,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/wallpaper.ui")]
     pub struct WallpaperPage {
         #[template_child]
-        pub preview_switch: TemplateChild<gtk::Switch>,
+        pub preview_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub set_on_combo: TemplateChild<adw::ComboRow>,
     }

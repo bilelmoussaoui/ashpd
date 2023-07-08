@@ -50,26 +50,14 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwActionRow" id="screencast_row">
+                  <object class="AdwSwitchRow" id="screencast_switch">
                     <property name="title" translatable="yes">Screen Cast</property>
-                    <property name="activatable-widget">screencast_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="screencast_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwSwitchRow" id="multiple_switch">
                     <property name="title" translatable="yes">Multiple sources</property>
                     <property name="visible" bind-source="screencast_switch" bind-property="active" bind-flags="sync-create" />
-                    <property name="activatable-widget">multiple_switch</property>
-                    <child>
-                      <object class="GtkSwitch" id="multiple_switch">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
                 <child>

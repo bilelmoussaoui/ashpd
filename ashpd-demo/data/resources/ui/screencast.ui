@@ -17,14 +17,8 @@
                     <property name="title" translatable="yes">Screen Cast</property>
                     <property name="description" translatable="yes">Communicates with org.freedesktop.portal.ScreenCast</property>
                     <child>
-                      <object class="AdwActionRow">
+                      <object class="AdwSwitchRow" id="multiple_switch">
                         <property name="title" translatable="yes">Multiple sources</property>
-                        <property name="activatable-widget">multiple_switch</property>
-                        <child>
-                          <object class="GtkSwitch" id="multiple_switch">
-                            <property name="valign">center</property>
-                          </object>
-                        </child>
                       </object>
                     </child>
                     <child>
