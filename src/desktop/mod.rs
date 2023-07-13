@@ -12,6 +12,7 @@ pub use icon::Icon;
 pub mod account;
 pub mod background;
 pub mod camera;
+pub mod clipboard;
 pub mod device;
 pub mod dynamic_launcher;
 pub mod email;
