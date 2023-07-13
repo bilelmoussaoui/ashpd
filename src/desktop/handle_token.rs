@@ -8,9 +8,10 @@ use serde::{Deserialize, Serialize};
 use zbus::{names::OwnedMemberName, zvariant::Type};
 
 /// A handle token is a DBus Object Path element, specified in the
-/// `RequestProxy` or [`SessionProxy`](crate::desktop::SessionProxy) object path
-/// following this format `/org/freedesktop/portal/desktop/request/SENDER/TOKEN`
-/// where sender is the caller's unique name and token is the [`HandleToken`].
+/// [`Request`](crate::desktop::Request)  or
+/// [`Session`](crate::desktop::Session) object path following this format
+/// `/org/freedesktop/portal/desktop/request/SENDER/TOKEN` where sender is the
+/// caller's unique name and token is the [`HandleToken`].
 ///
 /// A valid object path element must only contain the ASCII characters
 /// `[A-Z][a-z][0-9]_`
