@@ -26,7 +26,11 @@ impl<'a> Session<'a> {
     /// Create a new instance of [`Session`].
     ///
     /// **Note** A [`Session`] is not supposed to be created manually.
-    pub(crate) async fn new(path: ObjectPath<'a>) -> Result<Session<'a>, Error> {
+    pub(crate) async fn new<P>(path: P) -> Result<Session<'a>, Error>
+    where
+        P: TryInto<ObjectPath<'a>>,
+        P::Error: Into<zbus::Error>,
+    {
         let proxy = Proxy::new_desktop_with_path("org.freedesktop.portal.Session", path).await?;
         Ok(Self(proxy))
     }
