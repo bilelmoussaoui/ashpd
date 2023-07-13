@@ -23,9 +23,11 @@
 //!         )
 //!         .await?;
 //!     proxy
-//!         .revoke_permissions("f2ee988d",
-//!              "org.mozilla.firefox".try_into()?,
-//!              &[Permission::Write])
+//!         .revoke_permissions(
+//!             "f2ee988d",
+//!             "org.mozilla.firefox".try_into()?,
+//!             &[Permission::Write],
+//!         )
 //!         .await?;
 //!
 //!     proxy.delete("f2ee988d").await?;
