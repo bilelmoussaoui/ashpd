@@ -82,11 +82,12 @@
 //! [create_session]: crate::desktop::remote_desktop::RemoteDesktop::create_session
 
 use std::collections::HashMap;
+use std::os::unix::prelude::{IntoRawFd, RawFd};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, SerializeDict, Type, Value};
+use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
 
 use super::{screencast::Stream, HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
@@ -606,6 +607,32 @@ impl<'a> RemoteDesktop<'a> {
         self.0
             .call("NotifyPointerAxis", &(session, options, dx, dy))
             .await
+    }
+
+    /// Connect to EIS.
+    ///
+    /// **Note** only succeeds if called after [`RemoteDesktop::start`].
+    ///
+    /// Requires RemoteDesktop version 2.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`Session`], created with
+    ///   [`create_session()`][`RemoteDesktop::create_session`].
+    ///
+    /// # Specifications
+    ///
+    /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.ConnectToEIS).
+    #[doc(alias = "ConnectToEIS")]
+    pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<RawFd, Error> {
+        // `ConnectToEIS` doesn't take any options for now
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L1464
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
+        let fd = self
+            .0
+            .call::<OwnedFd>("ConnectToEIS", &(session, options))
+            .await?;
+        Ok(fd.into_raw_fd())
     }
 
     /// Available source types.
