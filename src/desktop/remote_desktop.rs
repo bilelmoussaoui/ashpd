@@ -81,8 +81,10 @@
 //! [select_sources]: crate::desktop::screencast::Screencast::select_sources
 //! [create_session]: crate::desktop::remote_desktop::RemoteDesktop::create_session
 
-use std::collections::HashMap;
-use std::os::unix::prelude::{IntoRawFd, RawFd};
+use std::{
+    collections::HashMap,
+    os::unix::prelude::{IntoRawFd, RawFd},
+};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::TryFutureExt;

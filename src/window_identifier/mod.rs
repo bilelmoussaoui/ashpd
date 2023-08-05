@@ -1,6 +1,6 @@
 use std::{fmt, str::FromStr};
 
-#[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
+#[cfg(all(feature = "raw_handle", feature = "gtk4"))]
 use raw_window_handle::{
     HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
 };
@@ -69,24 +69,6 @@ use zbus::zvariant::Type;
 /// The constructor should return a valid identifier under both X11 and Wayland
 /// and fallback to the [`Default`] implementation otherwise.
 ///
-/// ## With GTK 3
-///
-/// The feature `gtk3` must be enabled. You can get a
-/// [`WindowIdentifier`] from a [`IsA<gdk3::Window>`](https://gtk-rs.org/gtk3-rs/stable/latest/docs/gdk/struct.Window.html) using
-/// `WindowIdentifier::from_window`
-///
-/// ```rust, ignore
-/// let widget = gtk4::Button::new();
-/// let ctx = glib::MainContext::default();
-/// ctx.spawn_async(async move {
-///     let identifier = WindowIdentifier::from_window(&widget.window().unwrap()).await;
-///
-///     /// Open some portals
-/// });
-/// ```
-/// The constructor should return a valid identifier under both X11 and Wayland
-/// and fallback to the [`Default`] implementation otherwise.
-///
 /// ## Other Toolkits
 ///
 /// If you have access to `RawWindowHandle` you can convert it to a
@@ -113,10 +95,6 @@ pub enum WindowIdentifier {
     #[cfg(feature = "gtk4")]
     #[doc(hidden)]
     Gtk4(Gtk4WindowIdentifier),
-    /// GTK 3 Window Identifier
-    #[cfg(feature = "gtk3")]
-    #[doc(hidden)]
-    Gtk3(Gtk3WindowIdentifier),
     #[cfg(feature = "wayland")]
     #[doc(hidden)]
     Wayland(WaylandWindowIdentifier),
@@ -144,8 +122,6 @@ impl std::fmt::Display for WindowIdentifier {
         match self {
             #[cfg(feature = "gtk4")]
             Self::Gtk4(identifier) => f.write_str(&format!("{identifier}")),
-            #[cfg(feature = "gtk3")]
-            Self::Gtk3(identifier) => f.write_str(&format!("{identifier}")),
             #[cfg(feature = "wayland")]
             Self::Wayland(identifier) => f.write_str(&format!("{identifier}")),
             Self::X11(identifier) => f.write_str(&format!("{identifier}")),
@@ -174,21 +150,6 @@ impl WindowIdentifier {
     pub async fn from_native(native: &impl ::gtk4::glib::IsA<::gtk4::Native>) -> Self {
         match Gtk4WindowIdentifier::new(native).await {
             Some(identifier) => Self::Gtk4(identifier),
-            None => Self::default(),
-        }
-    }
-
-    #[cfg(feature = "gtk3")]
-    #[doc(alias = "xdp_parent_new_gtk")]
-    /// Creates a [`WindowIdentifier`] from a [`gdk::Window`](https://developer.gnome.org/gdk3/stable/gdk3-Windows.html).
-    ///
-    /// The constructor returns a valid handle under both Wayland & x11.
-    ///
-    /// **Note** the function has to be async as the Wayland handle retrieval
-    /// API is async as well.
-    pub async fn from_window(win: &impl ::gtk3::glib::IsA<::gtk3::gdk::Window>) -> Self {
-        match Gtk3WindowIdentifier::new(win).await {
-            Some(identifier) => Self::Gtk3(identifier),
             None => Self::default(),
         }
     }
@@ -252,7 +213,7 @@ impl WindowIdentifier {
     }
 }
 
-#[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
+#[cfg(all(feature = "raw_handle", feature = "gtk4"))]
 unsafe impl HasRawDisplayHandle for WindowIdentifier {
     /// Convert a [`WindowIdentifier`] to
     /// [`RawDisplayHandle`](raw_window_handle::RawDisplayHandle`).
@@ -261,19 +222,17 @@ unsafe impl HasRawDisplayHandle for WindowIdentifier {
     ///
     /// If you attempt to convert a [`WindowIdentifier`] created from a
     /// [`RawDisplayHandle`](raw_window_handle::RawDisplayHandle`) instead of
-    /// the gtk3 / gtk4 constructors.
+    /// the gtk4 constructors.
     fn raw_display_handle(&self) -> RawDisplayHandle {
         match self {
             #[cfg(feature = "gtk4")]
             Self::Gtk4(identifier) => identifier.as_raw_display_handle(),
-            #[cfg(feature = "gtk3")]
-            Self::Gtk3(identifier) => identifier.as_raw_display_handle(),
             _ => unreachable!(),
         }
     }
 }
 
-#[cfg(all(feature = "raw_handle", any(feature = "gtk3", feature = "gtk4")))]
+#[cfg(all(feature = "raw_handle", feature = "gtk4"))]
 unsafe impl HasRawWindowHandle for WindowIdentifier {
     /// Convert a [`WindowIdentifier`] to
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
@@ -282,13 +241,11 @@ unsafe impl HasRawWindowHandle for WindowIdentifier {
     ///
     /// If you attempt to convert a [`WindowIdentifier`] created from a
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`) instead of
-    /// the gtk3 / gtk4 constructors.
+    /// the gtk4 constructors.
     fn raw_window_handle(&self) -> RawWindowHandle {
         match self {
             #[cfg(feature = "gtk4")]
             Self::Gtk4(identifier) => identifier.as_raw_window_handle(),
-            #[cfg(feature = "gtk3")]
-            Self::Gtk3(identifier) => identifier.as_raw_window_handle(),
             _ => unreachable!(),
         }
     }
@@ -351,12 +308,6 @@ mod gtk4;
 #[cfg(feature = "gtk4")]
 pub use self::gtk4::Gtk4WindowIdentifier;
 use crate::PortalError;
-
-#[cfg(feature = "gtk3")]
-mod gtk3;
-
-#[cfg(feature = "gtk3")]
-pub use self::gtk3::Gtk3WindowIdentifier;
 
 #[cfg(feature = "wayland")]
 mod wayland;

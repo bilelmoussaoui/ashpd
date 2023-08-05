@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -24,10 +24,6 @@ jobs:
         with:
           command: check
           args: --features "gtk4,pipewire,wayland,raw_handle,tracing"
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --features "gtk3,pipewire,wayland,raw_handle,tracing"
 
   test:
     name: Test Suite
@@ -37,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -47,10 +43,6 @@ jobs:
         with:
           command: test
           args: --features "gtk4,pipewire,wayland,raw_handle,tracing"
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --features "gtk3,pipewire,wayland,raw_handle,tracing"
 
   fmt:
     name: Rustfmt
@@ -60,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -80,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: sudo dnf install -y gtk3-devel pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -91,7 +83,3 @@ jobs:
         with:
           command: clippy
           args: --features "gtk4,pipewire,wayland,raw_handle,tracing" -- -D warnings
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --features "gtk3,pipewire,wayland,raw_handle,tracing" -- -D warnings
