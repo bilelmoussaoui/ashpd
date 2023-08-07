@@ -6,7 +6,7 @@ mod widgets;
 mod window;
 
 use application::Application;
-use config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
+use config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE, BUILDDIR_RESOURCES_FILE};
 use gettextrs::*;
 use gtk::{gio, glib};
 
@@ -24,7 +24,12 @@ fn main() -> glib::ExitCode {
 
     gst4gtk::plugin_register_static().expect("Failed to register gstgtk4 plugin");
 
-    let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load gresource file");
+    let argv0 = std::env::args().next();
+    let res = if argv0.is_some() && argv0.unwrap().ends_with(".devel") {
+        gio::Resource::load(BUILDDIR_RESOURCES_FILE)
+    } else {
+        gio::Resource::load(RESOURCES_FILE)
+    }.expect("Could not load gresource file");
     gio::resources_register(&res);
 
     let mut args = std::env::args();

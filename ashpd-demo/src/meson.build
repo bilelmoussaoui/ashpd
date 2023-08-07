@@ -5,6 +5,7 @@ global_conf.set_quoted('PROFILE', profile)
 global_conf.set_quoted('VERSION', version + version_suffix)
 global_conf.set_quoted('GETTEXT_PACKAGE', gettext_package)
 global_conf.set_quoted('LOCALEDIR', localedir)
+global_conf.set_quoted('BUILDDATADIR', meson.project_build_root() / 'data')
 config = configure_file(
   input: 'config.rs.in',
   output: 'config.rs',
@@ -48,5 +49,7 @@ cargo_build = custom_target(
     cargo_options,
     '&&',
     'cp', 'src' / rust_target / meson.project_name(), '@OUTPUT@',
+    '&&',
+    'cp', 'src' / rust_target / meson.project_name(), '@OUTPUT@.devel',
   ]
 )
