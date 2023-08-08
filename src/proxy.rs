@@ -5,6 +5,9 @@ use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{ObjectPath, OwnedValue, Type};
 
+#[cfg(feature = "tracing")]
+use zbus::Message;
+
 use crate::{
     desktop::{HandleToken, Request},
     Error, PortalError,
@@ -188,13 +191,23 @@ impl<'a> Proxy<'a> {
         args: &[(u8, &str)],
     ) -> Result<impl Stream<Item = I>, Error>
     where
-        I: for<'de> Deserialize<'de> + Type,
+        I: for<'de> Deserialize<'de> + Type + Debug,
     {
         Ok(self
             .0
             .receive_signal_with_args(name, args)
             .await?
-            .filter_map(|m| async move { m.body::<I>().ok() }))
+            .filter_map(
+                #[cfg(not(feature = "tracing"))]
+                {
+                    |x| async move { x.body().ok() }
+                },
+                #[cfg(feature = "tracing")]
+                {
+                    let ifc = self.interface().to_string();
+                    move |x| trace_body(name, ifc.clone(), x)
+                },
+            ))
     }
 
     pub(crate) async fn signalstream<I>(
@@ -202,13 +215,37 @@ impl<'a> Proxy<'a> {
         name: &'static str,
     ) -> Result<impl Stream<Item = I>, Error>
     where
-        I: for<'de> Deserialize<'de> + Type,
+        I: for<'de> Deserialize<'de> + Type + Debug,
     {
-        Ok(self
-            .0
-            .receive_signal(name)
-            .await?
-            .filter_map(|m| async move { m.body::<I>().ok() }))
+        Ok(self.0.receive_signal(name).await?.filter_map(
+            #[cfg(not(feature = "tracing"))]
+            {
+                |x| async move { x.body().ok() }
+            },
+            #[cfg(feature = "tracing")]
+            {
+                let ifc = self.interface().to_string();
+                move |x| trace_body(name, ifc.clone(), x)
+            },
+        ))
+    }
+}
+
+#[cfg(feature = "tracing")]
+async fn trace_body<I>(name: &'static str, ifc: String, msg: impl AsRef<Message>) -> Option<I>
+where
+    I: for<'de> Deserialize<'de> + Type + Debug,
+{
+    tracing::info!("Received signal '{name}' on '{ifc}'");
+    match msg.as_ref().body() {
+        Ok(body) => {
+            tracing::debug!("With body {body:#?}");
+            Some(body)
+        }
+        Err(e) => {
+            tracing::warn!("Error obtaining body: {e:#?}");
+            None
+        }
     }
 }
 
