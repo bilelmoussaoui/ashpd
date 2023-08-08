@@ -23,7 +23,8 @@
 
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use futures_util::{Stream, StreamExt};
+use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
 use crate::{proxy::Proxy, Error};
@@ -72,6 +73,37 @@ pub enum ColorScheme {
     /// Prefers light appearance
     PreferLight,
 }
+
+impl TryFrom<OwnedValue> for ColorScheme {
+    type Error = Error;
+
+    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
+        TryFrom::<Value>::try_from(value.into())
+    }
+}
+
+impl TryFrom<Value<'_>> for ColorScheme {
+    type Error = Error;
+
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        Ok(match u32::try_from(value)? {
+            1 => ColorScheme::PreferDark,
+            2 => ColorScheme::PreferLight,
+            _ => ColorScheme::NoPreference,
+        })
+    }
+}
+
+impl TryFrom<Setting> for ColorScheme {
+    type Error = Error;
+
+    fn try_from(value: Setting) -> Result<Self, Self::Error> {
+        Self::try_from(value.2)
+    }
+}
+
+const NAMESPACE: &str = "org.freedesktop.appearance";
+const KEY: &str = "color-scheme";
 
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
@@ -131,46 +163,31 @@ impl<'a> Settings<'a> {
     #[doc(alias = "Read")]
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
-        T: TryFrom<OwnedValue> + DeserializeOwned + Type,
+        T: TryFrom<OwnedValue>,
         Error: From<<T as TryFrom<OwnedValue>>::Error>,
     {
         let value = self.0.call::<OwnedValue>("Read", &(namespace, key)).await?;
-        if let Some(v) = value.downcast_ref::<Value<'_>>() {
+        if let Some(v) = value.downcast_ref::<Value>() {
             T::try_from(v.to_owned()).map_err(From::from)
         } else {
             T::try_from(value).map_err(From::from)
         }
     }
 
-    /// Reads the value of namespace: `org.freedesktop.appearance` and
-    /// `color-scheme` key.
+    /// Retrieves the system's preferred color scheme
     pub async fn color_scheme(&self) -> Result<ColorScheme, Error> {
-        let scheme = match self
-            .read::<u32>("org.freedesktop.appearance", "color-scheme")
-            .await?
-        {
-            1 => ColorScheme::PreferDark,
-            2 => ColorScheme::PreferLight,
-            _ => ColorScheme::NoPreference,
-        };
-        Ok(scheme)
+        self.read::<ColorScheme>(NAMESPACE, KEY).await
     }
 
-    /// Listen to changes of the namespace `org.freedesktop.appearance` for
-    /// `color-scheme` key.
-    pub async fn receive_color_scheme_changed(&self) -> Result<ColorScheme, Error> {
-        loop {
-            let setting = self.receive_setting_changed().await?;
-            if setting.namespace() == "org.freedesktop.appearance"
-                && setting.key() == "color-scheme"
-            {
-                return Ok(match u32::try_from(setting.value()) {
-                    Ok(1) => ColorScheme::PreferDark,
-                    Ok(2) => ColorScheme::PreferLight,
-                    _ => ColorScheme::NoPreference,
-                });
-            }
-        }
+    /// Listen to changes of the system's preferred color scheme
+    pub async fn receive_color_scheme_changed(
+        &self,
+    ) -> Result<impl Stream<Item = ColorScheme>, Error> {
+        Ok(self
+            .0
+            .signalstream_with_args::<Setting>("SettingChanged", &[(0, NAMESPACE), (1, KEY)])
+            .await?
+            .filter_map(|s| async move { ColorScheme::try_from(s).ok() }))
     }
 
     /// Signal emitted when a setting changes.
@@ -179,7 +196,7 @@ impl<'a> Settings<'a> {
     ///
     /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
     #[doc(alias = "SettingChanged")]
-    pub async fn receive_setting_changed(&self) -> Result<Setting, Error> {
-        self.0.signal("SettingChanged").await
+    pub async fn receive_setting_changed(&self) -> Result<impl Stream<Item = Setting>, Error> {
+        self.0.signalstream("SettingChanged").await
     }
 }

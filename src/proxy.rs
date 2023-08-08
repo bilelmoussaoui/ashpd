@@ -1,6 +1,6 @@
 use std::{fmt::Debug, ops::Deref};
 
-use futures_util::StreamExt;
+use futures_util::{Stream, StreamExt};
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{ObjectPath, OwnedValue, Type};
@@ -180,6 +180,35 @@ impl<'a> Proxy<'a> {
         #[cfg(feature = "tracing")]
         tracing::debug!("With body {:#?}", content);
         Ok(content)
+    }
+
+    pub(crate) async fn signalstream_with_args<I>(
+        &self,
+        name: &'static str,
+        args: &[(u8, &str)],
+    ) -> Result<impl Stream<Item = I>, Error>
+    where
+        I: for<'de> Deserialize<'de> + Type,
+    {
+        Ok(self
+            .0
+            .receive_signal_with_args(name, args)
+            .await?
+            .filter_map(|m| async move { m.body::<I>().ok() }))
+    }
+
+    pub(crate) async fn signalstream<I>(
+        &self,
+        name: &'static str,
+    ) -> Result<impl Stream<Item = I>, Error>
+    where
+        I: for<'de> Deserialize<'de> + Type,
+    {
+        Ok(self
+            .0
+            .receive_signal(name)
+            .await?
+            .filter_map(|m| async move { m.body::<I>().ok() }))
     }
 }
 
