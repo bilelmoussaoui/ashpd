@@ -24,6 +24,7 @@
 
 use std::{collections::HashMap, os::unix::prelude::AsRawFd};
 
+use futures_util::Stream;
 use zbus::zvariant::{Fd, SerializeDict, Type, Value};
 
 use crate::{proxy::Proxy, Error};
@@ -187,7 +188,7 @@ impl<'a> FileTransfer<'a> {
     ///
     /// See also [`TransferClosed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-FileTransfer.TransferClosed).
     #[doc(alias = "TransferClosed")]
-    pub async fn transfer_closed(&self) -> Result<String, Error> {
+    pub async fn transfer_closed(&self) -> Result<impl Stream<Item = String>, Error> {
         self.0.signal("TransferClosed").await
     }
 }

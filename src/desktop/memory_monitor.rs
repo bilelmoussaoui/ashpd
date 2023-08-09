@@ -11,6 +11,8 @@
 //! }
 //! ```
 
+use futures_util::Stream;
+
 use crate::{proxy::Proxy, Error};
 
 /// The interface provides information about low system memory to sandboxed
@@ -39,7 +41,7 @@ impl<'a> MemoryMonitor<'a> {
     ///
     /// See also [`LowMemoryWarning`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-MemoryMonitor.LowMemoryWarning).
     #[doc(alias = "LowMemoryWarning")]
-    pub async fn receive_low_memory_warning(&self) -> Result<i32, Error> {
+    pub async fn receive_low_memory_warning(&self) -> Result<impl Stream<Item = i32>, Error> {
         self.0.signal("LowMemoryWarning").await
     }
 }

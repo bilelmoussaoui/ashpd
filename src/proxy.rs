@@ -157,35 +157,7 @@ impl<'a> Proxy<'a> {
             .map_err(From::from)
     }
 
-    pub(crate) async fn signal<R>(&self, signal_name: &'static str) -> Result<R, Error>
-    where
-        R: for<'de> Deserialize<'de> + Type + Debug,
-    {
-        #[cfg(feature = "tracing")]
-        tracing::info!(
-            "Listening to signal '{}' on '{}'",
-            signal_name,
-            self.interface()
-        );
-        let mut stream = self
-            .0
-            .receive_signal(signal_name)
-            .await
-            .map_err::<PortalError, _>(From::from)?;
-        let message = stream.next().await.ok_or(Error::NoResponse)?;
-        #[cfg(feature = "tracing")]
-        tracing::info!(
-            "Received signal '{}' on '{}'",
-            signal_name,
-            self.interface()
-        );
-        let content = message.body::<R>()?;
-        #[cfg(feature = "tracing")]
-        tracing::debug!("With body {:#?}", content);
-        Ok(content)
-    }
-
-    pub(crate) async fn signalstream_with_args<I>(
+    pub(crate) async fn signal_with_args<I>(
         &self,
         name: &'static str,
         args: &[(u8, &str)],
@@ -210,10 +182,7 @@ impl<'a> Proxy<'a> {
             ))
     }
 
-    pub(crate) async fn signalstream<I>(
-        &self,
-        name: &'static str,
-    ) -> Result<impl Stream<Item = I>, Error>
+    pub(crate) async fn signal<I>(&self, name: &'static str) -> Result<impl Stream<Item = I>, Error>
     where
         I: for<'de> Deserialize<'de> + Type + Debug,
     {

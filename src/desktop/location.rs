@@ -31,7 +31,7 @@
 
 use std::fmt::Debug;
 
-use futures_util::TryFutureExt;
+use futures_util::{Stream, TryFutureExt};
 use serde::Deserialize;
 use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
@@ -209,7 +209,7 @@ impl<'a> LocationProxy<'a> {
     /// See also [`LocationUpdated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Location.LocationUpdated).
     #[doc(alias = "LocationUpdated")]
     #[doc(alias = "XdpPortal::location-updated")]
-    pub async fn receive_location_updated(&self) -> Result<Location, Error> {
+    pub async fn receive_location_updated(&self) -> Result<impl Stream<Item = Location>, Error> {
         self.0.signal("LocationUpdated").await
     }
 

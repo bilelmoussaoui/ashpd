@@ -46,6 +46,7 @@
 
 use std::{fmt, str::FromStr};
 
+use futures_util::Stream;
 use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, SerializeDict, Type, Value};
 
@@ -300,7 +301,7 @@ impl<'a> NotificationProxy<'a> {
     /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Notification.ActionInvoked).
     #[doc(alias = "ActionInvoked")]
     #[doc(alias = "XdpPortal::notification-action-invoked")]
-    pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
+    pub async fn receive_action_invoked(&self) -> Result<impl Stream<Item = Action>, Error> {
         self.0.signal("ActionInvoked").await
     }
 

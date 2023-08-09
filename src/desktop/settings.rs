@@ -185,7 +185,7 @@ impl<'a> Settings<'a> {
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
         Ok(self
             .0
-            .signalstream_with_args::<Setting>("SettingChanged", &[(0, NAMESPACE), (1, KEY)])
+            .signal_with_args::<Setting>("SettingChanged", &[(0, NAMESPACE), (1, KEY)])
             .await?
             .filter_map(|s| async move { ColorScheme::try_from(s).ok() }))
     }
@@ -197,6 +197,6 @@ impl<'a> Settings<'a> {
     /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
     #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<impl Stream<Item = Setting>, Error> {
-        self.0.signalstream("SettingChanged").await
+        self.0.signal("SettingChanged").await
     }
 }

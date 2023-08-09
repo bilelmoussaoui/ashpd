@@ -39,7 +39,7 @@
 //! ```
 
 use enumflags2::{bitflags, BitFlags};
-use futures_util::TryFutureExt;
+use futures_util::{Stream, TryFutureExt};
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
@@ -220,7 +220,7 @@ impl<'a> InhibitProxy<'a> {
     /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Inhibit.StateChanged).
     #[doc(alias = "StateChanged")]
     #[doc(alias = "XdpPortal::session-state-changed")]
-    pub async fn receive_state_changed(&self) -> Result<InhibitState, Error> {
+    pub async fn receive_state_changed(&self) -> Result<impl Stream<Item = InhibitState>, Error> {
         self.0.signal("StateChanged").await
     }
 

@@ -19,6 +19,7 @@
 
 use std::fmt;
 
+use futures_util::Stream;
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{DeserializeDict, Type};
 
@@ -165,7 +166,7 @@ impl<'a> NetworkMonitor<'a> {
     /// # Specifications
     ///
     /// See also [`changed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-NetworkMonitor.changed).
-    pub async fn receive_changed(&self) -> Result<(), Error> {
+    pub async fn receive_changed(&self) -> Result<impl Stream<Item = ()>, Error> {
         self.0.signal("changed").await
     }
 }
