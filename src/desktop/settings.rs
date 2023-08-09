@@ -103,8 +103,8 @@ impl TryFrom<Setting> for ColorScheme {
     }
 }
 
-const NAMESPACE: &str = "org.freedesktop.appearance";
-const KEY: &str = "color-scheme";
+const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
+const COLOR_SCHEME_KEY: &str = "color-scheme";
 
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
@@ -177,7 +177,8 @@ impl<'a> Settings<'a> {
 
     /// Retrieves the system's preferred color scheme
     pub async fn color_scheme(&self) -> Result<ColorScheme, Error> {
-        self.read::<ColorScheme>(NAMESPACE, KEY).await
+        self.read::<ColorScheme>(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
+            .await
     }
 
     /// Listen to changes of the system's preferred color scheme
@@ -190,7 +191,10 @@ impl<'a> Settings<'a> {
         let mut current = self.color_scheme().await?;
         Ok(once(current).chain(
             self.0
-                .signal_with_args::<Setting>("SettingChanged", &[(0, NAMESPACE), (1, KEY)])
+                .signal_with_args::<Setting>(
+                    "SettingChanged",
+                    &[(0, APPEARANCE_NAMESPACE), (1, COLOR_SCHEME_KEY)],
+                )
                 .await?
                 .filter_map(move |p| {
                     let p = ColorScheme::try_from(p).ok()?;
