@@ -1,6 +1,7 @@
 use std::{fmt::Debug, ops::Deref};
 
-use futures_util::{Stream, StreamExt};
+use futures_lite::StreamExt;
+use futures_util::Stream;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{ObjectPath, OwnedValue, Type};
@@ -169,39 +170,39 @@ impl<'a> Proxy<'a> {
             .0
             .receive_signal_with_args(name, args)
             .await?
-            .filter_map(
+            .filter_map({
                 #[cfg(not(feature = "tracing"))]
                 {
-                    |x| async move { x.body().ok() }
-                },
+                    move |msg| msg.body().ok()
+                }
                 #[cfg(feature = "tracing")]
                 {
-                    let ifc = self.interface().to_string();
-                    move |x| trace_body(name, ifc.clone(), x)
-                },
-            ))
+                    let ifc = self.interface().to_owned();
+                    move |msg| trace_body(name, &ifc, msg)
+                }
+            }))
     }
 
     pub(crate) async fn signal<I>(&self, name: &'static str) -> Result<impl Stream<Item = I>, Error>
     where
         I: for<'de> Deserialize<'de> + Type + Debug,
     {
-        Ok(self.0.receive_signal(name).await?.filter_map(
+        Ok(self.0.receive_signal(name).await?.filter_map({
             #[cfg(not(feature = "tracing"))]
             {
-                |x| async move { x.body().ok() }
-            },
+                move |msg| msg.body().ok()
+            }
             #[cfg(feature = "tracing")]
             {
-                let ifc = self.interface().to_string();
-                move |x| trace_body(name, ifc.clone(), x)
-            },
-        ))
+                let ifc = self.interface().to_owned();
+                move |msg| trace_body(name, &ifc, msg)
+            }
+        }))
     }
 }
 
 #[cfg(feature = "tracing")]
-async fn trace_body<I>(name: &'static str, ifc: String, msg: impl AsRef<Message>) -> Option<I>
+fn trace_body<I>(name: &'static str, ifc: &str, msg: impl AsRef<Message>) -> Option<I>
 where
     I: for<'de> Deserialize<'de> + Type + Debug,
 {

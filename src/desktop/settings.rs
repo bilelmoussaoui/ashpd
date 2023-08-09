@@ -23,7 +23,8 @@
 
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
-use futures_util::{Stream, StreamExt};
+use futures_lite::StreamExt;
+use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
@@ -187,7 +188,7 @@ impl<'a> Settings<'a> {
             .0
             .signal_with_args::<Setting>("SettingChanged", &[(0, NAMESPACE), (1, KEY)])
             .await?
-            .filter_map(|s| async move { ColorScheme::try_from(s).ok() }))
+            .filter_map(|s| ColorScheme::try_from(s).ok()))
     }
 
     /// Signal emitted when a setting changes.

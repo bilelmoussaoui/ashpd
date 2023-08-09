@@ -25,6 +25,7 @@ wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 async-std = {version = "1.12", optional = true}
 enumflags2 = "0.7"
 futures-channel = "0.3"
+futures-lite = "1.13.0"
 futures-util = "0.3"
 gdk4wayland = {package = "gdk4-wayland", version = "0.8", git="https://github.com/gtk-rs/gtk4-rs.git", optional = true}
 gdk4x11 = {package = "gdk4-x11", version = "0.8", git="https://github.com/gtk-rs/gtk4-rs.git", optional = true}
