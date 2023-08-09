@@ -23,7 +23,7 @@
 
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
-use futures_lite::StreamExt;
+use futures_lite::{stream::once, StreamExt};
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
@@ -181,14 +181,27 @@ impl<'a> Settings<'a> {
     }
 
     /// Listen to changes of the system's preferred color scheme
-    pub async fn receive_color_scheme_changed(
+    ///
+    /// The stream will also initially yield the current color scheme preference and filter out
+    /// Duplicates.
+    pub async fn receive_color_scheme_changed_with_init(
         &self,
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
-        Ok(self
-            .0
-            .signal_with_args::<Setting>("SettingChanged", &[(0, NAMESPACE), (1, KEY)])
-            .await?
-            .filter_map(|s| ColorScheme::try_from(s).ok()))
+        let mut current = self.color_scheme().await?;
+        Ok(once(current).chain(
+            self.0
+                .signal_with_args::<Setting>("SettingChanged", &[(0, NAMESPACE), (1, KEY)])
+                .await?
+                .filter_map(move |p| {
+                    let p = ColorScheme::try_from(p).ok()?;
+                    if p == current {
+                        None
+                    } else {
+                        current = p;
+                        Some(p)
+                    }
+                }),
+        ))
     }
 
     /// Signal emitted when a setting changes.
