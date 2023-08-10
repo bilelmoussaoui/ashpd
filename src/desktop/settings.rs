@@ -190,7 +190,7 @@ impl<'a> Settings<'a> {
     /// Listen to changes of the system's preferred color scheme
     ///
     /// The stream will also initially yield the current color scheme preference and filter out
-    /// Duplicates.
+    /// duplicates.
     pub async fn receive_color_scheme_changed_with_init(
         &self,
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
