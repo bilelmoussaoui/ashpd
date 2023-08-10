@@ -27,10 +27,10 @@
 //! }
 //! ```
 
+use std::future::ready;
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
-use futures_lite::{stream::once, StreamExt};
-use futures_util::Stream;
+use futures_util::{stream::once, Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
@@ -195,7 +195,7 @@ impl<'a> Settings<'a> {
         &self,
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
         let mut current = self.color_scheme().await?;
-        Ok(once(current).chain(
+        Ok(once(ready(current)).chain(
             self.0
                 .signal_with_args::<Setting>(
                     "SettingChanged",
@@ -203,13 +203,14 @@ impl<'a> Settings<'a> {
                 )
                 .await?
                 .filter_map(move |p| {
-                    let p = ColorScheme::try_from(p).ok()?;
-                    if p == current {
-                        None
-                    } else {
-                        current = p;
-                        Some(p)
-                    }
+                    ready(ColorScheme::try_from(p).ok().and_then(|p| {
+                        if p == current {
+                            None
+                        } else {
+                            current = p;
+                            Some(p)
+                        }
+                    }))
                 }),
         ))
     }

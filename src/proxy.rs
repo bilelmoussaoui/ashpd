@@ -1,7 +1,6 @@
-use std::{fmt::Debug, ops::Deref};
+use std::{fmt::Debug, future::ready, ops::Deref};
 
-use futures_lite::StreamExt;
-use futures_util::Stream;
+use futures_util::{Stream, StreamExt};
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{ObjectPath, OwnedValue, Type};
@@ -173,12 +172,12 @@ impl<'a> Proxy<'a> {
             .filter_map({
                 #[cfg(not(feature = "tracing"))]
                 {
-                    move |msg| msg.body().ok()
+                    move |msg| ready(msg.body().ok())
                 }
                 #[cfg(feature = "tracing")]
                 {
                     let ifc = self.interface().to_owned();
-                    move |msg| trace_body(name, &ifc, msg)
+                    move |msg| ready(trace_body(name, &ifc, msg))
                 }
             }))
     }
@@ -190,12 +189,12 @@ impl<'a> Proxy<'a> {
         Ok(self.0.receive_signal(name).await?.filter_map({
             #[cfg(not(feature = "tracing"))]
             {
-                move |msg| msg.body().ok()
+                move |msg| ready(msg.body().ok())
             }
             #[cfg(feature = "tracing")]
             {
                 let ifc = self.interface().to_owned();
-                move |msg| trace_body(name, &ifc, msg)
+                move |msg| ready(trace_body(name, &ifc, msg))
             }
         }))
     }
