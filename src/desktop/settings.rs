@@ -187,34 +187,6 @@ impl<'a> Settings<'a> {
             .await
     }
 
-    /// Listen to changes of the system's preferred color scheme
-    ///
-    /// The stream will also initially yield the current color scheme preference and filter out
-    /// duplicates.
-    pub async fn receive_color_scheme_changed_with_init(
-        &self,
-    ) -> Result<impl Stream<Item = ColorScheme>, Error> {
-        let mut current = self.color_scheme().await?;
-        Ok(once(ready(current)).chain(
-            self.0
-                .signal_with_args::<Setting>(
-                    "SettingChanged",
-                    &[(0, APPEARANCE_NAMESPACE), (1, COLOR_SCHEME_KEY)],
-                )
-                .await?
-                .filter_map(move |p| {
-                    ready(ColorScheme::try_from(p).ok().and_then(|p| {
-                        if p == current {
-                            None
-                        } else {
-                            current = p;
-                            Some(p)
-                        }
-                    }))
-                }),
-        ))
-    }
-
     /// Signal emitted when a setting changes.
     ///
     /// # Specifications
