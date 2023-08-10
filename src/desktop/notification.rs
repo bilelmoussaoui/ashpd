@@ -2,6 +2,7 @@
 //!
 //! ```rust,no_run
 //! use std::{thread, time};
+//! use futures_util::StreamExt;
 //!
 //! use ashpd::desktop::{
 //!     notification::{Action, Button, Notification, NotificationProxy, Priority},
@@ -27,7 +28,12 @@
 //!         )
 //!         .await?;
 //!
-//!     let action = proxy.receive_action_invoked().await?;
+//!     let action = proxy
+//!         .receive_action_invoked()
+//!         .await?
+//!         .next()
+//!         .await
+//!         .expect("Stream exhausted");
 //!     match action.name() {
 //!         "copy" => (),   // Copy something to clipboard
 //!         "delete" => (), // Delete the file

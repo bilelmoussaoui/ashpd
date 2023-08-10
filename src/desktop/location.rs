@@ -5,26 +5,25 @@
 //!     desktop::location::{Accuracy, LocationProxy},
 //!     WindowIdentifier,
 //! };
-//! use futures_util::TryFutureExt;
+//! use futures_util::{FutureExt, StreamExt};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = LocationProxy::new().await?;
 //!     let identifier = WindowIdentifier::default();
-//!
 //!     let session = proxy
 //!         .create_session(None, None, Some(Accuracy::Street))
 //!         .await?;
-//!
-//!     let (_, location) = futures_util::try_join!(
-//!         proxy.start(&session, &identifier).into_future(),
-//!         proxy.receive_location_updated().into_future()
-//!     )?;
-//!
+//!     let mut stream = proxy.receive_location_updated().await?;
+//!     let (_, location) = futures_util::join!(
+//!         proxy
+//!             .start(&session, &identifier)
+//!             .map(|e| e.expect("Couldn't start session")),
+//!         stream.next().map(|e| e.expect("Stream is exhausted"))
+//!     );
 //!     println!("{}", location.accuracy());
 //!     println!("{}", location.longitude());
 //!     println!("{}", location.latitude());
 //!     session.close().await?;
-//!
 //!     Ok(())
 //! }
 //! ```

@@ -5,6 +5,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{flatpak::Flatpak, WindowIdentifier};
+//! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Flatpak::new().await?;
@@ -13,7 +14,12 @@
 //!     let info = monitor.receive_update_available().await?;
 //!
 //!     monitor.update(&WindowIdentifier::default()).await?;
-//!     let progress = monitor.receive_progress().await?;
+//!     let progress = monitor
+//!         .receive_progress()
+//!         .await?
+//!         .next()
+//!         .await
+//!         .expect("Stream exhausted");
 //!     println!("{:#?}", progress);
 //!
 //!     Ok(())

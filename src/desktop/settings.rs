@@ -1,5 +1,6 @@
 //! ```rust,no_run
 //! use ashpd::desktop::settings::Settings;
+//! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Settings::new().await?;
@@ -12,7 +13,12 @@
 //!     let settings = proxy.read_all(&["org.gnome.desktop.interface"]).await?;
 //!     println!("{:#?}", settings);
 //!
-//!     let setting = proxy.receive_setting_changed().await?;
+//!     let setting = proxy
+//!         .receive_setting_changed()
+//!         .await?
+//!         .next()
+//!         .await
+//!         .expect("Stream exhausted");
 //!     println!("{}", setting.namespace());
 //!     println!("{}", setting.key());
 //!     println!("{:#?}", setting.value());

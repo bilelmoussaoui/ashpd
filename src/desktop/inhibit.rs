@@ -4,6 +4,7 @@
 //!
 //! ```rust,no_run
 //! use std::{thread, time};
+//! use futures_util::StreamExt;
 //!
 //! use ashpd::{
 //!     desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState},
@@ -16,7 +17,7 @@
 //!
 //!     let session = proxy.create_monitor(&identifier).await?;
 //!
-//!     let state = proxy.receive_state_changed().await?;
+//!     let state = proxy.receive_state_changed().await?.next().await.unwrap();
 //!     match state.session_state() {
 //!         SessionState::Running => (),
 //!         SessionState::QueryEnd => {
