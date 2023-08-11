@@ -2,12 +2,12 @@
 //!
 //! ```rust,no_run
 //! use std::{thread, time};
-//! use futures_util::StreamExt;
 //!
 //! use ashpd::desktop::{
 //!     notification::{Action, Button, Notification, NotificationProxy, Priority},
 //!     Icon,
 //! };
+//! use futures_util::StreamExt;
 //! use zbus::zvariant::Value;
 //!
 //! async fn run() -> ashpd::Result<()> {

@@ -27,8 +27,7 @@
 //! }
 //! ```
 
-use std::future::ready;
-use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
+use std::{collections::HashMap, convert::TryFrom, fmt::Debug, future::ready};
 
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};

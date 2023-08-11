@@ -4,12 +4,12 @@
 //!
 //! ```rust,no_run
 //! use std::{thread, time};
-//! use futures_util::StreamExt;
 //!
 //! use ashpd::{
 //!     desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState},
 //!     WindowIdentifier,
 //! };
+//! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = InhibitProxy::new().await?;
