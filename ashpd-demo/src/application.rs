@@ -14,7 +14,7 @@ use crate::{config, window::ApplicationWindow};
 
 mod imp {
     use glib::WeakRef;
-    use once_cell::sync::OnceCell;
+    use std::cell::OnceCell;
 
     use super::*;
 

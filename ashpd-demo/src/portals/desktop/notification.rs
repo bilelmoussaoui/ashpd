@@ -159,7 +159,7 @@ mod button {
     mod imp {
         use adw::subclass::prelude::BinImpl;
         use glib::subclass::Signal;
-        use once_cell::sync::Lazy;
+        use glib::once_cell::sync::Lazy;
 
         use super::*;
 

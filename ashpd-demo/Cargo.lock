@@ -69,7 +69,6 @@ dependencies = [
  "gtk4",
  "libadwaita",
  "libshumate",
- "once_cell",
  "serde",
  "tracing",
  "tracing-subscriber",
