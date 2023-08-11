@@ -4,7 +4,6 @@ use futures_util::{Stream, StreamExt};
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{ObjectPath, OwnedValue, Type};
-
 #[cfg(feature = "tracing")]
 use zbus::Message;
 
@@ -99,7 +98,7 @@ impl<'a> Proxy<'a> {
     pub async fn request<T>(
         &self,
         handle_token: &HandleToken,
-        method_name: &str,
+        method_name: &'static str,
         body: impl Serialize + Type + Debug,
     ) -> Result<Request<T>, Error>
     where
@@ -117,7 +116,7 @@ impl<'a> Proxy<'a> {
     pub(crate) async fn empty_request(
         &self,
         handle_token: &HandleToken,
-        method_name: &str,
+        method_name: &'static str,
         body: impl Serialize + Type + Debug,
     ) -> Result<Request<()>, Error> {
         self.request(handle_token, method_name, body).await
@@ -125,7 +124,7 @@ impl<'a> Proxy<'a> {
 
     pub(crate) async fn call<R>(
         &self,
-        method_name: &str,
+        method_name: &'static str,
         body: impl Serialize + Type + Debug,
     ) -> Result<R, Error>
     where
@@ -146,7 +145,7 @@ impl<'a> Proxy<'a> {
         Ok(reply)
     }
 
-    pub async fn property<T>(&self, property_name: &str) -> Result<T, Error>
+    pub async fn property<T>(&self, property_name: &'static str) -> Result<T, Error>
     where
         T: TryFrom<OwnedValue>,
         zbus::Error: From<<T as TryFrom<OwnedValue>>::Error>,
