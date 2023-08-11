@@ -18,6 +18,7 @@ mod imp {
     pub struct CameraPaintable {
         pub pipeline: RefCell<Option<gst::Pipeline>>,
         pub sink_paintable: RefCell<Option<gdk::Paintable>>,
+        pub guard: RefCell<Option<gst::bus::BusWatchGuard>>,
     }
 
     #[glib::object_subclass]
@@ -89,7 +90,7 @@ impl CameraPaintable {
     fn init_pipeline(&self, pipewire_src: gst::Element) {
         tracing::debug!("Init pipeline");
         let imp = self.imp();
-        let pipeline = gst::Pipeline::new(None);
+        let pipeline = gst::Pipeline::new();
 
         let sink = gst::ElementFactory::make("gtk4paintablesink")
             .build()
@@ -116,8 +117,10 @@ impl CameraPaintable {
             convert.link(&sink).unwrap();
 
             bin.add_pad(
-                &gst::GhostPad::with_target(Some("sink"), &convert.static_pad("sink").unwrap())
-                    .unwrap(),
+                &gst::GhostPad::builder_with_target(&convert.static_pad("sink").unwrap())
+                    .unwrap()
+                    .name("sink")
+                    .build(),
             )
             .unwrap();
 
@@ -140,27 +143,30 @@ impl CameraPaintable {
         queue1.link(&sink).unwrap();
 
         let bus = pipeline.bus().unwrap();
-        bus.add_watch_local(move |_, msg| {
-            if let gst::MessageView::Error(err) = msg.view() {
-                tracing::error!(
-                    "Error from {:?}: {} ({:?})",
-                    err.src().map(|s| s.path_string()),
-                    err.error(),
-                    err.debug()
-                );
-            }
-            glib::Continue(true)
-        })
-        .expect("Failed to add bus watch");
+        let guard = bus
+            .add_watch_local(move |_, msg| {
+                if let gst::MessageView::Error(err) = msg.view() {
+                    tracing::error!(
+                        "Error from {:?}: {} ({:?})",
+                        err.src().map(|s| s.path_string()),
+                        err.error(),
+                        err.debug()
+                    );
+                }
+                glib::ControlFlow::Continue
+            })
+            .expect("Failed to add bus watch");
         pipeline.set_state(gst::State::Playing).unwrap();
         imp.pipeline.replace(Some(pipeline));
+        imp.guard.replace(Some(guard));
     }
 
     pub fn close_pipeline(&self) {
         tracing::debug!("Closing pipeline");
-        if let Some(pipeline) = self.imp().pipeline.borrow_mut().take() {
+        if let Some(pipeline) = self.imp().pipeline.take() {
             pipeline.set_state(gst::State::Null).unwrap();
         }
+        let _ = self.imp().guard.take();
     }
 }
 

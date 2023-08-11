@@ -48,7 +48,7 @@ mod imp {
                 cc_entry: TemplateChild::default(),
                 bcc_entry: TemplateChild::default(),
                 attachments_listbox: TemplateChild::default(),
-                model: gio::ListStore::new(gio::File::static_type()),
+                model: gio::ListStore::new::<gio::File>(),
             }
         }
 

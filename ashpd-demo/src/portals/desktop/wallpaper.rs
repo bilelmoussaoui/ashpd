@@ -52,7 +52,7 @@ impl WallpaperPage {
         filter.add_pixbuf_formats();
         filter.set_name(Some("images"));
 
-        let filters = gio::ListStore::new(gtk::FileFilter::static_type());
+        let filters = gio::ListStore::new::<gtk::FileFilter>();
         filters.append(&filter);
 
         let dialog = gtk::FileDialog::builder()
