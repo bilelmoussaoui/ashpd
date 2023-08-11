@@ -9,7 +9,7 @@ use ashpd::{
     enumflags2::BitFlags,
     WindowIdentifier,
 };
-use futures_util::lock::Mutex;
+use futures_util::{lock::Mutex, stream::StreamExt};
 use gtk::{glib, prelude::*};
 
 use crate::widgets::{PortalPage, PortalPageImpl};
@@ -109,8 +109,13 @@ impl InhibitPage {
         self.action_set_enabled("inhibit.stop", true);
         self.action_set_enabled("inhibit.start_session", false);
 
-        let state = proxy.receive_state_changed().await?;
-        match state.session_state() {
+        let mut state = proxy.receive_state_changed().await?;
+        match state
+            .next()
+            .await
+            .expect("Stream exhausted")
+            .session_state()
+        {
             SessionState::Running => tracing::info!("Session running"),
             SessionState::QueryEnd => {
                 tracing::info!("Session: query end");

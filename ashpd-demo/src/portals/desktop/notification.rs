@@ -1,5 +1,6 @@
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::notification::{Button, Notification, NotificationProxy, Priority};
+use futures_util::stream::StreamExt;
 use gtk::glib;
 
 use self::button::NotificationButton;
@@ -128,7 +129,12 @@ impl NotificationPage {
         match proxy.add_notification(&notification_id, notification).await {
             Ok(_) => {
                 self.success("Notification sent");
-                let action = proxy.receive_action_invoked().await?;
+                let action = proxy
+                    .receive_action_invoked()
+                    .await?
+                    .next()
+                    .await
+                    .expect("Stream exhausted");
                 self.info(&format!(
                     "User interacted with notification \"{notification_id}\""
                 ));

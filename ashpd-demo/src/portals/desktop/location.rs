@@ -12,6 +12,7 @@ use chrono::{DateTime, Local, TimeZone};
 use futures_util::{
     future::{AbortHandle, Abortable},
     lock::Mutex,
+    stream::StreamExt,
 };
 use gtk::glib::{self, clone};
 use shumate::prelude::*;
@@ -164,7 +165,12 @@ impl LocationPage {
                     let (abort_handle, abort_registration) = AbortHandle::new_pair();
                     let future = Abortable::new(
                         async {
-                            if let Ok(location) = location_proxy.receive_location_updated().await {
+                            let Ok(mut stream) = location_proxy.receive_location_updated().await
+                            else {
+                                return;
+                            };
+
+                            while let Some(location) = stream.next().await {
                                 self.on_location_updated(location);
                             }
                         },
