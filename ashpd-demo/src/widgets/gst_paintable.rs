@@ -137,7 +137,7 @@ impl CameraPaintable {
         imp.sink_paintable.replace(Some(paintable));
 
         let queue1 = gst::ElementFactory::make("queue").build().unwrap();
-        pipeline.add_many(&[&pipewire_src, &queue1, &sink]).unwrap();
+        pipeline.add_many([&pipewire_src, &queue1, &sink]).unwrap();
 
         pipewire_src.link(&queue1).unwrap();
         queue1.link(&sink).unwrap();
