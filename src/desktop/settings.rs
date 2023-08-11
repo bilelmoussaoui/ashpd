@@ -27,10 +27,10 @@
 //! }
 //! ```
 
-use std::future::ready;
+
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
-use futures_util::{stream::once, Stream, StreamExt};
+use futures_util::{Stream};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
