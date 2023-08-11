@@ -27,9 +27,10 @@
 //! }
 //! ```
 
+use std::future::ready;
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug};
 
-use futures_util::Stream;
+use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
@@ -184,6 +185,20 @@ impl<'a> Settings<'a> {
     pub async fn color_scheme(&self) -> Result<ColorScheme, Error> {
         self.read::<ColorScheme>(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
             .await
+    }
+
+    /// Listen to changes of the system's preferred color scheme
+    pub async fn receive_color_scheme_changed(
+        &self,
+    ) -> Result<impl Stream<Item = ColorScheme>, Error> {
+        Ok(self
+            .0
+            .signal_with_args::<Setting>(
+                "SettingChanged",
+                &[(0, APPEARANCE_NAMESPACE), (1, COLOR_SCHEME_KEY)],
+            )
+            .await?
+            .filter_map(|x| ready(ColorScheme::try_from(x).ok())))
     }
 
     /// Signal emitted when a setting changes.

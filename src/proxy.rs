@@ -157,6 +157,31 @@ impl<'a> Proxy<'a> {
             .map_err(From::from)
     }
 
+    pub(crate) async fn signal_with_args<I>(
+        &self,
+        name: &'static str,
+        args: &[(u8, &str)],
+    ) -> Result<impl Stream<Item = I>, Error>
+    where
+        I: for<'de> Deserialize<'de> + Type + Debug,
+    {
+        Ok(self
+            .0
+            .receive_signal_with_args(name, args)
+            .await?
+            .filter_map({
+                #[cfg(not(feature = "tracing"))]
+                {
+                    move |msg| ready(msg.body().ok())
+                }
+                #[cfg(feature = "tracing")]
+                {
+                    let ifc = self.interface().to_owned();
+                    move |msg| ready(trace_body(name, &ifc, msg))
+                }
+            }))
+    }
+
     pub(crate) async fn signal<I>(&self, name: &'static str) -> Result<impl Stream<Item = I>, Error>
     where
         I: for<'de> Deserialize<'de> + Type + Debug,
