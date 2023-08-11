@@ -2,7 +2,7 @@
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
 edition = "2021"
 name = "ashpd-demo"
-version = "0.3.0"
+version = "0.4.0"
 
 [dependencies]
 adw = {version = "0.5", package = "libadwaita", features = ["v1_4"]}
