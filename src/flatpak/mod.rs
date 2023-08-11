@@ -33,6 +33,7 @@ use std::{
 };
 
 use enumflags2::{bitflags, BitFlags};
+use futures_util::Stream;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedObjectPath, SerializeDict, Type};
@@ -272,7 +273,7 @@ impl<'a> Flatpak<'a> {
 
     /// Emitted when a process starts by [`spawn()`][`Flatpak::spawn`].
     #[doc(alias = "SpawnStarted")]
-    pub async fn receive_spawn_started(&self) -> Result<(u32, u32), Error> {
+    pub async fn receive_spawn_started(&self) -> Result<impl Stream<Item = (u32, u32)>, Error> {
         self.0.signal("SpawnStarted").await
     }
 
@@ -284,7 +285,7 @@ impl<'a> Flatpak<'a> {
     /// See also [`SpawnExited`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak.SpawnExited).
     #[doc(alias = "SpawnExited")]
     #[doc(alias = "XdpPortal::spawn-exited")]
-    pub async fn receive_spawn_existed(&self) -> Result<(u32, u32), Error> {
+    pub async fn receive_spawn_existed(&self) -> Result<impl Stream<Item = (u32, u32)>, Error> {
         self.0.signal("SpawnExited").await
     }
 

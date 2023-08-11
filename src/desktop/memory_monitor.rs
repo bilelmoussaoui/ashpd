@@ -2,14 +2,22 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::memory_monitor::MemoryMonitor;
+//! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = MemoryMonitor::new().await?;
-//!     let level = proxy.receive_low_memory_warning().await?;
+//!     let level = proxy
+//!         .receive_low_memory_warning()
+//!         .await?
+//!         .next()
+//!         .await
+//!         .expect("Stream exhausted");
 //!     println!("{}", level);
 //!     Ok(())
 //! }
 //! ```
+
+use futures_util::Stream;
 
 use crate::{proxy::Proxy, Error};
 
@@ -39,7 +47,7 @@ impl<'a> MemoryMonitor<'a> {
     ///
     /// See also [`LowMemoryWarning`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-MemoryMonitor.LowMemoryWarning).
     #[doc(alias = "LowMemoryWarning")]
-    pub async fn receive_low_memory_warning(&self) -> Result<i32, Error> {
+    pub async fn receive_low_memory_warning(&self) -> Result<impl Stream<Item = i32>, Error> {
         self.0.signal("LowMemoryWarning").await
     }
 }

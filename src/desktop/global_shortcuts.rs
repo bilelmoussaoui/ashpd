@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, fmt::Debug, time::Duration};
 
-use futures_util::TryFutureExt;
+use futures_util::{Stream, TryFutureExt};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,
@@ -277,7 +277,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// See also [`Activated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.Activated).
     #[doc(alias = "Activated")]
-    pub async fn receive_activated(&self) -> Result<Activated, Error> {
+    pub async fn receive_activated(&self) -> Result<impl Stream<Item = Activated>, Error> {
         self.0.signal("Activated").await
     }
 
@@ -287,7 +287,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// See also [`Deactivated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.Deactivated).
     #[doc(alias = "Deactivated")]
-    pub async fn receive_deactivated(&self) -> Result<Deactivated, Error> {
+    pub async fn receive_deactivated(&self) -> Result<impl Stream<Item = Deactivated>, Error> {
         self.0.signal("Deactivated").await
     }
 
@@ -298,7 +298,9 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// See also [`ShortcutsChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.ShortcutsChanged).
     #[doc(alias = "ShortcutsChanged")]
-    pub async fn receive_shortcuts_changed(&self) -> Result<ShortcutsChanged, Error> {
+    pub async fn receive_shortcuts_changed(
+        &self,
+    ) -> Result<impl Stream<Item = ShortcutsChanged>, Error> {
         self.0.signal("ShortcutsChanged").await
     }
 }

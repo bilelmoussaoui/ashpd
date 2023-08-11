@@ -5,6 +5,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{flatpak::Flatpak, WindowIdentifier};
+//! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Flatpak::new().await?;
@@ -13,13 +14,19 @@
 //!     let info = monitor.receive_update_available().await?;
 //!
 //!     monitor.update(&WindowIdentifier::default()).await?;
-//!     let progress = monitor.receive_progress().await?;
+//!     let progress = monitor
+//!         .receive_progress()
+//!         .await?
+//!         .next()
+//!         .await
+//!         .expect("Stream exhausted");
 //!     println!("{:#?}", progress);
 //!
 //!     Ok(())
 //! }
 //! ```
 
+use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
@@ -126,7 +133,7 @@ impl<'a> UpdateMonitor<'a> {
     /// See also [`Progress`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.Progress).
     #[doc(alias = "Progress")]
     #[doc(alias = "XdpPortal::update-progress")]
-    pub async fn receive_progress(&self) -> Result<UpdateProgress, Error> {
+    pub async fn receive_progress(&self) -> Result<impl Stream<Item = UpdateProgress>, Error> {
         self.0.signal("Progress").await
     }
 
@@ -137,7 +144,7 @@ impl<'a> UpdateMonitor<'a> {
     /// See also [`UpdateAvailable`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak-UpdateMonitor.UpdateAvailable).
     #[doc(alias = "UpdateAvailable")]
     #[doc(alias = "XdpPortal::update-available")]
-    pub async fn receive_update_available(&self) -> Result<UpdateInfo, Error> {
+    pub async fn receive_update_available(&self) -> Result<impl Stream<Item = UpdateInfo>, Error> {
         self.0.signal("UpdateAvailable").await
     }
 

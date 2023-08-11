@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt::Debug};
 
+use futures_util::Stream;
 use serde::{Serialize, Serializer};
 use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
 
@@ -51,7 +52,7 @@ impl<'a> Session<'a> {
     ///
     /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Session.Closed).
     #[doc(alias = "Closed")]
-    pub async fn receive_closed(&self) -> Result<SessionDetails, Error> {
+    pub async fn receive_closed(&self) -> Result<impl Stream<Item = SessionDetails>, Error> {
         self.0.signal("Closed").await
     }
 

@@ -2,6 +2,7 @@
 //!
 //! ```rust,no_run
 //! use std::{thread, time};
+//! use futures_util::StreamExt;
 //!
 //! use ashpd::desktop::{
 //!     notification::{Action, Button, Notification, NotificationProxy, Priority},
@@ -27,7 +28,12 @@
 //!         )
 //!         .await?;
 //!
-//!     let action = proxy.receive_action_invoked().await?;
+//!     let action = proxy
+//!         .receive_action_invoked()
+//!         .await?
+//!         .next()
+//!         .await
+//!         .expect("Stream exhausted");
 //!     match action.name() {
 //!         "copy" => (),   // Copy something to clipboard
 //!         "delete" => (), // Delete the file
@@ -46,6 +52,7 @@
 
 use std::{fmt, str::FromStr};
 
+use futures_util::Stream;
 use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, SerializeDict, Type, Value};
 
@@ -300,7 +307,7 @@ impl<'a> NotificationProxy<'a> {
     /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Notification.ActionInvoked).
     #[doc(alias = "ActionInvoked")]
     #[doc(alias = "XdpPortal::notification-action-invoked")]
-    pub async fn receive_action_invoked(&self) -> Result<Action, Error> {
+    pub async fn receive_action_invoked(&self) -> Result<impl Stream<Item = Action>, Error> {
         self.0.signal("ActionInvoked").await
     }
 

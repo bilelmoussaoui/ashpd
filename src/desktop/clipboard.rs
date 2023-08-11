@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 
+use futures_util::{Stream, StreamExt};
 use zbus::zvariant::{DeserializeDict, OwnedFd, OwnedObjectPath, SerializeDict, Type, Value};
 
 use super::Session;
@@ -117,27 +118,30 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionOwnerChanged")]
     pub async fn receive_selection_owner_changed(
         &self,
-    ) -> Result<(Session, SelectionOwnerChanged)> {
-        let (object_path, options) = self
+    ) -> Result<impl Stream<Item = (Session, SelectionOwnerChanged)>> {
+        Ok(self
             .0
             .signal::<(OwnedObjectPath, SelectionOwnerChanged)>("SelectionOwnerChanged")
-            .await?;
-        let session = Session::new(object_path).await?;
-
-        Ok((session, options))
+            .await?
+            .filter_map(|(p, o)| async move { Session::new(p).await.map(|s| (s, o)).ok() }))
     }
 
     /// # Specifications
     ///
     /// See also [`SelectionTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Clipboard.SelectionTransfer).
     #[doc(alias = "SelectionTransfer")]
-    pub async fn receive_selection_transfer(&self) -> Result<(Session, String, u32)> {
-        let (object_path, mime_type, serial) = self
+    pub async fn receive_selection_transfer(
+        &self,
+    ) -> Result<impl Stream<Item = (Session, String, u32)>> {
+        Ok(self
             .0
             .signal::<(OwnedObjectPath, String, u32)>("SelectionTransfer")
-            .await?;
-        let session = Session::new(object_path).await?;
-
-        Ok((session, mime_type, serial))
+            .await?
+            .filter_map(|(p, mime_type, serial)| async move {
+                Session::new(p)
+                    .await
+                    .map(|session| (session, mime_type, serial))
+                    .ok()
+            }))
     }
 }
