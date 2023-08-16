@@ -191,11 +191,7 @@ impl<'a> Settings<'a> {
         &self,
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
         Ok(self
-            .0
-            .signal_with_args::<Setting>(
-                "SettingChanged",
-                &[(0, APPEARANCE_NAMESPACE), (1, COLOR_SCHEME_KEY)],
-            )
+            .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
             .await?
             .filter_map(|x| ready(ColorScheme::try_from(x).ok())))
     }
@@ -215,31 +211,31 @@ impl<'a> Settings<'a> {
     ///
     /// # Example
     /// ```rust,no_run
-    /// use ashpd::desktop::settings::{Settings, ColorScheme};
+    /// use ashpd::desktop::settings::{ColorScheme, Settings};
     /// use futures_util::StreamExt;
     ///
-    /// async fn run() -> ashpd::Result<()> {
-    ///     let settings = Settings::new().await?;
-    ///     while let Some(setting) = settings
-    ///         .receive_setting_changed_with_args(&[
-    ///             (0, "org.freedesktop.appearance"),
-    ///             (1, "color-scheme"),
-    ///         ])
-    ///         .await?
-    ///         .next().await
-    ///     {
-    ///         assert_eq!(setting.namespace(), "org.freedesktop.appearance");
-    ///         assert_eq!(setting.key(), "color-scheme");
-    ///         assert!(ColorScheme::try_from(setting.value().to_owned()).is_ok());
-    ///     }
-    ///     Ok(())
+    /// # async fn run() -> ashpd::Result<()> {
+    /// let settings = Settings::new().await?;
+    /// while let Some(setting) = settings
+    ///     .receive_setting_changed_with_args("org.freedesktop.appearance", "color-scheme")
+    ///     .await?
+    ///     .next()
+    ///     .await
+    /// {
+    ///     assert_eq!(setting.namespace(), "org.freedesktop.appearance");
+    ///     assert_eq!(setting.key(), "color-scheme");
+    ///     assert!(ColorScheme::try_from(setting.value().to_owned()).is_ok());
     /// }
-
+    /// #    Ok(())
+    /// # }
     /// ```
     pub async fn receive_setting_changed_with_args(
         &self,
-        args: &[(u8, &str)],
+        namespace: &str,
+        key: &str,
     ) -> Result<impl Stream<Item = Setting>, Error> {
-        self.0.signal_with_args("SettingChanged", args).await
+        self.0
+            .signal_with_args("SettingChanged", &[(0, namespace), (1, key)])
+            .await
     }
 }
