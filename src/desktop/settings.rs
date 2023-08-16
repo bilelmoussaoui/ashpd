@@ -100,14 +100,6 @@ impl TryFrom<Value<'_>> for ColorScheme {
     }
 }
 
-impl TryFrom<Setting> for ColorScheme {
-    type Error = Error;
-
-    fn try_from(value: Setting) -> Result<Self, Self::Error> {
-        Self::try_from(value.2)
-    }
-}
-
 const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 const COLOR_SCHEME_KEY: &str = "color-scheme";
 
@@ -190,10 +182,8 @@ impl<'a> Settings<'a> {
     pub async fn receive_color_scheme_changed(
         &self,
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
-        Ok(self
-            .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
-            .await?
-            .filter_map(|x| ready(ColorScheme::try_from(x).ok())))
+        self.receive_setting_changed_with_args(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
+            .await
     }
 
     /// Signal emitted when a setting changes.
@@ -206,7 +196,7 @@ impl<'a> Settings<'a> {
         self.0.signal("SettingChanged").await
     }
 
-    /// Similar to (receive_setting_changed)[Self::receive_setting_changed]
+    /// Similar to [Self::receive_setting_changed]
     /// but allows you to filter specific settings.
     ///
     /// # Example
@@ -216,26 +206,33 @@ impl<'a> Settings<'a> {
     ///
     /// # async fn run() -> ashpd::Result<()> {
     /// let settings = Settings::new().await?;
-    /// while let Some(setting) = settings
-    ///     .receive_setting_changed_with_args("org.freedesktop.appearance", "color-scheme")
+    /// while let Some(scheme) = settings
+    ///     .receive_setting_changed_with_args::<ColorScheme>(
+    ///         "org.freedesktop.appearance",
+    ///         "color-scheme",
+    ///     )
     ///     .await?
     ///     .next()
     ///     .await
     /// {
-    ///     assert_eq!(setting.namespace(), "org.freedesktop.appearance");
-    ///     assert_eq!(setting.key(), "color-scheme");
-    ///     assert!(ColorScheme::try_from(setting.value().to_owned()).is_ok());
+    ///     println!("{:#?}", scheme);
     /// }
     /// #    Ok(())
     /// # }
     /// ```
-    pub async fn receive_setting_changed_with_args(
+    pub async fn receive_setting_changed_with_args<T>(
         &self,
         namespace: &str,
         key: &str,
-    ) -> Result<impl Stream<Item = Setting>, Error> {
-        self.0
-            .signal_with_args("SettingChanged", &[(0, namespace), (1, key)])
-            .await
+    ) -> Result<impl Stream<Item = T>, Error>
+    where
+        T: TryFrom<OwnedValue>,
+        Error: From<<T as TryFrom<OwnedValue>>::Error>,
+    {
+        Ok(self
+            .0
+            .signal_with_args::<Setting>("SettingChanged", &[(0, namespace), (1, key)])
+            .await?
+            .filter_map(|x| ready(T::try_from(x.value().to_owned()).ok())))
     }
 }
