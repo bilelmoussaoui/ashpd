@@ -182,8 +182,10 @@ impl<'a> Settings<'a> {
     pub async fn receive_color_scheme_changed(
         &self,
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
-        self.receive_setting_changed_with_args(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
-            .await
+        Ok(self
+            .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
+            .await?
+            .filter_map(|t| ready(t.ok())))
     }
 
     /// Signal emitted when a setting changes.
@@ -206,7 +208,7 @@ impl<'a> Settings<'a> {
     ///
     /// # async fn run() -> ashpd::Result<()> {
     /// let settings = Settings::new().await?;
-    /// while let Some(scheme) = settings
+    /// while let Some(Ok(scheme)) = settings
     ///     .receive_setting_changed_with_args::<ColorScheme>(
     ///         "org.freedesktop.appearance",
     ///         "color-scheme",
@@ -224,7 +226,7 @@ impl<'a> Settings<'a> {
         &self,
         namespace: &str,
         key: &str,
-    ) -> Result<impl Stream<Item = T>, Error>
+    ) -> Result<impl Stream<Item = Result<T, Error>>, Error>
     where
         T: TryFrom<OwnedValue>,
         Error: From<<T as TryFrom<OwnedValue>>::Error>,
@@ -233,6 +235,6 @@ impl<'a> Settings<'a> {
             .0
             .signal_with_args::<Setting>("SettingChanged", &[(0, namespace), (1, key)])
             .await?
-            .filter_map(|x| ready(T::try_from(x.2).ok())))
+            .map(|x| T::try_from(x.2).map_err(From::from)))
     }
 }
