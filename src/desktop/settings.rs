@@ -219,19 +219,19 @@ impl<'a> Settings<'a> {
     /// use futures_util::StreamExt;
     ///
     /// async fn run() -> ashpd::Result<()> {
-    /// let settings = Settings::new().await?;
-    /// while let Some(setting) = settings
-    ///     .receive_setting_changed_with_args(&[
-    ///         (0, "org.freedesktop.appearance"),
-    ///         (1, "color-scheme"),
-    ///     ])
-    ///     .await?
-    ///     .next().await
-    /// {
-    ///     assert_eq!(setting.namespace(), "org.freedesktop.appearance");
-    ///     assert_eq!(setting.key(), "color-scheme");
-    ///     assert!(ColorScheme::try_from(setting.value().to_owned()).is_ok());
-    /// }
+    ///     let settings = Settings::new().await?;
+    ///     while let Some(setting) = settings
+    ///         .receive_setting_changed_with_args(&[
+    ///             (0, "org.freedesktop.appearance"),
+    ///             (1, "color-scheme"),
+    ///         ])
+    ///         .await?
+    ///         .next().await
+    ///     {
+    ///         assert_eq!(setting.namespace(), "org.freedesktop.appearance");
+    ///         assert_eq!(setting.key(), "color-scheme");
+    ///         assert!(ColorScheme::try_from(setting.value().to_owned()).is_ok());
+    ///     }
     ///     Ok(())
     /// }
 
