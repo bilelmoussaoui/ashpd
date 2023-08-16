@@ -233,6 +233,6 @@ impl<'a> Settings<'a> {
             .0
             .signal_with_args::<Setting>("SettingChanged", &[(0, namespace), (1, key)])
             .await?
-            .filter_map(|x| ready(T::try_from(x.value().to_owned()).ok())))
+            .filter_map(|x| ready(T::try_from(x.2).ok())))
     }
 }
