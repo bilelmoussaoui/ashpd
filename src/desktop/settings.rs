@@ -209,4 +209,37 @@ impl<'a> Settings<'a> {
     pub async fn receive_setting_changed(&self) -> Result<impl Stream<Item = Setting>, Error> {
         self.0.signal("SettingChanged").await
     }
+
+    /// Similar to (receive_setting_changed)[Self::receive_setting_changed]
+    /// but allows you to filter specific settings.
+    ///
+    /// # Example
+    /// ```rust,no_run
+    /// use ashpd::desktop::settings::{Settings, ColorScheme};
+    /// use futures_util::StreamExt;
+    ///
+    /// async fn run() -> ashpd::Result<()> {
+    /// let settings = Settings::new().await?;
+    /// while let Some(setting) = settings
+    ///     .receive_setting_changed_with_args(&[
+    ///         (0, "org.freedesktop.appearance"),
+    ///         (1, "color-scheme"),
+    ///     ])
+    ///     .await?
+    ///     .next().await
+    /// {
+    ///     assert_eq!(setting.namespace(), "org.freedesktop.appearance");
+    ///     assert_eq!(setting.key(), "color-scheme");
+    ///     assert!(ColorScheme::try_from(setting.value().to_owned()).is_ok());
+    /// }
+    ///     Ok(())
+    /// }
+
+    /// ```
+    pub async fn receive_setting_changed_with_args(
+        &self,
+        args: &[(u8, &str)],
+    ) -> Result<impl Stream<Item = Setting>, Error> {
+        self.0.signal_with_args("SettingChanged", args).await
+    }
 }
