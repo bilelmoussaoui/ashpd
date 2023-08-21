@@ -19,7 +19,10 @@
 
 use std::{
     collections::HashMap,
-    os::unix::prelude::{IntoRawFd, RawFd},
+    os::{
+        fd::FromRawFd,
+        unix::prelude::{IntoRawFd, RawFd},
+    },
 };
 
 use zbus::zvariant::{OwnedFd, SerializeDict, Type, Value};
@@ -129,7 +132,7 @@ impl Stream {
 
 #[cfg(feature = "pipewire")]
 fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone + 'static>(
-    fd: RawFd,
+    fd: std::os::fd::OwnedFd,
     callback: F,
     done_callback: G,
 ) -> Result<(), pw::Error> {
@@ -198,6 +201,8 @@ pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
     if fd == -1 {
         return Err(pw::Error::CreationFailed);
     }
+
+    let fd = unsafe { std::os::fd::OwnedFd::from_raw_fd(fd) };
 
     let (sender, receiver) = futures_channel::oneshot::channel();
     let (streams_sender, mut streams_receiver) = futures_channel::mpsc::unbounded();
