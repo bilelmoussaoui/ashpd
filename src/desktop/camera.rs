@@ -17,12 +17,11 @@
 //! }
 //! ```
 
+#[cfg(feature = "pipewire")]
+use std::os::fd::FromRawFd;
 use std::{
     collections::HashMap,
-    os::{
-        fd::FromRawFd,
-        unix::prelude::{IntoRawFd, RawFd},
-    },
+    os::unix::prelude::{IntoRawFd, RawFd},
 };
 
 use zbus::zvariant::{OwnedFd, SerializeDict, Type, Value};
