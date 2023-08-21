@@ -32,7 +32,7 @@
                 <child>
                   <object class="AdwSpinRow" id="time_spin">
                     <property name="title" translatable="yes">Time Threshold</property>
-                    <property name="subtitle" translatable="yes">In meters</property>
+                    <property name="subtitle" translatable="yes">In seconds</property>
                     <property name="adjustment">time_adjustment</property>
                   </object>
                 </child>
