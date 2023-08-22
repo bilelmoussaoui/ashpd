@@ -140,6 +140,7 @@ impl std::fmt::Debug for WindowIdentifier {
 
 impl WindowIdentifier {
     #[cfg(feature = "gtk4")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "gtk4")))]
     /// Creates a [`WindowIdentifier`] from a [`gtk4::Native`](https://docs.gtk.org/gtk4/class.Native.html).
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
@@ -155,6 +156,7 @@ impl WindowIdentifier {
     }
 
     #[cfg(feature = "raw_handle")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "raw_handle")))]
     /// Create an instance of [`WindowIdentifier`] from a
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle).
     ///
@@ -186,6 +188,7 @@ impl WindowIdentifier {
     }
 
     #[cfg(feature = "wayland")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "wayland")))]
     /// Create an instance of [`WindowIdentifier`] from a Wayland surface.
     ///
     /// # Safety
@@ -204,6 +207,7 @@ impl WindowIdentifier {
     }
 
     #[cfg(feature = "wayland")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "wayland")))]
     /// Create an instance of [`WindowIdentifier`] from a Wayland surface.
     pub async fn from_wayland(surface: &wayland_client::protocol::wl_surface::WlSurface) -> Self {
         match WaylandWindowIdentifier::new(surface).await {

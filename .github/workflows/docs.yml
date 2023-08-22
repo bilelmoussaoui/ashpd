@@ -17,11 +17,15 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: nightly
           override: true
       - uses: actions-rs/cargo@v1
-        #env:
-        #  RUSTDOCFLAGS: -Z unstable-options --extern-html-root-url=zbus=https://docs.rs/zbus/latest/  --extern-html-root-url=pipewire=https://pipewire.pages.freedesktop.org/pipewire-rs/ --extern-html-root-url=zvariant=https://docs.rs/zvariant/latest/ --extern-html-root-url=enumflags2=https://docs.rs/enumflags2/0.6/
+        env:
+          RUSTFLAGS: --cfg docsrs
+          RUSTDOCFLAGS: --cfg docsrs -Z unstable-options --extern-html-root-url=zbus=https://docs.rs/zbus/latest/
+              --extern-html-root-url=pipewire=https://pipewire.pages.freedesktop.org/pipewire-rs/
+              --extern-html-root-url=zvariant=https://docs.rs/zvariant/latest/
+              --extern-html-root-url=enumflags2=https://docs.rs/enumflags2/latest/
         with:
           command: doc
           args: --package ashpd --features "gtk4,pipewire,wayland,raw_handle" --no-deps
