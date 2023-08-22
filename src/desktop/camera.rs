@@ -191,6 +191,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 /// *Note* The socket referenced by `fd` must not be used while this function is
 /// running.
 #[cfg(feature = "pipewire")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pipewire")))]
 pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
     let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
 
@@ -243,6 +244,7 @@ pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
 }
 
 #[cfg(not(feature = "pipewire"))]
+#[cfg_attr(docsrs, doc(cfg(not(feature = "pipewire"))))]
 /// Request access to the camera and return a file descriptor if one is
 /// available.
 pub async fn request() -> Result<Option<RawFd>, Error> {
@@ -256,6 +258,7 @@ pub async fn request() -> Result<Option<RawFd>, Error> {
 }
 
 #[cfg(feature = "pipewire")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pipewire")))]
 /// Request access to the camera and return a file descriptor and a list of the
 /// available streams, one per camera.
 pub async fn request() -> Result<Option<(RawFd, Vec<Stream>)>, Error> {
