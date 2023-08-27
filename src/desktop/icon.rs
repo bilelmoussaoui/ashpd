@@ -3,7 +3,7 @@ use serde::{
     ser::{Serialize, SerializeTuple},
     Deserialize,
 };
-use zbus::zvariant::{self, OwnedValue, Type};
+use zbus::zvariant::{self, OwnedValue, Type, Value};
 
 use crate::Error;
 
@@ -29,6 +29,41 @@ impl Icon {
     {
         Self::Names(names.into_iter().map(|name| name.to_string()).collect())
     }
+
+    pub(crate) fn is_bytes(&self) -> bool {
+        matches!(self, Self::Bytes(_))
+    }
+
+    pub(crate) fn inner_bytes(&self) -> Value {
+        match self {
+            Self::Bytes(bytes) => {
+                let mut array = zvariant::Array::new(u8::signature());
+                for byte in bytes.iter() {
+                    // Safe to unwrap because we are sure it is of the correct type
+                    array.append(Value::from(*byte)).unwrap();
+                }
+                Value::from(array)
+            }
+            _ => panic!("Only bytes icons can be converted to a bytes variant"),
+        }
+    }
+
+    pub(crate) fn as_value(&self) -> Value {
+        let tuple = match self {
+            Self::Uri(uri) => ("file", Value::from(uri.as_str())),
+            Self::Names(names) => {
+                let mut array = zvariant::Array::new(String::signature());
+                for name in names.iter() {
+                    // Safe to unwrap because we are sure it is of the correct type
+                    array.append(Value::from(name)).unwrap();
+                }
+
+                ("themed", Value::from(array))
+            }
+            Self::Bytes(_) => ("bytes", self.inner_bytes()),
+        };
+        Value::new(tuple)
+    }
 }
 
 impl Serialize for Icon {
@@ -40,25 +75,20 @@ impl Serialize for Icon {
         match self {
             Self::Uri(uri) => {
                 tuple.serialize_element("file")?;
-                tuple.serialize_element(&zvariant::Value::from(uri.as_str()))?;
+                tuple.serialize_element(&Value::from(uri.as_str()))?;
             }
             Self::Names(names) => {
                 tuple.serialize_element("themed")?;
                 let mut array = zvariant::Array::new(String::signature());
                 for name in names.iter() {
                     // Safe to unwrap because we are sure it is of the correct type
-                    array.append(zvariant::Value::from(name)).unwrap();
+                    array.append(Value::from(name)).unwrap();
                 }
-                tuple.serialize_element(&zvariant::Value::from(array))?;
+                tuple.serialize_element(&Value::from(array))?;
             }
-            Self::Bytes(bytes) => {
+            Self::Bytes(_) => {
                 tuple.serialize_element("bytes")?;
-                let mut array = zvariant::Array::new(u8::signature());
-                for byte in bytes.iter() {
-                    // Safe to unwrap because we are sure it is of the correct type
-                    array.append(zvariant::Value::from(*byte)).unwrap();
-                }
-                tuple.serialize_element(&zvariant::Value::from(array))?;
+                tuple.serialize_element(&self.inner_bytes())?;
             }
         }
         tuple.end()
@@ -100,9 +130,9 @@ impl<'de> Deserialize<'de> for Icon {
     }
 }
 
-impl TryFrom<OwnedValue> for Icon {
+impl TryFrom<&OwnedValue> for Icon {
     type Error = crate::Error;
-    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
+    fn try_from(value: &OwnedValue) -> Result<Self, Self::Error> {
         let structure = value.downcast_ref::<zvariant::Structure>().unwrap();
         let fields = structure.fields();
         let type_ = fields[0].downcast_ref::<zvariant::Str>().unwrap();
@@ -135,6 +165,26 @@ impl TryFrom<OwnedValue> for Icon {
             }
             _ => Err(Error::ParseError("Invalid Icon type")),
         }
+    }
+}
+
+impl TryFrom<OwnedValue> for Icon {
+    type Error = crate::Error;
+    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl TryFrom<Value<'_>> for Icon {
+    type Error = crate::Error;
+    fn try_from(value: Value<'_>) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+impl TryFrom<&Value<'_>> for Icon {
+    type Error = crate::Error;
+    fn try_from(value: &Value<'_>) -> Result<Self, Self::Error> {
+        Self::try_from(value.to_owned())
     }
 }
 
