@@ -32,6 +32,7 @@ mod proxy;
 pub mod flatpak;
 mod helpers;
 pub use enumflags2;
+pub use url;
 pub use zbus::{self, zvariant};
 
 /// Check whether the application is running inside a sandbox.
