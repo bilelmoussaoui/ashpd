@@ -13,8 +13,9 @@ use gtk::{
 use crate::{config, window::ApplicationWindow};
 
 mod imp {
-    use glib::WeakRef;
     use std::cell::OnceCell;
+
+    use glib::WeakRef;
 
     use super::*;
 

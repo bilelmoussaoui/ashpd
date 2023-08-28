@@ -11,10 +11,10 @@ use crate::{
     config,
     portals::{
         desktop::{
-            AccountPage, BackgroundPage, CameraPage, DevicePage, EmailPage, FileChooserPage,
-            InhibitPage, LocationPage, NetworkMonitorPage, NotificationPage, OpenUriPage,
-            PrintPage, ProxyResolverPage, RemoteDesktopPage, ScreenCastPage, ScreenshotPage,
-            SecretPage, WallpaperPage,
+            AccountPage, BackgroundPage, CameraPage, DevicePage, DynamicLauncherPage, EmailPage,
+            FileChooserPage, InhibitPage, LocationPage, NetworkMonitorPage, NotificationPage,
+            OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage, ScreenCastPage,
+            ScreenshotPage, SecretPage, WallpaperPage,
         },
         DocumentsPage,
     },
@@ -38,6 +38,8 @@ mod imp {
         pub split_view: TemplateChild<adw::NavigationSplitView>,
         #[template_child]
         pub documents: TemplateChild<DocumentsPage>,
+        #[template_child]
+        pub(super) dynamic_launcher: TemplateChild<DynamicLauncherPage>,
         #[template_child]
         pub screenshot: TemplateChild<ScreenshotPage>,
         #[template_child]
@@ -85,6 +87,7 @@ mod imp {
                 window_title: TemplateChild::default(),
                 split_view: TemplateChild::default(),
                 camera: TemplateChild::default(),
+                dynamic_launcher: TemplateChild::default(),
                 wallpaper: TemplateChild::default(),
                 location: TemplateChild::default(),
                 notification: TemplateChild::default(),

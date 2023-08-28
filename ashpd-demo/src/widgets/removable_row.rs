@@ -2,8 +2,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use gtk::glib;
 
 mod imp {
-    use glib::subclass::Signal;
-    use glib::once_cell::sync::Lazy;
+    use glib::{once_cell::sync::Lazy, subclass::Signal};
 
     use super::*;
 

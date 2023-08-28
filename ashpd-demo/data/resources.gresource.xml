@@ -11,6 +11,8 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="camera.ui">resources/ui/camera.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="device.ui">resources/ui/device.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="documents.ui">resources/ui/documents.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="dynamic_launcher.ui">resources/ui/dynamic_launcher.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="dynamic_launcher_row.ui">resources/ui/dynamic_launcher_row.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="email.ui">resources/ui/email.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="file_chooser.ui">resources/ui/file_chooser.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="inhibit.ui">resources/ui/inhibit.ui</file>
