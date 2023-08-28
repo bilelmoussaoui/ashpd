@@ -13,7 +13,9 @@ color {
     margin-right: 12px;
 }
 
-
+textview {
+    padding: 12px;
+}
 
 notification infobar label {
     padding: 6px;
@@ -27,7 +29,12 @@ banner.error revealer widget {
     background-color: @error_bg_color;
     color: @error_fg_color;
 }
+
 banner.success revealer widget {
     background-color: @success_bg_color;
     color: @success_fg_color;
+}
+
+.installed-apps {
+    background-color: @bg_color;
 }

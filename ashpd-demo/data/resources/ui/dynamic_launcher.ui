@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="DynamicLauncherPage" parent="PortalPage">
+    <child>
+      <object class="AdwClamp">
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Install a Desktop Launcher</property>
+                <property name="description" translatable="yes">Communicates with org.freedesktop.portal.DynamicLauncher</property>
+                <child>
+                  <object class="AdwEntryRow" id="name_row">
+                    <property name="title" translatable="yes">Name</property>
+                    <property name="text">ASHPD Demo</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow" id="icon_row">
+                    <property name="title" translatable="yes">Icon</property>
+                    <child type="suffix">
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">Select</property>
+                        <property name="action-name">dynamic_launcher.select-icon</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="modal_switch">
+                    <property name="title" translatable="yes">Modal</property>
+                    <property name="active">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="editable_name_switch">
+                    <property name="title" translatable="yes">Editable Name</property>
+                    <property name="active">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="editable_icon_switch">
+                    <property name="title" translatable="yes">Editable Icon</property>
+                    <property name="active">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="launcher_type_row">
+                    <property name="title" translatable="yes">Launcher Type</property>
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">Application</item>
+                          <item translatable="yes">Web Application</item>
+                        </items>
+                      </object>
+                    </property>
+                    <property name="selected">1</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="launcher_target_row">
+                    <property name="title" translatable="yes">Launcher Target</property>
+                    <property name="text">https://github.com/bilelmoussaoui/ashpd</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="desktop_file_id_row">
+                    <property name="title" translatable="yes">Desktop File ID</property>
+                    <property name="text">ashpd-demo.desktop</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTextView" id="desktop_file_content">
+                    <property name="margin-top">12</property>
+                    <style>
+                      <class name="card" />
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">_Install</property>
+                <property name="use-underline">True</property>
+                <property name="halign">center</property>
+                <property name="action-name">dynamic_launcher.install</property>
+                <style>
+                  <class name="pill" />
+                  <class name="suggested-action" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup" id="response_group">
+                <property name="title" translatable="yes">Response</property>
+                <property name="visible">False</property>
+                <property name="margin-top">24</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="hexpand">True</property>
+                    <property name="spacing">12</property>
+                    <child>
+                      <object class="GtkImage" id="icon">
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">6</property>
+                        <property name="margin-end">6</property>
+                        <property name="margin-top">6</property>
+                        <property name="margin-bottom">6</property>
+                        <property name="pixel-size">96</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="selection-mode">none</property>
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="AdwActionRow">
+                            <property name="title" translatable="yes">Token</property>
+                            <child>
+                              <object class="GtkLabel" id="token_label">
+                                <property name="valign">center</property>
+                                <property name="selectable">True</property>
+                                <style>
+                                  <class name="dim-label" />
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow">
+                            <property name="title" translatable="yes">Name</property>
+                            <child>
+                              <object class="GtkLabel" id="name_label">
+                                <property name="valign">center</property>
+                                <property name="selectable">True</property>
+                                <style>
+                                  <class name="dim-label" />
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <style>
+                          <class name="boxed-list" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="installed_apps_label">
+                <property name="label" translatable="yes">Installed Apps</property>
+                <property name="halign">start</property>
+                <style>
+                  <class name="heading" />
+                  <class name="h4" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkListBox" id="installed_apps">
+                <property name="selection-mode">none</property>
+                <property name="hexpand">True</property>
+                <style>
+                  <class name="installed-apps" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <style>
+          <class name="page-content" />
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>

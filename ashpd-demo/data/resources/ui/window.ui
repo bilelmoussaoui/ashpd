@@ -85,6 +85,12 @@
                         </child>
                         <child>
                           <object class="SidebarRow">
+                            <property name="title" translatable="yes">Dynamic Launcher</property>
+                            <property name="page-name">dynamic_launcher</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="SidebarRow">
                             <property name="title" translatable="yes">Email</property>
                             <property name="page-name">email</property>
                           </object>
@@ -220,6 +226,14 @@
                             <property name="name">documents</property>
                             <property name="child">
                               <object class="DocumentsPage" id="documents" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">dynamic_launcher</property>
+                            <property name="child">
+                              <object class="DynamicLauncherPage" id="dynamic_launcher" />
                             </property>
                           </object>
                         </child>

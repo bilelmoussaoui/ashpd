@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="DesktopFileRow" parent="GtkListBoxRow">
+    <property name="activatable">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <child>
+          <object class="GtkImage" id="icon">
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="margin-start">6</property>
+            <property name="margin-end">6</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">6</property>
+            <property name="pixel-size">96</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkListBox">
+            <property name="selection-mode">none</property>
+            <child>
+              <object class="AdwActionRow" id="format_row">
+                <property name="title" translatable="yes">Format</property>
+                <style>
+                  <class name="property" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="size_row">
+                <property name="title" translatable="yes">Size</property>
+                <style>
+                  <class name="property" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkListBoxRow">
+                <property name="activatable">False</property>
+                <child>
+                  <object class="GtkTextView" id="text_view">
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkListBoxRow">
+                <property name="activatable">False</property>
+                <child>
+                  <object class="GtkButton" id="uninstall_button">
+                    <property name="label" translatable="yes">Uninstall</property>
+                    <property name="action-name">dynamic_launcher.uninstall</property>
+                    <property name="halign">end</property>
+                    <style>
+                      <class name="destructive-action" />
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <style>
+              <class name="boxed-list" />
+            </style>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
