@@ -24,7 +24,7 @@
 //! ## Picking a color
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::screenshot::Color;
+//! use ashpd::Color;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let color = Color::request().send().await?.response()?;
@@ -38,7 +38,7 @@ use std::fmt::Debug;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, Color, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -80,72 +80,6 @@ impl Debug for Screenshot {
 #[zvariant(signature = "dict")]
 struct ColorOptions {
     handle_token: HandleToken,
-}
-
-#[derive(DeserializeDict, Clone, Copy, PartialEq, Type)]
-/// The response of a [`ColorRequest`] request.
-///
-/// **Note** the values are normalized.
-#[zvariant(signature = "dict")]
-pub struct Color {
-    color: [f64; 3],
-}
-
-impl Color {
-    /// Red.
-    pub fn red(&self) -> f64 {
-        self.color[0]
-    }
-
-    /// Green.
-    pub fn green(&self) -> f64 {
-        self.color[1]
-    }
-
-    /// Blue.
-    pub fn blue(&self) -> f64 {
-        self.color[2]
-    }
-
-    /// Creates a new builder-pattern struct instance to construct
-    /// [`Color`].
-    ///
-    /// This method returns an instance of [`ColorRequest`].
-    pub fn request() -> ColorRequest {
-        ColorRequest::default()
-    }
-}
-
-#[cfg(feature = "gtk4")]
-impl From<Color> for gtk4::gdk::RGBA {
-    fn from(color: Color) -> Self {
-        gtk4::gdk::RGBA::builder()
-            .red(color.red() as f32)
-            .green(color.green() as f32)
-            .blue(color.blue() as f32)
-            .build()
-    }
-}
-
-impl std::fmt::Debug for Color {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Color")
-            .field("red", &self.red())
-            .field("green", &self.green())
-            .field("blue", &self.blue())
-            .finish()
-    }
-}
-
-impl std::fmt::Display for Color {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&format!(
-            "({}, {}, {})",
-            self.red(),
-            self.green(),
-            self.blue()
-        ))
-    }
 }
 
 #[derive(Debug)]
