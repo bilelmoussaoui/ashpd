@@ -33,7 +33,7 @@ use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
-use crate::{proxy::Proxy, Error};
+use crate::{proxy::Proxy, Color, Error};
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -102,6 +102,7 @@ impl TryFrom<Value<'_>> for ColorScheme {
 
 const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 const COLOR_SCHEME_KEY: &str = "color-scheme";
+const ACCENT_COLOR_SCHEME_KEY: &str = "accent-color";
 
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
@@ -172,6 +173,12 @@ impl<'a> Settings<'a> {
         }
     }
 
+    /// Retrieves the system's preferred accent color
+    pub async fn accent_color(&self) -> Result<Color, Error> {
+        self.read::<Color>(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
+            .await
+    }
+
     /// Retrieves the system's preferred color scheme
     pub async fn color_scheme(&self) -> Result<ColorScheme, Error> {
         self.read::<ColorScheme>(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
@@ -184,6 +191,16 @@ impl<'a> Settings<'a> {
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
         Ok(self
             .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
+            .await?
+            .filter_map(|t| ready(t.ok())))
+    }
+
+    /// Listen to changes of the system's accent color
+    pub async fn receive_accent_color_changed(
+        &self,
+    ) -> Result<impl Stream<Item = ColorScheme>, Error> {
+        Ok(self
+            .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
             .await?
             .filter_map(|t| ready(t.ok())))
     }
