@@ -53,6 +53,11 @@ pub enum Error {
     InvalidAppID,
     /// An error indicating that an interior nul byte was found
     NulTerminated(usize),
+    /// Requires a newer interface version.
+    ///
+    /// The inner fields are the required version and the version advertised by
+    /// the interface.
+    RequiresVersion(u32, u32),
 }
 
 impl std::error::Error for Error {}
@@ -70,6 +75,10 @@ impl std::fmt::Display for Error {
             Self::ParseError(e) => f.write_str(e),
             Self::InvalidAppID => f.write_str("Invalid app id"),
             Self::NulTerminated(u) => write!(f, "Nul byte found in provided data at position {u}"),
+            Self::RequiresVersion(required, current) => write!(
+                f,
+                "This interface requires version {required}, but {current} is available"
+            ),
         }
     }
 }
