@@ -27,7 +27,7 @@
 //! use ashpd::Color;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let color = Color::request().send().await?.response()?;
+//!     let color = Color::pick().send().await?.response()?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -169,6 +169,16 @@ impl ColorRequest {
     pub async fn send(self) -> Result<Request<Color>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.pick_color(&self.identifier, self.options).await
+    }
+}
+
+impl Color {
+    /// Creates a new builder-pattern struct instance to construct
+    /// [`Color`].
+    ///
+    /// This method returns an instance of [`ColorRequest`].
+    pub fn pick() -> ColorRequest {
+        ColorRequest::default()
     }
 }
 

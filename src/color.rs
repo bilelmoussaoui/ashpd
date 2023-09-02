@@ -1,5 +1,4 @@
 use crate::{
-    desktop::screenshot::ColorRequest,
     zvariant::{self, DeserializeDict, Type},
     Error,
 };
@@ -27,14 +26,6 @@ impl Color {
     /// Blue.
     pub fn blue(&self) -> f64 {
         self.color[2]
-    }
-
-    /// Creates a new builder-pattern struct instance to construct
-    /// [`Color`].
-    ///
-    /// This method returns an instance of [`ColorRequest`].
-    pub fn request() -> ColorRequest {
-        ColorRequest::default()
     }
 }
 
