@@ -24,7 +24,7 @@
 //! ## Picking a color
 //!
 //! ```rust,no_run
-//! use ashpd::Color;
+//! use ashpd::desktop::Color;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let color = Color::pick().send().await?.response()?;
@@ -38,7 +38,7 @@ use std::fmt::Debug;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Color, Error, WindowIdentifier};
+use crate::{desktop::Color, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]

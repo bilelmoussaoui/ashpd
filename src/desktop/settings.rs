@@ -33,7 +33,7 @@ use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
-use crate::{proxy::Proxy, Color, Error};
+use crate::{desktop::Color, proxy::Proxy, Error};
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
