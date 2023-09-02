@@ -17,7 +17,7 @@ use raw_window_handle::{
 
 use super::WindowIdentifierType;
 
-static WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk4-window-handle";
+const WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk4-window-handle";
 
 pub struct Gtk4WindowIdentifier {
     native: gtk4::Native,
