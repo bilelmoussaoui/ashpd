@@ -43,6 +43,8 @@ struct EmailOptions {
     subject: Option<String>,
     body: Option<String>,
     attachment_fds: Option<Vec<Fd>>,
+    // TODO Expose activation_token in the api
+    activation_token: Option<String>,
 }
 
 #[derive(Debug)]
@@ -164,6 +166,15 @@ impl EmailRequest {
     #[must_use]
     pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
         self.add_attachment(attachment);
+        self
+    }
+
+    // TODO Added in version 4 of the interface.
+    /// Sets the activation token.
+    #[allow(dead_code)]
+    #[must_use]
+    fn activation_token<'a>(mut self, activation_token: impl Into<Option<&'a str>>) -> Self {
+        self.options.activation_token = activation_token.into().map(ToOwned::to_owned);
         self
     }
 
