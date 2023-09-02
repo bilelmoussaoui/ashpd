@@ -251,6 +251,12 @@ impl Stream {
     pub fn id(&self) -> Option<&str> {
         self.1.id.as_deref()
     }
+
+    // TODO Added in version 5 of the interface.
+    /// The stream mapping id.
+    pub fn mapping_id(&self) -> Option<&str> {
+        self.1.mapping_id.as_deref()
+    }
 }
 
 impl Debug for Stream {
@@ -272,6 +278,7 @@ struct StreamProperties {
     position: Option<(i32, i32)>,
     size: Option<(i32, i32)>,
     source_type: Option<SourceType>,
+    mapping_id: Option<String>,
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.
