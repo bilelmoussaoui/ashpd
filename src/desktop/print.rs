@@ -19,6 +19,7 @@
 //!             "prepare print",
 //!             Default::default(),
 //!             Default::default(),
+//!             None,
 //!             true,
 //!         )
 //!         .await?
@@ -556,12 +557,22 @@ struct PreparePrintOptions {
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
     modal: Option<bool>,
+    /// Label for the accept button. Mnemonic underlines are allowed.
+    accept_label: Option<String>,
 }
 
 impl PreparePrintOptions {
     /// Sets whether the dialog should be a modal.
+    #[must_use]
     pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
+        self
+    }
+
+    /// Label for the accept button. Mnemonic underlines are allowed.
+    #[must_use]
+    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+        self.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
     }
 }
@@ -620,6 +631,7 @@ impl<'a> PrintProxy<'a> {
         Ok(Self(proxy))
     }
 
+    // TODO accept_label: Added in version 2 of the interface.
     /// Presents a print dialog to the user and returns print settings and page
     /// setup.
     ///
@@ -630,6 +642,8 @@ impl<'a> PrintProxy<'a> {
     /// * `settings` - [`Settings`].
     /// * `page_setup` - [`PageSetup`].
     /// * `modal` - Whether the dialog should be a modal.
+    /// * `accept_label` - Label for the accept button. Mnemonic underlines are
+    ///   allowed.
     ///
     /// # Specifications
     ///
@@ -642,9 +656,12 @@ impl<'a> PrintProxy<'a> {
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
+        accept_label: impl Into<Option<&'a str>>,
         modal: bool,
     ) -> Result<Request<PreparePrint>, Error> {
-        let options = PreparePrintOptions::default().modal(modal);
+        let options = PreparePrintOptions::default()
+            .modal(modal)
+            .accept_label(accept_label);
         self.0
             .request(
                 &options.handle_token,
