@@ -6,6 +6,8 @@ pub use self::{
     request::{Request, Response, ResponseError},
     session::Session,
 };
+mod color;
+pub use color::Color;
 mod icon;
 pub use icon::Icon;
 
