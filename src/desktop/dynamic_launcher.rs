@@ -87,14 +87,14 @@ pub enum IconType {
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "(vsu)")]
+#[zvariant(signature = "vsu")]
 /// The icon of the launcher.
-pub struct LauncherIcon(Icon, IconType, u32);
+pub struct LauncherIcon(zvariant::OwnedValue, IconType, u32);
 
 impl LauncherIcon {
     /// The actual icon.
-    pub fn icon(&self) -> &Icon {
-        &self.0
+    pub fn icon(&self) -> Icon {
+        Icon::try_from(&self.0).unwrap()
     }
 
     /// The icon type.
@@ -341,7 +341,7 @@ mod test {
     #[test]
     fn test_icon_signature() {
         let signature = LauncherIcon::signature();
-        assert_eq!(signature.as_str(), "(vsu)");
+        assert_eq!(signature.as_str(), "vsu");
 
         let icon = vec![IconType::Png];
         assert_eq!(serde_json::to_string(&icon).unwrap(), "[\"png\"]");
