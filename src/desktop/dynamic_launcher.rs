@@ -87,7 +87,7 @@ pub enum IconType {
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "vsu")]
+#[zvariant(signature = "(vsu)")]
 /// The icon of the launcher.
 pub struct LauncherIcon(zvariant::OwnedValue, IconType, u32);
 
@@ -341,7 +341,7 @@ mod test {
     #[test]
     fn test_icon_signature() {
         let signature = LauncherIcon::signature();
-        assert_eq!(signature.as_str(), "vsu");
+        assert_eq!(signature.as_str(), "(vsu)");
 
         let icon = vec![IconType::Png];
         assert_eq!(serde_json::to_string(&icon).unwrap(), "[\"png\"]");
