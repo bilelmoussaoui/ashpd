@@ -86,7 +86,7 @@ pub enum IconType {
     Svg,
 }
 
-#[derive(Deserialize, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "(vsu)")]
 /// The icon of the launcher.
 pub struct LauncherIcon(Icon, IconType, u32);
