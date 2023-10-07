@@ -1,6 +1,6 @@
 use zbus::DBusError;
 
-use crate::desktop::request::ResponseError;
+use crate::desktop::{dynamic_launcher::UnexpectedIconError, request::ResponseError};
 
 /// An error type that describes the various DBus errors.
 ///
@@ -58,6 +58,9 @@ pub enum Error {
     /// The inner fields are the required version and the version advertised by
     /// the interface.
     RequiresVersion(u32, u32),
+    /// An error indicating that a Icon::Bytes was expected but wrong type was
+    /// passed
+    UnexpectedIcon,
 }
 
 impl std::error::Error for Error {}
@@ -78,6 +81,9 @@ impl std::fmt::Display for Error {
             Self::RequiresVersion(required, current) => write!(
                 f,
                 "This interface requires version {required}, but {current} is available"
+            Self::UnexpectedIcon => write!(
+                f,
+                "Expected icon of type Icon::Bytes but a different type was used."
             ),
         }
     }
@@ -123,5 +129,11 @@ impl From<zbus::zvariant::Error> for Error {
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
         Self::IO(e)
+    }
+}
+
+impl From<UnexpectedIconError> for Error {
+    fn from(_: UnexpectedIconError) -> Self {
+        Self::UnexpectedIcon
     }
 }

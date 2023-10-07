@@ -26,6 +26,8 @@ pub mod game_mode;
 pub mod global_shortcuts;
 /// Inhibit the session from being restarted or the user from logging out.
 pub mod inhibit;
+/// Capture input events from physical or logical devices.
+pub mod input_capture;
 /// Query the user's GPS location.
 pub mod location;
 /// Monitor memory level.
