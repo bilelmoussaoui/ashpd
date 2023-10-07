@@ -206,6 +206,11 @@ impl<'a> Documents<'a> {
     ///
     /// The IDs of the files in the document store along with other extra info.
     ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
     /// # Specifications
     ///
     /// See also [`AddFull`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Documents.AddFull).
@@ -279,6 +284,11 @@ impl<'a> Documents<'a> {
     /// # Returns
     ///
     /// The ID of the file in the document store along with other extra info.
+    ///
+    /// # Required version
+    ///
+    /// The method requires the 3nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
     ///
     /// # Specifications
     ///

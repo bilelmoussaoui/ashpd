@@ -81,6 +81,7 @@ impl std::fmt::Display for Error {
             Self::RequiresVersion(required, current) => write!(
                 f,
                 "This interface requires version {required}, but {current} is available"
+            ),
             Self::UnexpectedIcon => write!(
                 f,
                 "Expected icon of type Icon::Bytes but a different type was used."
