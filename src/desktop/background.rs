@@ -104,6 +104,11 @@ impl<'a> BackgroundProxy<'a> {
     /// * `message` - A string that will be used as the status message of the
     ///   application.
     ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
     /// # Specifications
     ///
     /// See also [`SetStatus`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-Background.SetStatus).

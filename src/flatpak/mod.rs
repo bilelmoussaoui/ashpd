@@ -256,6 +256,11 @@ impl<'a> Flatpak<'a> {
     /// when an update for the caller becomes available, and can be used to
     /// install it.
     ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
     /// # Specifications
     ///
     /// See also [`CreateUpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).

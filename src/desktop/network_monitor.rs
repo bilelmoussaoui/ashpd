@@ -105,6 +105,11 @@ impl<'a> NetworkMonitor<'a> {
     /// * `hostname` - The hostname to reach.
     /// * `port` - The port to reach.
     ///
+    /// # Required version
+    ///
+    /// The method requires the 3nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
     /// # Specifications
     ///
     /// See also [`CanReach`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.CanReach).
@@ -119,6 +124,11 @@ impl<'a> NetworkMonitor<'a> {
     /// That is, whether the system as a default route for at least one of IPv4
     /// or IPv6.
     ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
     /// # Specifications
     ///
     /// See also [`GetAvailable`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetAvailable).
@@ -129,6 +139,11 @@ impl<'a> NetworkMonitor<'a> {
     }
 
     /// Returns more detailed information about the host's network connectivity.
+    ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
     ///
     /// # Specifications
     ///
@@ -143,6 +158,11 @@ impl<'a> NetworkMonitor<'a> {
     /// That is, whether the system as traffic flowing through the default
     /// connection that is subject to limitations by service providers.
     ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
     /// # Specifications
     ///
     /// See also [`GetMetered`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-NetworkMonitor.GetMetered).
@@ -153,6 +173,11 @@ impl<'a> NetworkMonitor<'a> {
     }
 
     /// Returns the three values all at once.
+    ///
+    /// # Required version
+    ///
+    /// The method requires the 3nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
     ///
     /// # Specifications
     ///
