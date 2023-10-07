@@ -24,7 +24,10 @@ pub(crate) const FLATPAK_PATH: &str = "/org/freedesktop/portal/Flatpak";
 static SESSION: OnceCell<zbus::Connection> = OnceCell::new();
 
 #[derive(Debug)]
-pub struct Proxy<'a>(zbus::Proxy<'a>);
+pub struct Proxy<'a> {
+    inner: zbus::Proxy<'a>,
+    version: u32,
+}
 
 impl<'a> Proxy<'a> {
     pub(crate) async fn connection() -> zbus::Result<zbus::Connection> {
@@ -58,13 +61,15 @@ impl<'a> Proxy<'a> {
         P::Error: Into<zbus::Error>,
     {
         let connection = Self::connection().await?;
-        let proxy = zbus::ProxyBuilder::new_bare(&connection)
+        let inner: zbus::Proxy = zbus::ProxyBuilder::new_bare(&connection)
             .interface(interface)?
             .path(path)?
             .destination(destination)?
             .build()
             .await?;
-        Ok(Self(proxy))
+        let version = inner.get_property::<u32>("version").await.unwrap_or(1);
+
+        Ok(Self { inner, version })
     }
 
     pub async fn new_desktop_with_path<P>(interface: &'a str, path: P) -> Result<Proxy<'a>, Error>
@@ -122,6 +127,11 @@ impl<'a> Proxy<'a> {
         self.request(handle_token, method_name, body).await
     }
 
+    /// Returns the version of the interface
+    pub fn version(&self) -> u32 {
+        self.version
+    }
+
     pub(crate) async fn call<R>(
         &self,
         method_name: &'static str,
@@ -145,15 +155,49 @@ impl<'a> Proxy<'a> {
         Ok(reply)
     }
 
+    pub(crate) async fn call_versioned<R>(
+        &self,
+        method_name: &'static str,
+        body: impl Serialize + Type + Debug,
+        req_version: u32,
+    ) -> Result<R, Error>
+    where
+        R: for<'de> Deserialize<'de> + Type,
+    {
+        let version = self.version();
+        if version >= req_version {
+            self.call::<R>(method_name, body).await
+        } else {
+            Err(Error::RequiresVersion(req_version, version))
+        }
+    }
+
     pub async fn property<T>(&self, property_name: &'static str) -> Result<T, Error>
     where
         T: TryFrom<OwnedValue>,
         zbus::Error: From<<T as TryFrom<OwnedValue>>::Error>,
     {
-        self.0
+        self.inner
             .get_property::<T>(property_name)
             .await
             .map_err(From::from)
+    }
+
+    pub(crate) async fn property_versioned<T>(
+        &self,
+        property_name: &'static str,
+        req_version: u32,
+    ) -> Result<T, Error>
+    where
+        T: TryFrom<OwnedValue>,
+        zbus::Error: From<<T as TryFrom<OwnedValue>>::Error>,
+    {
+        let version = self.version();
+        if version >= req_version {
+            self.property::<T>(property_name).await
+        } else {
+            Err(Error::RequiresVersion(req_version, version))
+        }
     }
 
     pub(crate) async fn signal_with_args<I>(
@@ -165,7 +209,7 @@ impl<'a> Proxy<'a> {
         I: for<'de> Deserialize<'de> + Type + Debug,
     {
         Ok(self
-            .0
+            .inner
             .receive_signal_with_args(name, args)
             .await?
             .filter_map({
@@ -185,7 +229,7 @@ impl<'a> Proxy<'a> {
     where
         I: for<'de> Deserialize<'de> + Type + Debug,
     {
-        Ok(self.0.receive_signal(name).await?.filter_map({
+        Ok(self.inner.receive_signal(name).await?.filter_map({
             #[cfg(not(feature = "tracing"))]
             {
                 move |msg| ready(msg.body().ok())
@@ -221,6 +265,6 @@ impl<'a> Deref for Proxy<'a> {
     type Target = zbus::Proxy<'a>;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.inner
     }
 }

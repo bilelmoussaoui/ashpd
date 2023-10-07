@@ -632,7 +632,7 @@ impl<'a> RemoteDesktop<'a> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
-            .call::<OwnedFd>("ConnectToEIS", &(session, options))
+            .call_versioned::<OwnedFd>("ConnectToEIS", &(session, options), 2)
             .await?;
         Ok(fd.into_raw_fd())
     }
