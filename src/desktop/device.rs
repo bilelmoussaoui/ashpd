@@ -4,7 +4,7 @@
 //!
 //! ### Examples
 //!
-//! Access a [`Device`](crate::desktop::device::Device)
+//! Access a [`Device`]
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::device::{Device, DeviceProxy};
