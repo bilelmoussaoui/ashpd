@@ -622,6 +622,11 @@ impl<'a> RemoteDesktop<'a> {
     /// * `session` - A [`Session`], created with
     ///   [`create_session()`][`RemoteDesktop::create_session`].
     ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
     /// # Specifications
     ///
     /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.ConnectToEIS).
