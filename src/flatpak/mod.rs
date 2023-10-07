@@ -265,7 +265,7 @@ impl<'a> Flatpak<'a> {
         let options = CreateMonitorOptions::default();
         let path = self
             .0
-            .call::<OwnedObjectPath>("CreateUpdateMonitor", &(options))
+            .call_versioned::<OwnedObjectPath>("CreateUpdateMonitor", &(options), 2)
             .await?;
 
         UpdateMonitor::new(path.into_inner()).await
@@ -362,7 +362,9 @@ impl<'a> Flatpak<'a> {
     ///
     /// See also [`supports`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-Flatpak.supports).
     pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
-        self.0.property::<BitFlags<SupportsFlags>>("supports").await
+        self.0
+            .property_versioned::<BitFlags<SupportsFlags>>("supports", 3)
+            .await
     }
 }
 

@@ -110,11 +110,12 @@ impl<'a> BackgroundProxy<'a> {
 
     pub async fn set_status(&self, message: &str) -> Result<(), Error> {
         self.0
-            .call(
+            .call_versioned(
                 "SetStatus",
                 &(SetStatusOptions {
                     message: message.to_owned(),
                 }),
+                2,
             )
             .await
     }

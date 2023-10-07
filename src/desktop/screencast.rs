@@ -424,7 +424,7 @@ impl<'a> Screencast<'a> {
     /// See also [`AvailableCursorModes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableCursorModes).
     #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
-        self.0.property("AvailableCursorModes").await
+        self.0.property_versioned("AvailableCursorModes", 2).await
     }
 
     /// Available source types.
