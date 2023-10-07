@@ -422,7 +422,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SupportedCapabilities`]https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-InputCapture.SupportedCapabilities).
+    /// See also [`SupportedCapabilities`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-InputCapture.SupportedCapabilities).
     #[doc(alias = "SupportedCapabilities")]
     pub async fn supported_capabilities(&self) -> Result<BitFlags<Capabilities>, Error> {
         self.0.property("SupportedCapabilities").await
