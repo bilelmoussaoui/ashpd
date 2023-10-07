@@ -220,7 +220,7 @@ impl<'a> Documents<'a> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
         let app_id = app_id.as_deref().unwrap_or("");
         self.0
-            .call("AddFull", &(o_path, flags, app_id, permissions))
+            .call_versioned("AddFull", &(o_path, flags, app_id, permissions), 2)
             .await
     }
 
@@ -295,7 +295,7 @@ impl<'a> Documents<'a> {
         let app_id = app_id.as_deref().unwrap_or("");
         let filename = FilePath::new(filename)?;
         self.0
-            .call(
+            .call_versioned(
                 "AddNamedFull",
                 &(
                     Fd::from(o_path_fd.as_raw_fd()),
@@ -304,6 +304,7 @@ impl<'a> Documents<'a> {
                     app_id,
                     permissions,
                 ),
+                3,
             )
             .await
     }
