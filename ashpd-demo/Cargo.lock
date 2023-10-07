@@ -35,7 +35,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 [[package]]
 name = "ashpd"
 version = "0.6.0"
-source = "git+https://github.com/bilelmoussaoui/ashpd.git?branch=bilelmoussaoui/dynamic-launcher#bab1f10cf4b9c361a09dcd36e98d9411b8cb6425"
+source = "git+https://github.com/bilelmoussaoui/ashpd.git#a84ef931c8c034c23665cd9ef566aadf05cf2d56"
 dependencies = [
  "async-std",
  "enumflags2",
