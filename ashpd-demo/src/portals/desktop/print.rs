@@ -107,7 +107,6 @@ async fn print<F: AsRawFd>(
             title,
             Settings::default(),
             PageSetup::default(),
-            None,
             modal,
         )
         .await?
