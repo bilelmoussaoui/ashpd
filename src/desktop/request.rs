@@ -36,14 +36,28 @@ impl<T> Response<T>
 where
     T: for<'de> Deserialize<'de> + Type,
 {
+    /// The corresponding response type.
+    pub fn response_type(self) -> ResponseType {
+        match self {
+            Self::Ok(_) => ResponseType::Success,
+            Self::Err(err) => match err {
+                ResponseError::Cancelled => ResponseType::Cancelled,
+                ResponseError::Other => ResponseType::Other,
+            },
+        }
+    }
+
+    /// A successful response.
     pub fn ok(inner: T) -> Self {
         Self::Ok(inner)
     }
 
+    /// Cancelled request.
     pub fn cancelled() -> Self {
         Self::Err(ResponseError::Cancelled)
     }
 
+    /// Another error.
     pub fn other() -> Self {
         Self::Err(ResponseError::Other)
     }
@@ -166,8 +180,8 @@ impl std::fmt::Display for ResponseError {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Type)]
-#[doc(hidden)]
-enum ResponseType {
+/// Possible responses.
+pub enum ResponseType {
     /// Success, the request is carried out.
     Success = 0,
     /// The user cancelled the interaction.

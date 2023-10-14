@@ -259,8 +259,10 @@ unsafe impl HasRawWindowHandle for WindowIdentifier {
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 pub enum WindowIdentifierType {
+    /// X11.
     X11(std::os::raw::c_ulong),
     #[allow(dead_code)]
+    /// Wayland.
     Wayland(String),
 }
 
@@ -308,6 +310,10 @@ impl<'de> Deserialize<'de> for WindowIdentifierType {
 
 #[cfg(feature = "gtk4")]
 mod gtk4;
+
+#[cfg(feature = "backend")]
+#[cfg(any(feature = "backend_gtk3", feature = "backend_gtk4"))]
+pub mod external_window;
 
 #[cfg(feature = "gtk4")]
 pub use self::gtk4::Gtk4WindowIdentifier;

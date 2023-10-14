@@ -1,9 +1,9 @@
 use crate::{
-    zvariant::{self, DeserializeDict, Type},
+    zvariant::{self, DeserializeDict, SerializeDict, Type},
     Error,
 };
 
-#[derive(DeserializeDict, Clone, Copy, PartialEq, Type)]
+#[derive(SerializeDict, DeserializeDict, Clone, Copy, PartialEq, Type)]
 /// A color as a RGB tuple.
 ///
 /// **Note** the values are normalized in the [0.0, 1.0] range.
@@ -13,6 +13,13 @@ pub struct Color {
 }
 
 impl Color {
+    #[cfg(feature = "backend")]
+    /// Create a new instance of Color.
+    pub fn new(red: f64, green: f64, blue: f64) -> Self {
+        Self {
+            color: [red, green, blue],
+        }
+    }
     /// Red.
     pub fn red(&self) -> f64 {
         self.color[0]
