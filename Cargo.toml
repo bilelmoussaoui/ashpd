@@ -8,7 +8,7 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "dbus"]
 license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
-version = "0.6.0"
+version = "0.7.0"
 rust-version = "1.65"
 
 [features]
