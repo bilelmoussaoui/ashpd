@@ -57,6 +57,6 @@ byteorder = "1.4"
 serde_json = "1.0"
 
 [package.metadata.docs.rs]
-features = ["gtk4", "raw_handle", "pipwire", "wayland"]
+features = ["gtk4", "raw_handle", "pipewire", "wayland"]
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
