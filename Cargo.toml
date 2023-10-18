@@ -8,7 +8,7 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "dbus"]
 license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
-version = "0.6.6"
+version = "0.6.7"
 
 [features]
 async-std = ["zbus/async-io", "dep:async-std"]
