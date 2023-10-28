@@ -38,7 +38,7 @@ impl SelectionOwnerChanged {
 }
 
 #[doc(alias = "org.freedesktop.portal.Clipboard")]
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Clipboard`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Clipboard).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Clipboard`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Clipboard).
 pub struct Clipboard<'a>(Proxy<'a>);
 
 impl<'a> Clipboard<'a> {
@@ -51,7 +51,7 @@ impl<'a> Clipboard<'a> {
 
     /// # Specifications
     ///
-    /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Clipboard.RequestClipboard).
+    /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Clipboard.RequestClipboard).
     #[doc(alias = "RequestClipboard")]
     pub async fn request(&self, session: &Session<'_>) -> Result<()> {
         let options: HashMap<&str, Value<'_>> = HashMap::default();
@@ -63,7 +63,7 @@ impl<'a> Clipboard<'a> {
 
     /// # Specifications
     ///
-    /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Clipboard.RequestClipboard).
+    /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Clipboard.RequestClipboard).
     #[doc(alias = "SetSelection")]
     pub async fn set_selection(&self, session: &Session<'_>, mime_types: &[&str]) -> Result<()> {
         let options = SetSelectionOptions { mime_types };
@@ -74,7 +74,7 @@ impl<'a> Clipboard<'a> {
 
     /// # Specifications
     ///
-    /// See also [`SelectionWrite`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Clipboard.SelectionWrite).
+    /// See also [`SelectionWrite`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Clipboard.SelectionWrite).
     #[doc(alias = "SelectionWrite")]
     pub async fn selection_write(&self, session: &Session<'_>, serial: u32) -> Result<OwnedFd> {
         let fd = self
@@ -86,7 +86,7 @@ impl<'a> Clipboard<'a> {
 
     /// # Specifications
     ///
-    /// See also [`SelectionWriteDone`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Clipboard.SelectionWriteDone).
+    /// See also [`SelectionWriteDone`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Clipboard.SelectionWriteDone).
     #[doc(alias = "SelectionWriteDone")]
     pub async fn selection_write_done(
         &self,
@@ -101,7 +101,7 @@ impl<'a> Clipboard<'a> {
 
     /// # Specifications
     ///
-    /// See also [`SelectionRead`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Clipboard.SelectionRead).
+    /// See also [`SelectionRead`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Clipboard.SelectionRead).
     #[doc(alias = "SelectionRead")]
     pub async fn selection_read(&self, session: &Session<'_>, mime_type: &str) -> Result<OwnedFd> {
         let fd = self
@@ -114,7 +114,7 @@ impl<'a> Clipboard<'a> {
     /// Notifies the session that the clipboard selection has changed.
     /// # Specifications
     ///
-    /// See also [`SelectionOwnerChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Clipboard.SelectionOwnerChanged).
+    /// See also [`SelectionOwnerChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-Clipboard.SelectionOwnerChanged).
     #[doc(alias = "SelectionOwnerChanged")]
     pub async fn receive_selection_owner_changed(
         &self,
@@ -128,7 +128,7 @@ impl<'a> Clipboard<'a> {
 
     /// # Specifications
     ///
-    /// See also [`SelectionTransfer`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Clipboard.SelectionTransfer).
+    /// See also [`SelectionTransfer`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-Clipboard.SelectionTransfer).
     #[doc(alias = "SelectionTransfer")]
     pub async fn receive_selection_transfer(
         &self,

@@ -205,7 +205,7 @@ impl SelectedDevices {
 
 /// The interface lets sandboxed applications create remote desktop sessions.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.RemoteDesktop).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.RemoteDesktop).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.RemoteDesktop")]
 pub struct RemoteDesktop<'a>(Proxy<'a>);
@@ -223,7 +223,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.CreateSession).
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.CreateSession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_remote_desktop_session")]
     pub async fn create_session(&self) -> Result<Session<'a>, Error> {
@@ -248,7 +248,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SelectDevices`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.SelectDevices).
+    /// See also [`SelectDevices`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.SelectDevices).
     #[doc(alias = "SelectDevices")]
     pub async fn select_devices(
         &self,
@@ -275,7 +275,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.Start).
+    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.Start).
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
@@ -306,7 +306,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyKeyboardKeycode`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeycode).
+    /// See also [`NotifyKeyboardKeycode`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeycode).
     #[doc(alias = "NotifyKeyboardKeycode")]
     pub async fn notify_keyboard_keycode(
         &self,
@@ -336,7 +336,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyKeyboardKeysym`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeysym).
+    /// See also [`NotifyKeyboardKeysym`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyKeyboardKeysym).
     #[doc(alias = "NotifyKeyboardKeysym")]
     pub async fn notify_keyboard_keysym(
         &self,
@@ -365,7 +365,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyTouchUp`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchUp).
+    /// See also [`NotifyTouchUp`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchUp).
     #[doc(alias = "NotifyTouchUp")]
     pub async fn notify_touch_up(&self, session: &Session<'_>, slot: u32) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
@@ -394,7 +394,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyTouchDown`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchDown).
+    /// See also [`NotifyTouchDown`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchDown).
     #[doc(alias = "NotifyTouchDown")]
     pub async fn notify_touch_down(
         &self,
@@ -430,7 +430,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyTouchMotion`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchMotion).
+    /// See also [`NotifyTouchMotion`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyTouchMotion).
     #[doc(alias = "NotifyTouchMotion")]
     pub async fn notify_touch_motion(
         &self,
@@ -462,7 +462,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyPointerMotionAbsolute`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotionAbsolute).
+    /// See also [`NotifyPointerMotionAbsolute`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotionAbsolute).
     #[doc(alias = "NotifyPointerMotionAbsolute")]
     pub async fn notify_pointer_motion_absolute(
         &self,
@@ -495,7 +495,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyPointerMotion`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotion).
+    /// See also [`NotifyPointerMotion`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerMotion).
     #[doc(alias = "NotifyPointerMotion")]
     pub async fn notify_pointer_motion(
         &self,
@@ -527,7 +527,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyPointerButton`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerButton).
+    /// See also [`NotifyPointerButton`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerButton).
     #[doc(alias = "NotifyPointerButton")]
     pub async fn notify_pointer_button(
         &self,
@@ -556,7 +556,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyPointerAxisDiscrete`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxisDiscrete).
+    /// See also [`NotifyPointerAxisDiscrete`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxisDiscrete).
     #[doc(alias = "NotifyPointerAxisDiscrete")]
     pub async fn notify_pointer_axis_discrete(
         &self,
@@ -594,7 +594,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`NotifyPointerAxis`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxis).
+    /// See also [`NotifyPointerAxis`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.NotifyPointerAxis).
     #[doc(alias = "NotifyPointerAxis")]
     pub async fn notify_pointer_axis(
         &self,
@@ -629,7 +629,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.ConnectToEIS).
+    /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-RemoteDesktop.ConnectToEIS).
     #[doc(alias = "ConnectToEIS")]
     pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<RawFd, Error> {
         // `ConnectToEIS` doesn't take any options for now
@@ -646,7 +646,7 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AvailableDeviceTypes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-RemoteDesktop.AvailableDeviceTypes).
+    /// See also [`AvailableDeviceTypes`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-property-org-freedesktop-portal-RemoteDesktop.AvailableDeviceTypes).
     #[doc(alias = "AvailableDeviceTypes")]
     pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
         self.0.property("AvailableDeviceTypes").await

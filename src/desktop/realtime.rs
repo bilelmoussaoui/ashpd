@@ -1,12 +1,12 @@
 //! Set threads to realtime.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Realtime).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Realtime).
 
 use crate::{proxy::Proxy, Error};
 
 /// Interface for setting a thread to realtime from within the sandbox.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Realtime).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Realtime).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Realtime")]
 pub struct Realtime<'a>(Proxy<'a>);

@@ -1,6 +1,6 @@
 //! Take a screenshot or pick a color.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Screenshot).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Screenshot).
 //!
 //! # Examples
 //!
@@ -101,7 +101,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
+    /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
     #[doc(alias = "PickColor")]
     #[doc(alias = "xdp_portal_pick_color")]
     pub async fn pick_color(
@@ -129,7 +129,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.Screenshot).
+    /// See also [`Screenshot`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Screenshot.Screenshot).
     #[doc(alias = "Screenshot")]
     #[doc(alias = "xdp_portal_take_screenshot")]
     pub async fn screenshot(

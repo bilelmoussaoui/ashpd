@@ -17,7 +17,7 @@ use zbus::zvariant::Type;
 /// should have the form `wayland:HANDLE`, where HANDLE is a surface handle
 /// obtained with the [xdg-foreign](https://github.com/wayland-project/wayland-protocols/blob/master/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
 ///
-/// See also [Parent window identifiers](https://flatpak.github.io/xdg-desktop-portal/index.html#parent_window).
+/// See also [Parent window identifiers](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#parent_window).
 ///
 /// # Usage
 ///

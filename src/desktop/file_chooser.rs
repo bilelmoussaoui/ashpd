@@ -2,7 +2,7 @@
 //! outside the sandbox. The portal backend will present the user with a file
 //! chooser dialog.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.FileChooser).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.FileChooser).
 //!
 //! ### Examples
 //!

@@ -9,7 +9,7 @@ use crate::{proxy::Proxy, Error};
 /// Applications are expected to use this interface indirectly, via a library
 /// API such as the GLib [`gio::PowerProfileMonitor`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.PowerProfileMonitor.html) interface.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.PowerProfileMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.PowerProfileMonitor).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.PowerProfileMonitor`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.PowerProfileMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.PowerProfileMonitor")]
 pub struct PowerProfileMonitor<'a>(Proxy<'a>);

@@ -189,7 +189,7 @@ struct LocationInner {
 /// The interface lets sandboxed applications query basic information about the
 /// location.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Location`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Location).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Location`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Location).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Location")]
 pub struct LocationProxy<'a>(Proxy<'a>);
@@ -205,7 +205,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`LocationUpdated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Location.LocationUpdated).
+    /// See also [`LocationUpdated`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-Location.LocationUpdated).
     #[doc(alias = "LocationUpdated")]
     #[doc(alias = "XdpPortal::location-updated")]
     pub async fn receive_location_updated(&self) -> Result<impl Stream<Item = Location>, Error> {
@@ -224,7 +224,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Location.CreateSession).
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Location.CreateSession).
     #[doc(alias = "CreateSession")]
     pub async fn create_session(
         &self,
@@ -259,7 +259,7 @@ impl<'a> LocationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Location.Start).
+    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Location.Start).
     #[doc(alias = "Start")]
     #[doc(alias = "xdp_portal_location_monitor_start")]
     pub async fn start(

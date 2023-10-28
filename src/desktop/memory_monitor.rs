@@ -27,7 +27,7 @@ use crate::{proxy::Proxy, Error};
 /// It is not a portal in the strict sense, since it does not involve user
 /// interaction.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.MemoryMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.MemoryMonitor).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.MemoryMonitor`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.MemoryMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.MemoryMonitor")]
 pub struct MemoryMonitor<'a>(Proxy<'a>);
@@ -45,7 +45,7 @@ impl<'a> MemoryMonitor<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`LowMemoryWarning`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-MemoryMonitor.LowMemoryWarning).
+    /// See also [`LowMemoryWarning`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-MemoryMonitor.LowMemoryWarning).
     #[doc(alias = "LowMemoryWarning")]
     pub async fn receive_low_memory_warning(&self) -> Result<impl Stream<Item = i32>, Error> {
         self.0.signal("LowMemoryWarning").await

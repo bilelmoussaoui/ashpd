@@ -1,6 +1,6 @@
 //! Compose an email.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Email).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Email).
 //!
 //! # Examples
 //!
@@ -70,7 +70,7 @@ impl<'a> EmailProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
+    /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
     #[doc(alias = "ComposeEmail")]
     pub async fn compose(
         &self,

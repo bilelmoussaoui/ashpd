@@ -4,7 +4,7 @@
 
 ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/dbus/zbus) wrapper of
 the XDG portals DBus interfaces. The library aims to provide an easy way to
-interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/index.html).
+interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/docs/index.html).
 It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
 
 ## Examples
