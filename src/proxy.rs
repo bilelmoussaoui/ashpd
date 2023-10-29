@@ -21,6 +21,9 @@ pub(crate) const DOCUMENTS_PATH: &str = "/org/freedesktop/portal/documents";
 pub(crate) const FLATPAK_DESTINATION: &str = "org.freedesktop.portal.Flatpak";
 pub(crate) const FLATPAK_PATH: &str = "/org/freedesktop/portal/Flatpak";
 
+pub(crate) const FLATPAK_DEVELOPMENT_DESTINATION: &str = "org.freedesktop.Flatpak";
+pub(crate) const FLATPAK_DEVELOPMENT_PATH: &str = "/org/freedesktop/Flatpak/Development";
+
 static SESSION: OnceCell<zbus::Connection> = OnceCell::new();
 
 #[derive(Debug)]
@@ -98,6 +101,15 @@ impl<'a> Proxy<'a> {
         P::Error: Into<zbus::Error>,
     {
         Self::new(interface, path, FLATPAK_DESTINATION).await
+    }
+
+    pub async fn new_flatpak_development(interface: &'a str) -> Result<Proxy<'a>, Error> {
+        Self::new(
+            interface,
+            FLATPAK_DEVELOPMENT_PATH,
+            FLATPAK_DEVELOPMENT_DESTINATION,
+        )
+        .await
     }
 
     pub async fn request<T>(
