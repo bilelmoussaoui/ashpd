@@ -1,6 +1,6 @@
 //! # Examples
 //!
-//! Spawn a process outside of the sandbox, only works in a Flatpak.
+//! Spawn a process inside of the sandbox, only works in a Flatpak.
 //!
 //! ```rust,no_run
 //! use std::collections::HashMap;
