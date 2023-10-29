@@ -376,3 +376,7 @@ impl<'a> Flatpak<'a> {
 /// Monitor if there's an update it and install it.
 mod update_monitor;
 pub use update_monitor::{UpdateInfo, UpdateMonitor, UpdateProgress, UpdateStatus};
+
+/// Provide for a way to execute processes outside of the sandbox
+mod development;
+pub use development::{Development, HostCommandFlags};
