@@ -14,9 +14,9 @@ rust-version = "1.65"
 [features]
 async-std = ["zbus/async-io", "dep:async-std"]
 default = ["async-std"]
-gtk4 = ["gtk4_x11", "gtk4_wayland"]
-gtk4_wayland = ["gdk4wayland", "dep:gtk4"]
-gtk4_x11 = ["gdk4x11", "dep:gtk4"]
+gtk4 = []
+gtk4_wayland = ["gtk4", "gdk4wayland", "dep:gtk4"]
+gtk4_x11 = ["gtk4", "gdk4x11", "dep:gtk4"]
 pipewire = ["pw", "libc"]
 raw_handle = ["raw-window-handle", "wayland"]
 tokio = ["zbus/tokio", "dep:tokio"]
@@ -58,6 +58,6 @@ byteorder = "1.4"
 serde_json = "1.0"
 
 [package.metadata.docs.rs]
-features = ["gtk4", "raw_handle"]
+features = ["gtk4_wayland", "gtk4_x11", "raw_handle"]
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
