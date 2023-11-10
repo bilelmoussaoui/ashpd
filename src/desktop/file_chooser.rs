@@ -234,6 +234,7 @@ struct OpenFileOptions {
     filters: Vec<FileFilter>,
     current_filter: Option<FileFilter>,
     choices: Vec<Choice>,
+    current_folder: Option<FilePath>,
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
@@ -440,6 +441,18 @@ impl OpenFileRequest {
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
         self.options.choices = choices.into_iter().collect();
         self
+    }
+
+    /// Specifies the current folder path.
+    pub fn current_folder<P: AsRef<Path>>(
+        mut self,
+        current_folder: impl Into<Option<P>>,
+    ) -> Result<Self, crate::Error> {
+        self.options.current_folder = current_folder
+            .into()
+            .map(|c| FilePath::new(c))
+            .transpose()?;
+        Ok(self)
     }
 
     /// Send the request.
