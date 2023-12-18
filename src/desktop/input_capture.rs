@@ -166,7 +166,7 @@ impl ZonesChanged {
 
 /// A region of a [`Zones`].
 #[derive(Debug, Clone, Copy, Deserialize, Type)]
-#[zvariant(signature = "uuii")]
+#[zvariant(signature = "(uuii)")]
 pub struct Region(u32, u32, i32, i32);
 
 impl Region {
@@ -192,19 +192,22 @@ impl Region {
 }
 
 /// A response of [`InputCapture::zones`].
-#[derive(Debug, Type, Deserialize)]
-#[zvariant(signature = "a(uuii)u")]
-pub struct Zones(Vec<Region>, u32);
+#[derive(Debug, Type, DeserializeDict)]
+#[zvariant(signature = "dict")]
+pub struct Zones {
+    zones: Vec<Region>,
+    zone_set: u32,
+}
 
 impl Zones {
     /// A list of regions.
     pub fn regions(&self) -> &[Region] {
-        &self.0
+        &self.zones
     }
 
     /// A unique ID to be used in [`InputCapture::set_pointer_barriers`].
     pub fn zone_set(&self) -> u32 {
-        self.1
+        self.zone_set
     }
 }
 
