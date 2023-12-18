@@ -35,7 +35,7 @@ struct CreateSessionOptions {
     capabilities: BitFlags<Capabilities>,
 }
 
-#[derive(Debug, Deserialize, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct CreateSessionResponse {
     session_handle: OwnedObjectPath,
