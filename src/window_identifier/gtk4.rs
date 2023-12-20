@@ -1,14 +1,13 @@
-use std::{fmt, sync::Arc};
+use std::fmt;
+#[cfg(feature = "gtk4_wayland")]
+use std::sync::Arc;
 
+#[cfg(feature = "gtk4_wayland")]
 use futures_util::lock::Mutex;
 use gdk::Backend;
 #[cfg(feature = "raw_handle")]
 use glib::translate::ToGlibPtr;
-use gtk4::{
-    gdk,
-    glib::{self, clone},
-    prelude::*,
-};
+use gtk4::{gdk, glib, prelude::*};
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{
     RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle,
@@ -17,9 +16,11 @@ use raw_window_handle::{
 
 use super::WindowIdentifierType;
 
+#[cfg(feature = "gtk4_wayland")]
 const WINDOW_HANDLE_KEY: &str = "ashpd-wayland-gtk4-window-handle";
 
 pub struct Gtk4WindowIdentifier {
+    #[allow(dead_code)]
     native: gtk4::Native,
     type_: WindowIdentifierType,
     exported: bool,
@@ -43,10 +44,10 @@ impl Gtk4WindowIdentifier {
                         let (sender, receiver) = futures_channel::oneshot::channel::<String>();
                         let sender = Arc::new(Mutex::new(Some(sender)));
 
-                        let result = top_level.export_handle(clone!(@strong sender => move |_, handle| {
+                        let result = top_level.export_handle(glib::clone!(@strong sender => move |_, handle| {
                             let ctx = glib::MainContext::default();
                             let handle = handle.to_owned();
-                            ctx.spawn_local(clone!(@strong sender, @strong handle => async move {
+                            ctx.spawn_local(glib::clone!(@strong sender, @strong handle => async move {
                                 if let Some(m) = sender.lock().await.take() {
                                     let _ = m.send(handle);
                                 }

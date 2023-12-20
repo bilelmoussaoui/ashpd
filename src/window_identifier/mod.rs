@@ -92,7 +92,7 @@ use zbus::zvariant::Type;
 #[doc(alias = "XdpParent")]
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
-    #[cfg(feature = "gtk4")]
+    #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
     #[doc(hidden)]
     Gtk4(Gtk4WindowIdentifier),
     #[cfg(feature = "wayland")]
@@ -120,7 +120,7 @@ impl Serialize for WindowIdentifier {
 impl std::fmt::Display for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            #[cfg(feature = "gtk4")]
+            #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
             Self::Gtk4(identifier) => f.write_str(&format!("{identifier}")),
             #[cfg(feature = "wayland")]
             Self::Wayland(identifier) => f.write_str(&format!("{identifier}")),
@@ -139,8 +139,8 @@ impl std::fmt::Debug for WindowIdentifier {
 }
 
 impl WindowIdentifier {
-    #[cfg(feature = "gtk4")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "gtk4")))]
+    #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))))]
     /// Creates a [`WindowIdentifier`] from a [`gtk4::Native`](https://docs.gtk.org/gtk4/class.Native.html).
     ///
     /// The constructor returns a valid handle under both Wayland & x11.
@@ -306,10 +306,10 @@ impl<'de> Deserialize<'de> for WindowIdentifierType {
     }
 }
 
-#[cfg(feature = "gtk4")]
+#[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 mod gtk4;
 
-#[cfg(feature = "gtk4")]
+#[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 pub use self::gtk4::Gtk4WindowIdentifier;
 use crate::PortalError;
 
