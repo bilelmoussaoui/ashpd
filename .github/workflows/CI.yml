@@ -12,7 +12,7 @@ jobs:
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
@@ -31,7 +31,7 @@ jobs:
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
@@ -50,7 +50,7 @@ jobs:
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
@@ -70,7 +70,7 @@ jobs:
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
