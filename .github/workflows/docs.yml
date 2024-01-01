@@ -31,8 +31,7 @@ jobs:
           args: --package ashpd --features "gtk4,pipewire,wayland,raw_handle" --no-deps
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v2
+        uses: peaceiris/actions-gh-pages@v3
         env:
-          PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: ./target/doc/
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc/
