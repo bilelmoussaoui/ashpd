@@ -71,8 +71,7 @@ mod imp {
     impl WidgetImpl for ScreenCastPage {
         fn map(&self) {
             let widget = self.obj();
-            let ctx = glib::MainContext::default();
-            ctx.spawn_local(clone!(@weak widget as page => async move {
+            glib::spawn_future_local(clone!(@weak widget as page => async move {
                 let imp = page.imp();
                 if let Ok((cursor_modes, source_types)) = available_types().await {
                     imp.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));

@@ -73,8 +73,7 @@ mod desktop_file_row {
                 self.uninstall_button
                     .set_action_target(Some(obj.desktop_id().to_variant()));
 
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(async move {
+                glib::spawn_future_local(async move {
                     let desktop_id = obj.desktop_id();
                     if let Err(err) = obj.load_desktop_file(&desktop_id).await {
                         tracing::error!("Failed to load desktop file {err}");
@@ -253,8 +252,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
-            let ctx = glib::MainContext::default();
-            ctx.spawn_local(clone!(@weak obj => async move {
+            glib::spawn_future_local(clone!(@weak obj => async move {
                 if let Err(err) = obj.load_cache().await {
                     tracing::error!("Failed to load cache {err}");
                 }

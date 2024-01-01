@@ -129,8 +129,7 @@ impl Application {
             .activate(move |app: &Self, _, _| {
                 // This is needed to trigger the delete event
                 // and saving the window state
-                let ctx = glib::MainContext::default();
-                ctx.spawn_local(clone!(@weak app => async move {
+                glib::spawn_future_local(clone!(@weak app => async move {
                     if let Err(err) = app.restart().await {
                         tracing::error!("Failed to restart the application {}", err);
                     }

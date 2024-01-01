@@ -58,9 +58,8 @@ mod imp {
     }
     impl WidgetImpl for CameraPage {
         fn map(&self) {
-            let ctx = glib::MainContext::default();
             let widget = self.obj();
-            ctx.spawn_local(clone!(@weak widget as page => async move {
+            glib::spawn_future_local(clone!(@weak widget as page => async move {
                 let imp = page.imp();
                 let is_available = camera_available().await.unwrap_or(false);
                 if is_available {

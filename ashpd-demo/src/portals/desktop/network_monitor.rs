@@ -53,8 +53,7 @@ mod imp {
     impl WidgetImpl for NetworkMonitorPage {
         fn map(&self) {
             let widget = self.obj();
-            let ctx = glib::MainContext::default();
-            ctx.spawn_local(clone!(@weak widget => async move {
+            glib::spawn_future_local(clone!(@weak widget => async move {
                 if let Err(err) = widget.refresh().await {
                     tracing::error!("Failed to call can refresh on NetworkMonitor {}", err);
                 }

@@ -119,8 +119,7 @@ mod imp {
 
         fn dispose(&self) {
             let obj = self.obj();
-            let ctx = glib::MainContext::default();
-            ctx.spawn_local(clone!(@weak obj as page => async move {
+            glib::spawn_future_local(clone!(@weak obj as page => async move {
                 page.stop_session().await;
             }));
         }
