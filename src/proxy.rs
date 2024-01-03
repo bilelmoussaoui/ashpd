@@ -38,8 +38,8 @@ impl<'a> Proxy<'a> {
             Ok(cnx.clone())
         } else {
             let cnx = zbus::Connection::session().await?;
-            SESSION.set(cnx.clone()).expect("Can't reset a OnceCell");
-            Ok(cnx)
+            // during `await` another task may have initialized the cell
+            Ok(SESSION.get_or_init(|| { cnx }).clone())
         }
     }
 
