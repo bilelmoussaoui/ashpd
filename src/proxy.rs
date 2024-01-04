@@ -39,7 +39,7 @@ impl<'a> Proxy<'a> {
         } else {
             let cnx = zbus::Connection::session().await?;
             // during `await` another task may have initialized the cell
-            Ok(SESSION.get_or_init(|| { cnx }).clone())
+            Ok(SESSION.get_or_init(|| cnx).clone())
         }
     }
 
