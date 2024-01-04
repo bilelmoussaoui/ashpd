@@ -91,6 +91,14 @@ impl<'a> AccountProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for AccountProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[doc(alias = "xdp_portal_get_user_information")]
 #[doc(alias = "org.freedesktop.portal.Account")]
 #[derive(Debug, Default)]

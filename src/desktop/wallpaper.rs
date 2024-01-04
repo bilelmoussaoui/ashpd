@@ -152,6 +152,14 @@ impl<'a> WallpaperProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for WallpaperProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_set_wallpaper")]
 #[doc(alias = "org.freedesktop.portal.Wallpaper")]

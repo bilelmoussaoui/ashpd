@@ -431,3 +431,11 @@ impl<'a> InputCapture<'a> {
         self.0.property("SupportedCapabilities").await
     }
 }
+
+impl<'a> std::ops::Deref for InputCapture<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

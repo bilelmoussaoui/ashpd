@@ -50,3 +50,11 @@ impl<'a> ProxyResolver<'a> {
         self.0.call("Lookup", &(uri)).await
     }
 }
+
+impl<'a> std::ops::Deref for ProxyResolver<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

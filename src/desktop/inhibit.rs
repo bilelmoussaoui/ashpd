@@ -244,3 +244,11 @@ impl<'a> InhibitProxy<'a> {
         self.0.call("QueryEndResponse", &(session)).await
     }
 }
+
+impl<'a> std::ops::Deref for InhibitProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

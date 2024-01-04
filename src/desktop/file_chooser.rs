@@ -354,6 +354,14 @@ impl<'a> FileChooserProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for FileChooserProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_open_file")]
 /// A [builder-pattern] type to open a file.

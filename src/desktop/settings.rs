@@ -255,3 +255,11 @@ impl<'a> Settings<'a> {
             .map(|x| T::try_from(x.2).map_err(From::from)))
     }
 }
+
+impl<'a> std::ops::Deref for Settings<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

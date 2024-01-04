@@ -173,3 +173,11 @@ impl<'a> UpdateMonitor<'a> {
         self.0.call("Close", &()).await
     }
 }
+
+impl<'a> std::ops::Deref for UpdateMonitor<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

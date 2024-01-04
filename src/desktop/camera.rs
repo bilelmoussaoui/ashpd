@@ -99,6 +99,14 @@ impl<'a> Camera<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for Camera<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[cfg(feature = "pipewire")]
 fn foreign_dic_to_map<D: pw::prelude::ReadableDict>(foreign: &D) -> HashMap<String, String> {
     let mut map = HashMap::new();

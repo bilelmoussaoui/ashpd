@@ -128,6 +128,14 @@ impl<'a> OpenURIProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for OpenURIProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Debug, Default)]
 #[doc(alias = "org.freedesktop.portal.OpenURI")]
 #[doc(alias = "xdp_portal_open_uri")]

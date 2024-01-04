@@ -710,3 +710,11 @@ impl<'a> PrintProxy<'a> {
             .await
     }
 }
+
+impl<'a> std::ops::Deref for PrintProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

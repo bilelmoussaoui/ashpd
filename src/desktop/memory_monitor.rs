@@ -51,3 +51,11 @@ impl<'a> MemoryMonitor<'a> {
         self.0.signal("LowMemoryWarning").await
     }
 }
+
+impl<'a> std::ops::Deref for MemoryMonitor<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

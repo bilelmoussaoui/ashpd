@@ -652,3 +652,11 @@ impl<'a> RemoteDesktop<'a> {
         self.0.property("AvailableDeviceTypes").await
     }
 }
+
+impl<'a> std::ops::Deref for RemoteDesktop<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

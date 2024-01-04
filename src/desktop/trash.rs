@@ -83,6 +83,14 @@ impl<'a> TrashProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for TrashProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[doc(alias = "xdp_portal_trash_file")]
 /// A handy wrapper around [`TrashProxy::trash_file`].
 pub async fn trash_file(fd: &impl AsRawFd) -> Result<(), Error> {

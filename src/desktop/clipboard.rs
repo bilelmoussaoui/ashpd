@@ -145,3 +145,11 @@ impl<'a> Clipboard<'a> {
             }))
     }
 }
+
+impl<'a> std::ops::Deref for Clipboard<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

@@ -350,3 +350,11 @@ impl<'a> NotificationProxy<'a> {
         self.0.call("RemoveNotification", &(id)).await
     }
 }
+
+impl<'a> std::ops::Deref for NotificationProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

@@ -74,6 +74,14 @@ impl<'a> Secret<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for Secret<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 /// A handy wrapper around [`Secret::retrieve`].
 ///
 /// It crates a UnixStream internally for receiving the secret.

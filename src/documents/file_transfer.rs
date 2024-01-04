@@ -192,3 +192,11 @@ impl<'a> FileTransfer<'a> {
         self.0.signal("TransferClosed").await
     }
 }
+
+impl<'a> std::ops::Deref for FileTransfer<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

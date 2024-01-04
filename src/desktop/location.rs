@@ -277,3 +277,11 @@ impl<'a> LocationProxy<'a> {
             .await
     }
 }
+
+impl<'a> std::ops::Deref for LocationProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
