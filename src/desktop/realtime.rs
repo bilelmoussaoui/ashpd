@@ -65,3 +65,11 @@ impl<'a> Realtime<'a> {
         self.0.property("RTTimeUSecMax").await
     }
 }
+
+impl<'a> std::ops::Deref for Realtime<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

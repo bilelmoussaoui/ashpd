@@ -347,3 +347,11 @@ mod test {
         assert_eq!(serde_json::to_string(&icon).unwrap(), "[\"png\"]");
     }
 }
+
+impl<'a> std::ops::Deref for DynamicLauncherProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

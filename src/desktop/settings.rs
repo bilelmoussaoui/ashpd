@@ -239,3 +239,11 @@ impl<'a> Settings<'a> {
             .await
     }
 }
+
+impl<'a> std::ops::Deref for Settings<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

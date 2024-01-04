@@ -85,6 +85,14 @@ impl<'a> EmailProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for EmailProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_compose_email")]
 /// A [builder-pattern] type to compose an email.

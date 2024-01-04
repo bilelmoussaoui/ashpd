@@ -373,6 +373,14 @@ impl<'a> Flatpak<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for Flatpak<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 /// Monitor if there's an update it and install it.
 mod update_monitor;
 pub use update_monitor::{UpdateInfo, UpdateMonitor, UpdateProgress, UpdateStatus};

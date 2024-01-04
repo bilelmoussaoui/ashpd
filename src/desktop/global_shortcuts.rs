@@ -304,3 +304,11 @@ impl<'a> GlobalShortcuts<'a> {
         self.0.signal("ShortcutsChanged").await
     }
 }
+
+impl<'a> std::ops::Deref for GlobalShortcuts<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

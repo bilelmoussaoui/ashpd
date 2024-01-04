@@ -213,6 +213,14 @@ impl<'a> ScreenshotProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for ScreenshotProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Debug, Default)]
 #[doc(alias = "xdp_portal_pick_color")]
 /// A [builder-pattern] type to construct [`Color`].

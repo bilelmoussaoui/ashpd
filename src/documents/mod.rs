@@ -490,6 +490,14 @@ impl<'a> Documents<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for Documents<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 /// Interact with `org.freedesktop.portal.FileTransfer` interface.
 mod file_transfer;
 

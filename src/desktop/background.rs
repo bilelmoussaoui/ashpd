@@ -140,6 +140,14 @@ impl<'a> BackgroundProxy<'a> {
     }
 }
 
+impl<'a> std::ops::Deref for BackgroundProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[doc(alias = "xdp_portal_request_background")]
 /// A [builder-pattern] type to construct [`Background`].
 ///

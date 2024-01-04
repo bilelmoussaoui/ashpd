@@ -131,3 +131,11 @@ impl<'a> DeviceProxy<'a> {
             .await
     }
 }
+
+impl<'a> std::ops::Deref for DeviceProxy<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

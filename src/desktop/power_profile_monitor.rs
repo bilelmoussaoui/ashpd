@@ -27,3 +27,11 @@ impl<'a> PowerProfileMonitor<'a> {
         self.0.property("power-saver-enabled").await
     }
 }
+
+impl<'a> std::ops::Deref for PowerProfileMonitor<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

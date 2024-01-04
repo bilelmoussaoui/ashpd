@@ -437,3 +437,11 @@ impl<'a> Screencast<'a> {
         self.0.property("AvailableSourceTypes").await
     }
 }
+
+impl<'a> std::ops::Deref for Screencast<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

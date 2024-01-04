@@ -295,3 +295,11 @@ impl<'a> GameMode<'a> {
         }
     }
 }
+
+impl<'a> std::ops::Deref for GameMode<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

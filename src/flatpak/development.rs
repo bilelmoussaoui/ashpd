@@ -40,8 +40,8 @@ impl<'a> Development<'a> {
         Ok(Self(proxy))
     }
 
-    /// Emitted when a process started by [`host_command()`][`Development::host_command`]
-    /// exits.
+    /// Emitted when a process started by
+    /// [`host_command()`][`Development::host_command`] exits.
     ///
     /// # Specifications
     ///
@@ -112,5 +112,13 @@ impl<'a> Development<'a> {
         self.0
             .call("HostCommandSignal", &(pid, signal, to_process_group))
             .await
+    }
+}
+
+impl<'a> std::ops::Deref for Development<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
