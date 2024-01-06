@@ -33,7 +33,7 @@ use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{OwnedValue, Type, Value};
 
-use crate::{proxy::Proxy, Error};
+use crate::{desktop::screenshot::Color, proxy::Proxy, Error};
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
@@ -100,22 +100,15 @@ impl TryFrom<Value<'_>> for ColorScheme {
     }
 }
 
-impl TryFrom<Setting> for ColorScheme {
-    type Error = Error;
-
-    fn try_from(value: Setting) -> Result<Self, Self::Error> {
-        Self::try_from(value.2)
-    }
-}
-
 const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 const COLOR_SCHEME_KEY: &str = "color-scheme";
+const ACCENT_COLOR_SCHEME_KEY: &str = "accent-color";
 
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
 /// settings.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Settings).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Settings")]
 pub struct Settings<'a>(Proxy<'a>);
@@ -143,7 +136,7 @@ impl<'a> Settings<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Settings.ReadAll).
+    /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-readall).
     #[doc(alias = "ReadAll")]
     pub async fn read_all(
         &self,
@@ -165,8 +158,9 @@ impl<'a> Settings<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Read`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Settings.Read).
+    /// See also [`Read`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-read).
     #[doc(alias = "Read")]
+    #[doc(alias = "ReadOne")]
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
         T: TryFrom<OwnedValue>,
@@ -178,6 +172,12 @@ impl<'a> Settings<'a> {
         } else {
             T::try_from(value).map_err(From::from)
         }
+    }
+
+    /// Retrieves the system's preferred accent color
+    pub async fn accent_color(&self) -> Result<Color, Error> {
+        self.read::<Color>(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
+            .await
     }
 
     /// Retrieves the system's preferred color scheme
@@ -193,20 +193,30 @@ impl<'a> Settings<'a> {
         Ok(self
             .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
             .await?
-            .filter_map(|x| ready(ColorScheme::try_from(x).ok())))
+            .filter_map(|t| ready(t.ok())))
+    }
+
+    /// Listen to changes of the system's accent color
+    pub async fn receive_accent_color_changed(
+        &self,
+    ) -> Result<impl Stream<Item = ColorScheme>, Error> {
+        Ok(self
+            .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
+            .await?
+            .filter_map(|t| ready(t.ok())))
     }
 
     /// Signal emitted when a setting changes.
     ///
     /// # Specifications
     ///
-    /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
+    /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-settingchanged).
     #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<impl Stream<Item = Setting>, Error> {
         self.0.signal("SettingChanged").await
     }
 
-    /// Similar to (receive_setting_changed)[Self::receive_setting_changed]
+    /// Similar to [Self::receive_setting_changed]
     /// but allows you to filter specific settings.
     ///
     /// # Example
@@ -216,27 +226,34 @@ impl<'a> Settings<'a> {
     ///
     /// # async fn run() -> ashpd::Result<()> {
     /// let settings = Settings::new().await?;
-    /// while let Some(setting) = settings
-    ///     .receive_setting_changed_with_args("org.freedesktop.appearance", "color-scheme")
+    /// while let Some(Ok(scheme)) = settings
+    ///     .receive_setting_changed_with_args::<ColorScheme>(
+    ///         "org.freedesktop.appearance",
+    ///         "color-scheme",
+    ///     )
     ///     .await?
     ///     .next()
     ///     .await
     /// {
-    ///     assert_eq!(setting.namespace(), "org.freedesktop.appearance");
-    ///     assert_eq!(setting.key(), "color-scheme");
-    ///     assert!(ColorScheme::try_from(setting.value().to_owned()).is_ok());
+    ///     println!("{:#?}", scheme);
     /// }
     /// #    Ok(())
     /// # }
     /// ```
-    pub async fn receive_setting_changed_with_args(
+    pub async fn receive_setting_changed_with_args<T>(
         &self,
         namespace: &str,
         key: &str,
-    ) -> Result<impl Stream<Item = Setting>, Error> {
-        self.0
-            .signal_with_args("SettingChanged", &[(0, namespace), (1, key)])
-            .await
+    ) -> Result<impl Stream<Item = Result<T, Error>>, Error>
+    where
+        T: TryFrom<OwnedValue>,
+        Error: From<<T as TryFrom<OwnedValue>>::Error>,
+    {
+        Ok(self
+            .0
+            .signal_with_args::<Setting>("SettingChanged", &[(0, namespace), (1, key)])
+            .await?
+            .map(|x| T::try_from(x.2).map_err(From::from)))
     }
 }
 

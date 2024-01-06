@@ -240,7 +240,7 @@ struct CreateMonitorOptions {}
 /// sandbox. For example, it allows you to restart the applications or start a
 /// more sandboxed instance.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Flatpak).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-org.freedesktop.portal.Flatpak).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak")]
 pub struct Flatpak<'a>(Proxy<'a>);
@@ -263,7 +263,7 @@ impl<'a> Flatpak<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateUpdateMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).
+    /// See also [`CreateUpdateMonitor`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).
     #[doc(alias = "CreateUpdateMonitor")]
     #[doc(alias = "xdp_portal_update_monitor_start")]
     pub async fn create_update_monitor(&self) -> Result<UpdateMonitor<'a>, Error> {
@@ -277,6 +277,10 @@ impl<'a> Flatpak<'a> {
     }
 
     /// Emitted when a process starts by [`spawn()`][`Flatpak::spawn`].
+    ///
+    /// # Specifications
+    ///
+    /// See also [`SpawnStarted`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-signal-org-freedesktop-portal-Flatpak.SpawnStarted).
     #[doc(alias = "SpawnStarted")]
     pub async fn receive_spawn_started(&self) -> Result<impl Stream<Item = (u32, u32)>, Error> {
         self.0.signal("SpawnStarted").await
@@ -287,7 +291,7 @@ impl<'a> Flatpak<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SpawnExited`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-Flatpak.SpawnExited).
+    /// See also [`SpawnExited`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-signal-org-freedesktop-portal-Flatpak.SpawnExited).
     #[doc(alias = "SpawnExited")]
     #[doc(alias = "XdpPortal::spawn-exited")]
     pub async fn receive_spawn_exited(&self) -> Result<impl Stream<Item = (u32, u32)>, Error> {
@@ -314,7 +318,7 @@ impl<'a> Flatpak<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Spawn`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
+    /// See also [`Spawn`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-method-org-freedesktop-portal-Flatpak.Spawn).
     #[doc(alias = "Spawn")]
     #[doc(alias = "xdp_portal_spawn")]
     pub async fn spawn(
@@ -347,7 +351,7 @@ impl<'a> Flatpak<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SpawnSignal`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Flatpak.SpawnSignal).
+    /// See also [`SpawnSignal`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-method-org-freedesktop-portal-Flatpak.SpawnSignal).
     #[doc(alias = "SpawnSignal")]
     #[doc(alias = "xdp_portal_spawn_signal")]
     pub async fn spawn_signal(
@@ -365,7 +369,7 @@ impl<'a> Flatpak<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`supports`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-Flatpak.supports).
+    /// See also [`supports`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-property-org-freedesktop-portal-Flatpak.supports).
     pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
         self.0
             .property_versioned::<BitFlags<SupportsFlags>>("supports", 3)

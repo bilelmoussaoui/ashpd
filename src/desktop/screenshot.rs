@@ -1,6 +1,6 @@
 //! Take a screenshot or pick a color.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Screenshot).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Screenshot.html).
 //!
 //! # Examples
 //!
@@ -27,7 +27,7 @@
 //! use ashpd::desktop::screenshot::Color;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let color = Color::request().send().await?.response()?;
+//!     let color = Color::pick().send().await?.response()?;
 //!     println!("({}, {}, {})", color.red(), color.green(), color.blue());
 //!
 //!     Ok(())
@@ -35,7 +35,7 @@
 //! ```
 use std::fmt::Debug;
 
-use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
+use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
@@ -116,6 +116,16 @@ impl Color {
     }
 }
 
+impl TryFrom<zvariant::OwnedValue> for Color {
+    type Error = Error;
+
+    fn try_from(value: zvariant::OwnedValue) -> Result<Self, Self::Error> {
+        value
+            .try_into()
+            .map_err(|_| crate::Error::ParseError("Failed to parse color"))
+    }
+}
+
 #[cfg(feature = "gtk4")]
 impl From<Color> for gtk4::gdk::RGBA {
     fn from(color: Color) -> Self {
@@ -167,7 +177,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.PickColor).
+    /// See also [`PickColor`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Screenshot.html#org-freedesktop-portal-screenshot-pickcolor).
     #[doc(alias = "PickColor")]
     #[doc(alias = "xdp_portal_pick_color")]
     pub async fn pick_color(
@@ -195,7 +205,7 @@ impl<'a> ScreenshotProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Screenshot`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Screenshot.Screenshot).
+    /// See also [`Screenshot`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Screenshot.html#org-freedesktop-portal-screenshot-screenshot).
     #[doc(alias = "Screenshot")]
     #[doc(alias = "xdp_portal_take_screenshot")]
     pub async fn screenshot(
@@ -243,6 +253,16 @@ impl ColorRequest {
     pub async fn send(self) -> Result<Request<Color>, Error> {
         let proxy = ScreenshotProxy::new().await?;
         proxy.pick_color(&self.identifier, self.options).await
+    }
+}
+
+impl Color {
+    /// Creates a new builder-pattern struct instance to construct
+    /// [`Color`].
+    ///
+    /// This method returns an instance of [`ColorRequest`].
+    pub fn pick() -> ColorRequest {
+        ColorRequest::default()
     }
 }
 

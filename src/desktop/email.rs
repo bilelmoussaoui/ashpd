@@ -1,6 +1,6 @@
 //! Compose an email.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Email).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Email.html).
 //!
 //! # Examples
 //!
@@ -43,6 +43,8 @@ struct EmailOptions {
     subject: Option<String>,
     body: Option<String>,
     attachment_fds: Option<Vec<Fd>>,
+    // TODO Expose activation_token in the api
+    activation_token: Option<String>,
 }
 
 #[derive(Debug)]
@@ -68,7 +70,7 @@ impl<'a> EmailProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Email.ComposeEmail).
+    /// See also [`ComposeEmail`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Email.html#org-freedesktop-portal-email-composeemail).
     #[doc(alias = "ComposeEmail")]
     pub async fn compose(
         &self,
@@ -172,6 +174,15 @@ impl EmailRequest {
     #[must_use]
     pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
         self.add_attachment(attachment);
+        self
+    }
+
+    // TODO Added in version 4 of the interface.
+    /// Sets the activation token.
+    #[allow(dead_code)]
+    #[must_use]
+    fn activation_token<'a>(mut self, activation_token: impl Into<Option<&'a str>>) -> Self {
+        self.options.activation_token = activation_token.into().map(ToOwned::to_owned);
         self
     }
 

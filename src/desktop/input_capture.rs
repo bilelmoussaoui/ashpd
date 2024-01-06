@@ -246,7 +246,7 @@ impl SetPointerBarriersResponse {
     }
 }
 
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.InputCapture`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.InputCapture).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.InputCapture`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html).
 #[doc(alias = "org.freedesktop.portal.InputCapture")]
 pub struct InputCapture<'a>(Proxy<'a>);
 
@@ -261,7 +261,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-InputCapture.CreateSession).
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-createsession).
     pub async fn create_session(
         &self,
         parent_window: &WindowIdentifier,
@@ -292,7 +292,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-InputCapture.CreateSession).
+    /// See also [`GetZones`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-getzones).
     #[doc(alias = "GetZones")]
     pub async fn zones(&self, session: &Session<'_>) -> Result<Request<Zones>, Error> {
         let options = GetZonesOptions::default();
@@ -305,7 +305,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SetPointerBarriers`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-InputCapture.SetPointerBarriers).
+    /// See also [`SetPointerBarriers`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-setpointerbarriers).
     #[doc(alias = "SetPointerBarriers")]
     pub async fn set_pointer_barriers(
         &self,
@@ -327,7 +327,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Enable`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-InputCapture.Enable).
+    /// See also [`Enable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-enable).
     pub async fn enable(&self, session: &Session<'_>) -> Result<(), Error> {
         let options = EnableOptions::default();
         self.0.call("Enable", &(session, &options)).await
@@ -337,7 +337,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Disable`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-InputCapture.Disable).
+    /// See also [`Disable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-disable).
     pub async fn disable(&self, session: &Session<'_>) -> Result<(), Error> {
         let options = DisableOptions::default();
         self.0.call("Disable", &(session, &options)).await
@@ -347,7 +347,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Release`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-InputCapture.Release).
+    /// See also [`Release`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-release).
     pub async fn release(
         &self,
         session: &Session<'_>,
@@ -365,7 +365,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-InputCapture.ConnectToEIS).
+    /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-connecttoeis).
     #[doc(alias = "ConnectToEIS")]
     pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<RawFd, Error> {
         // `ConnectToEIS` doesn't take any options for now
@@ -382,7 +382,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Disabled`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-InputCapture.Disabled).
+    /// See also [`Disabled`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-disabled).
     #[doc(alias = "Disabled")]
     pub async fn receive_disabled(&self) -> Result<impl Stream<Item = Disabled>, Error> {
         self.0.signal("Disabled").await
@@ -393,7 +393,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Activated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-InputCapture.Activated).
+    /// See also [`Activated`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-activated).
     #[doc(alias = "Activated")]
     pub async fn receive_activated(&self) -> Result<impl Stream<Item = Activated>, Error> {
         self.0.signal("Activated").await
@@ -404,7 +404,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Deactivated`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-InputCapture.Deactivated).
+    /// See also [`Deactivated`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-deactivated).
     #[doc(alias = "Deactivated")]
     pub async fn receive_deactivated(&self) -> Result<impl Stream<Item = Deactivated>, Error> {
         self.0.signal("Deactivated").await
@@ -415,7 +415,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ZonesChanged`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-signal-org-freedesktop-portal-InputCapture.ZonesChanged).
+    /// See also [`ZonesChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-zoneschanged).
     #[doc(alias = "ZonesChanged")]
     pub async fn receive_zones_changed(&self) -> Result<impl Stream<Item = ZonesChanged>, Error> {
         self.0.signal("ZonesChanged").await
@@ -425,7 +425,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SupportedCapabilities`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-InputCapture.SupportedCapabilities).
+    /// See also [`SupportedCapabilities`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-supportedcapabilities).
     #[doc(alias = "SupportedCapabilities")]
     pub async fn supported_capabilities(&self) -> Result<BitFlags<Capabilities>, Error> {
         self.0.property("SupportedCapabilities").await

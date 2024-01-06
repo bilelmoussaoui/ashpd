@@ -283,7 +283,7 @@ struct StreamProperties {
 
 /// The interface lets sandboxed applications create screen cast sessions.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.ScreenCast).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ScreenCast")]
 pub struct Screencast<'a>(Proxy<'a>);
@@ -299,7 +299,7 @@ impl<'a> Screencast<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.CreateSession).
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-createsession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_screencast_session")]
     pub async fn create_session(&self) -> Result<Session<'a>, Error> {
@@ -328,7 +328,7 @@ impl<'a> Screencast<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.OpenPipeWireRemote).
+    /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-openpipewireremote).
     #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(&self, session: &Session<'_>) -> Result<RawFd, Error> {
         // `options` parameter doesn't seems to be used yet
@@ -359,7 +359,7 @@ impl<'a> Screencast<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SelectSources`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.SelectSources).
+    /// See also [`SelectSources`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-selectsources).
     #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
@@ -400,7 +400,7 @@ impl<'a> Screencast<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-ScreenCast.Start).
+    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-start).
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
@@ -421,7 +421,7 @@ impl<'a> Screencast<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AvailableCursorModes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableCursorModes).
+    /// See also [`AvailableCursorModes`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-availablecursormodes).
     #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
         self.0.property_versioned("AvailableCursorModes", 2).await
@@ -431,7 +431,7 @@ impl<'a> Screencast<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AvailableSourceTypes`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-property-org-freedesktop-portal-ScreenCast.AvailableSourceTypes).
+    /// See also [`AvailableSourceTypes`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-availablesourcetypes).
     #[doc(alias = "AvailableSourceTypes")]
     pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
         self.0.property("AvailableSourceTypes").await

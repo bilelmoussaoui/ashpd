@@ -1,7 +1,7 @@
 //! Access to the current logged user information such as the id, name
 //! or their avatar uri.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Account).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Account.html).
 //!
 //! ### Examples
 //!

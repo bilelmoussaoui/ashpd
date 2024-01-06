@@ -46,7 +46,7 @@ enum TrashStatus {
 
 /// The interface lets sandboxed applications send files to the trashcan.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Trash`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Trash).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Trash`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Trash.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Trash")]
 pub struct TrashProxy<'a>(Proxy<'a>);
@@ -68,7 +68,7 @@ impl<'a> TrashProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Trash.TrashFile).
+    /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Trash.html#org-freedesktop-portal-trash-trashfile).
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
     pub async fn trash_file(&self, fd: &impl AsRawFd) -> Result<(), Error> {

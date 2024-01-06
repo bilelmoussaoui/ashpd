@@ -3,7 +3,7 @@
 //!
 //! **Note** This portal only works for sandboxed applications.
 //!
-//! Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
+//! Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html).
 //!
 //! ### Examples
 //!
@@ -86,7 +86,7 @@ struct SetStatusOptions {
 /// is allowed to run in the background or started automatically when the user
 /// logs in.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Background).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html).
 #[doc(alias = "org.freedesktop.portal.Background")]
 pub struct BackgroundProxy<'a>(Proxy<'a>);
 
@@ -111,7 +111,7 @@ impl<'a> BackgroundProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SetStatus`](https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-Background.SetStatus).
+    /// See also [`SetStatus`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html#org-freedesktop-portal-background-setstatus).
 
     pub async fn set_status(&self, message: &str) -> Result<(), Error> {
         self.0

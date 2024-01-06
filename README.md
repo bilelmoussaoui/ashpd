@@ -4,7 +4,7 @@
 
 ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/dbus/zbus) wrapper of
 the XDG portals DBus interfaces. The library aims to provide an easy way to
-interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/index.html).
+interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/docs/).
 It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
 
 ## Examples
@@ -12,10 +12,10 @@ It provides an alternative to the C library [https://github.com/flatpak/libporta
 Ask the compositor to pick a color
 
 ```rust,no_run
-use ashpd::desktop::screenshot::Color;
+use ashpd::desktop::Color;
 
 async fn run() -> ashpd::Result<()> {
-    let color = Color::request().send().await?.response()?;
+    let color = Color::pick().send().await?.response()?;
     println!("({}, {}, {})", color.red(), color.green(), color.blue());
     Ok(())
 }

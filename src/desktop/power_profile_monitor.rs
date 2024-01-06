@@ -9,7 +9,7 @@ use crate::{proxy::Proxy, Error};
 /// Applications are expected to use this interface indirectly, via a library
 /// API such as the GLib [`gio::PowerProfileMonitor`](https://gtk-rs.org/gtk-rs-core/stable/latest/docs/gio/struct.PowerProfileMonitor.html) interface.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.PowerProfileMonitor`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.PowerProfileMonitor).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.PowerProfileMonitor`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.PowerProfileMonitor.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.PowerProfileMonitor")]
 pub struct PowerProfileMonitor<'a>(Proxy<'a>);
@@ -22,6 +22,10 @@ impl<'a> PowerProfileMonitor<'a> {
     }
 
     /// Whether the power saver is enabled.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`power-saver-enabled`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.PowerProfileMonitor.html#org-freedesktop-portal-powerprofilemonitor-power-saver-enabled)
     #[doc(alias = "power-saver-enabled")]
     pub async fn is_enabled(&self) -> Result<bool, Error> {
         self.0.property("power-saver-enabled").await

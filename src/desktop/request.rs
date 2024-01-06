@@ -197,7 +197,7 @@ impl From<ResponseError> for ResponseType {
 /// The application can abort the interaction calling
 /// [`close()`][`Request::close`] on the Request object.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-org.freedesktop.portal.Request).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Request`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Request.html).
 #[doc(alias = "org.freedesktop.portal.Request")]
 pub struct Request<T>(
     Proxy<'static>,
@@ -247,6 +247,10 @@ where
     }
 
     /// The corresponding response if the request was successful.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Request.html#org-freedesktop-portal-request-response).
     pub fn response(&self) -> Result<T, Error> {
         // It should be safe to unwrap here as we are sure we have received a response
         // by the time the user calls response
@@ -259,7 +263,7 @@ where
     ///
     /// # Specifications
     ///
-    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/index.html#gdbus-method-org-freedesktop-portal-Request.Close).
+    /// See also [`Close`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Request.html#org-freedesktop-portal-request-close).
     #[doc(alias = "Close")]
     pub async fn close(&self) -> Result<(), Error> {
         self.0.call("Close", &()).await
