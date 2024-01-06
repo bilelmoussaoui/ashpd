@@ -1,14 +1,14 @@
 #[cfg(feature = "async-std")]
-use async_std::{fs::File, prelude::*};
+use async_fs::File;
+#[cfg(feature = "async-std")]
+use futures_util::AsyncReadExt;
 #[cfg(feature = "tokio")]
 use tokio::{fs::File, io::AsyncReadExt};
 
 pub(crate) async fn is_flatpak() -> bool {
     #[cfg(feature = "async-std")]
     {
-        async_std::path::PathBuf::from("/.flatpak-info")
-            .exists()
-            .await
+        async_fs::metadata("/.flatpak-info").await.is_ok()
     }
     #[cfg(not(feature = "async-std"))]
     {
