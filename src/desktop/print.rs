@@ -619,7 +619,7 @@ pub struct PreparePrint {
 
 /// The interface lets sandboxed applications print.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Print`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Print).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Print`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Print.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Print")]
 pub struct PrintProxy<'a>(Proxy<'a>);
@@ -647,7 +647,7 @@ impl<'a> PrintProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`PreparePrint`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Print.PreparePrint).
+    /// See also [`PreparePrint`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Print.html#org-freedesktop-portal-print-prepareprint).
     #[doc(alias = "PreparePrint")]
     #[doc(alias = "xdp_portal_prepare_print")]
     pub async fn prepare_print(
@@ -687,7 +687,7 @@ impl<'a> PrintProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Print`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Print.Print).
+    /// See also [`Print`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Print.html#org-freedesktop-portal-print-print).
     #[doc(alias = "Print")]
     #[doc(alias = "xdp_portal_print_file")]
     pub async fn print(

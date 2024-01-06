@@ -204,7 +204,7 @@ impl std::fmt::Display for UnexpectedIconError {
 /// The interface lets sandboxed applications install launchers like Web
 /// Application from your browser or Steam.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.DynamicLauncher`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.DynamicLauncher).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.DynamicLauncher`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.DynamicLauncher")]
 pub struct DynamicLauncherProxy<'a>(Proxy<'a>);
@@ -220,7 +220,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     ///
     ///  # Specifications
     ///
-    /// See also [`PrepareInstall`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.PrepareInstall).
+    /// See also [`PrepareInstall`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-prepareinstall).
     #[doc(alias = "PrepareInstall")]
     #[doc(alias = "xdp_portal_dynamic_launcher_prepare_install")]
     #[doc(alias = "xdp_portal_dynamic_launcher_prepare_install_finish")]
@@ -248,7 +248,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`RequestInstallToken`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.RequestInstallToken).
+    /// See also [`RequestInstallToken`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-requestinstalltoken).
     #[doc(alias = "RequestInstallToken")]
     #[doc(alias = "xdp_portal_dynamic_launcher_request_install_token")]
     pub async fn request_install_token(&self, name: &str, icon: Icon) -> Result<String, Error> {
@@ -265,7 +265,7 @@ impl<'a> DynamicLauncherProxy<'a> {
 
     /// # Specifications
     ///
-    /// See also [`Install`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.Install).
+    /// See also [`Install`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-install).
     #[doc(alias = "Install")]
     #[doc(alias = "xdp_portal_dynamic_launcher_install")]
     pub async fn install(
@@ -283,7 +283,7 @@ impl<'a> DynamicLauncherProxy<'a> {
 
     /// # Specifications
     ///
-    /// See also [`Uninstall`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.Uninstall).
+    /// See also [`Uninstall`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-uninstall).
     #[doc(alias = "Uninstall")]
     #[doc(alias = "xdp_portal_dynamic_launcher_uninstall")]
     pub async fn uninstall(&self, desktop_file_id: &str) -> Result<(), Error> {
@@ -296,7 +296,7 @@ impl<'a> DynamicLauncherProxy<'a> {
 
     /// # Specifications
     ///
-    /// See also [`GetDesktopEntry`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.GetDesktopEntry).
+    /// See also [`GetDesktopEntry`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-getdesktopentry).
     #[doc(alias = "GetDesktopEntry")]
     #[doc(alias = "xdp_portal_dynamic_launcher_get_desktop_entry")]
     pub async fn desktop_entry(&self, desktop_file_id: &str) -> Result<String, Error> {
@@ -305,7 +305,7 @@ impl<'a> DynamicLauncherProxy<'a> {
 
     /// # Specifications
     ///
-    /// See also [`GetIcon`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.GetIcon).
+    /// See also [`GetIcon`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-geticon).
     #[doc(alias = "GetIcon")]
     #[doc(alias = "xdp_portal_dynamic_launcher_get_icon")]
     pub async fn icon(&self, desktop_file_id: &str) -> Result<LauncherIcon, Error> {
@@ -314,7 +314,7 @@ impl<'a> DynamicLauncherProxy<'a> {
 
     /// # Specifications
     ///
-    /// See also [`Launch`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-DynamicLauncher.Launch).
+    /// See also [`Launch`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-launch).
     #[doc(alias = "Launch")]
     #[doc(alias = "xdp_portal_dynamic_launcher_launch")]
     pub async fn launch(&self, desktop_file_id: &str) -> Result<(), Error> {
@@ -325,7 +325,7 @@ impl<'a> DynamicLauncherProxy<'a> {
 
     /// # Specifications
     ///
-    /// See also [`SupportedLauncherTypes`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-property-org-freedesktop-portal-DynamicLauncher.SupportedLauncherTypes).
+    /// See also [`SupportedLauncherTypes`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-supportedlaunchertypes).
     #[doc(alias = "SupportedLauncherTypes")]
     pub async fn supported_launcher_types(&self) -> Result<BitFlags<LauncherType>, Error> {
         self.0

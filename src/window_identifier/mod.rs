@@ -15,9 +15,9 @@ use zbus::zvariant::Type;
 /// Under X11, the [`WindowIdentifier`] should have the form `x11:XID`, where
 /// XID is the XID of the application window in hexadecimal. Under Wayland, it
 /// should have the form `wayland:HANDLE`, where HANDLE is a surface handle
-/// obtained with the [xdg-foreign](https://github.com/wayland-project/wayland-protocols/blob/master/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
+/// obtained with the [xdg-foreign](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml) protocol.
 ///
-/// See also [Parent window identifiers](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#parent_window).
+/// See also [Parent window identifiers](https://flatpak.github.io/xdg-desktop-portal/docs/window-identifiers.html).
 ///
 /// # Usage
 ///

@@ -108,7 +108,7 @@ const ACCENT_COLOR_SCHEME_KEY: &str = "accent-color";
 /// required for toolkits similar to XSettings. It is not for general purpose
 /// settings.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Settings).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Settings")]
 pub struct Settings<'a>(Proxy<'a>);
@@ -136,7 +136,7 @@ impl<'a> Settings<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Settings.ReadAll).
+    /// See also [`ReadAll`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-readall).
     #[doc(alias = "ReadAll")]
     pub async fn read_all(
         &self,
@@ -158,8 +158,9 @@ impl<'a> Settings<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Read`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Settings.Read).
+    /// See also [`Read`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-read).
     #[doc(alias = "Read")]
+    #[doc(alias = "ReadOne")]
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
         T: TryFrom<OwnedValue>,
@@ -209,7 +210,7 @@ impl<'a> Settings<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-Settings.SettingChanged).
+    /// See also [`SettingChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-settingchanged).
     #[doc(alias = "SettingChanged")]
     pub async fn receive_setting_changed(&self) -> Result<impl Stream<Item = Setting>, Error> {
         self.0.signal("SettingChanged").await

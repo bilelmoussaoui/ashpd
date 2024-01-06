@@ -145,7 +145,7 @@ impl FromStr for Permission {
 /// [`Documents::grant_permissions`]) are reflected in the POSIX mode bits
 /// in the fuse filesystem.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Documents).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
 pub struct Documents<'a>(Proxy<'a>);
@@ -175,7 +175,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Add`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.Add).
+    /// See also [`Add`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-add).
     #[doc(alias = "Add")]
     pub async fn add(
         &self,
@@ -213,7 +213,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AddFull`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.AddFull).
+    /// See also [`AddFull`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-addfull).
     #[doc(alias = "AddFull")]
     pub async fn add_full(
         &self,
@@ -246,7 +246,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AddNamed`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.AddNamed).
+    /// See also [`AddNamed`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-addnamed).
     #[doc(alias = "AddNamed")]
     pub async fn add_named(
         &self,
@@ -292,7 +292,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AddNamedFull`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.AddNamedFull).
+    /// See also [`AddNamedFull`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-addnamedfull).
     #[doc(alias = "AddNamedFull")]
     pub async fn add_named_full(
         &self,
@@ -331,7 +331,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.Delete).
+    /// See also [`Delete`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-delete).
     #[doc(alias = "Delete")]
     pub async fn delete(&self, doc_id: impl Into<DocumentID>) -> Result<(), Error> {
         self.0.call("Delete", &(doc_id.into())).await
@@ -342,7 +342,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`GetMountPoint`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.GetMountPoint).
+    /// See also [`GetMountPoint`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-getmountpoint).
     #[doc(alias = "GetMountPoint")]
     #[doc(alias = "get_mount_point")]
     pub async fn mount_point(&self) -> Result<FilePath, Error> {
@@ -363,7 +363,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`GrantPermissions`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.GrantPermissions).
+    /// See also [`GrantPermissions`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-grantpermissions).
     #[doc(alias = "GrantPermissions")]
     pub async fn grant_permissions(
         &self,
@@ -392,7 +392,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Info`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.Info).
+    /// See also [`Info`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-info).
     #[doc(alias = "Info")]
     pub async fn info(
         &self,
@@ -417,7 +417,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`List`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.List).
+    /// See also [`List`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-list).
     #[doc(alias = "List")]
     pub async fn list(
         &self,
@@ -449,7 +449,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.Lookup).
+    /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-lookup).
     #[doc(alias = "Lookup")]
     pub async fn lookup(&self, filename: impl AsRef<Path>) -> Result<Option<DocumentID>, Error> {
         let filename = FilePath::new(filename)?;
@@ -476,7 +476,7 @@ impl<'a> Documents<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`RevokePermissions`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Documents.RevokePermissions).
+    /// See also [`RevokePermissions`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-revokepermissions).
     #[doc(alias = "RevokePermissions")]
     pub async fn revoke_permissions(
         &self,

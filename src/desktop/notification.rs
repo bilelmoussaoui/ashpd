@@ -288,7 +288,7 @@ impl Action {
 ///  `#org.freedeskop.portal.Notification::ActionInvoked` signal to the
 /// application.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Notification).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Notification")]
 pub struct NotificationProxy<'a>(Proxy<'a>);
@@ -304,7 +304,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-Notification.ActionInvoked).
+    /// See also [`ActionInvoked`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html#org-freedesktop-portal-notification-actioninvoked).
     #[doc(alias = "ActionInvoked")]
     #[doc(alias = "XdpPortal::notification-action-invoked")]
     pub async fn receive_action_invoked(&self) -> Result<impl Stream<Item = Action>, Error> {
@@ -324,7 +324,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`AddNotification`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Notification.AddNotification).
+    /// See also [`AddNotification`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html#org-freedesktop-portal-notification-addnotification).
     #[doc(alias = "AddNotification")]
     #[doc(alias = "xdp_portal_add_notification")]
     pub async fn add_notification(
@@ -343,7 +343,7 @@ impl<'a> NotificationProxy<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`RemoveNotification`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-Notification.RemoveNotification).
+    /// See also [`RemoveNotification`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html#org-freedesktop-portal-notification-removenotification).
     #[doc(alias = "RemoveNotification")]
     #[doc(alias = "xdp_portal_remove_notification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {

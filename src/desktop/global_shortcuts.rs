@@ -203,7 +203,7 @@ impl ShortcutsChanged {
     }
 }
 
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.GlobalShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.GlobalShortcuts).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.GlobalShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.GlobalShortcuts")]
 pub struct GlobalShortcuts<'a>(Proxy<'a>);
@@ -219,7 +219,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-GlobalShortcuts.CreateSession).
+    /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-createsession).
     #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default();
@@ -237,7 +237,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`BindShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-GlobalShortcuts.BindShortcuts).
+    /// See also [`BindShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-bindshortcuts).
     #[doc(alias = "BindShortcuts")]
     pub async fn bind_shortcuts(
         &self,
@@ -259,7 +259,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ListShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-method-org-freedesktop-portal-GlobalShortcuts.ListShortcuts).
+    /// See also [`ListShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-listshortcuts).
     #[doc(alias = "ListShortcuts")]
     pub async fn list_shortcuts(
         &self,
@@ -275,7 +275,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Activated`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.Activated).
+    /// See also [`Activated`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-activated).
     #[doc(alias = "Activated")]
     pub async fn receive_activated(&self) -> Result<impl Stream<Item = Activated>, Error> {
         self.0.signal("Activated").await
@@ -285,7 +285,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`Deactivated`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.Deactivated).
+    /// See also [`Deactivated`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-deactivated).
     #[doc(alias = "Deactivated")]
     pub async fn receive_deactivated(&self) -> Result<impl Stream<Item = Deactivated>, Error> {
         self.0.signal("Deactivated").await
@@ -296,7 +296,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// # Specifications
     ///
-    /// See also [`ShortcutsChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-signal-org-freedesktop-portal-GlobalShortcuts.ShortcutsChanged).
+    /// See also [`ShortcutsChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-shortcutschanged).
     #[doc(alias = "ShortcutsChanged")]
     pub async fn receive_shortcuts_changed(
         &self,

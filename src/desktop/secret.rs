@@ -46,7 +46,7 @@ struct RetrieveOptions {
 /// The secret can then be used for encrypting confidential data inside the
 /// sandbox.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/docs/index.html#gdbus-org.freedesktop.portal.Secret).
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Secret.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Secret")]
 pub struct Secret<'a>(Proxy<'a>);
@@ -63,6 +63,10 @@ impl<'a> Secret<'a> {
     /// # Arguments
     ///
     /// * `fd` - Writaeble file descriptor for transporting the secret.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`RetrieveSecret`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Secret.html#org-freedesktop-portal-secret-retrievesecret)
     #[doc(alias = "RetrieveSecret")]
     pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<Request<()>, Error> {
         let options = RetrieveOptions::default();
