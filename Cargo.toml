@@ -44,7 +44,7 @@ tokio = { version = "1.21", features = [
 ], optional = true, default-features = false }
 tracing = { version = "0.1", optional = true }
 url = { version = "2.3", features = ["serde"] }
-wayland-backend = { version = "0.1", optional = true, features = [
+wayland-backend = { version = "0.3", optional = true, features = [
     "client_system",
 ] }
 wayland-client = { version = "0.30", optional = true }
