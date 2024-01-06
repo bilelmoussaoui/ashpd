@@ -11,7 +11,7 @@ repository = "https://github.com/bilelmoussaoui/ashpd"
 version = "0.6.7"
 
 [features]
-async-std = ["zbus/async-io", "dep:async-std"]
+async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net"]
 default = ["async-std"]
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
 gtk4_wayland = ["gdk4wayland", "dep:gtk4"]
@@ -22,7 +22,8 @@ tokio = ["zbus/tokio", "dep:tokio"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 
 [dependencies]
-async-std = { version = "1.12", optional = true }
+async-fs = { version = "2.1.0", optional = true }
+async-net = { version = "2.0.0", optional = true }
 enumflags2 = "0.7"
 futures-channel = "0.3"
 futures-util = "0.3"

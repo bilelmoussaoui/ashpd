@@ -21,7 +21,9 @@
 use std::os::unix::prelude::AsRawFd;
 
 #[cfg(feature = "async-std")]
-use async_std::{os::unix::net::UnixStream, prelude::*};
+use async_net::unix::UnixStream;
+#[cfg(feature = "async-std")]
+use futures_util::AsyncReadExt;
 #[cfg(feature = "tokio")]
 use tokio::{io::AsyncReadExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
