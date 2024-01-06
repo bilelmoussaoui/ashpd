@@ -47,7 +47,7 @@ url = { version = "2.3", features = ["serde"] }
 wayland-backend = { version = "0.1", optional = true, features = [
     "client_system",
 ] }
-wayland-client = { version = "0.30", optional = true }
+wayland-client = { version = "0.31", optional = true }
 wayland-protocols = { version = "0.30", optional = true, features = [
     "unstable",
     "client",
