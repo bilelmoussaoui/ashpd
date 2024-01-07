@@ -2,7 +2,8 @@ use std::{fmt, str::FromStr};
 
 #[cfg(all(feature = "raw_handle", feature = "gtk4"))]
 use raw_window_handle::{
-    HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
+    DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, RawDisplayHandle,
+    RawWindowHandle, WindowHandle,
 };
 use serde::{ser::Serializer, Deserialize, Serialize};
 use zbus::zvariant::Type;
@@ -165,8 +166,8 @@ impl WindowIdentifier {
     /// This method is only async and requires a `RawDisplayHandle` only for
     /// Wayland handles.
     pub async fn from_raw_handle(
-        window_handle: &raw_window_handle::RawWindowHandle,
-        display_handle: Option<&raw_window_handle::RawDisplayHandle>,
+        window_handle: &RawWindowHandle,
+        display_handle: Option<&RawDisplayHandle>,
     ) -> Self {
         use raw_window_handle::{
             RawDisplayHandle::Wayland as DisplayHandle,
@@ -174,10 +175,11 @@ impl WindowIdentifier {
         };
         match (window_handle, display_handle) {
             (Wayland(wl_handle), Some(DisplayHandle(wl_display))) => unsafe {
-                Self::from_wayland_raw(wl_handle.surface, wl_display.display).await
+                Self::from_wayland_raw(wl_handle.surface.as_ptr(), wl_display.display.as_ptr())
+                    .await
             },
             (Xlib(x_handle), _) => Self::from_xid(x_handle.window),
-            (Xcb(x_handle), _) => Self::from_xid(x_handle.window.into()),
+            (Xcb(x_handle), _) => Self::from_xid(x_handle.window.get().into()),
             _ => Self::default(), // Fallback to default
         }
     }
@@ -218,7 +220,7 @@ impl WindowIdentifier {
 }
 
 #[cfg(all(feature = "raw_handle", feature = "gtk4"))]
-unsafe impl HasRawDisplayHandle for WindowIdentifier {
+impl HasDisplayHandle for WindowIdentifier {
     /// Convert a [`WindowIdentifier`] to
     /// [`RawDisplayHandle`](raw_window_handle::RawDisplayHandle`).
     ///
@@ -227,17 +229,17 @@ unsafe impl HasRawDisplayHandle for WindowIdentifier {
     /// If you attempt to convert a [`WindowIdentifier`] created from a
     /// [`RawDisplayHandle`](raw_window_handle::RawDisplayHandle`) instead of
     /// the gtk4 constructors.
-    fn raw_display_handle(&self) -> RawDisplayHandle {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
         match self {
             #[cfg(feature = "gtk4")]
-            Self::Gtk4(identifier) => identifier.as_raw_display_handle(),
+            Self::Gtk4(identifier) => Ok(identifier.as_raw_display_handle()),
             _ => unreachable!(),
         }
     }
 }
 
 #[cfg(all(feature = "raw_handle", feature = "gtk4"))]
-unsafe impl HasRawWindowHandle for WindowIdentifier {
+impl HasWindowHandle for WindowIdentifier {
     /// Convert a [`WindowIdentifier`] to
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`).
     ///
@@ -246,10 +248,10 @@ unsafe impl HasRawWindowHandle for WindowIdentifier {
     /// If you attempt to convert a [`WindowIdentifier`] created from a
     /// [`RawWindowHandle`](raw_window_handle::RawWindowHandle`) instead of
     /// the gtk4 constructors.
-    fn raw_window_handle(&self) -> RawWindowHandle {
+    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
         match self {
             #[cfg(feature = "gtk4")]
-            Self::Gtk4(identifier) => identifier.as_raw_window_handle(),
+            Self::Gtk4(identifier) => Ok(identifier.as_raw_window_handle()),
             _ => unreachable!(),
         }
     }

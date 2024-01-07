@@ -1,6 +1,6 @@
-use std::fmt;
 #[cfg(feature = "gtk4_wayland")]
 use std::sync::Arc;
+use std::{fmt, ptr::NonNull};
 
 #[cfg(feature = "gtk4_wayland")]
 use futures_util::lock::Mutex;
@@ -10,8 +10,8 @@ use glib::translate::ToGlibPtr;
 use gtk4::{gdk, glib, prelude::*};
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{
-    RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle,
-    XlibDisplayHandle, XlibWindowHandle,
+    DisplayHandle, RawDisplayHandle, RawWindowHandle, WaylandDisplayHandle, WaylandWindowHandle,
+    WindowHandle, XlibDisplayHandle, XlibWindowHandle,
 };
 
 use super::WindowIdentifierType;
@@ -84,65 +84,66 @@ impl Gtk4WindowIdentifier {
     }
 
     #[cfg(feature = "raw_handle")]
-    pub fn as_raw_window_handle(&self) -> RawWindowHandle {
+    pub fn as_raw_window_handle(&self) -> WindowHandle<'_> {
         unsafe {
-            match self.type_ {
+            let raw_handle = match self.type_ {
                 #[cfg(feature = "gtk4_wayland")]
                 WindowIdentifierType::Wayland(_) => {
                     let surface = self.native.surface();
-                    let mut wayland_handle = WaylandWindowHandle::empty();
-                    wayland_handle.surface = gdk4wayland::ffi::gdk_wayland_surface_get_wl_surface(
-                        surface
-                            .downcast_ref::<gdk4wayland::WaylandSurface>()
-                            .unwrap()
-                            .to_glib_none()
-                            .0,
-                    );
-
-                    RawWindowHandle::Wayland(wayland_handle)
+                    RawWindowHandle::Wayland(WaylandWindowHandle::new(
+                        NonNull::new(gdk4wayland::ffi::gdk_wayland_surface_get_wl_surface(
+                            surface
+                                .downcast_ref::<gdk4wayland::WaylandSurface>()
+                                .unwrap()
+                                .to_glib_none()
+                                .0,
+                        ))
+                        .expect("Identifier must be attached to a wl_surface"),
+                    ))
                 }
                 #[cfg(feature = "gtk4_x11")]
-                WindowIdentifierType::X11(xid) => {
-                    let mut x11_handle = XlibWindowHandle::empty();
-                    x11_handle.window = xid;
-
-                    RawWindowHandle::Xlib(x11_handle)
-                }
-            }
+                WindowIdentifierType::X11(xid) => RawWindowHandle::Xlib(XlibWindowHandle::new(xid)),
+            };
+            WindowHandle::borrow_raw(raw_handle)
         }
     }
 
     #[cfg(feature = "raw_handle")]
-    pub fn as_raw_display_handle(&self) -> RawDisplayHandle {
+    pub fn as_raw_display_handle(&self) -> DisplayHandle<'_> {
         let surface = self.native.surface();
         let display = surface.display();
         unsafe {
-            match self.type_ {
+            let raw_handle = match self.type_ {
                 #[cfg(feature = "gtk4_wayland")]
                 WindowIdentifierType::Wayland(_) => {
-                    let mut wayland_handle = WaylandDisplayHandle::empty();
-                    wayland_handle.display = gdk4wayland::ffi::gdk_wayland_display_get_wl_display(
-                        display
-                            .downcast_ref::<gdk4wayland::WaylandDisplay>()
-                            .unwrap()
-                            .to_glib_none()
-                            .0,
-                    );
-                    RawDisplayHandle::Wayland(wayland_handle)
+                    RawDisplayHandle::Wayland(WaylandDisplayHandle::new(
+                        NonNull::new(gdk4wayland::ffi::gdk_wayland_display_get_wl_display(
+                            display
+                                .downcast_ref::<gdk4wayland::WaylandDisplay>()
+                                .unwrap()
+                                .to_glib_none()
+                                .0,
+                        ))
+                        .expect("Identifier must be attached to a wl_display"),
+                    ))
                 }
                 #[cfg(feature = "gtk4_x11")]
-                WindowIdentifierType::X11(_xid) => {
-                    let mut x11_handle = XlibDisplayHandle::empty();
-                    x11_handle.display = gdk4x11::ffi::gdk_x11_display_get_xdisplay(
+                WindowIdentifierType::X11(_xid) => RawDisplayHandle::Xlib(XlibDisplayHandle::new(
+                    NonNull::new(gdk4x11::ffi::gdk_x11_display_get_xdisplay(
                         display
                             .downcast_ref::<gdk4x11::X11Display>()
                             .unwrap()
                             .to_glib_none()
                             .0,
-                    );
-                    RawDisplayHandle::Xlib(x11_handle)
-                }
-            }
+                    )),
+                    display
+                        .downcast_ref::<gdk4x11::X11Display>()
+                        .unwrap()
+                        .screen()
+                        .screen_number(),
+                )),
+            };
+            DisplayHandle::borrow_raw(raw_handle)
         }
     }
 }
