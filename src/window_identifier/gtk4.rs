@@ -28,7 +28,7 @@ pub struct Gtk4WindowIdentifier {
 
 impl Gtk4WindowIdentifier {
     pub async fn new(native: &impl glib::IsA<gtk4::Native>) -> Option<Self> {
-        let surface = native.surface();
+        let surface = native.surface()?;
         match surface.display().backend() {
             #[cfg(feature = "gtk4_wayland")]
             Backend::Wayland => {
@@ -41,15 +41,25 @@ impl Gtk4WindowIdentifier {
                         *ref_count += 1;
                         handle.clone()
                     } else {
-                        let (sender, receiver) = futures_channel::oneshot::channel::<String>();
+                        let (sender, receiver) =
+                            futures_channel::oneshot::channel::<Option<String>>();
                         let sender = Arc::new(Mutex::new(Some(sender)));
 
                         let result = top_level.export_handle(glib::clone!(@strong sender => move |_, handle| {
                             let ctx = glib::MainContext::default();
-                            let handle = handle.to_owned();
+                            let handle = handle.map(ToOwned::to_owned);
                             ctx.spawn_local(glib::clone!(@strong sender, @strong handle => async move {
                                 if let Some(m) = sender.lock().await.take() {
-                                    let _ = m.send(handle);
+                                    match handle {
+                                        Ok(h) => {
+                                            let _ = m.send(Some(h.to_string()));
+                                        },
+                                        Err(_) => {
+                                            let _ = m.send(None);
+                                            #[cfg(feature = "tracing")]
+                                            tracing::warn!("Failed to export window identifier. The compositor doesn't support xdg-foreign protocol.");
+                                        }
+                                    }
                                 }
                             }));
                         }));
@@ -57,7 +67,7 @@ impl Gtk4WindowIdentifier {
                         if !result {
                             return None;
                         }
-                        let handle = receiver.await.ok();
+                        let handle = receiver.await.ok().flatten();
                         top_level.set_data(WINDOW_HANDLE_KEY, (handle.clone(), 1));
                         handle
                     }
@@ -89,7 +99,7 @@ impl Gtk4WindowIdentifier {
             let raw_handle = match self.type_ {
                 #[cfg(feature = "gtk4_wayland")]
                 WindowIdentifierType::Wayland(_) => {
-                    let surface = self.native.surface();
+                    let surface = self.native.surface().unwrap();
                     RawWindowHandle::Wayland(WaylandWindowHandle::new(
                         NonNull::new(gdk4wayland::ffi::gdk_wayland_surface_get_wl_surface(
                             surface
@@ -110,7 +120,7 @@ impl Gtk4WindowIdentifier {
 
     #[cfg(feature = "raw_handle")]
     pub fn as_raw_display_handle(&self) -> DisplayHandle<'_> {
-        let surface = self.native.surface();
+        let surface = self.native.surface().unwrap();
         let display = surface.display();
         unsafe {
             let raw_handle = match self.type_ {
@@ -162,7 +172,7 @@ impl Drop for Gtk4WindowIdentifier {
         match self.type_ {
             #[cfg(feature = "gtk4_wayland")]
             WindowIdentifierType::Wayland(_) => {
-                let surface = self.native.surface();
+                let surface = self.native.surface().unwrap();
                 let top_level = surface
                     .downcast_ref::<gdk4wayland::WaylandToplevel>()
                     .unwrap();
