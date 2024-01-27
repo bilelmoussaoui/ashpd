@@ -12,7 +12,7 @@ compile_error!("You can't enable both async-std & tokio features at once");
 /// Alias for a [`Result`] with the error type `ashpd::Error`.
 pub type Result<T> = std::result::Result<T, Error>;
 
-static IS_SANDBOXED: OnceCell<bool> = OnceCell::new();
+static IS_SANDBOXED: OnceLock<bool> = OnceLock::new();
 
 /// Interact with the user's desktop such as taking a screenshot, setting a
 /// background or querying the user's location.
@@ -34,8 +34,9 @@ mod proxy;
 /// received an update & install it.
 pub mod flatpak;
 mod helpers;
+use std::sync::OnceLock;
+
 pub use enumflags2;
-use once_cell::sync::OnceCell;
 pub use url;
 pub use zbus::{self, zvariant};
 

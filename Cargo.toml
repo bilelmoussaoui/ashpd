@@ -9,7 +9,7 @@ license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
 version = "0.7.0"
-rust-version = "1.65"
+rust-version = "1.70"
 
 [features]
 async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net"]
@@ -32,7 +32,6 @@ gdk4wayland = { git = "https://github.com/gtk-rs/gtk4-rs", package = "gdk4-wayla
 gdk4x11 = { git = "https://github.com/gtk-rs/gtk4-rs", package = "gdk4-x11", version = "0.8", optional = true }
 gtk4 = { git = "https://github.com/gtk-rs/gtk4-rs", version = "0.8", optional = true }
 libc = { version = "0.2", optional = true }
-once_cell = "1.14"
 pw = { package = "pipewire", version = "0.7", optional = true }
 rand = { version = "0.8", default-features = false }
 raw-window-handle = { version = "0.6", optional = true }

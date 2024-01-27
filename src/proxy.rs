@@ -1,7 +1,6 @@
-use std::{fmt::Debug, future::ready, ops::Deref};
+use std::{fmt::Debug, future::ready, ops::Deref, sync::OnceLock};
 
 use futures_util::{Stream, StreamExt};
-use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{ObjectPath, OwnedValue, Type};
 #[cfg(feature = "tracing")]
@@ -24,7 +23,7 @@ pub(crate) const FLATPAK_PATH: &str = "/org/freedesktop/portal/Flatpak";
 pub(crate) const FLATPAK_DEVELOPMENT_DESTINATION: &str = "org.freedesktop.Flatpak";
 pub(crate) const FLATPAK_DEVELOPMENT_PATH: &str = "/org/freedesktop/Flatpak/Development";
 
-static SESSION: OnceCell<zbus::Connection> = OnceCell::new();
+static SESSION: OnceLock<zbus::Connection> = OnceLock::new();
 
 #[derive(Debug)]
 pub struct Proxy<'a> {
