@@ -93,9 +93,37 @@ impl TryFrom<Value<'_>> for ColorScheme {
 
     fn try_from(value: Value) -> Result<Self, Self::Error> {
         Ok(match u32::try_from(value)? {
-            1 => ColorScheme::PreferDark,
-            2 => ColorScheme::PreferLight,
-            _ => ColorScheme::NoPreference,
+            1 => Self::PreferDark,
+            2 => Self::PreferLight,
+            _ => Self::NoPreference,
+        })
+    }
+}
+
+/// The system's preferred color scheme
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Contrast {
+    /// No preference
+    NoPreference,
+    /// Higher contrast
+    High,
+}
+
+impl TryFrom<OwnedValue> for Contrast {
+    type Error = Error;
+
+    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
+        TryFrom::<Value>::try_from(value.into())
+    }
+}
+
+impl TryFrom<Value<'_>> for Contrast {
+    type Error = Error;
+
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        Ok(match u32::try_from(value)? {
+            1 => Self::High,
+            _ => Self::NoPreference,
         })
     }
 }
@@ -103,6 +131,7 @@ impl TryFrom<Value<'_>> for ColorScheme {
 const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 const COLOR_SCHEME_KEY: &str = "color-scheme";
 const ACCENT_COLOR_SCHEME_KEY: &str = "accent-color";
+const CONTRAST_KEY: &str = "contrast";
 
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
@@ -186,6 +215,12 @@ impl<'a> Settings<'a> {
             .await
     }
 
+    /// Retrieves the system's preferred contrast level
+    pub async fn contrast(&self) -> Result<Contrast, Error> {
+        self.read::<Contrast>(APPEARANCE_NAMESPACE, CONTRAST_KEY)
+            .await
+    }
+
     /// Listen to changes of the system's preferred color scheme
     pub async fn receive_color_scheme_changed(
         &self,
@@ -202,6 +237,14 @@ impl<'a> Settings<'a> {
     ) -> Result<impl Stream<Item = ColorScheme>, Error> {
         Ok(self
             .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
+            .await?
+            .filter_map(|t| ready(t.ok())))
+    }
+
+    /// Listen to changes of the system's contrast level
+    pub async fn receive_contrast_changed(&self) -> Result<impl Stream<Item = Contrast>, Error> {
+        Ok(self
+            .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, CONTRAST_KEY)
             .await?
             .filter_map(|t| ready(t.ok())))
     }
