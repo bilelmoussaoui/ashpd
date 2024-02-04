@@ -1,6 +1,7 @@
+#[cfg(feature = "raw_handle")]
+use std::ptr::NonNull;
 #[cfg(feature = "gtk4_wayland")]
 use std::sync::Arc;
-use std::{fmt, ptr::NonNull};
 
 #[cfg(feature = "gtk4_wayland")]
 use futures_util::lock::Mutex;
@@ -27,7 +28,7 @@ pub struct Gtk4WindowIdentifier {
 }
 
 impl Gtk4WindowIdentifier {
-    pub async fn new(native: &impl glib::IsA<gtk4::Native>) -> Option<Self> {
+    pub async fn new(native: &impl glib::prelude::IsA<gtk4::Native>) -> Option<Self> {
         let surface = native.surface()?;
         match surface.display().backend() {
             #[cfg(feature = "gtk4_wayland")]
@@ -158,8 +159,8 @@ impl Gtk4WindowIdentifier {
     }
 }
 
-impl fmt::Display for Gtk4WindowIdentifier {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Display for Gtk4WindowIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!("{}", self.type_))
     }
 }

@@ -149,7 +149,7 @@ impl WindowIdentifier {
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     #[doc(alias = "xdp_parent_new_gtk")]
-    pub async fn from_native(native: &impl ::gtk4::glib::IsA<::gtk4::Native>) -> Self {
+    pub async fn from_native(native: &impl ::gtk4::prelude::IsA<::gtk4::Native>) -> Self {
         match Gtk4WindowIdentifier::new(native).await {
             Some(identifier) => Self::Gtk4(identifier),
             None => Self::default(),
