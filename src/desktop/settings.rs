@@ -100,7 +100,7 @@ impl TryFrom<Value<'_>> for ColorScheme {
     }
 }
 
-/// The system's preferred color scheme
+/// The system's preferred contrast level
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Contrast {
     /// No preference
