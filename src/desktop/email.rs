@@ -7,7 +7,7 @@
 //! Compose an email
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::OwnedFd};
 //!
 //! use ashpd::desktop::email::EmailRequest;
 //!
@@ -17,17 +17,17 @@
 //!         .address("test@gmail.com")
 //!         .subject("email subject")
 //!         .body("the pre-filled email body")
-//!         .attach(&file)
+//!         .attach(OwnedFd::from(file))
 //!         .send()
 //!         .await;
 //!     Ok(())
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::OwnedFd;
 
 use serde::Serialize;
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use zbus::zvariant::{self, SerializeDict, Type};
 
 use super::{HandleToken, Request};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
@@ -42,7 +42,7 @@ struct EmailOptions {
     bcc: Option<Vec<String>>,
     subject: Option<String>,
     body: Option<String>,
-    attachment_fds: Option<Vec<Fd>>,
+    attachment_fds: Option<Vec<zvariant::OwnedFd>>,
     // TODO Expose activation_token in the api
     activation_token: Option<String>,
 }
@@ -172,7 +172,7 @@ impl EmailRequest {
 
     /// Attaches a file to the email.
     #[must_use]
-    pub fn attach(mut self, attachment: &impl AsRawFd) -> Self {
+    pub fn attach(mut self, attachment: OwnedFd) -> Self {
         self.add_attachment(attachment);
         self
     }
@@ -187,8 +187,8 @@ impl EmailRequest {
     }
 
     /// A different variant of [`Self::attach`].
-    pub fn add_attachment(&mut self, attachment: &impl AsRawFd) {
-        let attachment = Fd::from(attachment.as_raw_fd());
+    pub fn add_attachment(&mut self, attachment: OwnedFd) {
+        let attachment = zvariant::OwnedFd::from(attachment);
         match self.options.attachment_fds {
             Some(ref mut attachments) => attachments.push(attachment),
             None => {

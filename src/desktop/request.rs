@@ -12,8 +12,8 @@ use serde::{
     Deserialize, Deserializer, Serialize,
 };
 use zbus::{
+    proxy::SignalStream,
     zvariant::{ObjectPath, Signature, Type, Value},
-    SignalStream,
 };
 
 use crate::{desktop::HandleToken, proxy::Proxy, Error};
@@ -235,7 +235,7 @@ where
         let message = self.1.next().await.ok_or(Error::NoResponse)?;
         #[cfg(feature = "tracing")]
         tracing::info!("Received signal 'Response' on '{}'", self.0.interface());
-        let response = match message.body::<Response<T>>()? {
+        let response = match message.body().deserialize::<Response<T>>()? {
             Response::Err(e) => Err(e.into()),
             Response::Ok(r) => Ok(r),
         };

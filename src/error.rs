@@ -7,9 +7,9 @@ use crate::desktop::{dynamic_launcher::UnexpectedIconError, request::ResponseErr
 /// See <https://github.com/flatpak/xdg-desktop-portal/blob/master/src/xdp-utils.h#L119-L127>.
 #[allow(missing_docs)]
 #[derive(DBusError, Debug)]
-#[dbus_error(prefix = "org.freedesktop.portal.Error")]
+#[zbus(prefix = "org.freedesktop.portal.Error")]
 pub enum PortalError {
-    #[dbus_error(zbus_error)]
+    #[zbus(error)]
     /// ZBus specific error.
     ZBus(zbus::Error),
     /// Request failed.

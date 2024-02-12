@@ -63,7 +63,7 @@ impl<'a> Proxy<'a> {
         P::Error: Into<zbus::Error>,
     {
         let connection = Self::connection().await?;
-        let inner: zbus::Proxy = zbus::ProxyBuilder::new_bare(&connection)
+        let inner: zbus::Proxy = zbus::ProxyBuilder::new(&connection)
             .interface(interface)?
             .path(path)?
             .destination(destination)?
@@ -160,8 +160,7 @@ impl<'a> Proxy<'a> {
             .call_method(method_name, &body)
             .await
             .map_err::<PortalError, _>(From::from)?;
-        let reply = msg.body::<R>()?;
-        msg.take_fds();
+        let reply = msg.body().deserialize::<R>()?;
 
         Ok(reply)
     }
@@ -226,7 +225,7 @@ impl<'a> Proxy<'a> {
             .filter_map({
                 #[cfg(not(feature = "tracing"))]
                 {
-                    move |msg| ready(msg.body().ok())
+                    move |msg| ready(msg.body().deserialize().ok())
                 }
                 #[cfg(feature = "tracing")]
                 {
@@ -243,7 +242,7 @@ impl<'a> Proxy<'a> {
         Ok(self.inner.receive_signal(name).await?.filter_map({
             #[cfg(not(feature = "tracing"))]
             {
-                move |msg| ready(msg.body().ok())
+                move |msg| ready(msg.body().deserialize().ok())
             }
             #[cfg(feature = "tracing")]
             {
@@ -255,12 +254,12 @@ impl<'a> Proxy<'a> {
 }
 
 #[cfg(feature = "tracing")]
-fn trace_body<I>(name: &'static str, ifc: &str, msg: impl AsRef<Message>) -> Option<I>
+fn trace_body<I>(name: &'static str, ifc: &str, msg: Message) -> Option<I>
 where
     I: for<'de> Deserialize<'de> + Type + Debug,
 {
     tracing::info!("Received signal '{name}' on '{ifc}'");
-    match msg.as_ref().body() {
+    match msg.body().deserialize() {
         Ok(body) => {
             tracing::debug!("With body {body:#?}");
             Some(body)

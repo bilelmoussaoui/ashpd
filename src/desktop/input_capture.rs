@@ -1,14 +1,11 @@
-use std::{
-    collections::HashMap,
-    os::fd::{IntoRawFd, RawFd},
-};
+use std::{collections::HashMap, os::fd::OwnedFd};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::{Stream, TryFutureExt};
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    DeserializeDict, ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
+    self, DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
 };
 
 use super::{HandleToken, Request, Session};
@@ -367,14 +364,14 @@ impl<'a> InputCapture<'a> {
     ///
     /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-connecttoeis).
     #[doc(alias = "ConnectToEIS")]
-    pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<RawFd, Error> {
+    pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<OwnedFd, Error> {
         // `ConnectToEIS` doesn't take any options for now
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
-            .call::<OwnedFd>("ConnectToEIS", &(session, options))
+            .call::<zvariant::OwnedFd>("ConnectToEIS", &(session, options))
             .await?;
-        Ok(fd.into_raw_fd())
+        Ok(fd.into())
     }
 
     /// Signal emitted when the application will no longer receive captured

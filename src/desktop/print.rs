@@ -3,7 +3,7 @@
 //! Print a file
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::AsFd};
 //!
 //! use ashpd::{desktop::print::PrintProxy, WindowIdentifier};
 //!
@@ -25,14 +25,20 @@
 //!         .await?
 //!         .response()?;
 //!     proxy
-//!         .print(&identifier, "test", &file, Some(pre_print.token), true)
+//!         .print(
+//!             &identifier,
+//!             "test",
+//!             &file.as_fd(),
+//!             Some(pre_print.token),
+//!             true,
+//!         )
 //!         .await?;
 //!
 //!     Ok(())
 //! }
 //! ```
 
-use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
+use std::{fmt, os::fd::BorrowedFd, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
@@ -694,7 +700,7 @@ impl<'a> PrintProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         title: &str,
-        fd: &impl AsRawFd,
+        fd: &BorrowedFd<'_>,
         token: Option<u32>,
         modal: bool,
     ) -> Result<Request<()>, Error> {
@@ -705,7 +711,7 @@ impl<'a> PrintProxy<'a> {
             .empty_request(
                 &options.handle_token,
                 "Print",
-                &(&identifier, title, Fd::from(fd.as_raw_fd()), &options),
+                &(&identifier, title, Fd::from(fd), &options),
             )
             .await
     }

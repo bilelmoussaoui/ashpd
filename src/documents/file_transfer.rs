@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::AsFd};
 //!
 //! use ashpd::documents::FileTransfer;
 //!
@@ -10,7 +10,7 @@
 //!
 //!     let key = proxy.start_transfer(true, true).await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy.add_files(&key, &[&file]).await?;
+//!     proxy.add_files(&key, &[&file.as_fd()]).await?;
 //!
 //!     // The files would be retrieved by another process
 //!     let files = proxy.retrieve_files(&key).await?;
@@ -22,7 +22,7 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, os::unix::prelude::AsRawFd};
+use std::{collections::HashMap, os::fd::BorrowedFd};
 
 use futures_util::Stream;
 use zbus::zvariant::{Fd, SerializeDict, Type, Value};
@@ -98,10 +98,10 @@ impl<'a> FileTransfer<'a> {
     ///
     /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html#org-freedesktop-portal-filetransfer-addfiles).
     #[doc(alias = "AddFiles")]
-    pub async fn add_files(&self, key: &str, fds: &[&impl AsRawFd]) -> Result<(), Error> {
+    pub async fn add_files(&self, key: &str, fds: &[&BorrowedFd<'_>]) -> Result<(), Error> {
         // `options` parameter doesn't seems to be used yet
         let options: HashMap<&str, Value<'_>> = HashMap::new();
-        let files: Vec<Fd> = fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        let files: Vec<Fd> = fds.iter().map(Fd::from).collect();
 
         self.0.call("AddFiles", &(key, files, options)).await
     }

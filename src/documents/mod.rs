@@ -36,7 +36,7 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, fmt, os::unix::prelude::AsRawFd, path::Path, str::FromStr};
+use std::{collections::HashMap, fmt, os::fd::BorrowedFd, path::Path, str::FromStr};
 
 use enumflags2::{bitflags, BitFlags};
 use serde::{Deserialize, Serialize};
@@ -179,15 +179,12 @@ impl<'a> Documents<'a> {
     #[doc(alias = "Add")]
     pub async fn add(
         &self,
-        o_path_fd: &(impl AsRawFd + fmt::Debug),
+        o_path_fd: &BorrowedFd<'_>,
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<DocumentID, Error> {
         self.0
-            .call(
-                "Add",
-                &(Fd::from(o_path_fd.as_raw_fd()), reuse_existing, persistent),
-            )
+            .call("Add", &(Fd::from(o_path_fd), reuse_existing, persistent))
             .await
     }
 
@@ -217,12 +214,12 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddFull")]
     pub async fn add_full(
         &self,
-        o_path_fds: &[&impl AsRawFd],
+        o_path_fds: &[&BorrowedFd<'_>],
         flags: BitFlags<DocumentFlags>,
         app_id: Option<AppID>,
         permissions: &[Permission],
     ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
-        let o_path: Vec<Fd> = o_path_fds.iter().map(|f| Fd::from(f.as_raw_fd())).collect();
+        let o_path: Vec<Fd> = o_path_fds.iter().map(Fd::from).collect();
         let app_id = app_id.as_deref().unwrap_or("");
         self.0
             .call_versioned("AddFull", &(o_path, flags, app_id, permissions), 2)
@@ -250,7 +247,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddNamed")]
     pub async fn add_named(
         &self,
-        o_path_parent_fd: &(impl AsRawFd + fmt::Debug),
+        o_path_parent_fd: &BorrowedFd<'_>,
         filename: impl AsRef<Path>,
         reuse_existing: bool,
         persistent: bool,
@@ -260,7 +257,7 @@ impl<'a> Documents<'a> {
             .call(
                 "AddNamed",
                 &(
-                    Fd::from(o_path_parent_fd.as_raw_fd()),
+                    Fd::from(o_path_parent_fd),
                     filename,
                     reuse_existing,
                     persistent,
@@ -296,7 +293,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddNamedFull")]
     pub async fn add_named_full(
         &self,
-        o_path_fd: &(impl AsRawFd + fmt::Debug),
+        o_path_fd: &BorrowedFd<'_>,
         filename: impl AsRef<Path>,
         flags: BitFlags<DocumentFlags>,
         app_id: Option<AppID>,
@@ -307,13 +304,7 @@ impl<'a> Documents<'a> {
         self.0
             .call_versioned(
                 "AddNamedFull",
-                &(
-                    Fd::from(o_path_fd.as_raw_fd()),
-                    filename,
-                    flags,
-                    app_id,
-                    permissions,
-                ),
+                &(Fd::from(o_path_fd), filename, flags, app_id, permissions),
                 3,
             )
             .await

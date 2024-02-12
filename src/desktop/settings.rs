@@ -38,7 +38,7 @@ use crate::{desktop::Color, proxy::Proxy, Error};
 /// A HashMap of the <key, value> settings found on a specific namespace.
 pub type Namespace = HashMap<String, OwnedValue>;
 
-#[derive(Clone, Deserialize, Type)]
+#[derive(Deserialize, Type)]
 /// A specific `namespace.key = value` setting.
 pub struct Setting(String, String, OwnedValue);
 
@@ -196,8 +196,8 @@ impl<'a> Settings<'a> {
         Error: From<<T as TryFrom<OwnedValue>>::Error>,
     {
         let value = self.0.call::<OwnedValue>("Read", &(namespace, key)).await?;
-        if let Some(v) = value.downcast_ref::<Value>() {
-            T::try_from(v.to_owned()).map_err(From::from)
+        if let Ok(v) = value.downcast_ref::<Value>() {
+            T::try_from(v.try_to_owned()?).map_err(From::from)
         } else {
             T::try_from(value).map_err(From::from)
         }
