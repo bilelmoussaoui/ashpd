@@ -17,7 +17,6 @@ default = ["async-std"]
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
 gtk4_wayland = ["gdk4wayland", "dep:gtk4"]
 gtk4_x11 = ["gdk4x11", "dep:gtk4"]
-pipewire = ["pw", "libc"]
 raw_handle = ["raw-window-handle", "wayland"]
 tokio = ["zbus/tokio", "dep:tokio"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
@@ -31,8 +30,7 @@ futures-util = "0.3"
 gdk4wayland = { git = "https://github.com/gtk-rs/gtk4-rs", package = "gdk4-wayland", branch = "0.8", version = "0.8", optional = true }
 gdk4x11 = { git = "https://github.com/gtk-rs/gtk4-rs", package = "gdk4-x11", branch = "0.8", version = "0.8", optional = true }
 gtk4 = { git = "https://github.com/gtk-rs/gtk4-rs", branch = "0.8", version = "0.8", optional = true }
-libc = { version = "0.2", optional = true }
-pw = { package = "pipewire", version = "0.7", optional = true }
+pipewire = { version = "0.8", optional = true }
 rand = { version = "0.8", default-features = false }
 raw-window-handle = { version = "0.6", optional = true }
 serde = { version = "1.0", features = ["derive"] }

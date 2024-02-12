@@ -46,7 +46,7 @@ pub enum Error {
     IO(std::io::Error),
     /// A pipewire error
     #[cfg(feature = "pipewire")]
-    Pipewire(pw::Error),
+    Pipewire(pipewire::Error),
     /// Invalid AppId
     ///
     /// See <https://developer.gnome.org/documentation/tutorials/application-id.html#rules-for-application-ids>
@@ -103,8 +103,8 @@ impl From<PortalError> for Error {
 }
 
 #[cfg(feature = "pipewire")]
-impl From<pw::Error> for Error {
-    fn from(e: pw::Error) -> Self {
+impl From<pipewire::Error> for Error {
+    fn from(e: pipewire::Error) -> Self {
         Self::Pipewire(e)
     }
 }
