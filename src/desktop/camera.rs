@@ -17,10 +17,10 @@
 //! }
 //! ```
 
-#[cfg(feature = "pipewire")]
-use std::os::fd::FromRawFd;
 use std::{collections::HashMap, os::fd::OwnedFd};
 
+#[cfg(feature = "pipewire")]
+use pipewire::{context::Context, main_loop::MainLoop};
 use zbus::zvariant::{self, SerializeDict, Type, Value};
 
 use super::{HandleToken, Request};
@@ -105,15 +105,6 @@ impl<'a> std::ops::Deref for Camera<'a> {
 }
 
 #[cfg(feature = "pipewire")]
-fn foreign_dic_to_map<D: pw::prelude::ReadableDict>(foreign: &D) -> HashMap<String, String> {
-    let mut map = HashMap::new();
-    for (key, value) in foreign.iter() {
-        map.insert(key.to_string(), value.to_string());
-    }
-    map
-}
-
-#[cfg(feature = "pipewire")]
 /// A PipeWire camera stream returned by [`pipewire_streams`].
 #[derive(Debug)]
 pub struct Stream {
@@ -136,14 +127,12 @@ impl Stream {
 
 #[cfg(feature = "pipewire")]
 fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone + 'static>(
-    fd: std::os::fd::OwnedFd,
+    fd: OwnedFd,
     callback: F,
     done_callback: G,
-) -> Result<(), pw::Error> {
-    use pw::prelude::ReadableDict;
-
-    let mainloop = pw::MainLoop::new()?;
-    let context = pw::Context::new(&mainloop)?;
+) -> Result<(), pipewire::Error> {
+    let mainloop = MainLoop::new(None)?;
+    let context = Context::new(&mainloop)?;
     let core = context.connect_fd(fd, None)?;
     let registry = core.get_registry()?;
 
@@ -158,7 +147,10 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
                     #[cfg(feature = "tracing")]
                     tracing::info!("found camera: {:#?}", props);
 
-                    let properties = foreign_dic_to_map(props);
+                    let mut properties = HashMap::new();
+                    for (key, value) in props.iter() {
+                        properties.insert(key.to_string(), value.to_string());
+                    }
                     let node_id = global.id;
 
                     let stream = Stream {
@@ -173,7 +165,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
     let _listener_core = core
         .add_listener_local()
         .done(move |id, seq| {
-            if id == pw::PW_ID_CORE && seq == pending {
+            if id == pipewire::core::PW_ID_CORE && seq == pending {
                 loop_clone.quit();
                 done_callback.clone()();
             }
@@ -199,7 +191,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 /// running.
 #[cfg(feature = "pipewire")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pipewire")))]
-pub async fn pipewire_streams(fd: OwnedFd) -> Result<Vec<Stream>, pw::Error> {
+pub async fn pipewire_streams(fd: OwnedFd) -> Result<Vec<Stream>, pipewire::Error> {
     let (sender, receiver) = futures_channel::oneshot::channel();
     let (streams_sender, mut streams_receiver) = futures_channel::mpsc::unbounded();
 
@@ -267,7 +259,7 @@ pub async fn request() -> Result<Option<(OwnedFd, Vec<Stream>)>, Error> {
     proxy.request_access().await?;
     if proxy.is_present().await? {
         let fd = proxy.open_pipe_wire_remote().await?;
-        let streams = pipewire_streams(fd).await?;
+        let streams = pipewire_streams(fd.try_clone()?).await?;
         Ok(Some((fd, streams)))
     } else {
         Ok(None)
