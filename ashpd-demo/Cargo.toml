@@ -5,17 +5,17 @@ name = "ashpd-demo"
 version = "0.4.1"
 
 [dependencies]
-adw = {version = "0.5", package = "libadwaita", features = ["v1_4"]}
+adw = {version = "0.6", package = "libadwaita", features = ["v1_4"]}
 anyhow = "1.0"
-ashpd = {version = "0.6", features = ["gtk4", "tracing", "pipewire"]}
+ashpd = {version = "0.7", branch = "bilelmoussaoui/zbus-port", git = "https://github.com/bilelmoussaoui/ashpd.git", features = ["gtk4", "tracing", "pipewire"]}
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
 futures-util = "0.3"
 gettext-rs = {version = "0.7", features = ["gettext-system"]}
-gst = {package = "gstreamer", version = "0.21"}
-gst4gtk = {package = "gst-plugin-gtk4", version = "0.11", features = ["wayland", "x11egl", "x11glx"]}
-gtk = {package = "gtk4", version = "0.7", features = ["gnome_44"]}
+gst = {package = "gstreamer", version = "0.22"}
+gst4gtk = {package = "gst-plugin-gtk4", version = "0.12", features = ["wayland", "x11egl", "x11glx", "gtk_v4_14"]}
+gtk = {package = "gtk4", version = "0.8", features = ["v4_14"]}
 serde = {version = "1.0", features = ["derive"]}
-shumate = {version = "0.4", package = "libshumate"}
+shumate = {version = "0.5", package = "libshumate"}
 tracing = "0.1"
 tracing-subscriber = {version = "0.3", default-features = false, features = ["fmt"]}
 url = {version = "2.3", features = ["serde"]}

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::OnceLock};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
@@ -12,7 +12,7 @@ use ashpd::{
 };
 use gtk::{
     gdk, gio,
-    glib::{self, clone, once_cell::sync::Lazy},
+    glib::{self, clone},
 };
 
 use crate::{
@@ -134,7 +134,6 @@ mod desktop_file_row {
 }
 
 // Used for caching the installed apps
-static CACHE_FILE: Lazy<PathBuf> = Lazy::new(|| glib::user_data_dir().join("installed-apps.txt"));
 static DEFAULT_DESKTOP_FILE: &str = r#"
 [Desktop Entry]
 Name=ASHPD Demo
@@ -215,7 +214,7 @@ mod imp {
             );
             klass.install_action_async(
                 "dynamic_launcher.uninstall",
-                Some("s"),
+                Some(&*str::static_variant_type()),
                 |widget, _, target| async move {
                     let desktop_id = target.unwrap();
                     match widget.uninstall(desktop_id.str().unwrap()).await {
@@ -289,8 +288,12 @@ impl DynamicLauncherPage {
         }
     }
 
+    fn cache_file() -> &'static PathBuf {
+        static CACHE_FILE: OnceLock<PathBuf> = OnceLock::new();
+        CACHE_FILE.get_or_init(|| glib::user_data_dir().join("installed-apps.txt"))
+    }
     async fn save_cache(&self) -> Result<(), glib::Error> {
-        let file = gio::File::for_path(&*CACHE_FILE);
+        let file = gio::File::for_path(&*Self::cache_file());
         let installed_apps_cache = &self.imp().installed_apps_cache;
 
         let mut data = String::new();
@@ -311,7 +314,7 @@ impl DynamicLauncherPage {
 
     async fn load_cache(&self) -> Result<(), glib::Error> {
         let imp = self.imp();
-        let file = gio::File::for_path(&*CACHE_FILE);
+        let file = gio::File::for_path(&*Self::cache_file());
         let (buffer, _) = file.load_contents_future().await?;
         let lines = std::str::from_utf8(&buffer).expect("Valid utf8").lines();
         for desktop_id in lines {
@@ -388,7 +391,7 @@ impl DynamicLauncherPage {
             .load_contents_future()
             .await
             .unwrap();
-        let icon = Icon::Bytes(data);
+        let icon = Icon::Bytes(data.to_vec());
 
         let response = proxy
             .prepare_install(&identifier, &launcher_name, icon, options)

@@ -1,4 +1,4 @@
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::{AsFd, BorrowedFd};
 
 use adw::subclass::prelude::*;
 use ashpd::{
@@ -80,7 +80,7 @@ impl PrintPage {
         let file = std::fs::File::open(path).unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        match print(&identifier, &title, file, modal).await {
+        match print(&identifier, &title, file.as_fd(), modal).await {
             Ok(_) => {
                 self.success("Print request was successful");
             }
@@ -93,10 +93,10 @@ impl PrintPage {
     }
 }
 
-async fn print<F: AsRawFd>(
+async fn print(
     identifier: &WindowIdentifier,
     title: &str,
-    file: F,
+    file: BorrowedFd<'_>,
     modal: bool,
 ) -> ashpd::Result<()> {
     let proxy = PrintProxy::new().await?;
@@ -107,6 +107,7 @@ async fn print<F: AsRawFd>(
             title,
             Settings::default(),
             PageSetup::default(),
+            None,
             modal,
         )
         .await?

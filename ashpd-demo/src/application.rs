@@ -151,16 +151,17 @@ impl Application {
         self.add_action(&action);
     }
 
-    pub fn stop_current_instance() -> ashpd::Result<()> {
-        let cnx = zbus::blocking::Connection::session()?;
-        let proxy: zbus::blocking::Proxy = zbus::blocking::ProxyBuilder::new_bare(&cnx)
+    pub async fn stop_current_instance() -> ashpd::Result<()> {
+        let cnx = zbus::Connection::session().await?;
+        let proxy: zbus::Proxy = zbus::ProxyBuilder::new(&cnx)
             .path(format!(
                 "/{}",
                 config::APP_ID.split('.').collect::<Vec<_>>().join("/")
             ))?
             .interface("org.gtk.Actions")?
             .destination(config::APP_ID)?
-            .build()?;
+            .build()
+            .await?;
         #[derive(Debug, serde::Serialize)]
         pub struct Params(
             String,
@@ -174,10 +175,12 @@ impl Application {
             }
         }
 
-        proxy.call_method(
-            "Activate",
-            &Params("quit".to_string(), Vec::new(), HashMap::new()),
-        )?;
+        proxy
+            .call_method(
+                "Activate",
+                &Params("quit".to_string(), Vec::new(), HashMap::new()),
+            )
+            .await?;
 
         Ok(())
     }

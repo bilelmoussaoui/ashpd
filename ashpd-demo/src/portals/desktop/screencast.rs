@@ -1,4 +1,7 @@
-use std::{os::unix::io::RawFd, sync::Arc};
+use std::{
+    os::fd::{AsFd, OwnedFd},
+    sync::Arc,
+};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
@@ -154,14 +157,14 @@ impl ScreenCastPage {
         match self.screencast().await {
             Ok((streams, fd, session)) => {
                 self.success("Screen cast session started successfully");
-                streams.iter().for_each(|stream| {
+                streams.iter().for_each(|stream: &Stream| {
                     let paintable = CameraPaintable::default();
                     let picture = gtk::Picture::builder()
                         .paintable(&paintable)
                         .hexpand(true)
                         .vexpand(true)
                         .build();
-                    paintable.set_pipewire_node_id(fd, Some(stream.pipe_wire_node_id()));
+                    paintable.set_pipewire_node_id(fd.as_fd(), Some(stream.pipe_wire_node_id()));
                     imp.streams_carousel.append(&picture);
                 });
 
@@ -206,7 +209,7 @@ impl ScreenCastPage {
         imp.response_group.set_visible(false);
     }
 
-    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, RawFd, Session<'static>)> {
+    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, OwnedFd, Session<'static>)> {
         let imp = self.imp();
         let sources = self.selected_sources();
         let cursor_mode = self.selected_cursor_mode();

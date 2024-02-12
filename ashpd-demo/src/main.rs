@@ -29,9 +29,11 @@ fn main() -> glib::ExitCode {
 
     let mut args = std::env::args();
     if args.any(|x| x == "--replace") {
-        if let Err(err) = Application::stop_current_instance() {
-            tracing::error!("Failed to replace current instance {}", err);
-        };
+        glib::spawn_future_local(async move {
+            if let Err(err) = Application::stop_current_instance().await {
+                tracing::error!("Failed to replace current instance {}", err);
+            };
+        });
     }
 
     Application::run()
