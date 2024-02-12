@@ -48,7 +48,7 @@ use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[derive(Debug, Copy, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "snake_case")]
 /// The page orientation.
@@ -114,7 +114,7 @@ impl FromStr for Orientation {
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdQuality"))]
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// The print quality.
