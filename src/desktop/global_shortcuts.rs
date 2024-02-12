@@ -163,6 +163,11 @@ impl Activated {
     pub fn timestamp(&self) -> Duration {
         Duration::from_millis(self.2)
     }
+
+    /// Optional information
+    pub fn options(&self) -> &HashMap<String, OwnedValue> {
+        &self.3
+    }
 }
 
 /// Notifies that a shortcut is not active anymore.
@@ -183,6 +188,11 @@ impl Deactivated {
     /// The timestamp, as seconds and microseconds since the Unix epoch.
     pub fn timestamp(&self) -> Duration {
         Duration::from_millis(self.2)
+    }
+
+    /// Optional information
+    pub fn options(&self) -> &HashMap<String, OwnedValue> {
+        &self.3
     }
 }
 

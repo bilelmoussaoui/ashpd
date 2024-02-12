@@ -43,7 +43,7 @@ use enumflags2::{bitflags, BitFlags};
 use futures_util::{Stream, TryFutureExt};
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
@@ -111,6 +111,11 @@ struct State {
 pub struct InhibitState(OwnedObjectPath, State);
 
 impl InhibitState {
+    /// The session triggered the state change
+    pub fn session_handle(&self) -> ObjectPath<'_> {
+        self.0.as_ref()
+    }
+
     /// Whether screensaver is active or not.
     pub fn screensaver_active(&self) -> bool {
         self.1.screensaver_active

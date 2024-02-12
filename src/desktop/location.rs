@@ -33,7 +33,7 @@ use std::fmt::Debug;
 use futures_util::{Stream, TryFutureExt};
 use serde::Deserialize;
 use serde_repr::Serialize_repr;
-use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
@@ -92,6 +92,11 @@ struct SessionStartOptions {
 pub struct Location(OwnedObjectPath, LocationInner);
 
 impl Location {
+    /// The associated session.
+    pub fn session_handle(&self) -> ObjectPath<'_> {
+        self.0.as_ref()
+    }
+
     /// The accuracy, in meters.
     pub fn accuracy(&self) -> f64 {
         self.1.accuracy
