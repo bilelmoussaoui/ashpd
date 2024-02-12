@@ -2,9 +2,10 @@ use std::{fmt, str::FromStr};
 
 #[cfg(all(feature = "raw_handle", feature = "gtk4"))]
 use raw_window_handle::{
-    DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, RawDisplayHandle,
-    RawWindowHandle, WindowHandle,
+    DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle,
 };
+#[cfg(feature = "raw_handle")]
+use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
