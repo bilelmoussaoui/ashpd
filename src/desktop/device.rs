@@ -32,6 +32,8 @@ struct AccessDeviceOptions {
     handle_token: HandleToken,
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdDevice"))]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]

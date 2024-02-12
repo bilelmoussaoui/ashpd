@@ -73,6 +73,8 @@ pub enum LauncherType {
     WebApplication,
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdIconType"))]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]

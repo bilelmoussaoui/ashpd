@@ -47,6 +47,8 @@ use zbus::zvariant::{Fd, SerializeDict, Type};
 use super::Request;
 use crate::{desktop::HandleToken, proxy::Proxy, Error, WindowIdentifier};
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdSetOn"))]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]

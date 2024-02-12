@@ -38,6 +38,8 @@ use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict
 use super::{HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdLocationAccuracy"))]
 #[derive(Serialize_repr, PartialEq, Eq, Clone, Copy, Debug, Type)]
 #[doc(alias = "XdpLocationAccuracy")]
 #[repr(u32)]

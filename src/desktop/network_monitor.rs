@@ -54,6 +54,8 @@ impl NetworkStatus {
     }
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdConnectivity"))]
 #[derive(Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[repr(u32)]
 /// Host's network activity

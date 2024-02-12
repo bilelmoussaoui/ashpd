@@ -68,6 +68,8 @@ impl UpdateInfo {
     }
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdUpdateStatus"))]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
 /// The update status.

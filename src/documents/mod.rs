@@ -65,6 +65,8 @@ pub enum DocumentFlags {
 /// application
 pub type Permissions = HashMap<AppID, Vec<Permission>>;
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdPermission"))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "kebab-case")]

@@ -22,9 +22,11 @@ use zbus::zvariant::{Fd, Type};
 
 use crate::{error::PortalError, proxy::Proxy, Error};
 
-#[derive(Deserialize_repr, PartialEq, Eq, Debug, Type)]
-/// The status of the game mode.
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdGameModeStatus"))]
+#[derive(Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[repr(i32)]
+/// The status of the game mode.
 pub enum Status {
     /// GameMode is inactive.
     Inactive = 0,

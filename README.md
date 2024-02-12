@@ -44,6 +44,7 @@ pub async fn run() -> ashpd::Result<()> {
 | tracing | Record various debug information using the `tracing` library | No |
 | tokio | Enable tokio runtime on zbus dependency | No |
 | async-std | Enable the use of the async-std runtime | Yes |
+| glib | Make all the enums derive `glib::Enum`. Flags are not supported yet | No |
 | gtk4 | Implement `From<Color>` for [`gdk4::RGBA`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gdk4/struct.RGBA.html) Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) | No |
 | gtk4_wayland |Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) with Wayland backend support only | No |
 | gtk4_x11 |Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) with X11 backend support only | No |

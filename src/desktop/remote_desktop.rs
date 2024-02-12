@@ -91,6 +91,8 @@ use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 use super::{screencast::Stream, HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdKeyState"))]
 #[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Eq, Debug, Type)]
 #[doc(alias = "XdpKeyState")]
 /// The keyboard key state.
@@ -121,7 +123,9 @@ pub enum DeviceType {
     Touchscreen,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Type)]
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdAxis"))]
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[doc(alias = "XdpDiscreteAxis")]
 #[repr(u32)]
 /// The available axis.

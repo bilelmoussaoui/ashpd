@@ -46,6 +46,8 @@ use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 use super::{HandleToken, Request};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "snake_case")]
@@ -110,6 +112,8 @@ impl FromStr for Orientation {
     }
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdQuality"))]
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]

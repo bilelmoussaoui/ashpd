@@ -15,10 +15,11 @@ rust-version = "1.75"
 async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net"]
 default = ["async-std"]
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
-gtk4_wayland = ["gdk4wayland", "dep:gtk4"]
-gtk4_x11 = ["gdk4x11", "dep:gtk4"]
+gtk4_wayland = ["gdk4wayland", "glib", "dep:gtk4"]
+gtk4_x11 = ["gdk4x11", "glib", "dep:gtk4"]
 raw_handle = ["raw-window-handle", "wayland"]
 tokio = ["zbus/tokio", "dep:tokio"]
+glib = ["dep:glib"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 
 [dependencies]
@@ -29,6 +30,7 @@ futures-channel = "0.3"
 futures-util = "0.3"
 gdk4wayland = { package = "gdk4-wayland", version = "0.8", optional = true }
 gdk4x11 = { package = "gdk4-x11", version = "0.8", optional = true }
+glib = { version = "0.19", optional = true }
 gtk4 = { version = "0.8", optional = true }
 pipewire = { version = "0.8", optional = true }
 rand = { version = "0.8", default-features = false }

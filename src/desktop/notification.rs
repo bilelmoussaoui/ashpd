@@ -59,6 +59,8 @@ use zbus::zvariant::{OwnedValue, SerializeDict, Type, Value};
 use super::Icon;
 use crate::{proxy::Proxy, Error};
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdPriority"))]
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 #[serde(rename_all = "lowercase")]

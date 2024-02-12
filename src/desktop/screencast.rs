@@ -84,6 +84,8 @@ pub enum CursorMode {
     Metadata,
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdPersistMode"))]
 #[derive(Default, Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]

@@ -127,6 +127,8 @@ impl InhibitState {
     }
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdSessionState"))]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
 #[doc(alias = "XdpLoginSessionState")]
 #[repr(u32)]
