@@ -76,6 +76,11 @@ impl Disabled {
     pub fn session_handle(&self) -> ObjectPath<'_> {
         self.0.as_ref()
     }
+
+    /// Optional information
+    pub fn options(&self) -> &HashMap<String, OwnedValue> {
+        &self.1
+    }
 }
 
 #[derive(Debug, Deserialize, Type)]

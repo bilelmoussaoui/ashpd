@@ -91,6 +91,7 @@ use zbus::zvariant::Type;
 #[derive(Default, Type)]
 #[zvariant(signature = "s")]
 #[doc(alias = "XdpParent")]
+#[non_exhaustive]
 pub enum WindowIdentifier {
     /// Gtk 4 Window Identifier
     #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
