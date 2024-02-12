@@ -56,7 +56,7 @@ impl SecretPage {
     async fn retrieve_secret(&self) {
         let imp = self.imp();
 
-        match retrieve_secret().await {
+        match secret::retrieve().await {
             Ok(key) => {
                 let key_str = format!("{key:?}")
                     .trim_start_matches('[')
@@ -71,16 +71,4 @@ impl SecretPage {
             }
         }
     }
-}
-
-async fn retrieve_secret() -> ashpd::Result<Vec<u8>> {
-    let proxy = secret::Secret::new().await?;
-
-    let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
-    proxy.retrieve(&x2.as_fd()).await?;
-    drop(x2);
-    let mut buf = Vec::new();
-    x1.read_to_end(&mut buf)?;
-
-    Ok(buf)
 }
