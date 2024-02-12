@@ -143,7 +143,7 @@ impl NotificationPage {
                 imp.id_label.set_text(action.id());
                 imp.action_name_label.set_text(action.name());
                 imp.parameters_label
-                    .set_text(action.parameter()[0].downcast_ref::<str>().unwrap());
+                    .set_text(&action.parameter()[0].downcast_ref::<String>().unwrap());
             }
             Err(err) => {
                 tracing::error!("Failed to send a notification: {err}");
@@ -157,8 +157,10 @@ impl NotificationPage {
 mod button {
     use super::*;
     mod imp {
+        use std::sync::OnceLock;
+
         use adw::subclass::prelude::BinImpl;
-        use glib::{once_cell::sync::Lazy, subclass::Signal};
+        use glib::subclass::Signal;
 
         use super::*;
 
@@ -178,9 +180,8 @@ mod button {
 
         impl ObjectImpl for NotificationButton {
             fn signals() -> &'static [Signal] {
-                static SIGNALS: Lazy<Vec<Signal>> =
-                    Lazy::new(|| vec![Signal::builder("removed").action().build()]);
-                SIGNALS.as_ref()
+                static SIGNALS: OnceLock<Vec<Signal>> = OnceLock::new();
+                SIGNALS.get_or_init(|| vec![Signal::builder("removed").action().build()])
             }
 
             fn constructed(&self) {

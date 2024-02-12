@@ -1,4 +1,4 @@
-use std::os::unix::prelude::RawFd;
+use std::os::fd::AsFd;
 
 use adw::subclass::prelude::*;
 use ashpd::desktop::camera;
@@ -92,7 +92,9 @@ impl CameraPage {
         self.action_set_enabled("camera.start", false);
         match stream().await {
             Ok(stream_fd) => {
-                let streams = camera::pipewire_streams(stream_fd).await.unwrap();
+                let streams = camera::pipewire_streams(stream_fd.try_clone().unwrap())
+                    .await
+                    .unwrap();
                 let n_cameras = streams.len();
                 for s in streams.iter() {
                     let picture = gtk::Picture::new();
@@ -112,7 +114,7 @@ impl CameraPage {
 
                     picture.set_vexpand(true);
                     picture.set_paintable(Some(&paintable));
-                    paintable.set_pipewire_node_id(stream_fd, Some(s.node_id()));
+                    paintable.set_pipewire_node_id(stream_fd.as_fd(), Some(s.node_id()));
 
                     self.imp()
                         .picture_stack
@@ -153,7 +155,7 @@ impl CameraPage {
     }
 }
 
-async fn stream() -> ashpd::Result<RawFd> {
+async fn stream() -> ashpd::Result<std::os::fd::OwnedFd> {
     let proxy = camera::Camera::new().await?;
     proxy.request_access().await?;
     proxy.open_pipe_wire_remote().await

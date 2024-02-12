@@ -2,7 +2,9 @@ use adw::{prelude::*, subclass::prelude::*};
 use gtk::glib;
 
 mod imp {
-    use glib::{once_cell::sync::Lazy, subclass::Signal};
+    use std::sync::OnceLock;
+
+    use glib::subclass::Signal;
 
     use super::*;
 
@@ -18,9 +20,8 @@ mod imp {
 
     impl ObjectImpl for RemovableRow {
         fn signals() -> &'static [Signal] {
-            static SIGNALS: Lazy<Vec<Signal>> =
-                Lazy::new(|| vec![Signal::builder("removed").action().build()]);
-            SIGNALS.as_ref()
+            static SIGNALS: OnceLock<Vec<Signal>> = OnceLock::new();
+            SIGNALS.get_or_init(|| vec![Signal::builder("removed").action().build()])
         }
 
         fn constructed(&self) {

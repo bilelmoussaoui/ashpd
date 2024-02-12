@@ -1,3 +1,5 @@
+use std::os::fd::AsFd;
+
 use adw::subclass::prelude::*;
 use ashpd::{desktop::open_uri, WindowIdentifier};
 use gtk::{glib, prelude::*};
@@ -63,7 +65,7 @@ impl OpenUriPage {
                 let response = if uri.scheme() == "file" {
                     let file_path = uri.to_file_path().unwrap();
                     match std::fs::File::open(&file_path) {
-                        Ok(fd) => request.send_file(&fd).await,
+                        Ok(fd) => request.send_file(&fd.as_fd()).await,
                         Err(err) => {
                             tracing::error!("Failed to open file: {err}");
                             self.error(&format!(

@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{fs::File, os::fd::OwnedFd};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{desktop::email::EmailRequest, WindowIdentifier};
@@ -133,8 +133,8 @@ impl EmailPage {
         let attachments = self.attachments();
         if !attachments.is_empty() {
             // TODO: add a request.set_attachments helper method
-            attachments.iter().for_each(|attachment| {
-                request.add_attachment(attachment);
+            attachments.into_iter().for_each(|attachment| {
+                request.add_attachment(OwnedFd::from(attachment));
             });
         }
         match request.send().await {

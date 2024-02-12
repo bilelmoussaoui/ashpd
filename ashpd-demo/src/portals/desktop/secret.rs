@@ -1,5 +1,6 @@
 use std::{
     io::Read,
+    os::fd::AsFd,
     sync::{Arc, Mutex},
 };
 
@@ -76,7 +77,7 @@ async fn retrieve_secret() -> ashpd::Result<Vec<u8>> {
     let proxy = secret::Secret::new().await?;
 
     let (mut x1, x2) = std::os::unix::net::UnixStream::pair().unwrap();
-    proxy.retrieve(&x2).await?;
+    proxy.retrieve(&x2.as_fd()).await?;
     drop(x2);
     let mut buf = Vec::new();
     x1.read_to_end(&mut buf)?;
