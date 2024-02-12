@@ -111,15 +111,15 @@ impl<'de> Deserialize<'de> for Icon {
             "bytes" => {
                 let array = data.downcast_ref::<zvariant::Array>().unwrap();
                 let mut bytes = Vec::with_capacity(array.len());
-                for byte in array.iter() {
-                    bytes.push(*byte.downcast_ref::<u8>().unwrap());
+                for byte in array.inner() {
+                    bytes.push(byte.downcast_ref::<u8>().unwrap());
                 }
                 Ok(Self::Bytes(bytes))
             }
             "themed" => {
                 let array = data.downcast_ref::<zvariant::Array>().unwrap();
                 let mut names = Vec::with_capacity(array.len());
-                for value in array.iter() {
+                for value in array.inner() {
                     let name = value.downcast_ref::<zvariant::Str>().unwrap();
                     names.push(name.as_str().to_owned());
                 }
@@ -149,15 +149,15 @@ impl TryFrom<&OwnedValue> for Icon {
             "bytes" => {
                 let array = fields[1].downcast_ref::<zvariant::Array>().unwrap();
                 let mut bytes = Vec::with_capacity(array.len());
-                for byte in array.iter() {
-                    bytes.push(*byte.downcast_ref::<u8>().unwrap());
+                for byte in array.inner() {
+                    bytes.push(byte.downcast_ref::<u8>().unwrap());
                 }
                 Ok(Self::Bytes(bytes))
             }
             "themed" => {
                 let array = fields[1].downcast_ref::<zvariant::Array>().unwrap();
                 let mut names = Vec::with_capacity(array.len());
-                for value in array.iter() {
+                for value in array.inner() {
                     let name = value.downcast_ref::<zvariant::Str>().unwrap();
                     names.push(name.as_str().to_owned());
                 }
@@ -184,14 +184,13 @@ impl TryFrom<Value<'_>> for Icon {
 impl TryFrom<&Value<'_>> for Icon {
     type Error = crate::Error;
     fn try_from(value: &Value<'_>) -> Result<Self, Self::Error> {
-        Self::try_from(value.to_owned())
+        Self::try_from(value.try_to_owned()?)
     }
 }
 
 #[cfg(test)]
 mod test {
-    use byteorder::LE;
-    use zbus::zvariant::{from_slice, to_bytes, EncodingContext as Context};
+    use zbus::zvariant::{serialized::Context, to_bytes, Endian};
 
     use super::*;
 
@@ -202,22 +201,22 @@ mod test {
 
     #[test]
     fn serialize_deserialize() {
-        let ctxt = Context::<LE>::new_dbus(0);
+        let ctxt = Context::new_dbus(Endian::Little, 0);
 
         let icon = Icon::with_names(&["dialog-symbolic"]);
 
         let encoded = to_bytes(ctxt, &icon).unwrap();
-        let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
+        let decoded: Icon = encoded.deserialize().unwrap().0;
         assert_eq!(decoded, icon);
 
         let icon = Icon::Uri(url::Url::parse("file://some/icon.png").unwrap());
         let encoded = to_bytes(ctxt, &icon).unwrap();
-        let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
+        let decoded: Icon = encoded.deserialize().unwrap().0;
         assert_eq!(decoded, icon);
 
         let icon = Icon::Bytes(vec![1, 0, 1, 0]);
         let encoded = to_bytes(ctxt, &icon).unwrap();
-        let decoded: Icon = from_slice(&encoded, ctxt).unwrap();
+        let decoded: Icon = encoded.deserialize().unwrap().0;
         assert_eq!(decoded, icon);
     }
 }

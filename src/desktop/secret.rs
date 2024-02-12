@@ -1,7 +1,7 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use std::io::Read;
+//! use std::{io::Read, os::fd::AsFd};
 //!
 //! use ashpd::desktop::secret::Secret;
 //!
@@ -9,7 +9,7 @@
 //!     let secret = Secret::new().await?;
 //!
 //!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair()?;
-//!     secret.retrieve(&x2).await?;
+//!     secret.retrieve(&x2.as_fd()).await?;
 //!     drop(x2);
 //!     let mut buf = Vec::new();
 //!     x1.read_to_end(&mut buf)?;
@@ -18,7 +18,7 @@
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::{AsFd, BorrowedFd};
 
 #[cfg(feature = "async-std")]
 use async_net::unix::UnixStream;
@@ -68,13 +68,13 @@ impl<'a> Secret<'a> {
     ///
     /// See also [`RetrieveSecret`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Secret.html#org-freedesktop-portal-secret-retrievesecret)
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve(&self, fd: &impl AsRawFd) -> Result<Request<()>, Error> {
+    pub async fn retrieve(&self, fd: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let options = RetrieveOptions::default();
         self.0
             .empty_request(
                 &options.handle_token,
                 "RetrieveSecret",
-                &(Fd::from(fd.as_raw_fd()), &options),
+                &(Fd::from(fd), &options),
             )
             .await
     }
@@ -95,7 +95,7 @@ pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
 
     let (mut x1, x2) = UnixStream::pair()?;
-    proxy.retrieve(&x2).await?;
+    proxy.retrieve(&x2.as_fd()).await?;
     drop(x2);
     let mut buf = Vec::new();
     x1.read_to_end(&mut buf).await?;

@@ -7,7 +7,7 @@
 //! ## Sets a wallpaper from a file:
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::AsFd};
 //!
 //! use ashpd::desktop::wallpaper::{SetOn, WallpaperRequest};
 //!
@@ -16,7 +16,7 @@
 //!     WallpaperRequest::default()
 //!         .set_on(SetOn::Both)
 //!         .show_preview(true)
-//!         .build_file(&file)
+//!         .build_file(&file.as_fd())
 //!         .await?;
 //!     Ok(())
 //! }
@@ -39,7 +39,7 @@
 //! }
 //! ```
 
-use std::{fmt, os::unix::prelude::AsRawFd, str::FromStr};
+use std::{fmt, os::fd::BorrowedFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, SerializeDict, Type};
@@ -124,14 +124,14 @@ impl<'a> WallpaperProxy<'a> {
     pub async fn set_wallpaper_file(
         &self,
         identifier: &WindowIdentifier,
-        file: &impl AsRawFd,
+        file: &BorrowedFd<'_>,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
         self.0
             .empty_request(
                 &options.handle_token,
                 "SetWallpaperFile",
-                &(&identifier, Fd::from(file.as_raw_fd()), &options),
+                &(&identifier, Fd::from(file), &options),
             )
             .await
     }
@@ -204,7 +204,7 @@ impl WallpaperRequest {
     }
 
     /// Build using a file.
-    pub async fn build_file(self, file: &impl AsRawFd) -> Result<Request<()>, Error> {
+    pub async fn build_file(self, file: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
             .set_wallpaper_file(&self.identifier, file, self.options)

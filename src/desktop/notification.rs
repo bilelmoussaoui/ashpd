@@ -196,7 +196,9 @@ impl Notification {
         mut self,
         default_action_target: impl Into<Option<T>>,
     ) -> Self {
-        self.default_action_target = default_action_target.into().map(|t| t.into().to_owned());
+        self.default_action_target = default_action_target
+            .into()
+            .map(|t| t.into().try_to_owned().unwrap());
         self
     }
 
@@ -245,7 +247,7 @@ impl Button {
     /// The value to send with the action name when the button is clicked.
     #[must_use]
     pub fn target<'a, T: Into<Value<'a>>>(mut self, target: impl Into<Option<T>>) -> Self {
-        self.target = target.into().map(|t| t.into().to_owned());
+        self.target = target.into().map(|t| t.into().try_to_owned().unwrap());
         self
     }
 }

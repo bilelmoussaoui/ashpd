@@ -4,13 +4,13 @@
 //!
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::AsFd};
 //!
 //! use ashpd::desktop::trash;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-night.jpg").unwrap();
-//!     trash::trash_file(&file).await?;
+//!     trash::trash_file(&file.as_fd()).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -18,19 +18,19 @@
 //! Or by using the Proxy directly
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::AsFd};
 //!
 //! use ashpd::desktop::trash::TrashProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     let proxy = TrashProxy::new().await?;
-//!     proxy.trash_file(&file).await?;
+//!     proxy.trash_file(&file.as_fd()).await?;
 //!     Ok(())
 //! }
 //! ```
 
-use std::os::unix::io::AsRawFd;
+use std::os::fd::BorrowedFd;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
@@ -71,11 +71,8 @@ impl<'a> TrashProxy<'a> {
     /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Trash.html#org-freedesktop-portal-trash-trashfile).
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
-    pub async fn trash_file(&self, fd: &impl AsRawFd) -> Result<(), Error> {
-        let status = self
-            .0
-            .call("TrashFile", &(Fd::from(fd.as_raw_fd())))
-            .await?;
+    pub async fn trash_file(&self, fd: &BorrowedFd<'_>) -> Result<(), Error> {
+        let status = self.0.call("TrashFile", &(Fd::from(fd))).await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed)),
             TrashStatus::Succeeded => Ok(()),
@@ -93,7 +90,7 @@ impl<'a> std::ops::Deref for TrashProxy<'a> {
 
 #[doc(alias = "xdp_portal_trash_file")]
 /// A handy wrapper around [`TrashProxy::trash_file`].
-pub async fn trash_file(fd: &impl AsRawFd) -> Result<(), Error> {
+pub async fn trash_file(fd: &BorrowedFd<'_>) -> Result<(), Error> {
     let proxy = TrashProxy::new().await?;
     proxy.trash_file(fd).await
 }

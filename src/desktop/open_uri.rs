@@ -7,7 +7,7 @@
 //! ## Open a file
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::AsFd};
 //!
 //! use ashpd::desktop::open_uri::OpenFileRequest;
 //!
@@ -15,7 +15,7 @@
 //!     let file = File::open("/home/bilelmoussaoui/adwaita-day.jpg").unwrap();
 //!     OpenFileRequest::default()
 //!         .ask(true)
-//!         .send_file(&file)
+//!         .send_file(&file.as_fd())
 //!         .await?;
 //!     Ok(())
 //! }
@@ -38,18 +38,20 @@
 //! ## Open a directory
 //!
 //! ```rust,no_run
-//! use std::fs::File;
+//! use std::{fs::File, os::fd::AsFd};
 //!
 //! use ashpd::desktop::open_uri::OpenDirectoryRequest;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let directory = File::open("/home/bilelmoussaoui/Downloads").unwrap();
-//!     OpenDirectoryRequest::default().send(&directory).await?;
+//!     OpenDirectoryRequest::default()
+//!         .send(&directory.as_fd())
+//!         .await?;
 //!     Ok(())
 //! }
 //! ```
 
-use std::os::unix::prelude::AsRawFd;
+use std::os::fd::BorrowedFd;
 
 use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
@@ -85,14 +87,14 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_directory(
         &self,
         identifier: &WindowIdentifier,
-        directory: &impl AsRawFd,
+        directory: &BorrowedFd<'_>,
         options: OpenDirOptions,
     ) -> Result<Request<()>, Error> {
         self.0
             .empty_request(
                 &options.handle_token,
                 "OpenDirectory",
-                &(&identifier, Fd::from(directory.as_raw_fd()), &options),
+                &(&identifier, Fd::from(directory), &options),
             )
             .await
     }
@@ -100,14 +102,14 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_file(
         &self,
         identifier: &WindowIdentifier,
-        file: &impl AsRawFd,
+        file: &BorrowedFd<'_>,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
         self.0
             .empty_request(
                 &options.handle_token,
                 "OpenFile",
-                &(&identifier, Fd::from(file.as_raw_fd()), &options),
+                &(&identifier, Fd::from(file), &options),
             )
             .await
     }
@@ -170,7 +172,7 @@ impl OpenFileRequest {
     }
 
     /// Send the request for a file.
-    pub async fn send_file(self, file: &impl AsRawFd) -> Result<Request<()>, Error> {
+    pub async fn send_file(self, file: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy.open_file(&self.identifier, file, self.options).await
     }
@@ -202,7 +204,7 @@ impl OpenDirectoryRequest {
     }
 
     /// Send the request.
-    pub async fn send(self, directory: &impl AsRawFd) -> Result<Request<()>, Error> {
+    pub async fn send(self, directory: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
             .open_directory(&self.identifier, directory, self.options)

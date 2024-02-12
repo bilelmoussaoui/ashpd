@@ -51,10 +51,9 @@ wayland-protocols = { version = "0.31", optional = true, features = [
     "unstable",
     "client",
 ] }
-zbus = { version = "3.1", default-features = false, features = ["url"] }
+zbus = { version = "4.0", default-features = false, features = ["url"] }
 
 [dev-dependencies]
-byteorder = "1.4"
 serde_json = "1.0"
 
 [package.metadata.docs.rs]

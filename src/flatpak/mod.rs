@@ -28,7 +28,7 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    os::unix::prelude::{AsRawFd, RawFd},
+    os::fd::{BorrowedFd, OwnedFd},
     path::Path,
 };
 
@@ -36,7 +36,7 @@ use enumflags2::{bitflags, BitFlags};
 use futures_util::Stream;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{self, Fd, OwnedObjectPath, SerializeDict, Type};
 
 use crate::{proxy::Proxy, Error, FilePath};
 
@@ -116,11 +116,11 @@ pub struct SpawnOptions {
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
     #[zvariant(rename = "sandbox-expose-fd")]
-    sandbox_expose_fd: Option<Vec<Fd>>,
+    sandbox_expose_fd: Option<Vec<zvariant::OwnedFd>>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, read-only.
     #[zvariant(rename = "sandbox-expose-fd-ro")]
-    sandbox_expose_fd_ro: Option<Vec<Fd>>,
+    sandbox_expose_fd_ro: Option<Vec<zvariant::OwnedFd>>,
     /// Flags affecting the created sandbox.
     #[zvariant(rename = "sandbox-flags")]
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
@@ -130,11 +130,11 @@ pub struct SpawnOptions {
     /// A file descriptor of the directory that  will be used as `/usr` in the
     /// new sandbox.
     #[zvariant(rename = "usr-fd")]
-    usr_fd: Option<RawFd>,
+    usr_fd: Option<zvariant::OwnedFd>,
     /// A file descriptor of the directory that  will be used as `/app` in the
     /// new sandbox.
     #[zvariant(rename = "app-fd")]
-    app_fd: Option<RawFd>,
+    app_fd: Option<zvariant::OwnedFd>,
 }
 
 impl SpawnOptions {
@@ -167,26 +167,26 @@ impl SpawnOptions {
 
     /// Sets the list of file descriptors of files to expose the new sandbox.
     #[must_use]
-    pub fn sandbox_expose_fd<P: IntoIterator<Item = I>, I: AsRawFd + Type + Serialize>(
+    pub fn sandbox_expose_fd<P: IntoIterator<Item = OwnedFd>>(
         mut self,
         sandbox_expose_fd: impl Into<Option<P>>,
     ) -> Self {
         self.sandbox_expose_fd = sandbox_expose_fd
             .into()
-            .map(|a| a.into_iter().map(|s| Fd::from(s.as_raw_fd())).collect());
+            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect());
         self
     }
 
     /// Sets the list of file descriptors of files to expose the new sandbox,
     /// read-only.
     #[must_use]
-    pub fn sandbox_expose_fd_ro<P: IntoIterator<Item = I>, I: AsRawFd + Type + Serialize>(
+    pub fn sandbox_expose_fd_ro<P: IntoIterator<Item = OwnedFd>>(
         mut self,
         sandbox_expose_fd_ro: impl Into<Option<P>>,
     ) -> Self {
         self.sandbox_expose_fd_ro = sandbox_expose_fd_ro
             .into()
-            .map(|a| a.into_iter().map(|s| Fd::from(s.as_raw_fd())).collect());
+            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect());
         self
     }
 
@@ -215,16 +215,16 @@ impl SpawnOptions {
     /// Set a file descriptor of the directory that  will be used as `/usr` in
     /// the new sandbox.
     #[must_use]
-    pub fn usr_fd<F: AsRawFd>(mut self, fd: impl Into<Option<F>>) -> Self {
-        self.usr_fd = fd.into().map(|s| s.as_raw_fd());
+    pub fn usr_fd(mut self, fd: impl Into<Option<OwnedFd>>) -> Self {
+        self.usr_fd = fd.into().map(|f| f.into());
         self
     }
 
     /// Set a file descriptor of the directory that  will be used as `/app` in
     /// the new sandbox.
     #[must_use]
-    pub fn app_fd<F: AsRawFd>(mut self, fd: impl Into<Option<F>>) -> Self {
-        self.app_fd = fd.into().map(|s| s.as_raw_fd());
+    pub fn app_fd(mut self, fd: impl Into<Option<OwnedFd>>) -> Self {
+        self.app_fd = fd.into().map(|f| f.into());
         self
     }
 }
@@ -325,7 +325,7 @@ impl<'a> Flatpak<'a> {
         &self,
         cwd_path: impl AsRef<Path>,
         argv: &[impl AsRef<Path>],
-        fds: HashMap<u32, Fd>,
+        fds: HashMap<u32, BorrowedFd<'_>>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
@@ -335,6 +335,7 @@ impl<'a> Flatpak<'a> {
             .iter()
             .map(FilePath::new)
             .collect::<Result<Vec<FilePath>, _>>()?;
+        let fds: HashMap<u32, Fd> = fds.iter().map(|(k, val)| (*k, Fd::from(val))).collect();
         self.0
             .call("Spawn", &(cwd_path, argv, fds, envs, flags, options))
             .await

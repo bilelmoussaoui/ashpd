@@ -19,12 +19,9 @@
 
 #[cfg(feature = "pipewire")]
 use std::os::fd::FromRawFd;
-use std::{
-    collections::HashMap,
-    os::unix::prelude::{IntoRawFd, RawFd},
-};
+use std::{collections::HashMap, os::fd::OwnedFd};
 
-use zbus::zvariant::{OwnedFd, SerializeDict, Type, Value};
+use zbus::zvariant::{self, SerializeDict, Type, Value};
 
 use super::{HandleToken, Request};
 use crate::{proxy::Proxy, Error};
@@ -76,15 +73,15 @@ impl<'a> Camera<'a> {
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Camera.html#org-freedesktop-portal-camera-openpipewireremote).
     #[doc(alias = "OpenPipeWireRemote")]
     #[doc(alias = "xdp_portal_open_pipewire_remote_for_camera")]
-    pub async fn open_pipe_wire_remote(&self) -> Result<RawFd, Error> {
+    pub async fn open_pipe_wire_remote(&self) -> Result<OwnedFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/camera.c#L178
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
-            .call::<OwnedFd>("OpenPipeWireRemote", &options)
+            .call::<zvariant::OwnedFd>("OpenPipeWireRemote", &options)
             .await?;
-        Ok(fd.into_raw_fd())
+        Ok(fd.into())
     }
 
     /// A boolean stating whether there is any cameras available.
@@ -202,15 +199,7 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
 /// running.
 #[cfg(feature = "pipewire")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pipewire")))]
-pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
-    let fd = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
-
-    if fd == -1 {
-        return Err(pw::Error::CreationFailed);
-    }
-
-    let fd = unsafe { std::os::fd::OwnedFd::from_raw_fd(fd) };
-
+pub async fn pipewire_streams(fd: OwnedFd) -> Result<Vec<Stream>, pw::Error> {
     let (sender, receiver) = futures_channel::oneshot::channel();
     let (streams_sender, mut streams_receiver) = futures_channel::mpsc::unbounded();
 
@@ -259,7 +248,7 @@ pub async fn pipewire_streams(fd: RawFd) -> Result<Vec<Stream>, pw::Error> {
 #[cfg_attr(docsrs, doc(cfg(not(feature = "pipewire"))))]
 /// Request access to the camera and return a file descriptor if one is
 /// available.
-pub async fn request() -> Result<Option<RawFd>, Error> {
+pub async fn request() -> Result<Option<OwnedFd>, Error> {
     let proxy = Camera::new().await?;
     proxy.request_access().await?;
     if proxy.is_present().await? {
@@ -273,7 +262,7 @@ pub async fn request() -> Result<Option<RawFd>, Error> {
 #[cfg_attr(docsrs, doc(cfg(feature = "pipewire")))]
 /// Request access to the camera and return a file descriptor and a list of the
 /// available streams, one per camera.
-pub async fn request() -> Result<Option<(RawFd, Vec<Stream>)>, Error> {
+pub async fn request() -> Result<Option<(OwnedFd, Vec<Stream>)>, Error> {
     let proxy = Camera::new().await?;
     proxy.request_access().await?;
     if proxy.is_present().await? {

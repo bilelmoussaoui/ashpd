@@ -81,15 +81,12 @@
 //! [select_sources]: crate::desktop::screencast::Screencast::select_sources
 //! [create_session]: crate::desktop::remote_desktop::RemoteDesktop::create_session
 
-use std::{
-    collections::HashMap,
-    os::unix::prelude::{IntoRawFd, RawFd},
-};
+use std::{collections::HashMap, os::fd::OwnedFd};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, OwnedFd, SerializeDict, Type, Value};
+use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
 use super::{screencast::Stream, HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
@@ -631,15 +628,15 @@ impl<'a> RemoteDesktop<'a> {
     ///
     /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html#org-freedesktop-portal-remotedesktop-connecttoeis).
     #[doc(alias = "ConnectToEIS")]
-    pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<RawFd, Error> {
+    pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<OwnedFd, Error> {
         // `ConnectToEIS` doesn't take any options for now
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L1464
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
-            .call_versioned::<OwnedFd>("ConnectToEIS", &(session, options), 2)
+            .call_versioned::<zvariant::OwnedFd>("ConnectToEIS", &(session, options), 2)
             .await?;
-        Ok(fd.into_raw_fd())
+        Ok(fd.into())
     }
 
     /// Available source types.

@@ -51,8 +51,10 @@ impl<'de> Deserialize<'de> for FilePath {
 
 #[cfg(test)]
 mod tests {
-    use byteorder::LE;
-    use zbus::zvariant::{from_slice, to_bytes, EncodingContext as Context};
+    use zbus::zvariant::{
+        serialized::{Context, Data},
+        to_bytes, Endian,
+    };
 
     use super::*;
 
@@ -66,20 +68,20 @@ mod tests {
 
         assert_eq!(c_string.as_bytes_with_nul(), &bytes);
 
-        let ctxt = Context::<LE>::new_dbus(0);
+        let ctxt = Context::new_dbus(Endian::Little, 0);
         let file_path = FilePath(c_string);
 
         let file_path_2 = FilePath::new("abc").unwrap();
 
-        let encoded_filename = to_bytes(ctxt, &file_path).unwrap();
-        let encoded_filename_2 = to_bytes(ctxt, &file_path_2).unwrap();
-        let encoded_bytes = to_bytes(ctxt, &bytes).unwrap();
+        let encoded_filename = to_bytes(ctxt, &file_path).unwrap().to_vec();
+        let encoded_filename_2 = to_bytes(ctxt, &file_path_2).unwrap().to_vec();
+        let encoded_bytes = to_bytes(ctxt, &bytes).unwrap().to_vec();
 
         // It does not matter whether we use new("abc") or deserialize from b"abc\0".
         assert_eq!(encoded_filename, encoded_bytes);
         assert_eq!(encoded_filename_2, encoded_bytes);
 
-        let decoded: FilePath = from_slice(&encoded_bytes, ctxt).unwrap();
+        let decoded: FilePath = Data::new(encoded_bytes, ctxt).deserialize().unwrap().0;
         assert_eq!(decoded, file_path);
         assert_eq!(decoded, file_path_2);
     }
