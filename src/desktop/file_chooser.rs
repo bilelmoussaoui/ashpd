@@ -106,7 +106,7 @@ impl FilterType {
         matches!(self, FilterType::MimeType)
     }
 
-    /// Whether it is a glib pattern type filter.
+    /// Whether it is a glob pattern type filter.
     fn is_pattern(&self) -> bool {
         matches!(self, FilterType::GlobPattern)
     }
