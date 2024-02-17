@@ -68,7 +68,7 @@ struct ReleaseOptions {
 
 /// Indicates that an input capturing session was disabled.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "oa{sv}")]
+#[zvariant(signature = "(oa{sv})")]
 pub struct Disabled(OwnedObjectPath, HashMap<String, OwnedValue>);
 
 impl Disabled {
@@ -91,7 +91,7 @@ struct DeactivatedOptions {
 
 /// Indicates that an input capturing session was disabled.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "oa{sv}")]
+#[zvariant(signature = "(oa{sv})")]
 pub struct Deactivated(OwnedObjectPath, DeactivatedOptions);
 
 impl Deactivated {
@@ -118,7 +118,7 @@ struct ActivatedOptions {
 
 /// Indicates that an input capturing session was disabled.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "oa{sv}")]
+#[zvariant(signature = "(oa{sv})")]
 pub struct Activated(OwnedObjectPath, ActivatedOptions);
 
 impl Activated {
@@ -151,7 +151,7 @@ struct ZonesChangedOptions {
 
 /// Indicates that an input capturing session was disabled.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "oa{sv}")]
+#[zvariant(signature = "(oa{sv})")]
 pub struct ZonesChanged(OwnedObjectPath, ZonesChangedOptions);
 
 impl ZonesChanged {
