@@ -74,7 +74,9 @@ impl<'a> TrashProxy<'a> {
     pub async fn trash_file(&self, fd: &BorrowedFd<'_>) -> Result<(), Error> {
         let status = self.0.call("TrashFile", &(Fd::from(fd))).await?;
         match status {
-            TrashStatus::Failed => Err(Error::Portal(PortalError::Failed("Failed to trash file".to_string()))),
+            TrashStatus::Failed => Err(Error::Portal(PortalError::Failed(
+                "Failed to trash file".to_string(),
+            ))),
             TrashStatus::Succeeded => Ok(()),
         }
     }
