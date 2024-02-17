@@ -189,9 +189,7 @@ impl<'a> GameMode<'a> {
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
-                "Failed to register by pidfd"
-            )))),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed("Failed to register by pidfd".to_string()))),
         }
     }
 
@@ -269,9 +267,7 @@ impl<'a> GameMode<'a> {
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
-                "Failed to unregister by pidfd`"
-            )))),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed("Failed to unregister by pidfd`".to_string()))),
         }
     }
 

@@ -59,10 +59,10 @@ mod tests {
     fn test_cgroup_v2_is_snap() {
         let data =
             "0::/user.slice/user-1000.slice/user@1000.service/apps.slice/snap.something.scope\n";
-        assert_eq!(cgroup_v2_is_snap(data), true);
+        assert!(cgroup_v2_is_snap(data));
 
         let data = "0::/user.slice/user-1000.slice/user@1000.service/apps.slice\n";
-        assert_eq!(cgroup_v2_is_snap(data), false);
+        assert!(!cgroup_v2_is_snap(data));
 
         let data = "12:pids:/user.slice/user-1000.slice/user@1000.service
 11:perf_event:/
@@ -77,6 +77,6 @@ mod tests {
 2:cpu,cpuacct:/user.slice
 1:name=systemd:/user.slice/user-1000.slice/user@1000.service/apps.slice/apps-org.gnome.Terminal.slice/vte-spawn-228ae109-a869-4533-8988-65ea4c10b492.scope
 0::/user.slice/user-1000.slice/user@1000.service/apps.slice/apps-org.gnome.Terminal.slice/vte-spawn-228ae109-a869-4533-8988-65ea4c10b492.scope\n";
-        assert_eq!(cgroup_v2_is_snap(data), true);
+        assert!(cgroup_v2_is_snap(data));
     }
 }

@@ -203,7 +203,7 @@ mod test {
     fn serialize_deserialize() {
         let ctxt = Context::new_dbus(Endian::Little, 0);
 
-        let icon = Icon::with_names(&["dialog-symbolic"]);
+        let icon = Icon::with_names(["dialog-symbolic"]);
 
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = encoded.deserialize().unwrap().0;

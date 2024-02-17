@@ -84,16 +84,16 @@ mod test {
 
     #[test]
     fn handle_token() {
-        assert_eq!(HandleToken::try_from("token").is_ok(), true);
+        assert!(HandleToken::try_from("token").is_ok());
 
         let token = HandleToken::try_from("token2").unwrap();
         assert_eq!(token.to_string(), "token2".to_string());
 
-        assert_eq!(HandleToken::try_from("/test").is_ok(), false);
+        assert!(HandleToken::try_from("/test").is_err());
 
-        assert_eq!(HandleToken::try_from("تجربة").is_ok(), false);
+        assert!(HandleToken::try_from("تجربة").is_err());
 
-        assert_eq!(HandleToken::try_from("test_token").is_ok(), true);
+        assert!(HandleToken::try_from("test_token").is_ok());
 
         HandleToken::default(); // ensure we don't panic
     }
