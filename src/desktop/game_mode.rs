@@ -157,7 +157,9 @@ impl<'a> GameMode<'a> {
         let status = self.0.call("RegisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
+                "Failed to register game for `{pid}`"
+            )))),
         }
     }
 
@@ -187,7 +189,9 @@ impl<'a> GameMode<'a> {
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
+                "Failed to register by pidfd"
+            )))),
         }
     }
 
@@ -209,7 +213,9 @@ impl<'a> GameMode<'a> {
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
+                "Failed to register by pid for target=`{target}` requester=`{requester}`"
+            )))),
         }
     }
 
@@ -231,7 +237,9 @@ impl<'a> GameMode<'a> {
         let status = self.0.call("UnregisterGame", &(pid)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
+                "Failed to unregister for `{pid}`"
+            )))),
         }
     }
 
@@ -261,7 +269,9 @@ impl<'a> GameMode<'a> {
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
+                "Failed to unregister by pidfd`"
+            )))),
         }
     }
 
@@ -284,7 +294,9 @@ impl<'a> GameMode<'a> {
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
-            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed)),
+            RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
+                "Failed to unregister by pid for target=`{target}` requester=`{requester}`"
+            )))),
         }
     }
 }
