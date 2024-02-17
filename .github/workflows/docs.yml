@@ -36,6 +36,11 @@ jobs:
           command: doc
           args: --package ashpd --features "gtk4,pipewire,wayland,raw_handle" --no-deps
 
+      - name: Fix permissions
+        run: |
+          chmod -c -R +rX "target/doc/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
