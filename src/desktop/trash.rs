@@ -30,7 +30,7 @@
 //! }
 //! ```
 
-use std::os::fd::BorrowedFd;
+use std::os::fd::AsFd;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
@@ -71,7 +71,7 @@ impl<'a> TrashProxy<'a> {
     /// See also [`TrashFile`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Trash.html#org-freedesktop-portal-trash-trashfile).
     #[doc(alias = "TrashFile")]
     #[doc(alias = "xdp_portal_trash_file")]
-    pub async fn trash_file(&self, fd: &BorrowedFd<'_>) -> Result<(), Error> {
+    pub async fn trash_file(&self, fd: &impl AsFd) -> Result<(), Error> {
         let status = self.0.call("TrashFile", &(Fd::from(fd))).await?;
         match status {
             TrashStatus::Failed => Err(Error::Portal(PortalError::Failed(
@@ -92,7 +92,7 @@ impl<'a> std::ops::Deref for TrashProxy<'a> {
 
 #[doc(alias = "xdp_portal_trash_file")]
 /// A handy wrapper around [`TrashProxy::trash_file`].
-pub async fn trash_file(fd: &BorrowedFd<'_>) -> Result<(), Error> {
+pub async fn trash_file(fd: &impl AsFd) -> Result<(), Error> {
     let proxy = TrashProxy::new().await?;
     proxy.trash_file(fd).await
 }
