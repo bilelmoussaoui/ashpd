@@ -2,7 +2,7 @@
 //! access to the session helper, spawn a process on the host, outside any
 //! sandbox.
 
-use std::{collections::HashMap, os::fd::BorrowedFd, path::Path};
+use std::{collections::HashMap, os::fd::AsFd, path::Path};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::Stream;
@@ -75,7 +75,7 @@ impl<'a> Development<'a> {
         &self,
         cwd_path: impl AsRef<Path>,
         argv: &[impl AsRef<Path>],
-        fds: HashMap<u32, BorrowedFd<'_>>,
+        fds: HashMap<u32, impl AsFd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<HostCommandFlags>,
     ) -> Result<u32, Error> {
