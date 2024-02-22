@@ -20,7 +20,7 @@ use super::WindowIdentifierType;
 
 // Supported versions.
 const ZXDG_EXPORTER_V1: u32 = 1;
-const ZXDG_EXPORTER_V2: u32 = 1;
+const ZXDG_EXPORTER_V2: u32 = 2;
 
 #[derive(Debug)]
 pub struct WaylandWindowIdentifier {
