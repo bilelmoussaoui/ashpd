@@ -211,7 +211,7 @@ impl<'a> Settings<'a> {
     pub async fn accent_color(&self) -> Result<Color, Error> {
         self.read::<(f64, f64, f64)>(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
             .await
-            .map(|(r, g, b)| Color::new(r, g, b))
+            .map(Color::new)
     }
 
     /// Retrieves the system's preferred color scheme
@@ -244,7 +244,7 @@ impl<'a> Settings<'a> {
                 ACCENT_COLOR_SCHEME_KEY,
             )
             .await?
-            .filter_map(|t| ready(t.ok().map(|(r, g, b)| Color::new(r, g, b)))))
+            .filter_map(|t| ready(t.ok().map(Color::new))))
     }
 
     /// Listen to changes of the system's contrast level

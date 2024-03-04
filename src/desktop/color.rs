@@ -1,35 +1,32 @@
-use crate::{
-    zvariant::{self, DeserializeDict, Type},
-    Error,
-};
+use crate::zvariant::{self, DeserializeDict, Type};
 
-#[derive(DeserializeDict, Clone, Copy, PartialEq, Type)]
+#[derive(DeserializeDict, Clone, Copy, PartialEq, Type, zvariant::Value, zvariant::OwnedValue)]
 /// A color as a RGB tuple.
 ///
 /// **Note** the values are normalized in the [0.0, 1.0] range.
 #[zvariant(signature = "dict")]
 pub struct Color {
-    color: [f64; 3],
+    color: (f64, f64, f64),
 }
 
 impl Color {
-    pub(crate) fn new(r: f64, g: f64, b: f64) -> Self {
-        Self { color: [r, g, b] }
+    pub(crate) fn new(color: (f64, f64, f64)) -> Self {
+        Self { color }
     }
 
     /// Red.
     pub fn red(&self) -> f64 {
-        self.color[0]
+        self.color.0
     }
 
     /// Green.
     pub fn green(&self) -> f64 {
-        self.color[1]
+        self.color.1
     }
 
     /// Blue.
     pub fn blue(&self) -> f64 {
-        self.color[2]
+        self.color.2
     }
 }
 
@@ -41,16 +38,6 @@ impl From<Color> for gtk4::gdk::RGBA {
             .green(color.green() as f32)
             .blue(color.blue() as f32)
             .build()
-    }
-}
-
-impl TryFrom<zvariant::OwnedValue> for Color {
-    type Error = Error;
-
-    fn try_from(value: zvariant::OwnedValue) -> Result<Self, Self::Error> {
-        value
-            .try_into()
-            .map_err(|_| crate::Error::ParseError("Failed to parse color"))
     }
 }
 
