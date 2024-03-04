@@ -13,6 +13,10 @@ pub struct Color {
 }
 
 impl Color {
+    pub(crate) fn new(r: f64, g: f64, b: f64) -> Self {
+        Self { color: [r, g, b] }
+    }
+
     /// Red.
     pub fn red(&self) -> f64 {
         self.color[0]
