@@ -205,8 +205,9 @@ impl<'a> Settings<'a> {
 
     /// Retrieves the system's preferred accent color
     pub async fn accent_color(&self) -> Result<Color, Error> {
-        self.read::<Color>(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
+        self.read::<(f64, f64, f64)>(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
             .await
+            .map(|(r, g, b)| Color::new(r, g, b))
     }
 
     /// Retrieves the system's preferred color scheme
@@ -232,13 +233,14 @@ impl<'a> Settings<'a> {
     }
 
     /// Listen to changes of the system's accent color
-    pub async fn receive_accent_color_changed(
-        &self,
-    ) -> Result<impl Stream<Item = ColorScheme>, Error> {
+    pub async fn receive_accent_color_changed(&self) -> Result<impl Stream<Item = Color>, Error> {
         Ok(self
-            .receive_setting_changed_with_args(APPEARANCE_NAMESPACE, ACCENT_COLOR_SCHEME_KEY)
+            .receive_setting_changed_with_args::<(f64, f64, f64)>(
+                APPEARANCE_NAMESPACE,
+                ACCENT_COLOR_SCHEME_KEY,
+            )
             .await?
-            .filter_map(|t| ready(t.ok())))
+            .filter_map(|t| ready(t.ok().map(|(r, g, b)| Color::new(r, g, b)))))
     }
 
     /// Listen to changes of the system's contrast level
