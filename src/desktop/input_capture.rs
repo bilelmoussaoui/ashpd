@@ -83,7 +83,7 @@ impl Disabled {
     }
 }
 
-#[derive(Debug, Deserialize, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct DeactivatedOptions {
     activation_id: u32,
@@ -107,9 +107,8 @@ impl Deactivated {
     }
 }
 
-#[derive(Debug, Deserialize, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
-
 struct ActivatedOptions {
     activation_id: u32,
     cursor_position: (f32, f32),
@@ -143,7 +142,7 @@ impl Activated {
     }
 }
 
-#[derive(Debug, Deserialize, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct ZonesChangedOptions {
     zone_set: u32,
