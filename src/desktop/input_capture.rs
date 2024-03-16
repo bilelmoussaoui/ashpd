@@ -107,7 +107,7 @@ impl Deactivated {
     }
 }
 
-#[derive(Debug, Deserialize, Type)]
+#[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 
 struct ActivatedOptions {
