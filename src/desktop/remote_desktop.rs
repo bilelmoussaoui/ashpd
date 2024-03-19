@@ -2,7 +2,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!     desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktop, PersistMode},
 //!     WindowIdentifier,
 //! };
 //!
@@ -10,7 +10,12 @@
 //!     let proxy = RemoteDesktop::new().await?;
 //!     let session = proxy.create_session().await?;
 //!     proxy
-//!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
+//!         .select_devices(
+//!             &session,
+//!             DeviceType::Keyboard | DeviceType::Pointer,
+//!             None,
+//!             PersistMode::DoNot
+//!         )
 //!         .await?;
 //!
 //!     let response = proxy
@@ -37,7 +42,7 @@
 //! ```rust,no_run
 //! use ashpd::{
 //!     desktop::{
-//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop, PersistMode as RDPersistMode},
 //!         screencast::{CursorMode, PersistMode, Screencast, SourceType},
 //!     },
 //!     WindowIdentifier,
@@ -50,7 +55,12 @@
 //!     let session = remote_desktop.create_session().await?;
 //!
 //!     remote_desktop
-//!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
+//!         .select_devices(
+//!             &session,
+//!             DeviceType::Keyboard | DeviceType::Pointer,
+//!             None,
+//!             RDPersistMode::ExplicitlyRevoked,
+//!         )
 //!         .await?;
 //!     screencast
 //!         .select_sources(
@@ -138,6 +148,25 @@ pub enum Axis {
     Horizontal = 1,
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdRemoteDesktopPersistMode"))]
+#[derive(Default, Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
+#[doc(alias = "XdpRemoteDesktopPersistMode")]
+#[repr(u32)]
+/// Persistence mode for a remote desktop session.
+pub enum PersistMode {
+    #[doc(alias = "XDP_REMOTEDESKTOP_PERSIST_MODE_NONE")]
+    #[default]
+    /// Do not persist.
+    DoNot = 0,
+    #[doc(alias = "XDP_REMOTEDESKTOP_PERSIST_MODE_TRANSIENT")]
+    /// Persist while the application is running.
+    Application = 1,
+    #[doc(alias = "XDP_REMOTEDESKTOP_PERSIST_MODE_PERSISTENT")]
+    /// Persist until explicitly revoked.
+    ExplicitlyRevoked = 2,
+}
+
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::create_session`] request.
 #[zvariant(signature = "dict")]
@@ -166,12 +195,24 @@ struct SelectDevicesOptions {
     handle_token: HandleToken,
     /// The device types to request remote controlling of. Default is all.
     types: Option<BitFlags<DeviceType>>,
+    restore_token: Option<String>,
+    persist_mode: Option<PersistMode>,
 }
 
 impl SelectDevicesOptions {
     /// Sets the device types to request remote controlling of.
     pub fn types(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
         self.types = types.into();
+        self
+    }
+
+    pub fn persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
+        self.persist_mode = persist_mode.into();
+        self
+    }
+
+    pub fn restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
+        self.restore_token = token.into().map(ToOwned::to_owned);
         self
     }
 }
@@ -190,6 +231,7 @@ struct StartRemoteOptions {
 pub struct SelectedDevices {
     devices: BitFlags<DeviceType>,
     streams: Option<Vec<Stream>>,
+    restore_token: Option<String>,
 }
 
 impl SelectedDevices {
@@ -201,6 +243,11 @@ impl SelectedDevices {
     /// The selected streams if a ScreenCast portal is used on the same session
     pub fn streams(&self) -> Option<&[Stream]> {
         self.streams.as_deref()
+    }
+
+    /// The session restore token.
+    pub fn restore_token(&self) -> Option<&str> {
+        self.restore_token.as_deref()
     }
 }
 
@@ -255,8 +302,13 @@ impl<'a> RemoteDesktop<'a> {
         &self,
         session: &Session<'_>,
         types: BitFlags<DeviceType>,
+        restore_token: Option<&str>,
+        persist_mode: PersistMode,
     ) -> Result<Request<()>, Error> {
-        let options = SelectDevicesOptions::default().types(types);
+        let options = SelectDevicesOptions::default()
+            .types(types)
+            .persist_mode(persist_mode)
+            .restore_token(restore_token);
         self.0
             .empty_request(&options.handle_token, "SelectDevices", &(session, &options))
             .await
