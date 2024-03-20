@@ -49,7 +49,6 @@ use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
-pub use super::PersistMode;
 use super::{HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
