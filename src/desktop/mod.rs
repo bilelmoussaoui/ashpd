@@ -10,8 +10,6 @@ mod color;
 pub use color::Color;
 mod icon;
 pub use icon::Icon;
-use serde_repr::Serialize_repr;
-use zbus::zvariant::Type;
 
 pub mod account;
 pub mod background;
