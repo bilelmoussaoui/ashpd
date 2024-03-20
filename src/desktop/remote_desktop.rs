@@ -2,7 +2,10 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktop, PersistMode},
+//!     desktop::{
+//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!         PersistMode,
+//!     },
 //!     WindowIdentifier,
 //! };
 //!
@@ -42,8 +45,9 @@
 //! ```rust,no_run
 //! use ashpd::{
 //!     desktop::{
-//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop, PersistMode as RDPersistMode},
-//!         screencast::{CursorMode, PersistMode, Screencast, SourceType},
+//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!         screencast::{CursorMode, Screencast, SourceType},
+//!         PersistMode,
 //!     },
 //!     WindowIdentifier,
 //! };
@@ -59,7 +63,7 @@
 //!             &session,
 //!             DeviceType::Keyboard | DeviceType::Pointer,
 //!             None,
-//!             RDPersistMode::ExplicitlyRevoked,
+//!             PersistMode::DoNot,
 //!         )
 //!         .await?;
 //!     screencast
@@ -98,7 +102,7 @@ use futures_util::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
-use super::{screencast::Stream, HandleToken, Request, Session};
+use super::{screencast::Stream, HandleToken, PersistMode, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
@@ -146,25 +150,6 @@ pub enum Axis {
     #[doc(alias = "XDP_AXIS_HORIZONTAL_SCROLL")]
     /// Horizontal axis.
     Horizontal = 1,
-}
-
-#[cfg_attr(feature = "glib", derive(glib::Enum))]
-#[cfg_attr(feature = "glib", enum_type(name = "AshpdRemoteDesktopPersistMode"))]
-#[derive(Default, Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
-#[doc(alias = "XdpRemoteDesktopPersistMode")]
-#[repr(u32)]
-/// Persistence mode for a remote desktop session.
-pub enum PersistMode {
-    #[doc(alias = "XDP_REMOTEDESKTOP_PERSIST_MODE_NONE")]
-    #[default]
-    /// Do not persist.
-    DoNot = 0,
-    #[doc(alias = "XDP_REMOTEDESKTOP_PERSIST_MODE_TRANSIENT")]
-    /// Persist while the application is running.
-    Application = 1,
-    #[doc(alias = "XDP_REMOTEDESKTOP_PERSIST_MODE_PERSISTENT")]
-    /// Persist until explicitly revoked.
-    ExplicitlyRevoked = 2,
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]

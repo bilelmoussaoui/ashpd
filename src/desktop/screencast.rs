@@ -7,7 +7,10 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::screencast::{CursorMode, PersistMode, Screencast, SourceType},
+//!     desktop::{
+//!         screencast::{CursorMode, Screencast, SourceType},
+//!         PersistMode,
+//!     },
 //!     WindowIdentifier,
 //! };
 //!
@@ -46,6 +49,7 @@ use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
+pub use super::PersistMode;
 use super::{HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
@@ -82,25 +86,6 @@ pub enum CursorMode {
     /// The cursor is not part of the screen cast stream, but sent as PipeWire
     /// stream metadata.
     Metadata,
-}
-
-#[cfg_attr(feature = "glib", derive(glib::Enum))]
-#[cfg_attr(feature = "glib", enum_type(name = "AshpdPersistMode"))]
-#[derive(Default, Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
-#[doc(alias = "XdpPersistMode")]
-#[repr(u32)]
-/// Persistence mode for a screencast session.
-pub enum PersistMode {
-    #[doc(alias = "XDP_PERSIST_MODE_NONE")]
-    #[default]
-    /// Do not persist.
-    DoNot = 0,
-    #[doc(alias = "XDP_PERSIST_MODE_TRANSIENT")]
-    /// Persist while the application is running.
-    Application = 1,
-    #[doc(alias = "XDP_PERSIST_MODE_PERSISTENT")]
-    /// Persist until explicitly revoked.
-    ExplicitlyRevoked = 2,
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
