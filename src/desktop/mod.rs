@@ -55,3 +55,24 @@ pub mod secret;
 pub mod settings;
 pub mod trash;
 pub mod wallpaper;
+
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdPersistMode"))]
+#[derive(
+    Default, serde_repr::Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, zbus::zvariant::Type,
+)]
+#[doc(alias = "XdpPersistMode")]
+#[repr(u32)]
+/// Persistence mode for a screencast or remote desktop session.
+pub enum PersistMode {
+    #[doc(alias = "XDP_PERSIST_MODE_NONE")]
+    #[default]
+    /// Do not persist.
+    DoNot = 0,
+    #[doc(alias = "XDP_PERSIST_MODE_TRANSIENT")]
+    /// Persist while the application is running.
+    Application = 1,
+    #[doc(alias = "XDP_PERSIST_MODE_PERSISTENT")]
+    /// Persist until explicitly revoked.
+    ExplicitlyRevoked = 2,
+}

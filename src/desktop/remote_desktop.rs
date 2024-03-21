@@ -2,7 +2,10 @@
 //!
 //! ```rust,no_run
 //! use ashpd::{
-//!     desktop::remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!     desktop::{
+//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!         PersistMode,
+//!     },
 //!     WindowIdentifier,
 //! };
 //!
@@ -10,7 +13,12 @@
 //!     let proxy = RemoteDesktop::new().await?;
 //!     let session = proxy.create_session().await?;
 //!     proxy
-//!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
+//!         .select_devices(
+//!             &session,
+//!             DeviceType::Keyboard | DeviceType::Pointer,
+//!             None,
+//!             PersistMode::DoNot
+//!         )
 //!         .await?;
 //!
 //!     let response = proxy
@@ -38,7 +46,8 @@
 //! use ashpd::{
 //!     desktop::{
 //!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
-//!         screencast::{CursorMode, PersistMode, Screencast, SourceType},
+//!         screencast::{CursorMode, Screencast, SourceType},
+//!         PersistMode,
 //!     },
 //!     WindowIdentifier,
 //! };
@@ -50,7 +59,12 @@
 //!     let session = remote_desktop.create_session().await?;
 //!
 //!     remote_desktop
-//!         .select_devices(&session, DeviceType::Keyboard | DeviceType::Pointer)
+//!         .select_devices(
+//!             &session,
+//!             DeviceType::Keyboard | DeviceType::Pointer,
+//!             None,
+//!             PersistMode::DoNot,
+//!         )
 //!         .await?;
 //!     screencast
 //!         .select_sources(
@@ -88,7 +102,7 @@ use futures_util::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
-use super::{screencast::Stream, HandleToken, Request, Session};
+use super::{screencast::Stream, HandleToken, PersistMode, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
@@ -166,12 +180,24 @@ struct SelectDevicesOptions {
     handle_token: HandleToken,
     /// The device types to request remote controlling of. Default is all.
     types: Option<BitFlags<DeviceType>>,
+    restore_token: Option<String>,
+    persist_mode: Option<PersistMode>,
 }
 
 impl SelectDevicesOptions {
     /// Sets the device types to request remote controlling of.
     pub fn types(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
         self.types = types.into();
+        self
+    }
+
+    pub fn persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
+        self.persist_mode = persist_mode.into();
+        self
+    }
+
+    pub fn restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
+        self.restore_token = token.into().map(ToOwned::to_owned);
         self
     }
 }
@@ -190,6 +216,7 @@ struct StartRemoteOptions {
 pub struct SelectedDevices {
     devices: BitFlags<DeviceType>,
     streams: Option<Vec<Stream>>,
+    restore_token: Option<String>,
 }
 
 impl SelectedDevices {
@@ -201,6 +228,11 @@ impl SelectedDevices {
     /// The selected streams if a ScreenCast portal is used on the same session
     pub fn streams(&self) -> Option<&[Stream]> {
         self.streams.as_deref()
+    }
+
+    /// The session restore token.
+    pub fn restore_token(&self) -> Option<&str> {
+        self.restore_token.as_deref()
     }
 }
 
@@ -255,8 +287,13 @@ impl<'a> RemoteDesktop<'a> {
         &self,
         session: &Session<'_>,
         types: BitFlags<DeviceType>,
+        restore_token: Option<&str>,
+        persist_mode: PersistMode,
     ) -> Result<Request<()>, Error> {
-        let options = SelectDevicesOptions::default().types(types);
+        let options = SelectDevicesOptions::default()
+            .types(types)
+            .persist_mode(persist_mode)
+            .restore_token(restore_token);
         self.0
             .empty_request(&options.handle_token, "SelectDevices", &(session, &options))
             .await
