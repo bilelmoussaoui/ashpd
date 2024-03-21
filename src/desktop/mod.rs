@@ -58,7 +58,9 @@ pub mod wallpaper;
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdPersistMode"))]
-#[derive(Default, serde_repr::Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, zbus::zvariant::Type)]
+#[derive(
+    Default, serde_repr::Serialize_repr, PartialEq, Eq, Debug, Copy, Clone, zbus::zvariant::Type,
+)]
 #[doc(alias = "XdpPersistMode")]
 #[repr(u32)]
 /// Persistence mode for a screencast or remote desktop session.

@@ -49,7 +49,7 @@ use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
-use super::{PersistMode, HandleToken, Request, Session};
+use super::{HandleToken, PersistMode, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[bitflags]
