@@ -135,7 +135,7 @@
 //! static INTERFACES: OnceLock<HashMap<&'static str, u32>> = OnceLock::new();
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let input_capture = InputCapture::new().await.unwrap();
+//!     let input_capture = InputCapture::new().await?;
 //!
 //!     let (session, _cap) = input_capture
 //!         .create_session(
