@@ -25,7 +25,7 @@
 //!     eprintln!("capabilities: {capabilities}");
 //!
 //!     let eifd = input_capture.connect_to_eis(&session).await?;
-//!     eprintln!("        eifd: {}", eifd.as_raw_fd());
+//!     eprintln!("eifd: {}", eifd.as_raw_fd());
 //!     Ok(())
 //! }
 //! ```
