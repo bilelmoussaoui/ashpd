@@ -1,3 +1,5 @@
+//! Install launchers like Web Application from your browser or Steam.
+//!
 //! # Examples
 //!
 //! ```rust,no_run
