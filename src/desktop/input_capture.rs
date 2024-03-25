@@ -1,5 +1,29 @@
 //! # Examples
 //!
+//! ## A Note of Warning Regarding the GNOME Portal Implementation
+//!
+//! `xdg-desktop-portal-gnome` in version 46.0 has a
+//! [bug](https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/issues/126)
+//! that prevents reenabling a disabled session.
+//!
+//! Since changing barrier locations requires a session to be disabled,
+//! it is currently (as of GNOME 46) not possible to change barriers
+//! after a session has been enabled!
+//!
+//! (the [official documentation](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-setpointerbarriers)
+//! states that a
+//! [`InputCapture::set_pointer_barriers()`][set_pointer_barriers]
+//! request suspends the capture session but in reality the GNOME
+//! desktop portal enforces a
+//! [`InputCapture::disable()`][disable]
+//! request
+//! in order to use
+//! [`InputCapture::set_pointer_barriers()`][set_pointer_barriers]
+//! )
+//!
+//! [set_pointer_barriers]: crate::desktop::input_capture::InputCapture::set_pointer_barriers
+//! [disable]: crate::desktop::input_capture::InputCapture::disable
+//!
 //! ## Retrieving an Ei File Descriptor
 //!
 //! The input capture portal is used to negotiate the input capture
