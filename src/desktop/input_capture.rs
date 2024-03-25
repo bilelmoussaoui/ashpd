@@ -355,7 +355,7 @@ struct DeactivatedOptions {
     activation_id: u32,
 }
 
-/// Indicates that an input capturing session was disabled.
+/// Indicates that an input capturing session was deactivated.
 #[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "(oa{sv})")]
 pub struct Deactivated(OwnedObjectPath, DeactivatedOptions);
@@ -381,7 +381,7 @@ struct ActivatedOptions {
     barrier_id: BarrierID,
 }
 
-/// Indicates that an input capturing session was disabled.
+/// Indicates that an input capturing session was activated.
 #[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "(oa{sv})")]
 pub struct Activated(OwnedObjectPath, ActivatedOptions);
@@ -414,7 +414,7 @@ struct ZonesChangedOptions {
     zone_set: u32,
 }
 
-/// Indicates that an input capturing session was disabled.
+/// Indicates that zones available to this session changed.
 #[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "(oa{sv})")]
 pub struct ZonesChanged(OwnedObjectPath, ZonesChangedOptions);
@@ -655,8 +655,8 @@ impl<'a> InputCapture<'a> {
         self.0.signal("Disabled").await
     }
 
-    /// Signal emitted when the application will no longer receive captured
-    /// events.
+    /// Signal emitted when input capture starts and
+    /// input events are about to be sent to the application.
     ///
     /// # Specifications
     ///
@@ -666,8 +666,8 @@ impl<'a> InputCapture<'a> {
         self.0.signal("Activated").await
     }
 
-    /// Signal emitted when the application will no longer receive captured
-    /// events.
+    /// Signal emitted when input capture stopped and input events
+    /// are no longer sent to the application.
     ///
     /// # Specifications
     ///
@@ -677,8 +677,7 @@ impl<'a> InputCapture<'a> {
         self.0.signal("Deactivated").await
     }
 
-    /// Signal emitted when the application will no longer receive captured
-    /// events.
+    /// Signal emitted when the set of zones available to this session change.
     ///
     /// # Specifications
     ///
