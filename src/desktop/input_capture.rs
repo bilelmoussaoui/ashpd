@@ -1,3 +1,269 @@
+//! # Examples
+//!
+//! ## Retrieving an Ei File Descriptor
+//!
+//! The input capture portal is used to negotiate the input capture
+//! triggers and enable input capturing.
+//!
+//! Actual input capture events are then communicated over a unix
+//! stream using the [libei protocol](https://gitlab.freedesktop.org/libinput/libei).
+//!
+//! The lifetime of an ei file descriptor is bound by a capture session.
+//!
+//! ```rust,no_run
+//! use ashpd::desktop::input_capture::{Capabilities, InputCapture};
+//! use std::os::fd::AsRawFd;
+//!
+//! async fn run() -> ashpd::Result<()> {
+//!     let input_capture = InputCapture::new().await?;
+//!     let (session, capabilities) = input_capture
+//!         .create_session(
+//!             &ashpd::WindowIdentifier::default(),
+//!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!         )
+//!         .await?;
+//!     eprintln!("capabilities: {capabilities}");
+//!
+//!     let eifd = input_capture.connect_to_eis(&session).await?;
+//!     eprintln!("        eifd: {}", eifd.as_raw_fd());
+//!     Ok(())
+//! }
+//! ```
+//!
+//!
+//! ## Selecting Pointer Barriers.
+//!
+//! Input capture is triggered through pointer barriers that are provided
+//! by the client.
+//!
+//! The provided barriers need to be positioned at the edges of outputs (monitors)
+//! and can be denied by the compositor for various reasons, such as wrong placement.
+//!
+//! For debugging why a barrier placement failed, the logs of the
+//! active portal implementation can be useful, e.g.:
+//!
+//! ```sh
+//! journalctl --user -xeu xdg-desktop-portal-gnome.service
+//! ```
+//!
+//! The following example sets up barriers according to `pos`
+//! (either `Left`, `Right`, `Top` or `Bottom`).
+//!
+//! Note that barriers positioned between two monitors will be denied
+//! and returned in the `failed_barrier_ids` vector.
+//!
+//! ```rust,no_run
+//! use ashpd::desktop::input_capture::{Barrier, Capabilities, InputCapture};
+//!
+//! #[allow(unused)]
+//! enum Position {
+//!     Left,
+//!     Right,
+//!     Top,
+//!     Bottom,
+//! }
+//!
+//! async fn run() -> ashpd::Result<()> {
+//!     let input_capture = InputCapture::new().await?;
+//!     let (session, _capabilities) = input_capture
+//!         .create_session(
+//!             &ashpd::WindowIdentifier::default(),
+//!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!         )
+//!         .await?;
+//!
+//!     let pos = Position::Left;
+//!     let zones = input_capture.zones(&session).await?.response()?;
+//!     eprintln!("zones: {zones:?}");
+//!     let barriers = zones
+//!         .regions()
+//!         .iter()
+//!         .enumerate()
+//!         .map(|(n, r)| {
+//!             let id = n as u32;
+//!             let (x, y) = (r.x_offset(), r.y_offset());
+//!             let (width, height) = (r.width() as i32, r.height() as i32);
+//!             let barrier_pos = match pos {
+//!                 Position::Left => (x, y, x, y + height - 1), // start pos, end pos, inclusive
+//!                 Position::Right => (x + width, y, x + width, y + height - 1),
+//!                 Position::Top => (x, y, x + width - 1, y),
+//!                 Position::Bottom => (x, y + height, x + width - 1, y + height),
+//!             };
+//!             Barrier::new(id, barrier_pos)
+//!         })
+//!         .collect::<Vec<_>>();
+//!
+//!     eprintln!("requested barriers: {barriers:?}");
+//!
+//!     let request = input_capture
+//!         .set_pointer_barriers(&session, &barriers, zones.zone_set())
+//!         .await?;
+//!     let response = request.response()?;
+//!     let failed_barrier_ids = response.failed_barriers();
+//!
+//!     eprintln!("failed barrier ids: {:?}", failed_barrier_ids);
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ## Enabling Input Capture and Retrieving Captured Input Events.
+//!
+//! The following full example uses the [reis crate](https://docs.rs/reis/0.2.0/reis/)
+//! for libei communication.
+//!
+//! Input Capture can be released using ESC.
+//!
+//! ```rust,no_run
+//! use ashpd::desktop::input_capture::{Barrier, Capabilities, InputCapture};
+//! use futures_util::StreamExt;
+//! use reis::{
+//!     ei::{self, keyboard::KeyState},
+//!     event::{DeviceCapability, EiEvent, KeyboardKey},
+//!     tokio::{EiConvertEventStream, EiEventStream},
+//! };
+//! use std::{collections::HashMap, os::unix::net::UnixStream, sync::OnceLock, time::Duration};
+//!
+//! #[allow(unused)]
+//! enum Position {
+//!     Left,
+//!     Right,
+//!     Top,
+//!     Bottom,
+//! }
+//!
+//! static INTERFACES: OnceLock<HashMap<&'static str, u32>> = OnceLock::new();
+//!
+//! async fn run() -> ashpd::Result<()> {
+//!     let input_capture = InputCapture::new().await.unwrap();
+//!
+//!     let (session, _cap) = input_capture
+//!         .create_session(
+//!             &ashpd::WindowIdentifier::default(),
+//!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!         )
+//!         .await?;
+//!
+//!     // connect to eis server
+//!     eprintln!("connect_to_eis");
+//!     let fd = input_capture.connect_to_eis(&session).await?;
+//!
+//!     // create unix stream from fd
+//!     let stream = UnixStream::from(fd);
+//!     stream.set_nonblocking(true)?;
+//!
+//!     // create ei context
+//!     let context = ei::Context::new(stream)?;
+//!     context.flush().unwrap();
+//!
+//!     let mut event_stream = EiEventStream::new(context.clone())?;
+//!     let interfaces = INTERFACES.get_or_init(|| {
+//!         let mut m = HashMap::new();
+//!         m.insert("ei_connection", 1);
+//!         m.insert("ei_callback", 1);
+//!         m.insert("ei_pingpong", 1);
+//!         m.insert("ei_seat", 1);
+//!         m.insert("ei_device", 2);
+//!         m.insert("ei_pointer", 1);
+//!         m.insert("ei_pointer_absolute", 1);
+//!         m.insert("ei_scroll", 1);
+//!         m.insert("ei_button", 1);
+//!         m.insert("ei_keyboard", 1);
+//!         m.insert("ei_touchscreen", 1);
+//!         m
+//!     });
+//!     let response = reis::tokio::ei_handshake(
+//!         &mut event_stream,
+//!         "ashpd-mre",
+//!         ei::handshake::ContextType::Receiver,
+//!         interfaces,
+//!     )
+//!     .await
+//!     .expect("ei handshake failed");
+//!
+//!     let mut event_stream = EiConvertEventStream::new(event_stream, response.serial);
+//!
+//!     let pos = Position::Left;
+//!     let zones = input_capture.zones(&session).await?.response()?;
+//!     eprintln!("zones: {zones:?}");
+//!     let barriers = zones
+//!         .regions()
+//!         .iter()
+//!         .enumerate()
+//!         .map(|(n, r)| {
+//!             let id = n as u32;
+//!             let (x, y) = (r.x_offset(), r.y_offset());
+//!             let (width, height) = (r.width() as i32, r.height() as i32);
+//!             let barrier_pos = match pos {
+//!                 Position::Left => (x, y, x, y + height - 1), // start pos, end pos, inclusive
+//!                 Position::Right => (x + width, y, x + width, y + height - 1),
+//!                 Position::Top => (x, y, x + width - 1, y),
+//!                 Position::Bottom => (x, y + height, x + width - 1, y + height),
+//!             };
+//!             Barrier::new(id, barrier_pos)
+//!         })
+//!         .collect::<Vec<_>>();
+//!
+//!     eprintln!("requested barriers: {barriers:?}");
+//!
+//!     let request = input_capture
+//!         .set_pointer_barriers(&session, &barriers, zones.zone_set())
+//!         .await?;
+//!     let response = request.response()?;
+//!     let failed_barrier_ids = response.failed_barriers();
+//!
+//!     eprintln!("failed barrier ids: {:?}", failed_barrier_ids);
+//!
+//!     input_capture.enable(&session).await?;
+//!
+//!     let mut activate_stream = input_capture.receive_activated().await?;
+//!
+//!     loop {
+//!         let activated = activate_stream.next().await.unwrap();
+//!
+//!         eprintln!("activated: {activated:?}");
+//!         loop {
+//!             let ei_event = event_stream.next().await.unwrap().unwrap();
+//!             eprintln!("ei event: {ei_event:?}");
+//!             if let EiEvent::SeatAdded(seat_event) = &ei_event {
+//!                 seat_event.seat.bind_capabilities(&[
+//!                     DeviceCapability::Pointer,
+//!                     DeviceCapability::PointerAbsolute,
+//!                     DeviceCapability::Keyboard,
+//!                     DeviceCapability::Touch,
+//!                     DeviceCapability::Scroll,
+//!                     DeviceCapability::Button,
+//!                 ]);
+//!                 context.flush().unwrap();
+//!             }
+//!             if let EiEvent::DeviceAdded(_) = ei_event {
+//!                 // new device added -> restart capture
+//!                 break;
+//!             };
+//!             if let EiEvent::KeyboardKey(KeyboardKey { key, state, .. }) = ei_event {
+//!                 if key == 1 && state == KeyState::Press {
+//!                     // esc pressed
+//!                     break;
+//!                 }
+//!             }
+//!         }
+//!
+//!         eprintln!("releasing input capture");
+//!         let (x, y) = activated.cursor_position();
+//!         let (x, y) = (x as f64, y as f64);
+//!         let cursor_pos = match pos {
+//!             Position::Left => (x + 1., y),
+//!             Position::Right => (x - 1., y),
+//!             Position::Top => (x, y - 1.),
+//!             Position::Bottom => (x, y + 1.),
+//!         };
+//!         input_capture
+//!             .release(&session, activated.activation_id(), cursor_pos)
+//!             .await?;
+//!     }
+//! }
+//! ```
+
 use std::{collections::HashMap, os::fd::OwnedFd};
 
 use enumflags2::{bitflags, BitFlags};
