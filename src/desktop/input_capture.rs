@@ -157,19 +157,19 @@
 //!
 //!     let mut event_stream = EiEventStream::new(context.clone())?;
 //!     let interfaces = INTERFACES.get_or_init(|| {
-//!         let mut m = HashMap::new();
-//!         m.insert("ei_connection", 1);
-//!         m.insert("ei_callback", 1);
-//!         m.insert("ei_pingpong", 1);
-//!         m.insert("ei_seat", 1);
-//!         m.insert("ei_device", 2);
-//!         m.insert("ei_pointer", 1);
-//!         m.insert("ei_pointer_absolute", 1);
-//!         m.insert("ei_scroll", 1);
-//!         m.insert("ei_button", 1);
-//!         m.insert("ei_keyboard", 1);
-//!         m.insert("ei_touchscreen", 1);
-//!         m
+//!         HashMap::from([
+//!             ("ei_connection", 1),
+//!             ("ei_callback", 1),
+//!             ("ei_pingpong", 1),
+//!             ("ei_seat", 1),
+//!             ("ei_device", 2),
+//!             ("ei_pointer", 1),
+//!             ("ei_pointer_absolute", 1),
+//!             ("ei_scroll", 1),
+//!             ("ei_button", 1),
+//!             ("ei_keyboard", 1),
+//!             ("ei_touchscreen", 1),
+//!         ])
 //!     });
 //!     let response = reis::tokio::ei_handshake(
 //!         &mut event_stream,
