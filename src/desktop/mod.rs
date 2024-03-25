@@ -15,6 +15,7 @@ pub mod account;
 pub mod background;
 pub mod camera;
 pub mod clipboard;
+#[deprecated = "The portal does not serve any purpose as nothing really can make use of it as is."]
 pub mod device;
 pub mod dynamic_launcher;
 pub mod email;
