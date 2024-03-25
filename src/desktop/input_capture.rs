@@ -145,7 +145,6 @@
 //!         .await?;
 //!
 //!     // connect to eis server
-//!     eprintln!("connect_to_eis");
 //!     let fd = input_capture.connect_to_eis(&session).await?;
 //!
 //!     // create unix stream from fd
