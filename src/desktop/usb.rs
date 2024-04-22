@@ -50,12 +50,6 @@ struct CreateSessionOptions {
     session_handle_token: HandleToken,
 }
 
-#[derive(Debug, DeserializeDict, Type)]
-#[zvariant(signature = "dict")]
-struct CreateSessionResponse {
-    session_handle: OwnedObjectPath,
-}
-
 #[derive(Debug, SerializeDict, Type, Default)]
 #[zvariant(signature = "dict")]
 struct AcquireDevicesOptions {
@@ -203,15 +197,8 @@ impl<'a> UsbProxy<'a> {
     #[doc(alias = "CreateSession")]
     pub async fn create_session(&self) -> Result<Session<'a>, Error> {
         let options = CreateSessionOptions::default();
-        let (_, session) = futures_util::try_join!(
-            self.0.request::<CreateSessionResponse>(
-                &options.handle_token,
-                "CreateSession",
-                &options
-            ).into_future(),
-            Session::from_unique_name(&options.session_handle_token).into_future()
-        )?;
-        Ok(session)
+        let session: OwnedObjectPath = self.0.call("CreateSession", &(&options)).await?;
+        Session::new(session).await
     }
 
     /// Enumerate USB devices.
