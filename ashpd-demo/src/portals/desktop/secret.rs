@@ -1,8 +1,4 @@
-use std::{
-    io::Read,
-    os::fd::AsFd,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use adw::subclass::prelude::*;
 use ashpd::desktop::secret;

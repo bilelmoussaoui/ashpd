@@ -293,7 +293,7 @@ impl DynamicLauncherPage {
         CACHE_FILE.get_or_init(|| glib::user_data_dir().join("installed-apps.txt"))
     }
     async fn save_cache(&self) -> Result<(), glib::Error> {
-        let file = gio::File::for_path(&*Self::cache_file());
+        let file = gio::File::for_path(Self::cache_file());
         let installed_apps_cache = &self.imp().installed_apps_cache;
 
         let mut data = String::new();
@@ -314,7 +314,7 @@ impl DynamicLauncherPage {
 
     async fn load_cache(&self) -> Result<(), glib::Error> {
         let imp = self.imp();
-        let file = gio::File::for_path(&*Self::cache_file());
+        let file = gio::File::for_path(Self::cache_file());
         let (buffer, _) = file.load_contents_future().await?;
         let lines = std::str::from_utf8(&buffer).expect("Valid utf8").lines();
         for desktop_id in lines {
@@ -384,7 +384,7 @@ impl DynamicLauncherPage {
             options = options.target(&*target);
         }
 
-        let selected_file = imp.selected_icon.borrow();
+        let selected_file = imp.selected_icon.borrow().clone();
         let (data, _) = selected_file
             .as_ref()
             .expect("An icon is required")
@@ -428,7 +428,7 @@ impl DynamicLauncherPage {
     async fn uninstall(&self, desktop_id: &str) -> ashpd::Result<()> {
         let imp = self.imp();
         let proxy = DynamicLauncherProxy::new().await?;
-        proxy.uninstall(&desktop_id).await?;
+        proxy.uninstall(desktop_id).await?;
 
         let model = &imp.installed_apps_cache;
         let mut index = 0;
