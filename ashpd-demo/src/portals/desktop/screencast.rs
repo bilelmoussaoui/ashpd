@@ -6,8 +6,8 @@ use std::{
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::{
-        screencast::{CursorMode, PersistMode, Screencast, SourceType, Stream},
-        Session,
+        screencast::{CursorMode, Screencast, SourceType, Stream},
+        PersistMode, Session,
     },
     enumflags2::BitFlags,
     WindowIdentifier,
