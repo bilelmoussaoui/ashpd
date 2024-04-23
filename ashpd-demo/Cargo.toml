@@ -12,8 +12,8 @@ chrono = {version = "0.4", default-features = false, features = ["clock"]}
 futures-util = "0.3"
 gettext-rs = {version = "0.7", features = ["gettext-system"]}
 gst = {package = "gstreamer", version = "0.22"}
-gst4gtk = {package = "gst-plugin-gtk4", version = "0.12", features = ["wayland", "x11egl", "x11glx", "gtk_v4_14"]}
-gtk = {package = "gtk4", version = "0.8", features = ["v4_14"]}
+gst4gtk = {package = "gst-plugin-gtk4", version = "0.12", features = ["wayland", "x11egl", "x11glx", "gtk_v4_12"]}
+gtk = {package = "gtk4", version = "0.8", features = ["v4_12"]}
 serde = {version = "1.0", features = ["derive"]}
 shumate = {version = "0.5", package = "libshumate"}
 tracing = "0.1"
