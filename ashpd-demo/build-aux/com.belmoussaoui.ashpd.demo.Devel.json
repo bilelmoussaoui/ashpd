@@ -13,6 +13,7 @@
         "--share=ipc",
         "--socket=wayland",
         "--device=dri",
+        "--own-name=com.belmoussaoui.ashpd.demo",
         "--env=RUST_LOG=ashpd_demo=debug,ashpd=debug",
         "--env=G_MESSAGES_DEBUG=none",
         "--env=RUST_BACKTRACE=1"
