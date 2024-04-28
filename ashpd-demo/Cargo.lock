@@ -44,8 +44,9 @@ checksum = "080e9890a082662b09c1ad45f567faeeb47f22b5fb23895fbe1e651e718e25ca"
 
 [[package]]
 name = "ashpd"
-version = "0.7.0"
-source = "git+https://github.com/bilelmoussaoui/ashpd.git?branch=bilelmoussaoui/zbus-port#e67e2cbf59a952fec36a1014475a76674f609656"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd884d7c72877a94102c3715f3b1cd09ff4fac28221add3e57cfbe25c236d093"
 dependencies = [
  "async-fs",
  "async-net",
@@ -54,6 +55,7 @@ dependencies = [
  "futures-util",
  "gdk4-wayland",
  "gdk4-x11",
+ "glib",
  "gtk4",
  "pipewire",
  "rand",
