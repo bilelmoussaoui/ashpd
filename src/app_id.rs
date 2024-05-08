@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::Type;
@@ -9,23 +9,14 @@ use zbus::zvariant::Type;
 #[derive(Debug, Serialize, Deserialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct AppID(String);
 
-impl TryFrom<String> for AppID {
-    type Error = crate::Error;
-
-    fn try_from(string: String) -> Result<Self, Self::Error> {
-        if is_valid_app_id(&string) {
-            Ok(Self(string))
+impl FromStr for AppID {
+    type Err = crate::Error;
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        if is_valid_app_id(value) {
+            Ok(Self(value.to_owned()))
         } else {
-            Err(Self::Error::InvalidAppID)
+            Err(Self::Err::InvalidAppID)
         }
-    }
-}
-
-impl TryFrom<&str> for AppID {
-    type Error = crate::Error;
-
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        AppID::try_from(s.to_string())
     }
 }
 

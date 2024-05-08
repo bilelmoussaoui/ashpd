@@ -1,6 +1,7 @@
 use std::{
     convert::TryFrom,
     fmt::{self, Debug, Display},
+    str::FromStr,
 };
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
@@ -40,7 +41,7 @@ impl Default for HandleToken {
             .take(10)
             .map(char::from)
             .collect();
-        HandleToken::try_from(format!("ashpd_{token}")).unwrap()
+        HandleToken::from_str(&format!("ashpd_{token}")).unwrap()
     }
 }
 
@@ -55,9 +56,10 @@ impl std::fmt::Display for HandleInvalidCharacter {
 
 impl std::error::Error for HandleInvalidCharacter {}
 
-impl TryFrom<&str> for HandleToken {
-    type Error = HandleInvalidCharacter;
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
+impl std::str::FromStr for HandleToken {
+    type Err = HandleInvalidCharacter;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
         for char in value.chars() {
             if !char.is_ascii_alphanumeric() && char != '_' {
                 return Err(HandleInvalidCharacter(char));
@@ -69,31 +71,24 @@ impl TryFrom<&str> for HandleToken {
     }
 }
 
-impl TryFrom<String> for HandleToken {
-    type Error = HandleInvalidCharacter;
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        HandleToken::try_from(value.as_str())
-    }
-}
-
 #[cfg(test)]
 mod test {
-    use std::convert::TryFrom;
+    use std::str::FromStr;
 
     use super::HandleToken;
 
     #[test]
     fn handle_token() {
-        assert!(HandleToken::try_from("token").is_ok());
+        assert!(HandleToken::from_str("token").is_ok());
 
-        let token = HandleToken::try_from("token2").unwrap();
+        let token = HandleToken::from_str("token2").unwrap();
         assert_eq!(token.to_string(), "token2".to_string());
 
-        assert!(HandleToken::try_from("/test").is_err());
+        assert!(HandleToken::from_str("/test").is_err());
 
-        assert!(HandleToken::try_from("تجربة").is_err());
+        assert!(HandleToken::from_str("تجربة").is_err());
 
-        assert!(HandleToken::try_from("test_token").is_ok());
+        assert!(HandleToken::from_str("test_token").is_ok());
 
         HandleToken::default(); // ensure we don't panic
     }
