@@ -17,7 +17,7 @@
 //!             &session,
 //!             DeviceType::Keyboard | DeviceType::Pointer,
 //!             None,
-//!             PersistMode::DoNot
+//!             PersistMode::DoNot,
 //!         )
 //!         .await?;
 //!
