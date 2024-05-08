@@ -35,8 +35,9 @@
 //! The lifetime of an ei file descriptor is bound by a capture session.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::input_capture::{Capabilities, InputCapture};
 //! use std::os::fd::AsRawFd;
+//!
+//! use ashpd::desktop::input_capture::{Capabilities, InputCapture};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let input_capture = InputCapture::new().await?;
@@ -60,8 +61,9 @@
 //! Input capture is triggered through pointer barriers that are provided
 //! by the client.
 //!
-//! The provided barriers need to be positioned at the edges of outputs (monitors)
-//! and can be denied by the compositor for various reasons, such as wrong placement.
+//! The provided barriers need to be positioned at the edges of outputs
+//! (monitors) and can be denied by the compositor for various reasons, such as
+//! wrong placement.
 //!
 //! For debugging why a barrier placement failed, the logs of the
 //! active portal implementation can be useful, e.g.:
@@ -139,6 +141,8 @@
 //! Input Capture can be released using ESC.
 //!
 //! ```rust,no_run
+//! use std::{collections::HashMap, os::unix::net::UnixStream, sync::OnceLock, time::Duration};
+//!
 //! use ashpd::desktop::input_capture::{Barrier, Capabilities, InputCapture};
 //! use futures_util::StreamExt;
 //! use reis::{
@@ -146,7 +150,6 @@
 //!     event::{DeviceCapability, EiEvent, KeyboardKey},
 //!     tokio::{EiConvertEventStream, EiEventStream},
 //! };
-//! use std::{collections::HashMap, os::unix::net::UnixStream, sync::OnceLock, time::Duration};
 //!
 //! #[allow(unused)]
 //! enum Position {
