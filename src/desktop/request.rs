@@ -13,14 +13,15 @@ use serde::{
 };
 use zbus::{
     proxy::SignalStream,
-    zvariant::{ObjectPath, Signature, Type, Value},
+    zvariant::{ObjectPath, Type, Value},
 };
 
 use crate::{desktop::HandleToken, proxy::Proxy, Error};
 
 /// A typical response returned by the [`Request::response`].
 /// of a [`Request`].
-#[derive(Debug)]
+#[derive(Debug, Type)]
+#[zvariant(signature = "ua{sv}")]
 pub enum Response<T>
 where
     T: for<'de> Deserialize<'de> + Type,
@@ -46,15 +47,6 @@ where
 
     pub fn other() -> Self {
         Self::Err(ResponseError::Other)
-    }
-}
-
-impl<T> Type for Response<T>
-where
-    T: for<'de> Deserialize<'de> + Type,
-{
-    fn signature() -> Signature<'static> {
-        <(ResponseType, HashMap<&str, Value<'_>>)>::signature()
     }
 }
 

@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug};
 
 use futures_util::Stream;
 use serde::{Serialize, Serializer};
-use zbus::zvariant::{ObjectPath, OwnedValue, Signature, Type};
+use zbus::zvariant::{ObjectPath, OwnedValue, Type};
 
 use crate::{desktop::HandleToken, proxy::Proxy, Error};
 
@@ -20,7 +20,9 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 /// directly call [`Session::close`] depends on the interface.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Session.html).
+#[derive(Type)]
 #[doc(alias = "org.freedesktop.portal.Session")]
+#[zvariant(signature = "o")]
 pub struct Session<'a>(Proxy<'a>);
 
 impl<'a> Session<'a> {
@@ -78,12 +80,6 @@ impl<'a> Serialize for Session<'a> {
         S: Serializer,
     {
         ObjectPath::serialize(self.path(), serializer)
-    }
-}
-
-impl<'a> Type for Session<'a> {
-    fn signature() -> Signature<'static> {
-        ObjectPath::signature()
     }
 }
 
