@@ -15,7 +15,7 @@ use zbus::{names::OwnedMemberName, zvariant::Type};
 ///
 /// A valid object path element must only contain the ASCII characters
 /// `[A-Z][a-z][0-9]_`
-#[derive(Serialize, Deserialize, Type)]
+#[derive(Serialize, Type)]
 pub struct HandleToken(OwnedMemberName);
 
 impl Display for HandleToken {
@@ -84,6 +84,17 @@ impl TryFrom<&str> for HandleToken {
     }
 }
 
+impl<'de> Deserialize<'de> for HandleToken {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let app_id = String::deserialize(deserializer)?;
+        app_id
+            .parse::<Self>()
+            .map_err(|err| serde::de::Error::custom(err.to_string()))
+    }
+}
 #[cfg(test)]
 mod test {
     use std::str::FromStr;

@@ -6,7 +6,7 @@ use zbus::zvariant::Type;
 /// The application ID.
 ///
 /// See <https://developer.gnome.org/documentation/tutorials/application-id.html>.
-#[derive(Debug, Serialize, Deserialize, Type, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, Serialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct AppID(String);
 
 impl FromStr for AppID {
@@ -59,6 +59,18 @@ impl Deref for AppID {
 impl std::fmt::Display for AppID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.as_ref())
+    }
+}
+
+impl<'de> Deserialize<'de> for AppID {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let app_id = String::deserialize(deserializer)?;
+        app_id
+            .parse::<Self>()
+            .map_err(|err| serde::de::Error::custom(err.to_string()))
     }
 }
 
