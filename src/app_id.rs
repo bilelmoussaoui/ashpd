@@ -20,6 +20,22 @@ impl FromStr for AppID {
     }
 }
 
+impl TryFrom<String> for AppID {
+    type Error = crate::Error;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        value.parse::<Self>()
+    }
+}
+
+impl TryFrom<&str> for AppID {
+    type Error = crate::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        value.parse::<Self>()
+    }
+}
+
 impl From<AppID> for String {
     fn from(value: AppID) -> String {
         value.0

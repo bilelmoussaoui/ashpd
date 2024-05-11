@@ -1,7 +1,6 @@
 use std::{
     convert::TryFrom,
     fmt::{self, Debug, Display},
-    str::FromStr,
 };
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
@@ -41,7 +40,7 @@ impl Default for HandleToken {
             .take(10)
             .map(char::from)
             .collect();
-        HandleToken::from_str(&format!("ashpd_{token}")).unwrap()
+        format!("ashpd_{token}").parse().unwrap()
     }
 }
 
@@ -65,9 +64,23 @@ impl std::str::FromStr for HandleToken {
                 return Err(HandleInvalidCharacter(char));
             }
         }
-        Ok(Self(
-            OwnedMemberName::try_from(value).expect("Invalid handle token"),
-        ))
+        Ok(Self(OwnedMemberName::try_from(value).unwrap()))
+    }
+}
+
+impl TryFrom<String> for HandleToken {
+    type Error = HandleInvalidCharacter;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        value.parse::<Self>()
+    }
+}
+
+impl TryFrom<&str> for HandleToken {
+    type Error = HandleInvalidCharacter;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        value.parse::<Self>()
     }
 }
 
