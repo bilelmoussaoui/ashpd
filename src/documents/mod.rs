@@ -46,7 +46,7 @@ use crate::{proxy::Proxy, AppID, Error, FilePath};
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
 #[repr(u32)]
-///
+/// Document flags
 pub enum DocumentFlags {
     /// Reuse the existing document store entry for the file.
     ReuseExisting,
