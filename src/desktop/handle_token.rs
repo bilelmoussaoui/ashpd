@@ -89,8 +89,8 @@ impl<'de> Deserialize<'de> for HandleToken {
     where
         D: serde::Deserializer<'de>,
     {
-        let app_id = String::deserialize(deserializer)?;
-        app_id
+        let token = String::deserialize(deserializer)?;
+        token
             .parse::<Self>()
             .map_err(|err| serde::de::Error::custom(err.to_string()))
     }
