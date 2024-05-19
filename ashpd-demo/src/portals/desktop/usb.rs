@@ -23,10 +23,26 @@ use ashpd::{
 
 use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
+const SHARE_ICON: &str = "preferences-system-sharing-symbolic";
+const UNSHARE_ICON: &str = "view-restore-symbolic";
+
 #[derive(Debug)]
 struct DeviceRow {
     row: adw::ActionRow,
     checkbox: gtk::CheckButton,
+    acquire: gtk::Button,
+}
+
+impl DeviceRow {
+    fn acquire(&self) {
+        self.checkbox.set_active(true);
+        self.acquire.set_icon_name(UNSHARE_ICON);
+    }
+
+    fn release(&self) {
+        self.checkbox.set_active(false);
+        self.acquire.set_icon_name(SHARE_ICON);
+    }
 }
 
 mod imp {
@@ -57,7 +73,13 @@ mod imp {
 
         fn acquired_device(&self, uuid: &str) {
             if let Some(row) = self.rows.borrow().get(uuid) {
-                row.checkbox.set_active(true);
+                row.acquire();
+            }
+        }
+
+        fn released_device(&self, uuid: &str) {
+            if let Some(row) = self.rows.borrow().get(uuid) {
+                row.release();
             }
         }
 
@@ -69,9 +91,11 @@ mod imp {
             let usb = UsbProxy::new().await?;
             let devices = usb.enumerate_devices(UsbOptions::default()).await?;
             for device in devices {
+                let activatable = gtk::Button::from_icon_name(SHARE_ICON);
                 let row = DeviceRow {
                     row: adw::ActionRow::new(),
                     checkbox: gtk::CheckButton::new(),
+                    acquire: activatable.clone(),
                 };
                 let vendor = device.1.vendor().unwrap_or_default();
                 let dev = device.1.model().unwrap_or_default();
@@ -79,10 +103,9 @@ mod imp {
                 if let Some(devnode) = device.1.device_file {
                     row.row.set_subtitle(&devnode);
                 }
-                let activatable =
-                    gtk::Button::from_icon_name("preferences-system-sharing-symbolic");
                 activatable.set_css_classes(&["circular"]);
                 row.row.add_suffix(&activatable);
+                row.checkbox.set_sensitive(false);
                 row.row.add_prefix(&row.checkbox);
 
                 let device_id = device.0.clone();
@@ -92,41 +115,51 @@ mod imp {
                         let root = row.native().unwrap();
                         let identifier = WindowIdentifier::from_native(&root).await;
                         let usb = UsbProxy::new().await.unwrap();
-                        //                        if row.is_active() {
-                        println!("acquire {device_id}");
-                        let result = usb.acquire_devices(&identifier, &[
-                            (&device_id, device_writable)
-                        ]).await;
-                        match result {
-                            Ok(_) => {
-                                loop {
-                                    let result = usb.finish_acquire_devices().await;
-                                    match result {
-                                        Ok(result) => {
-                                            println!("result {result:?}");
-                                            if !result.1 {
-                                                continue;
+                        let active = page.imp().rows.borrow().get(&device_id).map(|row| row.checkbox.is_active()).unwrap_or(false);
+                        if !active {
+                            let result = usb.acquire_devices(&identifier, &[
+                                (&device_id, device_writable)
+                                    ]).await;
+                            match result {
+                                Ok(_) => {
+                                    loop {
+                                        let result = usb.finish_acquire_devices().await;
+                                        match result {
+                                            Ok(result) => {
+                                                println!("result {result:?}");
+                                                if !result.1 {
+                                                    continue;
+                                                }
+                                                for device in &result.0 {
+                                                    page.imp().acquired_device(&device.0);
+                                                }
                                             }
-                                            for device in &result.0 {
-                                                page.imp().acquired_device(&device.0);
+                                            Err(err) => {
+                                                tracing::error!("Finish acquire device error: {err}");
+                                                page.error(&format!("Finish acquire device error: {err}"));
                                             }
                                         }
-                                        Err(err) => {
-                                            tracing::error!("Finish acquire device error: {err}");
-                                            page.error(&format!("Finish acquire device error: {err}"));
-                                        }
+                                        break;
                                     }
-                                    break;
+                                },
+                                Err(err) => {
+                                    tracing::error!("Acquire device error: {err}");
+                                    page.error(&format!("Acquire device error: {err}"));
                                 }
-                            },
-                            Err(err) => {
-                                tracing::error!("Acquire device error: {err}");
-                                page.error(&format!("Acquire device error: {err}"));
                             }
+                        } else {
+                            let result = usb.release_devices(&[&device_id]).await;
+                            println!("{result:?}");
+                            match result {
+                                Ok(_) => {
+                                }
+                                Err(err) => {
+                                    tracing::error!("Acquire device error: {err}");
+                                    page.error(&format!("Acquire device error: {err}"));
+                                }
+                            }
+                            page.imp().released_device(&device_id);
                         }
-//                        } else {
-//                            let _ = usb.release_devices(&[&device_id]).await;
-//                        }
                     }));
                 }));
                 page.imp().add(device.0.clone(), row);
