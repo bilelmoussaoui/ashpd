@@ -23,6 +23,12 @@ use ashpd::{
 
 use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
+#[derive(Debug)]
+struct DeviceRow {
+    row: adw::ActionRow,
+    checkbox: gtk::CheckButton,
+}
+
 mod imp {
     use super::*;
 
@@ -31,22 +37,28 @@ mod imp {
     pub struct UsbPage {
         #[template_child]
         pub usb_devices: TemplateChild<adw::PreferencesGroup>,
-        rows: RefCell<HashMap<String, adw::PreferencesRow>>,
+        rows: RefCell<HashMap<String, DeviceRow>>,
         pub session: Arc<Mutex<Option<Session<'static>>>>,
         pub event_source: Arc<Mutex<Option<glib::SourceId>>>,
     }
 
     impl UsbPage {
-        fn add(&self, id: String, row: &impl IsA<adw::PreferencesRow>) {
-            self.usb_devices.get().add(row.upcast_ref());
-            self.rows.borrow_mut().insert(id, row.as_ref().clone());
+        fn add(&self, uuid: String, row: DeviceRow) {
+            self.usb_devices.get().add(&row.row);
+            self.rows.borrow_mut().insert(uuid, row);
         }
 
         fn clear_devices(&self) {
-            for row in self.rows.borrow().iter() {
-                self.usb_devices.get().remove(row.1);
+            for row in self.rows.borrow().values() {
+                self.usb_devices.get().remove(&row.row);
             }
             self.rows.borrow_mut().clear();
+        }
+
+        fn acquired_device(&self, uuid: &str) {
+            if let Some(row) = self.rows.borrow().get(uuid) {
+                row.checkbox.set_active(true);
+            }
         }
 
         pub(super) async fn refresh_devices(&self) -> ashpd::Result<()> {
@@ -57,18 +69,21 @@ mod imp {
             let usb = UsbProxy::new().await?;
             let devices = usb.enumerate_devices(UsbOptions::default()).await?;
             for device in devices {
-                let row = adw::ActionRow::new();
+                let row = DeviceRow {
+                    row: adw::ActionRow::new(),
+                    checkbox: gtk::CheckButton::new(),
+                };
                 let vendor = device.1.vendor().unwrap_or_default();
                 let dev = device.1.model().unwrap_or_default();
-                row.set_title(&format!("{} {}", &vendor, &dev));
+                row.row.set_title(&format!("{} {}", &vendor, &dev));
                 if let Some(devnode) = device.1.device_file {
-                    row.set_subtitle(&devnode);
+                    row.row.set_subtitle(&devnode);
                 }
                 let activatable =
                     gtk::Button::from_icon_name("preferences-system-sharing-symbolic");
                 activatable.set_css_classes(&["circular"]);
-                row.add_suffix(&activatable);
-                row.add_prefix(&gtk::CheckButton::new());
+                row.row.add_suffix(&activatable);
+                row.row.add_prefix(&row.checkbox);
 
                 let device_id = device.0.clone();
                 let device_writable = device.1.writable.unwrap_or(false);
@@ -92,6 +107,9 @@ mod imp {
                                             if !result.1 {
                                                 continue;
                                             }
+                                            for device in &result.0 {
+                                                page.imp().acquired_device(&device.0);
+                                            }
                                         }
                                         Err(err) => {
                                             tracing::error!("Finish acquire device error: {err}");
@@ -111,7 +129,7 @@ mod imp {
 //                        }
                     }));
                 }));
-                page.imp().add(device.0.clone(), &row);
+                page.imp().add(device.0.clone(), row);
             }
             Ok(())
         }
