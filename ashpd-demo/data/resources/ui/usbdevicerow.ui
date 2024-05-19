@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="DeviceRow" parent="AdwActionRow">
+    <child type="prefix">
+      <object class="GtkCheckButton" id="checkbox">
+        <property name="sensitive">false</property>
+      </object>
+    </child>
+    <child type="suffix">
+      <object class="GtkButton" id="acquire">
+        <property name="icon-name">preferences-system-sharing-symbolic</property>
+        <style>
+          <class name="circular" />
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>

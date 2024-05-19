@@ -26,22 +26,32 @@ use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 const SHARE_ICON: &str = "preferences-system-sharing-symbolic";
 const UNSHARE_ICON: &str = "view-restore-symbolic";
 
-#[derive(Debug)]
-struct DeviceRow {
-    row: adw::ActionRow,
-    checkbox: gtk::CheckButton,
-    acquire: gtk::Button,
+glib::wrapper! {
+    pub struct DeviceRow(ObjectSubclass<imp::DeviceRow>)
+        @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow;
 }
 
 impl DeviceRow {
+    fn new() -> Self {
+        glib::Object::new()
+    }
+
+    fn is_active(&self) -> bool {
+        self.imp().checkbox.is_active()
+    }
+
     fn acquire(&self) {
-        self.checkbox.set_active(true);
-        self.acquire.set_icon_name(UNSHARE_ICON);
+        self.imp().checkbox.set_active(true);
+        self.imp().acquire.set_icon_name(UNSHARE_ICON);
     }
 
     fn release(&self) {
-        self.checkbox.set_active(false);
-        self.acquire.set_icon_name(SHARE_ICON);
+        self.imp().checkbox.set_active(false);
+        self.imp().acquire.set_icon_name(SHARE_ICON);
+    }
+
+    fn connect_share_clicked<F: Fn(&gtk::Button) + 'static>(&self, f: F) -> glib::SignalHandlerId {
+        self.imp().acquire.connect_clicked(f)
     }
 }
 
@@ -49,24 +59,54 @@ mod imp {
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
+    #[template(resource = "/com/belmoussaoui/ashpd/demo/usbdevicerow.ui")]
+    pub struct DeviceRow {
+        #[template_child]
+        pub(super) checkbox: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub(super) acquire: TemplateChild<gtk::Button>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for DeviceRow {
+        const NAME: &'static str = "DeviceRow";
+        type Type = super::DeviceRow;
+        type ParentType = adw::ActionRow;
+
+        fn class_init(klass: &mut Self::Class) {
+            klass.bind_template();
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
+    }
+
+    impl ObjectImpl for DeviceRow {}
+    impl WidgetImpl for DeviceRow {}
+    impl ListBoxRowImpl for DeviceRow {}
+    impl PreferencesRowImpl for DeviceRow {}
+    impl ActionRowImpl for DeviceRow {}
+
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/usb.ui")]
     pub struct UsbPage {
         #[template_child]
         pub usb_devices: TemplateChild<adw::PreferencesGroup>,
-        rows: RefCell<HashMap<String, DeviceRow>>,
+        rows: RefCell<HashMap<String, super::DeviceRow>>,
         pub session: Arc<Mutex<Option<Session<'static>>>>,
         pub event_source: Arc<Mutex<Option<glib::SourceId>>>,
     }
 
     impl UsbPage {
-        fn add(&self, uuid: String, row: DeviceRow) {
-            self.usb_devices.get().add(&row.row);
+        fn add(&self, uuid: String, row: super::DeviceRow) {
+            self.usb_devices.get().add(&row);
             self.rows.borrow_mut().insert(uuid, row);
         }
 
         fn clear_devices(&self) {
             for row in self.rows.borrow().values() {
-                self.usb_devices.get().remove(&row.row);
+                self.usb_devices.get().remove(row);
             }
             self.rows.borrow_mut().clear();
         }
@@ -91,35 +131,26 @@ mod imp {
             let usb = UsbProxy::new().await?;
             let devices = usb.enumerate_devices(UsbOptions::default()).await?;
             for device in devices {
-                let activatable = gtk::Button::from_icon_name(SHARE_ICON);
-                let row = DeviceRow {
-                    row: adw::ActionRow::new(),
-                    checkbox: gtk::CheckButton::new(),
-                    acquire: activatable.clone(),
-                };
+                let row = super::DeviceRow::new();
                 let vendor = device.1.vendor().unwrap_or_default();
                 let dev = device.1.model().unwrap_or_default();
-                row.row.set_title(&format!("{} {}", &vendor, &dev));
+                row.set_title(&format!("{} {}", &vendor, &dev));
                 if let Some(devnode) = device.1.device_file {
-                    row.row.set_subtitle(&devnode);
+                    row.set_subtitle(&devnode);
                 }
-                activatable.set_css_classes(&["circular"]);
-                row.row.add_suffix(&activatable);
-                row.checkbox.set_sensitive(false);
-                row.row.add_prefix(&row.checkbox);
 
                 let device_id = device.0.clone();
                 let device_writable = device.1.writable.unwrap_or(false);
-                activatable.connect_clicked(clone!(@strong page => move |row| {
+                row.connect_share_clicked(clone!(@strong page => move |row| {
                     glib::spawn_future_local(clone!(@strong row, @strong device_id, @strong page => async move {
                         let root = row.native().unwrap();
                         let identifier = WindowIdentifier::from_native(&root).await;
                         let usb = UsbProxy::new().await.unwrap();
-                        let active = page.imp().rows.borrow().get(&device_id).map(|row| row.checkbox.is_active()).unwrap_or(false);
+                        let active = page.imp().rows.borrow().get(&device_id).map(|row| row.is_active()).unwrap_or(false);
                         if !active {
                             let result = usb.acquire_devices(&identifier, &[
                                 (&device_id, device_writable)
-                                    ]).await;
+                            ]).await;
                             match result {
                                 Ok(_) => {
                                     loop {
