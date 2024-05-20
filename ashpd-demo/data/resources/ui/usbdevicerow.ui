@@ -14,5 +14,13 @@
         </style>
       </object>
     </child>
+    <child type="suffix">
+      <object class="GtkButton" id="release">
+        <property name="icon-name">view-restore-symbolic</property>
+        <style>
+          <class name="circular" />
+        </style>
+      </object>
+    </child>
   </template>
 </interface>

@@ -23,9 +23,6 @@ use ashpd::{
 
 use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
-const SHARE_ICON: &str = "preferences-system-sharing-symbolic";
-const UNSHARE_ICON: &str = "view-restore-symbolic";
-
 glib::wrapper! {
     pub struct DeviceRow(ObjectSubclass<imp::DeviceRow>)
         @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow;
@@ -36,22 +33,23 @@ impl DeviceRow {
         glib::Object::new()
     }
 
-    fn is_active(&self) -> bool {
-        self.imp().checkbox.is_active()
-    }
-
     fn acquire(&self) {
         self.imp().checkbox.set_active(true);
-        self.imp().acquire.set_icon_name(UNSHARE_ICON);
     }
 
     fn release(&self) {
         self.imp().checkbox.set_active(false);
-        self.imp().acquire.set_icon_name(SHARE_ICON);
     }
 
     fn connect_share_clicked<F: Fn(&gtk::Button) + 'static>(&self, f: F) -> glib::SignalHandlerId {
         self.imp().acquire.connect_clicked(f)
+    }
+
+    fn connect_unshare_clicked<F: Fn(&gtk::Button) + 'static>(
+        &self,
+        f: F,
+    ) -> glib::SignalHandlerId {
+        self.imp().release.connect_clicked(f)
     }
 }
 
@@ -65,6 +63,8 @@ mod imp {
         pub(super) checkbox: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub(super) acquire: TemplateChild<gtk::Button>,
+        #[template_child]
+        pub(super) release: TemplateChild<gtk::Button>,
     }
 
     #[glib::object_subclass]
@@ -146,13 +146,12 @@ mod imp {
                         let root = row.native().unwrap();
                         let identifier = WindowIdentifier::from_native(&root).await;
                         let usb = UsbProxy::new().await.unwrap();
-                        let active = page.imp().rows.borrow().get(&device_id).map(|row| row.is_active()).unwrap_or(false);
-                        if !active {
-                            let result = usb.acquire_devices(&identifier, &[
-                                (&device_id, device_writable)
-                            ]).await;
-                            match result {
-                                Ok(_) => {
+                        let result = usb.acquire_devices(&identifier, &[
+                            (&device_id, device_writable)
+                        ]).await;
+                        match result {
+                            Ok(resp) => {
+                                if resp.response().is_ok() {
                                     loop {
                                         let result = usb.finish_acquire_devices().await;
                                         match result {
@@ -172,25 +171,30 @@ mod imp {
                                         }
                                         break;
                                     }
-                                },
-                                Err(err) => {
-                                    tracing::error!("Acquire device error: {err}");
-                                    page.error(&format!("Acquire device error: {err}"));
                                 }
+                            },
+                            Err(err) => {
+                                tracing::error!("Acquire device error: {err}");
+                                page.error(&format!("Acquire device error: {err}"));
                             }
-                        } else {
-                            let result = usb.release_devices(&[&device_id]).await;
-                            println!("{result:?}");
-                            match result {
-                                Ok(_) => {
-                                }
-                                Err(err) => {
-                                    tracing::error!("Acquire device error: {err}");
-                                    page.error(&format!("Acquire device error: {err}"));
-                                }
-                            }
-                            page.imp().released_device(&device_id);
                         }
+                    }));
+                }));
+                let device_id = device.0.clone();
+                row.connect_unshare_clicked(clone!(@strong page => move |row| {
+                    glib::spawn_future_local(clone!(@strong row, @strong device_id, @strong page => async move {
+                        let usb = UsbProxy::new().await.unwrap();
+                        let result = usb.release_devices(&[&device_id]).await;
+                        println!("{result:?}");
+                        match result {
+                            Ok(_) => {
+                            }
+                            Err(err) => {
+                                tracing::error!("Acquire device error: {err}");
+                                page.error(&format!("Acquire device error: {err}"));
+                            }
+                        }
+                        page.imp().released_device(&device_id);
                     }));
                 }));
                 page.imp().add(device.0.clone(), row);
