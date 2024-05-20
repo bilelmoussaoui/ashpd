@@ -72,8 +72,8 @@ mod imp {
 
                 let device_id = device.0.clone();
                 let device_writable = device.1.writable.unwrap_or(false);
-                activatable.connect_clicked(move |row| {
-                    glib::spawn_future_local(clone!(@strong row, @strong device_id => async move {
+                activatable.connect_clicked(clone!(@strong page => move |row| {
+                    glib::spawn_future_local(clone!(@strong row, @strong device_id, @strong page => async move {
                         let root = row.native().unwrap();
                         let identifier = WindowIdentifier::from_native(&root).await;
                         let usb = UsbProxy::new().await.unwrap();
@@ -82,12 +82,35 @@ mod imp {
                         let result = usb.acquire_devices(&identifier, &[
                             (&device_id, device_writable)
                         ]).await;
-                        println!("result: {result:?}");
+                        match result {
+                            Ok(_) => {
+                                loop {
+                                    let result = usb.finish_acquire_devices().await;
+                                    match result {
+                                        Ok(result) => {
+                                            println!("result {result:?}");
+                                            if !result.1 {
+                                                continue;
+                                            }
+                                        }
+                                        Err(err) => {
+                                            tracing::error!("Finish acquire device error: {err}");
+                                            page.error(&format!("Finish acquire device error: {err}"));
+                                        }
+                                    }
+                                    break;
+                                }
+                            },
+                            Err(err) => {
+                                tracing::error!("Acquire device error: {err}");
+                                page.error(&format!("Acquire device error: {err}"));
+                            }
+                        }
 //                        } else {
 //                            let _ = usb.release_devices(&[&device_id]).await;
 //                        }
                     }));
-                });
+                }));
                 page.imp().add(device.0.clone(), &row);
             }
             Ok(())
