@@ -32,7 +32,10 @@ use std::collections::HashMap;
 
 use futures_util::Stream;
 use serde::Deserialize;
-use zbus::zvariant::{Value, DeserializeDict, SerializeDict, Type, OwnedObjectPath, OwnedValue, ObjectPath};
+use zbus::zvariant::{
+    DeserializeDict, Fd, ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, SerializeDict, Type,
+    Value,
+};
 
 use super::Request;
 use crate::{
@@ -83,20 +86,6 @@ pub struct UsbDevice {
     pub properties: Option<HashMap<String, OwnedValue>>,
 }
 
-/// Device to acquire.
-#[derive(SerializeDict, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
-pub struct AcquireDevice {
-    writable: bool,
-}
-
-/// Option for AcquireDevice call.
-#[derive(SerializeDict, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
-pub struct AcquireOptions {
-    handle_token: HandleToken,
-}
-
 impl UsbDevice {
     /// Return the vendor string for display.
     pub fn vendor(&self) -> Option<String> {
@@ -116,6 +105,46 @@ impl UsbDevice {
                 .or_else(|| properties.get("ID_MODEL_ENC"))
                 .and_then(|v| v.downcast_ref::<String>().ok())
         })
+    }
+}
+
+/// Device to acquire.
+#[derive(SerializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+pub struct AcquireDevice {
+    writable: bool,
+}
+
+/// Option for AcquireDevice call.
+#[derive(SerializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+pub struct AcquireOptions {
+    handle_token: HandleToken,
+}
+
+/// Finished device acquired.
+#[derive(DeserializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+pub struct AcquiredDevice {
+    success: bool,
+    fd: Option<OwnedFd>,
+    error: Option<String>,
+}
+
+impl AcquiredDevice {
+    /// Return if the acquisition is a success.
+    pub fn success(&self) -> bool {
+        self.success
+    }
+
+    /// Return the error if it exists.
+    pub fn error(&self) -> Option<&str> {
+        self.error.as_deref()
+    }
+
+    /// Return the open file descriptor
+    pub fn fd(&self) -> Option<Fd> {
+        self.fd.as_ref().map(|fd| fd.into())
     }
 }
 
@@ -220,6 +249,15 @@ impl<'a> UsbProxy<'a> {
                 &(parent_window, &acquire_devices, &options),
             )
             .await
+    }
+
+    /// Call on success of acquire_devices.
+    #[doc(alias = "FinishAcquireDevices")]
+    pub async fn finish_acquire_devices(
+        &self,
+    ) -> Result<(Vec<(String, AcquiredDevice)>, bool), Error> {
+        let options: HashMap<&str, Value<'_>> = HashMap::new();
+        self.0.call("FinishAcquireDevices", &(&options)).await
     }
 
     /// Release devices
