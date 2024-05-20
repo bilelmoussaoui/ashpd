@@ -51,6 +51,7 @@
         {
             "name": "ashpd-demo",
             "buildsystem": "meson",
+            "subdir": "ashpd-demo",
             "run-tests": true,
             "config-opts": [
                 "-Dprofile=development"
@@ -58,7 +59,7 @@
             "sources": [
                 {
                     "type": "dir",
-                    "path": "../"
+                    "path": "../.."
                 }
             ]
         }
