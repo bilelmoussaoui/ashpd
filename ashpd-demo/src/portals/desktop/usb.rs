@@ -6,12 +6,14 @@
 
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::os::fd::AsRawFd;
 use std::sync::Arc;
 
 use adw::{prelude::*, subclass::prelude::*};
 use futures_util::{lock::Mutex, StreamExt};
 use glib::clone;
 use gtk::glib;
+use rusb::UsbContext;
 
 use ashpd::{
     desktop::{
@@ -123,6 +125,22 @@ mod imp {
             }
         }
 
+        fn usb_describe_device(fd: &dyn AsRawFd) -> ashpd::Result<String> {
+            let context = rusb::Context::new()
+                .map_err(|_| ashpd::PortalError::Failed("rusb Context".to_string()))?;
+            let handle = unsafe { context.open_device_with_fd(fd.as_raw_fd()) }
+                .map_err(|_| ashpd::PortalError::Failed("open USB device".to_string()))?;
+            let device = handle.device();
+            let device_desc = device.device_descriptor().unwrap();
+            Ok(format!(
+                "Bus {:03} Device {:03} ID {:04x}:{:04x}",
+                device.bus_number(),
+                device.address(),
+                device_desc.vendor_id(),
+                device_desc.product_id()
+            ))
+        }
+
         pub(super) async fn refresh_devices(&self) -> ashpd::Result<()> {
             let page = self.obj();
 
@@ -144,54 +162,16 @@ mod imp {
                 row.connect_share_clicked(clone!(
                     #[strong]
                     page,
-                    move |row| {
+                    move |widget| {
                         glib::spawn_future_local(clone!(
-                            #[strong]
-                            row,
                             #[strong]
                             device_id,
                             #[strong]
+                            widget,
+                            #[strong]
                             page,
                             async move {
-                                let root = row.native().unwrap();
-                                let identifier = WindowIdentifier::from_native(&root).await;
-                                let usb = UsbProxy::new().await.unwrap();
-                                let result = usb
-                                    .acquire_devices(&identifier, &[(&device_id, device_writable)])
-                                    .await;
-                                match result {
-                                    Ok(resp) => {
-                                        if resp.response().is_ok() {
-                                            loop {
-                                                let result = usb.finish_acquire_devices().await;
-                                                match result {
-                                                    Ok(result) => {
-                                                        println!("result {result:?}");
-                                                        if !result.1 {
-                                                            continue;
-                                                        }
-                                                        for device in &result.0 {
-                                                            page.imp().acquired_device(&device.0);
-                                                        }
-                                                    }
-                                                    Err(err) => {
-                                                        tracing::error!(
-                                                            "Finish acquire device error: {err}"
-                                                        );
-                                                        page.error(&format!(
-                                                            "Finish acquire device error: {err}"
-                                                        ));
-                                                    }
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    Err(err) => {
-                                        tracing::error!("Acquire device error: {err}");
-                                        page.error(&format!("Acquire device error: {err}"));
-                                    }
-                                }
+                                page.imp().share(&widget, &device_id, device_writable).await
                             }
                         ));
                     }
@@ -206,25 +186,76 @@ mod imp {
                             device_id,
                             #[strong]
                             page,
-                            async move {
-                                let usb = UsbProxy::new().await.unwrap();
-                                let result = usb.release_devices(&[&device_id]).await;
-                                println!("{result:?}");
-                                match result {
-                                    Ok(_) => {}
-                                    Err(err) => {
-                                        tracing::error!("Acquire device error: {err}");
-                                        page.error(&format!("Acquire device error: {err}"));
-                                    }
-                                }
-                                page.imp().released_device(&device_id);
-                            }
+                            async move { page.imp().unshare(&device_id).await }
                         ));
                     }
                 ));
                 page.imp().add(device.0.clone(), row);
             }
             Ok(())
+        }
+
+        async fn finish_acquire_device(&self, usb: &UsbProxy<'_>) {
+            loop {
+                let result = usb.finish_acquire_devices().await;
+                match result {
+                    Ok(result) => {
+                        println!("result {result:?}");
+                        if !result.1 {
+                            continue;
+                        }
+                        for device in &result.0 {
+                            if let Some(fd) = device.1.fd() {
+                                match Self::usb_describe_device(&fd) {
+                                    Ok(describe) => self.obj().info(&describe),
+                                    Err(err) => self.obj().info(&err.to_string()),
+                                }
+                            }
+                            self.acquired_device(&device.0);
+                        }
+                    }
+                    Err(err) => {
+                        tracing::error!("Finish acquire device error: {err}");
+                        self.obj()
+                            .error(&format!("Finish acquire device error: {err}"));
+                    }
+                }
+                break;
+            }
+        }
+
+        async fn share(&self, widget: &gtk::Button, device_id: &String, device_writable: bool) {
+            let root = widget.native().unwrap();
+            let identifier = WindowIdentifier::from_native(&root).await;
+            let usb = UsbProxy::new().await.unwrap();
+            let result = usb
+                .acquire_devices(&identifier, &[(device_id, device_writable)])
+                .await;
+            match result {
+                Ok(resp) => {
+                    if resp.response().is_ok() {
+                        self.finish_acquire_device(&usb).await;
+                    }
+                }
+                Err(err) => {
+                    tracing::error!("Acquire device error: {err}");
+                    self.obj().error(&format!("Acquire device error: {err}"));
+                }
+            }
+        }
+
+        async fn unshare(&self, device_id: &str) {
+            let usb = UsbProxy::new().await.unwrap();
+            let result = usb.release_devices(&[&device_id]).await;
+            println!("{result:?}");
+            match result {
+                Ok(_) => {}
+                Err(err) => {
+                    tracing::error!("Acquire device error: {err}");
+                    self.obj().error(&format!("Acquire device error: {err}"));
+                }
+            }
+            self.released_device(&device_id);
         }
 
         pub(super) async fn start_session(&self) -> ashpd::Result<()> {
