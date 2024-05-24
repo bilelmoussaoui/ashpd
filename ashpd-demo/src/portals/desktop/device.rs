@@ -1,3 +1,5 @@
+// The device portal is deprecated.
+#![allow(deprecated)]
 use adw::subclass::prelude::*;
 use ashpd::desktop::device::{Device, DeviceProxy};
 use gtk::glib;

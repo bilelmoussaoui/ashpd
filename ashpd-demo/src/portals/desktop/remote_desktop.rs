@@ -4,8 +4,8 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktop},
-        screencast::{CursorMode, PersistMode, Screencast, SourceType, Stream},
-        Session,
+        screencast::{CursorMode, Screencast, SourceType, Stream},
+        PersistMode, Session,
     },
     enumflags2::BitFlags,
     WindowIdentifier,
@@ -220,7 +220,9 @@ impl RemoteDesktopPage {
                 )
                 .await?;
         }
-        proxy.select_devices(&session, devices).await?;
+        proxy
+            .select_devices(&session, devices, None, PersistMode::DoNot)
+            .await?;
 
         self.info("Starting a remote desktop session");
         let response = proxy.start(&session, &identifier).await?.response()?;
