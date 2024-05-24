@@ -276,3 +276,23 @@ where
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use zbus::zvariant::Value;
+
+    use super::*;
+
+    #[test]
+    fn response_signature() {
+        use crate::desktop::account::UserInformation;
+        assert_eq!(
+            <(ResponseType, HashMap<&str, Value<'_>>)>::signature(),
+            Response::<()>::signature(),
+        );
+        assert_eq!(
+            <(ResponseType, UserInformation)>::signature(),
+            Response::<UserInformation>::signature(),
+        );
+    }
+}
