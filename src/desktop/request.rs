@@ -21,7 +21,7 @@ use crate::{desktop::HandleToken, proxy::Proxy, Error};
 /// A typical response returned by the [`Request::response`].
 /// of a [`Request`].
 #[derive(Debug, Type)]
-#[zvariant(signature = "ua{sv}")]
+#[zvariant(signature = "(ua{sv})")]
 pub enum Response<T>
 where
     T: for<'de> Deserialize<'de> + Type,
@@ -294,5 +294,6 @@ mod tests {
             <(ResponseType, UserInformation)>::signature(),
             Response::<UserInformation>::signature(),
         );
+        assert_eq!(Response::<()>::signature(), "(ua{sv})");
     }
 }
