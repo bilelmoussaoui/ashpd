@@ -46,7 +46,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, Request, Session};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
@@ -86,15 +86,6 @@ pub enum InhibitFlags {
     #[doc(alias = "XDP_INHIBIT_FLAG_IDLE")]
     /// Idle.
     Idle,
-}
-
-#[derive(Debug, DeserializeDict, Type)]
-/// A response to a [`InhibitProxy::create_monitor`] request.
-#[zvariant(signature = "dict")]
-struct CreateMonitor {
-    // TODO: investigate why this doesn't return an ObjectPath
-    // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
-    session_handle: String,
 }
 
 #[derive(Debug, DeserializeDict, Type)]
@@ -181,11 +172,11 @@ impl<'a> InhibitProxy<'a> {
         let body = &(&identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
             self.0
-                .request::<CreateMonitor>(&options.handle_token, "CreateMonitor", body)
+                .request::<CreateSessionResponse>(&options.handle_token, "CreateMonitor", body)
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
-        assert_eq!(proxy.path().as_str(), &monitor.response()?.session_handle);
+        assert_eq!(proxy.path(), &monitor.response()?.session_handle.as_ref());
         Ok(proxy)
     }
 

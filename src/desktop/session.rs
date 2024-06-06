@@ -1,8 +1,8 @@
 use std::{collections::HashMap, fmt::Debug};
 
 use futures_util::Stream;
-use serde::{Serialize, Serializer};
-use zbus::zvariant::{ObjectPath, OwnedValue, Type};
+use serde::{Deserialize, Serialize, Serializer};
+use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type};
 
 use crate::{desktop::HandleToken, proxy::Proxy, Error};
 
@@ -88,5 +88,50 @@ impl<'a> Debug for Session<'a> {
         f.debug_tuple("Session")
             .field(&self.path().as_str())
             .finish()
+    }
+}
+
+/// A response to a `create_session` request.
+#[derive(Type, Debug)]
+#[zvariant(signature = "dict")]
+pub(crate) struct CreateSessionResponse {
+    pub(crate) session_handle: OwnedObjectPath,
+}
+
+// Context: Various portal were expected to actually return an OwnedObjectPath
+// but unfortunately this wasn't the case when the portals were implemented in
+// xdp. Fixing that would be an API break as well...
+// See <https://github.com/flatpak/xdg-desktop-portal/pull/609>
+// The Location, ScreenCast, Remote Desktop, Global Shortcuts and Inhibit
+// portals `CreateSession` calls are all affected.
+//
+// So in order to be future proof, we try to deserialize the `session_handle`
+// key as a string and fallback to an object path in case the situation gets
+// resolved in the future.
+impl<'de> Deserialize<'de> for CreateSessionResponse {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let map: HashMap<String, OwnedValue> = HashMap::deserialize(deserializer)?;
+        let session_handle = map.get("session_handle").ok_or_else(|| {
+            serde::de::Error::custom(
+                "CreateSessionResponse failed to deserialize. Couldn't find a session_handle",
+            )
+        })?;
+
+        let path = if let Ok(object_path_str) = session_handle.downcast_ref::<&str>() {
+            ObjectPath::try_from(object_path_str).unwrap()
+        } else if let Ok(object_path) = session_handle.downcast_ref::<ObjectPath<'_>>() {
+            object_path
+        } else {
+            return Err(serde::de::Error::custom(
+                "Wrong session_handle type. Expected `s` or `o`.",
+            ));
+        };
+
+        Ok(Self {
+            session_handle: path.into(),
+        })
     }
 }

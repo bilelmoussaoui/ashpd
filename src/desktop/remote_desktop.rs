@@ -103,7 +103,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
 use super::{screencast::Stream, HandleToken, PersistMode, Request, Session};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdKeyState"))]
@@ -160,16 +160,6 @@ struct CreateRemoteOptions {
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
-}
-
-#[derive(DeserializeDict, Type, Debug)]
-/// A response to a [`RemoteDesktop::create_session`] request.
-#[zvariant(signature = "dict")]
-struct CreateSession {
-    // TODO: investigate why this doesn't return an ObjectPath
-    // replace with an ObjectPath once https://github.com/flatpak/xdg-desktop-portal/pull/609's merged
-    /// A string that will be used as the last element of the session handle.
-    session_handle: String,
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
@@ -263,11 +253,11 @@ impl<'a> RemoteDesktop<'a> {
         let options = CreateRemoteOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
-                .request::<CreateSession>(&options.handle_token, "CreateSession", &options)
+                .request::<CreateSessionResponse>(&options.handle_token, "CreateSession", &options)
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future()
         )?;
-        assert_eq!(proxy.path().as_str(), &request.response()?.session_handle);
+        assert_eq!(proxy.path(), &request.response()?.session_handle.as_ref());
         Ok(proxy)
     }
 

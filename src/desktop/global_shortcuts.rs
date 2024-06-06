@@ -9,7 +9,7 @@ use zbus::zvariant::{
 };
 
 use super::{HandleToken, Request, Session};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -90,13 +90,6 @@ struct CreateSessionOptions {
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
     session_handle_token: HandleToken,
-}
-
-/// A response to a [`GlobalShortcuts::create_session`] request.
-#[derive(DeserializeDict, Type, Debug)]
-#[zvariant(signature = "dict")]
-struct CreateSession {
-    session_handle: String,
 }
 
 /// Specified options for a [`GlobalShortcuts::bind_shortcuts`] request.
@@ -235,7 +228,7 @@ impl<'a> GlobalShortcuts<'a> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
-                .request::<CreateSession>(&options.handle_token, "CreateSession", &options)
+                .request::<CreateSessionResponse>(&options.handle_token, "CreateSession", &options)
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),
         )?;
