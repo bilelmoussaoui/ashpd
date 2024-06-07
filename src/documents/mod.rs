@@ -478,6 +478,28 @@ impl<'a> Documents<'a> {
             .call("RevokePermissions", &(doc_id.into(), app_id, permissions))
             .await
     }
+
+    /// Revokes access permissions for a file in the document store from an
+    /// application.
+    ///
+    /// # Arguments
+    ///
+    /// * `doc_ids` - A list of file IDs in the document store.
+    ///
+    /// # Returns
+    ///
+    /// A dictionary mapping document IDs to the paths in the host filesystem
+    ///
+    /// # Specifications
+    ///
+    /// See also [`GetHostPaths`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html#org-freedesktop-portal-documents-gethostpaths).
+    #[doc(alias = "GetHostPaths")]
+    pub async fn host_paths(
+        &self,
+        doc_ids: &[DocumentID],
+    ) -> Result<HashMap<DocumentID, FilePath>, Error> {
+        self.0.call_versioned("GetHostPaths", &(doc_ids,), 5).await
+    }
 }
 
 impl<'a> std::ops::Deref for Documents<'a> {
@@ -495,7 +517,11 @@ pub use file_transfer::FileTransfer;
 
 #[cfg(test)]
 mod tests {
-    use crate::documents::Permission;
+    use std::collections::HashMap;
+
+    use zbus::zvariant::Type;
+
+    use crate::{app_id::DocumentID, documents::Permission, FilePath};
 
     #[test]
     fn serialize_deserialize() {
@@ -505,5 +531,7 @@ mod tests {
 
         let decoded = serde_json::from_str(&string).unwrap();
         assert_eq!(permission, decoded);
+
+        assert_eq!(HashMap::<DocumentID, FilePath>::signature(), "a{say}");
     }
 }
