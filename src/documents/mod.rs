@@ -479,8 +479,7 @@ impl<'a> Documents<'a> {
             .await
     }
 
-    /// Revokes access permissions for a file in the document store from an
-    /// application.
+    /// Retrieves the host filesystem paths from their document IDs.
     ///
     /// # Arguments
     ///
