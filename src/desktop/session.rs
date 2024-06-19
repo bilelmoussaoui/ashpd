@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug};
+use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
 use futures_util::Stream;
 use serde::{Deserialize, Serialize, Serializer};
@@ -23,24 +23,29 @@ pub type SessionDetails = HashMap<String, OwnedValue>;
 #[derive(Type)]
 #[doc(alias = "org.freedesktop.portal.Session")]
 #[zvariant(signature = "o")]
-pub struct Session<'a>(Proxy<'a>);
+pub struct Session<'a, T>(Proxy<'a>, PhantomData<T>)
+where
+    T: SessionPortal;
 
-impl<'a> Session<'a> {
+impl<'a, T> Session<'a, T>
+where
+    T: SessionPortal,
+{
     /// Create a new instance of [`Session`].
     ///
     /// **Note** A [`Session`] is not supposed to be created manually.
-    pub(crate) async fn new<P>(path: P) -> Result<Session<'a>, Error>
+    pub(crate) async fn new<P>(path: P) -> Result<Session<'a, T>, Error>
     where
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
         let proxy = Proxy::new_desktop_with_path("org.freedesktop.portal.Session", path).await?;
-        Ok(Self(proxy))
+        Ok(Self(proxy, PhantomData))
     }
 
     pub(crate) async fn from_unique_name(
         handle_token: &HandleToken,
-    ) -> Result<Session<'a>, crate::Error> {
+    ) -> Result<Session<'a, T>, crate::Error> {
         let path =
             Proxy::unique_name("/org/freedesktop/portal/desktop/session", handle_token).await?;
         #[cfg(feature = "tracing")]
@@ -74,7 +79,10 @@ impl<'a> Session<'a> {
     }
 }
 
-impl<'a> Serialize for Session<'a> {
+impl<'a, T> Serialize for Session<'a, T>
+where
+    T: SessionPortal,
+{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -83,13 +91,19 @@ impl<'a> Serialize for Session<'a> {
     }
 }
 
-impl<'a> Debug for Session<'a> {
+impl<'a, T> Debug for Session<'a, T>
+where
+    T: SessionPortal,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("Session")
             .field(&self.path().as_str())
             .finish()
     }
 }
+
+/// Portals that have a long-lived interaction
+pub trait SessionPortal {}
 
 /// A response to a `create_session` request.
 #[derive(Type, Debug)]
