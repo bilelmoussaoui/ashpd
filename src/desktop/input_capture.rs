@@ -106,7 +106,7 @@
 //!         .iter()
 //!         .enumerate()
 //!         .map(|(n, r)| {
-//!             let id = n as u32;
+//!             let id = (n + 1) as u32;
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
@@ -217,7 +217,7 @@
 //!         .iter()
 //!         .enumerate()
 //!         .map(|(n, r)| {
-//!             let id = n as u32;
+//!             let id = (n + 1) as u32;
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
