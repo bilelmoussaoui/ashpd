@@ -300,7 +300,7 @@ use zbus::zvariant::{
     self, DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
 };
 
-use super::{HandleToken, Request, Session};
+use super::{session::SessionPortal, HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
@@ -559,7 +559,7 @@ impl<'a> InputCapture<'a> {
         &self,
         parent_window: &WindowIdentifier,
         capabilities: BitFlags<Capabilities>,
-    ) -> Result<(Session<'_>, BitFlags<Capabilities>), Error> {
+    ) -> Result<(Session<'_, Self>, BitFlags<Capabilities>), Error> {
         let options = CreateSessionOptions {
             handle_token: Default::default(),
             session_handle_token: Default::default(),
@@ -587,7 +587,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// See also [`GetZones`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-getzones).
     #[doc(alias = "GetZones")]
-    pub async fn zones(&self, session: &Session<'_>) -> Result<Request<Zones>, Error> {
+    pub async fn zones(&self, session: &Session<'_, Self>) -> Result<Request<Zones>, Error> {
         let options = GetZonesOptions::default();
         self.0
             .request(&options.handle_token, "GetZones", (session, &options))
@@ -602,7 +602,7 @@ impl<'a> InputCapture<'a> {
     #[doc(alias = "SetPointerBarriers")]
     pub async fn set_pointer_barriers(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, Self>,
         barriers: &[Barrier],
         zone_set: u32,
     ) -> Result<Request<SetPointerBarriersResponse>, Error> {
@@ -621,7 +621,7 @@ impl<'a> InputCapture<'a> {
     /// # Specifications
     ///
     /// See also [`Enable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-enable).
-    pub async fn enable(&self, session: &Session<'_>) -> Result<(), Error> {
+    pub async fn enable(&self, session: &Session<'_, Self>) -> Result<(), Error> {
         let options = EnableOptions::default();
         self.0.call("Enable", &(session, &options)).await
     }
@@ -631,7 +631,7 @@ impl<'a> InputCapture<'a> {
     /// # Specifications
     ///
     /// See also [`Disable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-disable).
-    pub async fn disable(&self, session: &Session<'_>) -> Result<(), Error> {
+    pub async fn disable(&self, session: &Session<'_, Self>) -> Result<(), Error> {
         let options = DisableOptions::default();
         self.0.call("Disable", &(session, &options)).await
     }
@@ -643,7 +643,7 @@ impl<'a> InputCapture<'a> {
     /// See also [`Release`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-release).
     pub async fn release(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, Self>,
         activation_id: u32,
         cursor_position: (f64, f64),
     ) -> Result<(), Error> {
@@ -660,7 +660,7 @@ impl<'a> InputCapture<'a> {
     ///
     /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-connecttoeis).
     #[doc(alias = "ConnectToEIS")]
-    pub async fn connect_to_eis(&self, session: &Session<'_>) -> Result<OwnedFd, Error> {
+    pub async fn connect_to_eis(&self, session: &Session<'_, Self>) -> Result<OwnedFd, Error> {
         // `ConnectToEIS` doesn't take any options for now
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
@@ -731,3 +731,5 @@ impl<'a> std::ops::Deref for InputCapture<'a> {
         &self.0
     }
 }
+
+impl SessionPortal for InputCapture<'_> {}

@@ -45,7 +45,7 @@ use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
-use super::{HandleToken, Request, Session};
+use super::{session::SessionPortal, HandleToken, Request, Session};
 use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
@@ -167,7 +167,7 @@ impl<'a> InhibitProxy<'a> {
     pub async fn create_monitor(
         &self,
         identifier: &WindowIdentifier,
-    ) -> Result<Session<'a>, Error> {
+    ) -> Result<Session<'a, Self>, Error> {
         let options = CreateMonitorOptions::default();
         let body = &(&identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
@@ -238,7 +238,7 @@ impl<'a> InhibitProxy<'a> {
     /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Inhibit.html#org-freedesktop-portal-inhibit-queryendresponse).
     #[doc(alias = "QueryEndResponse")]
     #[doc(alias = "xdp_portal_session_monitor_query_end_response")]
-    pub async fn query_end_response(&self, session: &Session<'_>) -> Result<(), Error> {
+    pub async fn query_end_response(&self, session: &Session<'_, Self>) -> Result<(), Error> {
         self.0.call("QueryEndResponse", &(session)).await
     }
 }
@@ -250,3 +250,5 @@ impl<'a> std::ops::Deref for InhibitProxy<'a> {
         &self.0
     }
 }
+
+impl SessionPortal for InhibitProxy<'_> {}

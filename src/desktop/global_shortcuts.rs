@@ -8,7 +8,7 @@ use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,
 };
 
-use super::{HandleToken, Request, Session};
+use super::{session::SessionPortal, HandleToken, Request, Session};
 use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
@@ -224,7 +224,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-createsession).
     #[doc(alias = "CreateSession")]
-    pub async fn create_session(&self) -> Result<Session<'a>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'a, Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
@@ -244,7 +244,7 @@ impl<'a> GlobalShortcuts<'a> {
     #[doc(alias = "BindShortcuts")]
     pub async fn bind_shortcuts(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, Self>,
         shortcuts: &[NewShortcut],
         parent_window: &WindowIdentifier,
     ) -> Result<Request<BindShortcuts>, Error> {
@@ -266,7 +266,7 @@ impl<'a> GlobalShortcuts<'a> {
     #[doc(alias = "ListShortcuts")]
     pub async fn list_shortcuts(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, Self>,
     ) -> Result<Request<ListShortcuts>, Error> {
         let options = ListShortcutsOptions::default();
         self.0
@@ -315,3 +315,5 @@ impl<'a> std::ops::Deref for GlobalShortcuts<'a> {
         &self.0
     }
 }
+
+impl SessionPortal for GlobalShortcuts<'_> {}

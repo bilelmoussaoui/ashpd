@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use futures_util::{Stream, StreamExt};
 use zbus::zvariant::{DeserializeDict, OwnedFd, OwnedObjectPath, SerializeDict, Type, Value};
 
-use super::Session;
+use super::{remote_desktop::RemoteDesktop, Session};
 use crate::{proxy::Proxy, Result};
 
 #[derive(Debug, Type, SerializeDict)]
@@ -53,7 +53,7 @@ impl<'a> Clipboard<'a> {
     ///
     /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-requestclipboard).
     #[doc(alias = "RequestClipboard")]
-    pub async fn request(&self, session: &Session<'_>) -> Result<()> {
+    pub async fn request(&self, session: &Session<'_, RemoteDesktop<'_>>) -> Result<()> {
         let options: HashMap<&str, Value<'_>> = HashMap::default();
         self.0
             .call_method("RequestClipboard", &(session, options))
@@ -65,7 +65,11 @@ impl<'a> Clipboard<'a> {
     ///
     /// See also [`SetSelection`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-setselection).
     #[doc(alias = "SetSelection")]
-    pub async fn set_selection(&self, session: &Session<'_>, mime_types: &[&str]) -> Result<()> {
+    pub async fn set_selection(
+        &self,
+        session: &Session<'_, RemoteDesktop<'_>>,
+        mime_types: &[&str],
+    ) -> Result<()> {
         let options = SetSelectionOptions { mime_types };
         self.0.call("SetSelection", &(session, options)).await?;
 
@@ -76,7 +80,11 @@ impl<'a> Clipboard<'a> {
     ///
     /// See also [`SelectionWrite`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-selectionwrite).
     #[doc(alias = "SelectionWrite")]
-    pub async fn selection_write(&self, session: &Session<'_>, serial: u32) -> Result<OwnedFd> {
+    pub async fn selection_write(
+        &self,
+        session: &Session<'_, RemoteDesktop<'_>>,
+        serial: u32,
+    ) -> Result<OwnedFd> {
         let fd = self
             .0
             .call::<OwnedFd>("SelectionWrite", &(session, serial))
@@ -90,7 +98,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionWriteDone")]
     pub async fn selection_write_done(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, RemoteDesktop<'_>>,
         serial: u32,
         success: bool,
     ) -> Result<()> {
@@ -103,7 +111,11 @@ impl<'a> Clipboard<'a> {
     ///
     /// See also [`SelectionRead`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-selectionread).
     #[doc(alias = "SelectionRead")]
-    pub async fn selection_read(&self, session: &Session<'_>, mime_type: &str) -> Result<OwnedFd> {
+    pub async fn selection_read(
+        &self,
+        session: &Session<'_, RemoteDesktop<'_>>,
+        mime_type: &str,
+    ) -> Result<OwnedFd> {
         let fd = self
             .0
             .call::<OwnedFd>("SelectionRead", &(session, mime_type))
@@ -118,7 +130,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionOwnerChanged")]
     pub async fn receive_selection_owner_changed(
         &self,
-    ) -> Result<impl Stream<Item = (Session, SelectionOwnerChanged)>> {
+    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, SelectionOwnerChanged)>> {
         Ok(self
             .0
             .signal::<(OwnedObjectPath, SelectionOwnerChanged)>("SelectionOwnerChanged")
@@ -132,7 +144,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionTransfer")]
     pub async fn receive_selection_transfer(
         &self,
-    ) -> Result<impl Stream<Item = (Session, String, u32)>> {
+    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, String, u32)>> {
         Ok(self
             .0
             .signal::<(OwnedObjectPath, String, u32)>("SelectionTransfer")

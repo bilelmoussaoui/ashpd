@@ -49,7 +49,10 @@ use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
-use super::{HandleToken, PersistMode, Request, Session};
+use super::{
+    remote_desktop::RemoteDesktop, session::SessionPortal, HandleToken, PersistMode, Request,
+    Session,
+};
 use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
 
 #[bitflags]
@@ -274,7 +277,7 @@ impl<'a> Screencast<'a> {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-createsession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_screencast_session")]
-    pub async fn create_session(&self) -> Result<Session<'a>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'a, Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
@@ -302,7 +305,10 @@ impl<'a> Screencast<'a> {
     ///
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-openpipewireremote).
     #[doc(alias = "OpenPipeWireRemote")]
-    pub async fn open_pipe_wire_remote(&self, session: &Session<'_>) -> Result<OwnedFd, Error> {
+    pub async fn open_pipe_wire_remote(
+        &self,
+        session: &Session<'_, impl HasScreencastSession>,
+    ) -> Result<OwnedFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
         let options: HashMap<&str, Value<'_>> = HashMap::new();
@@ -335,7 +341,7 @@ impl<'a> Screencast<'a> {
     #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, impl HasScreencastSession>,
         cursor_mode: CursorMode,
         types: BitFlags<SourceType>,
         multiple: bool,
@@ -376,7 +382,7 @@ impl<'a> Screencast<'a> {
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, impl HasScreencastSession>,
         identifier: &WindowIdentifier,
     ) -> Result<Request<Streams>, Error> {
         let options = StartCastOptions::default();
@@ -417,3 +423,10 @@ impl<'a> std::ops::Deref for Screencast<'a> {
         &self.0
     }
 }
+
+impl SessionPortal for Screencast<'_> {}
+
+/// Defines which portals session can be used in a screen-cast.
+pub trait HasScreencastSession: SessionPortal {}
+impl HasScreencastSession for Screencast<'_> {}
+impl HasScreencastSession for RemoteDesktop<'_> {}

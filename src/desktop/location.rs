@@ -35,7 +35,7 @@ use serde::Deserialize;
 use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
-use super::{HandleToken, Request, Session};
+use super::{session::SessionPortal, HandleToken, Request, Session};
 use crate::{proxy::Proxy, Error, WindowIdentifier};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
@@ -238,7 +238,7 @@ impl<'a> LocationProxy<'a> {
         distance_threshold: Option<u32>,
         time_threshold: Option<u32>,
         accuracy: Option<Accuracy>,
-    ) -> Result<Session<'a>, Error> {
+    ) -> Result<Session<'a, Self>, Error> {
         let options = CreateSessionOptions {
             distance_threshold,
             time_threshold,
@@ -271,7 +271,7 @@ impl<'a> LocationProxy<'a> {
     #[doc(alias = "xdp_portal_location_monitor_start")]
     pub async fn start(
         &self,
-        session: &Session<'_>,
+        session: &Session<'_, Self>,
         identifier: &WindowIdentifier,
     ) -> Result<Request<()>, Error> {
         let options = SessionStartOptions::default();
@@ -284,6 +284,8 @@ impl<'a> LocationProxy<'a> {
             .await
     }
 }
+
+impl SessionPortal for LocationProxy<'_> {}
 
 impl<'a> std::ops::Deref for LocationProxy<'a> {
     type Target = zbus::Proxy<'a>;
