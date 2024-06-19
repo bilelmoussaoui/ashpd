@@ -402,9 +402,9 @@ impl Deactivated {
 #[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct ActivatedOptions {
-    activation_id: u32,
-    cursor_position: (f32, f32),
-    barrier_id: BarrierID,
+    activation_id: Option<u32>,
+    cursor_position: Option<(f32, f32)>,
+    barrier_id: Option<BarrierID>,
 }
 
 /// Indicates that an input capturing session was activated.
@@ -419,17 +419,17 @@ impl Activated {
     }
 
     /// A number that can be used to synchronize with the transport-layer.
-    pub fn activation_id(&self) -> u32 {
+    pub fn activation_id(&self) -> Option<u32> {
         self.1.activation_id
     }
 
     /// The current cursor position in the same coordinate space as the zones.
-    pub fn cursor_position(&self) -> (f32, f32) {
+    pub fn cursor_position(&self) -> Option<(f32, f32)> {
         self.1.cursor_position
     }
 
     /// The barrier id of the barrier that triggered
-    pub fn barrier_id(&self) -> BarrierID {
+    pub fn barrier_id(&self) -> Option<BarrierID> {
         self.1.barrier_id
     }
 }
