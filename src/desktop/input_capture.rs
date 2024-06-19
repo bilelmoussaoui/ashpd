@@ -275,7 +275,7 @@
 //!         }
 //!
 //!         eprintln!("releasing input capture");
-//!         let (x, y) = activated.cursor_position();
+//!         let (x, y) = activated.cursor_position().unwrap();
 //!         let (x, y) = (x as f64, y as f64);
 //!         let cursor_pos = match pos {
 //!             Position::Left => (x + 1., y),
@@ -284,7 +284,7 @@
 //!             Position::Bottom => (x, y + 1.),
 //!         };
 //!         input_capture
-//!             .release(&session, activated.activation_id(), cursor_pos)
+//!             .release(&session, activated.activation_id().unwrap(), cursor_pos)
 //!             .await?;
 //!     }
 //! }
