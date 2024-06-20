@@ -14,6 +14,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 static IS_SANDBOXED: OnceLock<bool> = OnceLock::new();
 
+mod activation_token;
 /// Interact with the user's desktop such as taking a screenshot, setting a
 /// background or querying the user's location.
 pub mod desktop;
@@ -22,6 +23,7 @@ pub mod documents;
 mod error;
 mod window_identifier;
 
+pub use self::activation_token::ActivationToken;
 pub use self::window_identifier::WindowIdentifier;
 mod app_id;
 pub use self::app_id::AppID;
