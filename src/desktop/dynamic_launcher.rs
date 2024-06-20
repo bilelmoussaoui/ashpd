@@ -58,7 +58,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, OwnedValue, SerializeDict, Type, Value};
 
 use super::{HandleToken, Icon, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
 
 #[bitflags]
 #[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
@@ -194,6 +194,25 @@ impl std::fmt::Debug for PrepareInstallResponse {
     }
 }
 
+#[derive(SerializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Options to pass to [`DynamicLauncherProxy::launch`]
+pub struct LaunchOptions {
+    activation_token: Option<ActivationToken>,
+}
+
+impl LaunchOptions {
+    /// Sets the token that can be used to activate the chosen application.
+    #[must_use]
+    pub fn activation_token(
+        mut self,
+        activation_token: impl Into<Option<ActivationToken>>,
+    ) -> Self {
+        self.activation_token = activation_token.into();
+        self
+    }
+}
+
 #[derive(Debug)]
 /// Wrong type of [`crate::desktop::Icon`] was used.
 pub struct UnexpectedIconError;
@@ -321,9 +340,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     /// See also [`Launch`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-launch).
     #[doc(alias = "Launch")]
     #[doc(alias = "xdp_portal_dynamic_launcher_launch")]
-    pub async fn launch(&self, desktop_file_id: &str) -> Result<(), Error> {
-        // TODO: handle activation_token
-        let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
+    pub async fn launch(&self, desktop_file_id: &str, options: LaunchOptions) -> Result<(), Error> {
         self.0.call("Launch", &(desktop_file_id, &options)).await
     }
 

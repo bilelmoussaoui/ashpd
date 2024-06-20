@@ -57,13 +57,13 @@ use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct OpenDirOptions {
     handle_token: HandleToken,
-    activation_token: Option<String>,
+    activation_token: Option<ActivationToken>,
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
@@ -72,7 +72,7 @@ struct OpenFileOptions {
     handle_token: HandleToken,
     writeable: Option<bool>,
     ask: Option<bool>,
-    activation_token: Option<String>,
+    activation_token: Option<ActivationToken>,
 }
 
 #[derive(Debug)]
@@ -171,6 +171,16 @@ impl OpenFileRequest {
         self
     }
 
+    /// Sets the token that can be used to activate the chosen application.
+    #[must_use]
+    pub fn activation_token(
+        mut self,
+        activation_token: impl Into<Option<ActivationToken>>,
+    ) -> Self {
+        self.options.activation_token = activation_token.into();
+        self
+    }
+
     /// Send the request for a file.
     pub async fn send_file(self, file: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
@@ -200,6 +210,16 @@ impl OpenDirectoryRequest {
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
         self.identifier = identifier.into().unwrap_or_default();
+        self
+    }
+
+    /// Sets the token that can be used to activate the chosen application.
+    #[must_use]
+    pub fn activation_token(
+        mut self,
+        activation_token: impl Into<Option<ActivationToken>>,
+    ) -> Self {
+        self.options.activation_token = activation_token.into();
         self
     }
 

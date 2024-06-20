@@ -30,7 +30,7 @@ use serde::Serialize;
 use zbus::zvariant::{self, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -43,8 +43,7 @@ struct EmailOptions {
     subject: Option<String>,
     body: Option<String>,
     attachment_fds: Option<Vec<zvariant::OwnedFd>>,
-    // TODO Expose activation_token in the api
-    activation_token: Option<String>,
+    activation_token: Option<ActivationToken>,
 }
 
 #[derive(Debug)]
@@ -178,11 +177,13 @@ impl EmailRequest {
     }
 
     // TODO Added in version 4 of the interface.
-    /// Sets the activation token.
-    #[allow(dead_code)]
+    /// Sets the token that can be used to activate the chosen application.
     #[must_use]
-    fn activation_token<'a>(mut self, activation_token: impl Into<Option<&'a str>>) -> Self {
-        self.options.activation_token = activation_token.into().map(ToOwned::to_owned);
+    pub fn activation_token(
+        mut self,
+        activation_token: impl Into<Option<ActivationToken>>,
+    ) -> Self {
+        self.options.activation_token = activation_token.into();
         self
     }
 
