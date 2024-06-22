@@ -4,17 +4,19 @@
 //!
 //! ```rust,no_run
 //! use std::collections::HashMap;
+//! use std::os::fd::BorrowedFd;
 //!
 //! use ashpd::flatpak::{Flatpak, SpawnFlags, SpawnOptions};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Flatpak::new().await?;
+//!     let fds: HashMap::<_, BorrowedFd<'_>> = HashMap::new();
 //!
 //!     proxy
 //!         .spawn(
 //!             "/",
 //!             &["contrast"],
-//!             HashMap::new(),
+//!             fds,
 //!             HashMap::new(),
 //!             SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
 //!             SpawnOptions::default(),
@@ -28,7 +30,7 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    os::fd::{BorrowedFd, OwnedFd},
+    os::fd::{AsFd, OwnedFd},
     path::Path,
 };
 
@@ -325,7 +327,7 @@ impl<'a> Flatpak<'a> {
         &self,
         cwd_path: impl AsRef<Path>,
         argv: &[impl AsRef<Path>],
-        fds: HashMap<u32, BorrowedFd<'_>>,
+        fds: HashMap<u32, impl AsFd>,
         envs: HashMap<&str, &str>,
         flags: BitFlags<SpawnFlags>,
         options: SpawnOptions,
