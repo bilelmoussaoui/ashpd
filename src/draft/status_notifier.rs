@@ -175,6 +175,31 @@ pub struct ToolTip {
     description: String,
 }
 
+impl ToolTip {
+    ///
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    ///
+    pub fn icon(mut self, icon: Icon) -> Self {
+        self.icon = icon;
+        self
+    }
+
+    ///
+    pub fn title(mut self, title: impl Into<String>) -> Self {
+        self.title = title.into();
+        self
+    }
+
+    ///
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = description.into();
+        self
+    }
+}
+
 impl From<ToolTip> for Structure<'_> {
     fn from(value: ToolTip) -> Self {
         StructureBuilder::new()
@@ -230,26 +255,69 @@ pub struct Attention {
 ///
 #[derive(Default, Debug, Type)]
 pub struct StatusNotifierItemOptions {
+    category: Category,
+    title: String,
+    status: Status,
+    icon: Icon,
+    overlay: Icon,
+    attention: Attention,
+    is_menu: bool,
+    tooltip: ToolTip,
+}
+
+impl StatusNotifierItemOptions {
     ///
-    pub category: Category,
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     ///
-    pub title: String,
+    pub fn category(mut self, category: Category) -> Self {
+        self.category = category;
+        self
+    }
+
     ///
-    pub status: Status,
+    pub fn title(mut self, title: impl Into<String>) -> Self {
+        self.title = title.into();
+        self
+    }
+
     ///
-    pub window_id: u32,
+    pub fn status(mut self, status: Status) -> Self {
+        self.status = status;
+        self
+    }
+
     ///
-    pub icon_theme_path: String,
+    pub fn icon(mut self, icon: Icon) -> Self {
+        self.icon = icon;
+        self
+    }
+
     ///
-    pub icon: Icon,
+    pub fn overlay(mut self, overlay: Icon) -> Self {
+        self.overlay = overlay;
+        self
+    }
+
     ///
-    pub overlay: Icon,
+    pub fn attention(mut self, attention: Attention) -> Self {
+        self.attention = attention;
+        self
+    }
+
     ///
-    pub attention: Attention,
+    pub fn is_menu(mut self, is_menu: bool) -> Self {
+        self.is_menu = is_menu;
+        self
+    }
+
     ///
-    pub is_menu: bool,
-    ///
-    pub tooltip: ToolTip,
+    pub fn tooltip(mut self, tooltip: ToolTip) -> Self {
+        self.tooltip = tooltip;
+        self
+    }
 }
 
 #[derive(Default)]
@@ -286,16 +354,6 @@ impl StatusNotifierItemInterface {
     #[zbus(property, name = "Status")]
     pub async fn status(&self) -> String {
         self.options.status.to_string()
-    }
-
-    #[zbus(property, name = "WindowId")]
-    pub async fn window_id(&self) -> u32 {
-        self.options.window_id
-    }
-
-    #[zbus(property, name = "IconThemePath")]
-    pub async fn icon_theme_path(&self) -> String {
-        self.options.icon_theme_path.clone()
     }
 
     #[zbus(property, name = "IconName")]

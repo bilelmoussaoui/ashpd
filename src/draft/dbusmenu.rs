@@ -126,16 +126,15 @@ impl DBusMenuItem {
             id: self.id,
             ..Default::default()
         };
+        for (k, v) in &self.properties {
+            menu.properties.insert(*k, v.try_to_owned().unwrap());
+        }
         if !self.children.is_empty() && depth != 0 {
             menu.properties.insert(
                 "children-display".into(),
                 Value::from("submenu").try_to_owned().unwrap(),
             );
-            menu.properties = self
-                .properties
-                .iter()
-                .map(|(k, v)| ((*k), v.try_to_owned().unwrap()))
-                .collect();
+
             for child in &self.children {
                 menu.children.push(Value::from(child.to_dbus(depth - 1)));
             }
@@ -201,15 +200,12 @@ impl DBusMenuInterface {
 
     ///
     async fn event(&self, id: i32, event_id: String, event_data: Value<'_>, _timestamp: u32) {
-        let menu = self.find_by_id(id).unwrap();
-        menu.action
-            .as_ref()
-            .map(|action| action(event_id, event_data));
-    }
-
-    /// TODO: Not sure what is the purpose of this.
-    async fn about_to_show(&self, _id: i32) -> bool {
-        false
+        if event_id.eq("clicked") {
+            let menu = self.find_by_id(id).unwrap();
+            menu.action
+                .as_ref()
+                .map(|action| action(event_id, event_data));
+        }
     }
 
     ///
@@ -240,6 +236,9 @@ impl DBusMenuInterface {
             if menu.id == id {
                 result = Some(menu);
                 break;
+            }
+            for child in &menu.children {
+                queue.push_back(child);
             }
         }
         result
