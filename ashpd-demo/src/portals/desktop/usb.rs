@@ -23,6 +23,8 @@ use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 mod imp {
     use std::cell::RefCell;
 
+    use rusb::UsbContext;
+
     use super::*;
 
     #[derive(Debug, gtk::CompositeTemplate, Default)]
@@ -162,7 +164,7 @@ mod imp {
             klass.bind_template();
 
             klass.install_action_async("usb.refresh", None, |page, _, _| async move {
-                if let Err(err) =  page.imp().refresh_devices().await {
+                if let Err(err) = page.imp().refresh_devices().await {
                     tracing::error!("Failed to refresh USB devices: {err}");
                     page.error(&format!("Failed to refresh USB devices: {err}."));
                 }
@@ -193,9 +195,11 @@ mod imp {
                 #[weak(rename_to = widget)]
                 self,
                 async move {
-                    if let Err(err) =  widget.refresh_devices().await {
+                    if let Err(err) = widget.refresh_devices().await {
                         tracing::error!("Failed to refresh USB devices: {err}");
-                        widget.obj().error(&format!("Failed to refresh USB devices: {err}."));
+                        widget
+                            .obj()
+                            .error(&format!("Failed to refresh USB devices: {err}."));
                         widget.obj().action_set_enabled("usb.start_session", false);
                         widget.obj().action_set_enabled("usb.stop_session", false);
                     } else {
@@ -284,10 +288,11 @@ mod row {
 
     mod imp {
         use std::cell::{Cell, RefCell};
-        use super::super::PortalPageExt;
 
         use adw::subclass::prelude::*;
         use gtk::glib;
+
+        use super::super::PortalPageExt;
 
         #[derive(Debug, gtk::CompositeTemplate, Default)]
         #[template(resource = "/com/belmoussaoui/ashpd/demo/usb_device_row.ui")]

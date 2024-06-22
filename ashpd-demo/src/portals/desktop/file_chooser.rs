@@ -1,6 +1,6 @@
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    desktop::file_chooser::{OpenFileRequest, SaveFileRequest, SaveFilesRequest, FileFilter},
+    desktop::file_chooser::{FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest},
     WindowIdentifier,
 };
 use gtk::glib;
@@ -102,12 +102,15 @@ glib::wrapper! {
 }
 
 impl FileChooserPage {
-
     fn filters(&self, pos: u32) -> Vec<FileFilter> {
         let mut filters = Vec::new();
 
         if pos > 0 {
-            filters.push(FileFilter::new("Text files").mimetype("text/*").glob("*.txt"));
+            filters.push(
+                FileFilter::new("Text files")
+                    .mimetype("text/*")
+                    .glob("*.txt"),
+            );
         };
         if pos > 1 {
             filters.push(FileFilter::new("Images").mimetype("image/*"));
