@@ -12,9 +12,9 @@ use crate::{
     portals::{
         desktop::{
             AccountPage, BackgroundPage, CameraPage, DevicePage, DynamicLauncherPage, EmailPage,
-            FileChooserPage, InhibitPage, LocationPage, NetworkMonitorPage, NotificationPage,
-            OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage, ScreenCastPage,
-            ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
+            FileChooserPage, GlobalShortcutsPage, InhibitPage, LocationPage, NetworkMonitorPage,
+            NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage,
+            ScreenCastPage, ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
         },
         DocumentsPage,
     },
@@ -65,6 +65,8 @@ mod imp {
         #[template_child]
         pub inhibit: TemplateChild<InhibitPage>,
         #[template_child]
+        pub global_shortcuts: TemplateChild<GlobalShortcutsPage>,
+        #[template_child]
         pub secret: TemplateChild<SecretPage>,
         #[template_child]
         pub remote_desktop: TemplateChild<RemoteDesktopPage>,
@@ -101,6 +103,7 @@ mod imp {
                 file_chooser: TemplateChild::default(),
                 open_uri: TemplateChild::default(),
                 inhibit: TemplateChild::default(),
+                global_shortcuts: TemplateChild::default(),
                 secret: TemplateChild::default(),
                 remote_desktop: TemplateChild::default(),
                 print: TemplateChild::default(),

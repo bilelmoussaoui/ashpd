@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="GlobalShortcutsPage" parent="PortalPage">
+    <child>
+      <object class="AdwClamp">
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Global Shortcuts</property>
+                <property name="description" translatable="yes">Comma-separated list of shortcuts to request, in the form: "name:description:optional trigger"</property>
+                <child>
+                  <object class="AdwEntryRow" id="shortcuts">
+                    <property name="title" translatable="yes">Shortcuts</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">_Start Session</property>
+                    <property name="use-underline">True</property>
+                    <property name="halign">start</property>
+                    <property name="action-name">global_shortcuts.start_session</property>
+                    <style>
+                      <class name="pill" />
+                      <class name="suggested-action" />
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">_Close Session</property>
+                    <property name="use-underline">True</property>
+                    <property name="halign">start</property>
+                    <property name="sensitive">False</property>
+                    <property name="action-name">global_shortcuts.stop</property>
+                    <property name="halign">end</property>
+                    <property name="hexpand">True</property>
+                    <style>
+                      <class name="pill" />
+                      <class name="destructive-action" />
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup" id="activations_group">
+                <property name="title" translatable="yes">Activations</property>
+                <property name="visible">False</property>
+                <property name="margin-top">24</property>
+                <child>
+                  <object class="GtkLabel" id="activations_label">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup" id="general_group">
+                <property name="title" translatable="yes">Info</property>
+                <property name="margin-top">24</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Binding changes count</property>
+                    <child>
+                      <object class="GtkLabel" id="rebind_count_label">
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <style>
+          <class name="page-content" />
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>
