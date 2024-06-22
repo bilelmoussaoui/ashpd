@@ -50,6 +50,7 @@ impl<'a> From<DBusMenuLayoutItem> for Structure<'a> {
 #[derive(Default)]
 pub struct DBusMenuItem {
     id: i32,
+    user_id: Option<String>,
     action: Option<Box<dyn Fn(String, Value) + Sync + Send>>,
     properties: HashMap<&'static str, Value<'static>>,
     children: Vec<DBusMenuItem>,
@@ -59,6 +60,12 @@ impl DBusMenuItem {
     ///
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// `id` can be used to get a reference to this item later.
+    pub fn id(mut self, id: impl Into<String>) -> Self {
+        self.user_id = Some(id.into());
+        self
     }
 
     ///
@@ -163,16 +170,79 @@ impl DBusMenu {
         }
         menu
     }
+
+    /// Returns the id of the updated item
+    pub(crate) fn update<F>(&mut self, id: &str, fun: F) -> Option<i32>
+    where
+        F: FnOnce(&mut DBusMenuItem),
+    {
+        let mut next_id = self.next_id;
+        let Some(menu) = self.find_by_user_id(id) else {
+            return None;
+        };
+        let updated = menu.id;
+        fun(menu);
+        for child in &mut menu.children {
+            child.fill_ids(&mut next_id);
+        }
+        Some(updated)
+    }
+
+    pub(crate) fn find_by_user_id(&mut self, user_id: &str) -> Option<&mut DBusMenuItem> {
+        self.find_mut(|item| item.user_id.as_ref().map_or(false, |id| id.eq(user_id)))
+    }
+
+    fn find_by_id(&self, id: i32) -> Option<&DBusMenuItem> {
+        self.find(|item| item.id == id)
+    }
+
+    fn find<F>(&self, mut compare: F) -> Option<&DBusMenuItem>
+    where
+        F: FnMut(&DBusMenuItem) -> bool,
+    {
+        let mut result: Option<&DBusMenuItem> = None;
+        let mut queue: VecDeque<&DBusMenuItem> = VecDeque::default();
+        queue.push_back(&self.root);
+        while !queue.is_empty() {
+            let menu = queue.pop_front().unwrap();
+            if compare(menu) {
+                result = Some(menu);
+                break;
+            }
+            for child in &menu.children {
+                queue.push_back(child);
+            }
+        }
+        result
+    }
+
+    fn find_mut<F>(&mut self, mut compare: F) -> Option<&mut DBusMenuItem>
+    where
+        F: FnMut(&DBusMenuItem) -> bool,
+    {
+        let mut result: Option<&mut DBusMenuItem> = None;
+        let mut queue: VecDeque<&mut DBusMenuItem> = VecDeque::default();
+        queue.push_back(&mut self.root);
+        while !queue.is_empty() {
+            let menu = queue.pop_front().unwrap();
+            if compare(menu) {
+                result = Some(menu);
+                break;
+            }
+            for child in &mut menu.children {
+                queue.push_back(child);
+            }
+        }
+        result
+    }
 }
 
-///
 #[derive(Default)]
-pub struct DBusMenuInterface {
+pub(crate) struct DBusMenuInterface {
     pub(crate) menu: DBusMenu,
     pub(crate) revision: u32,
 }
 
-///
 #[interface(name = "com.canonical.dbusmenu")]
 impl DBusMenuInterface {
     #[zbus(out_args("revision", "layout"))]
@@ -183,7 +253,7 @@ impl DBusMenuInterface {
         _property_names: Vec<String>,
     ) -> (u32, DBusMenuLayoutItem) {
         let mut main_menu = DBusMenuLayoutItem::default();
-        let menu = self.find_by_id(parent_id).unwrap();
+        let menu = self.menu.find_by_id(parent_id).unwrap();
         if !menu.children.is_empty() {
             main_menu.properties.insert(
                 "children-display".into(),
@@ -198,51 +268,29 @@ impl DBusMenuInterface {
         (self.revision, main_menu)
     }
 
-    ///
     async fn event(&self, id: i32, event_id: String, event_data: Value<'_>, _timestamp: u32) {
         if event_id.eq("clicked") {
-            let menu = self.find_by_id(id).unwrap();
+            let menu = self.menu.find_by_id(id).unwrap();
             menu.action
                 .as_ref()
                 .map(|action| action(event_id, event_data));
         }
     }
 
-    ///
     #[zbus(signal, name = "ItemsPropertiesUpdated")]
-    pub async fn items_properties_updated(
+    pub(crate) async fn items_properties_updated(
         &self,
         cx: &SignalContext<'_>,
         properties: Vec<(i32, HashMap<String, OwnedValue>)>,
     ) -> zbus::Result<()>;
 
-    ///
     #[zbus(signal, name = "LayoutUpdated")]
-    pub async fn layout_updated(
+    pub(crate) async fn layout_updated(
         &self,
         cx: &SignalContext<'_>,
         revision: u32,
         parent: i32,
     ) -> zbus::Result<()>;
-}
-
-impl DBusMenuInterface {
-    fn find_by_id(&self, id: i32) -> Option<&DBusMenuItem> {
-        let mut result: Option<&DBusMenuItem> = None;
-        let mut queue: VecDeque<&DBusMenuItem> = VecDeque::default();
-        queue.push_back(&self.menu.root);
-        while !queue.is_empty() {
-            let menu = queue.pop_front().unwrap();
-            if menu.id == id {
-                result = Some(menu);
-                break;
-            }
-            for child in &menu.children {
-                queue.push_back(child);
-            }
-        }
-        result
-    }
 }
 
 #[cfg(test)]
