@@ -31,9 +31,9 @@ pub enum MenuToggleType {
 
 #[derive(Default, Serialize, Type)]
 struct DBusMenuLayoutItem {
-    pub id: i32,
-    pub properties: HashMap<&'static str, OwnedValue>,
-    pub children: Vec<Value<'static>>,
+    id: i32,
+    properties: HashMap<&'static str, OwnedValue>,
+    children: Vec<Value<'static>>,
 }
 
 impl<'a> From<DBusMenuLayoutItem> for Structure<'a> {
@@ -123,9 +123,9 @@ impl DBusMenuItem {
     fn fill_ids(&mut self, next_id: &mut i32) {
         self.id = *next_id;
         *next_id += 1;
-        for child in &mut self.children {
+        self.children.iter_mut().for_each(|child| {
             child.fill_ids(next_id);
-        }
+        });
     }
 
     fn to_dbus(&self, depth: i32) -> DBusMenuLayoutItem {
@@ -277,12 +277,9 @@ impl DBusMenuInterface {
         }
     }
 
-    #[zbus(signal, name = "ItemsPropertiesUpdated")]
-    pub(crate) async fn items_properties_updated(
-        &self,
-        cx: &SignalContext<'_>,
-        properties: Vec<(i32, HashMap<String, OwnedValue>)>,
-    ) -> zbus::Result<()>;
+    async fn about_to_show(&self) -> bool {
+        false
+    }
 
     #[zbus(signal, name = "LayoutUpdated")]
     pub(crate) async fn layout_updated(

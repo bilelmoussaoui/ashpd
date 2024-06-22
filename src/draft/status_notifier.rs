@@ -477,7 +477,8 @@ impl StatusNotifierItemInterface {
 
 ///
 pub struct StatusNotifierItem {
-    _conn: zbus::Connection,
+    ///
+    pub _conn: zbus::Connection,
     item_ref: InterfaceRef<StatusNotifierItemInterface>,
     menu_ref: InterfaceRef<DBusMenuInterface>,
 }
