@@ -1,11 +1,14 @@
 use std::fmt::Display;
 
-use crate::Error;
+use crate::{
+    desktop::{Icon, Pixmap},
+    Error,
+};
 use zbus::{
     export::futures_util::Stream,
     interface,
     object_server::{InterfaceRef, SignalContext},
-    zvariant::{OwnedObjectPath, Structure, StructureBuilder, Type},
+    zvariant::{OwnedObjectPath, Structure, StructureBuilder, Type, Value},
 };
 
 use crate::proxy::Proxy;
@@ -105,7 +108,7 @@ impl<'a> std::ops::Deref for StatusNotifierWatcher<'a> {
 }
 
 ///
-#[derive(Default, Debug, Type)]
+#[derive(Default, Debug, Clone, Type)]
 pub enum Category {
     /// The item describes the status of a generic application,
     /// for instance the current state of a media player.
@@ -132,14 +135,17 @@ impl Display for Category {
 }
 
 ///
-#[derive(Type, Default, Debug)]
+#[derive(Type, Default, Clone, Debug)]
 pub enum Status {
-    ///
+    /// The item is active, is more important that the item will be shown in some way to the user.
     #[default]
     Active,
-    ///
+    /// The item doesn't convey important information to the user,
+    /// it can be considered an "idle" status and is likely that visualizations will chose to hide it.
     Passive,
-    ///
+    /// The item carries really important information for the user,
+    /// such as battery charge running out and is wants to incentive the direct user intervention.
+    /// Visualizations should emphasize in some way the items with NeedsAttention status.
     NeedsAttention,
 }
 
@@ -150,25 +156,7 @@ impl Display for Status {
 }
 
 ///
-#[derive(Type, Default, Debug, Clone)]
-pub struct Pixmap {
-    width: i32,
-    height: i32,
-    bytes: Vec<u8>,
-}
-
-impl From<Pixmap> for Structure<'_> {
-    fn from(value: Pixmap) -> Self {
-        StructureBuilder::new()
-            .add_field(value.width)
-            .add_field(value.height)
-            .add_field(value.bytes)
-            .build()
-    }
-}
-
-///
-#[derive(Default, Debug, Clone, Type)]
+#[derive(Debug, Clone, Type)]
 pub struct ToolTip {
     icon: Icon,
     title: String,
@@ -178,7 +166,11 @@ pub struct ToolTip {
 impl ToolTip {
     ///
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            icon: Icon::Name(String::default()),
+            title: String::default(),
+            description: String::default(),
+        }
     }
 
     ///
@@ -202,58 +194,59 @@ impl ToolTip {
 
 impl From<ToolTip> for Structure<'_> {
     fn from(value: ToolTip) -> Self {
+        let (name, pixmaps) = match value.icon {
+            Icon::Name(name) => (name, Vec::default()),
+            Icon::Pixmaps(pixmaps) => (String::default(), pixmaps),
+            _ => (String::default(), Vec::default()),
+        };
         StructureBuilder::new()
-            .add_field::<String>(value.icon.clone().name_or_default())
-            .add_field::<Vec<Pixmap>>(value.icon.pixmaps_or_default())
+            .add_field(name)
+            .add_field(pixmaps)
             .add_field(value.title)
             .add_field(value.description)
             .build()
     }
 }
 
-///
-#[derive(Clone, Debug, Type)]
-#[zvariant(signature = "(sv)")]
-pub enum Icon {
-    ///
-    Name(String),
-    ///
-    Pixmaps(Vec<Pixmap>),
-}
-
-impl Icon {
-    fn name_or_default(self) -> String {
-        if let Self::Name(name) = self {
-            name
-        } else {
-            String::default()
-        }
-    }
-
-    fn pixmaps_or_default(self) -> Vec<Pixmap> {
-        if let Self::Pixmaps(pixmaps) = self {
-            pixmaps
-        } else {
-            Vec::default()
-        }
-    }
-}
-
-impl Default for Icon {
-    fn default() -> Self {
-        Self::Name(String::default())
-    }
+#[derive(Default)]
+struct Callbacks {
+    on_activate: Option<Box<dyn Fn(i32, i32) + Sync + Send>>,
+    on_secondary_activate: Option<Box<dyn Fn(i32, i32) + Sync + Send>>,
+    on_scroll: Option<Box<dyn Fn(i32, String) + Sync + Send>>,
+    on_provide_xdg_activation_token: Option<Box<dyn Fn(String) + Sync + Send>>,
 }
 
 ///
-#[derive(Default, Debug, Clone, Type)]
+#[derive(Debug, Clone, Type)]
 pub struct Attention {
     icon: Icon,
     movie_name: String,
 }
 
+impl Attention {
+    ///
+    pub fn new() -> Self {
+        Self {
+            icon: Icon::Name(String::default()),
+            movie_name: String::default(),
+        }
+    }
+
+    ///
+    pub fn icon(mut self, icon: Icon) -> Self {
+        self.icon = icon;
+        self
+    }
+
+    ///
+    pub fn movie_name(mut self, name: impl Into<String>) -> Self {
+        self.movie_name = name.into();
+        self
+    }
+}
+
 ///
-#[derive(Default, Debug, Type)]
+#[derive(Debug, Clone, Type)]
 pub struct StatusNotifierItemOptions {
     category: Category,
     title: String,
@@ -268,7 +261,23 @@ pub struct StatusNotifierItemOptions {
 impl StatusNotifierItemOptions {
     ///
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            category: Category::default(),
+            title: String::default(),
+            status: Status::default(),
+            icon: Icon::Name(String::default()),
+            overlay: Icon::Name(String::default()),
+            attention: Attention {
+                icon: Icon::Name(String::default()),
+                movie_name: String::default(),
+            },
+            is_menu: false,
+            tooltip: ToolTip {
+                icon: Icon::Name(String::default()),
+                title: String::default(),
+                description: String::default(),
+            },
+        }
     }
 
     ///
@@ -320,14 +329,6 @@ impl StatusNotifierItemOptions {
     }
 }
 
-#[derive(Default)]
-struct Callbacks {
-    on_activate: Option<Box<dyn Fn(i32, i32) + Sync + Send>>,
-    on_secondary_activate: Option<Box<dyn Fn(i32, i32) + Sync + Send>>,
-    on_scroll: Option<Box<dyn Fn(i32, String) + Sync + Send>>,
-    on_provide_xdg_activation_token: Option<Box<dyn Fn(String) + Sync + Send>>,
-}
-
 struct StatusNotifierItemInterface {
     id: String,
     callbacks: Callbacks,
@@ -358,32 +359,50 @@ impl StatusNotifierItemInterface {
 
     #[zbus(property, name = "IconName")]
     pub async fn icon_name(&self) -> String {
-        self.options.icon.clone().name_or_default()
+        match &self.options.icon {
+            Icon::Name(name) => name.clone(),
+            _ => String::default(),
+        }
     }
 
     #[zbus(property, name = "IconPixmap")]
     pub async fn icon_pixmap(&self) -> Vec<Pixmap> {
-        self.options.icon.clone().pixmaps_or_default()
+        match &self.options.icon {
+            Icon::Pixmaps(pixmaps) => pixmaps.clone(),
+            _ => Vec::default(),
+        }
     }
 
     #[zbus(property, name = "OverlayIconName")]
     pub async fn overlay_icon_name(&self) -> String {
-        self.options.overlay.clone().name_or_default()
+        match &self.options.overlay {
+            Icon::Name(name) => name.clone(),
+            _ => String::default(),
+        }
     }
 
     #[zbus(property, name = "OverlayIconPixmap")]
     pub async fn overlay_icon_pixmap(&self) -> Vec<Pixmap> {
-        self.options.overlay.clone().pixmaps_or_default()
+        match &self.options.overlay {
+            Icon::Pixmaps(pixmaps) => pixmaps.clone(),
+            _ => Vec::default(),
+        }
     }
 
     #[zbus(property, name = "AttentionIconName")]
     pub async fn attention_icon_name(&self) -> String {
-        self.options.attention.icon.clone().name_or_default()
+        match &self.options.attention.icon {
+            Icon::Name(name) => name.clone(),
+            _ => String::default(),
+        }
     }
 
     #[zbus(property, name = "AttentionIconPixmap")]
     pub async fn attention_icon_pixmap(&self) -> Vec<Pixmap> {
-        self.options.attention.icon.clone().pixmaps_or_default()
+        match &self.options.attention.icon {
+            Icon::Pixmaps(pixmaps) => pixmaps.clone(),
+            _ => Vec::default(),
+        }
     }
 
     #[zbus(property, name = "AttentionMovieName")]

@@ -3,11 +3,29 @@ use serde::{
     ser::{Serialize, SerializeTuple},
     Deserialize,
 };
-use zbus::zvariant::{self, OwnedValue, Type, Value};
+use zbus::zvariant::{self, OwnedValue, Structure, StructureBuilder, Type, Value};
 
 use crate::Error;
 
-#[derive(Debug, PartialEq, Eq, Type)]
+///
+#[derive(Default, Debug, PartialEq, Eq, Clone, Type)]
+pub struct Pixmap {
+    width: i32,
+    height: i32,
+    bytes: Vec<u8>,
+}
+
+impl From<Pixmap> for Structure<'_> {
+    fn from(value: Pixmap) -> Self {
+        StructureBuilder::new()
+            .add_field(value.width)
+            .add_field(value.height)
+            .add_field(value.bytes)
+            .build()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "(sv)")]
 /// A representation of an icon.
 ///
@@ -15,10 +33,14 @@ use crate::Error;
 pub enum Icon {
     /// An icon URI.
     Uri(url::Url),
+    /// Name of the icon
+    Name(String),
     /// A list of icon names.
     Names(Vec<String>),
     /// Icon bytes.
     Bytes(Vec<u8>),
+    ///
+    Pixmaps(Vec<Pixmap>),
 }
 
 impl Icon {
@@ -51,6 +73,7 @@ impl Icon {
     pub(crate) fn as_value(&self) -> Value {
         let tuple = match self {
             Self::Uri(uri) => ("file", Value::from(uri.as_str())),
+            Self::Name(name) => ("themed", Value::from(name)),
             Self::Names(names) => {
                 let mut array = zvariant::Array::new(String::signature());
                 for name in names.iter() {
@@ -61,6 +84,7 @@ impl Icon {
                 ("themed", Value::from(array))
             }
             Self::Bytes(_) => ("bytes", self.inner_bytes()),
+            Self::Pixmaps(pixmaps) => ("bytes", Value::from(pixmaps)),
         };
         Value::new(tuple)
     }
@@ -90,6 +114,7 @@ impl Serialize for Icon {
                 tuple.serialize_element("bytes")?;
                 tuple.serialize_element(&self.inner_bytes())?;
             }
+            _ => {}
         }
         tuple.end()
     }

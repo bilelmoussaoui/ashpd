@@ -10,6 +10,7 @@ mod color;
 pub use color::Color;
 mod icon;
 pub use icon::Icon;
+pub use icon::Pixmap;
 
 pub mod account;
 pub mod background;
