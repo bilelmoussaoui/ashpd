@@ -7,6 +7,7 @@ data/resources/ui/camera.ui
 data/resources/ui/email.ui
 data/resources/ui/file_chooser.ui
 data/resources/ui/inhibit.ui
+data/resources/ui/global_shortcuts.ui
 data/resources/ui/location.ui
 data/resources/ui/notification.ui
 data/resources/ui/open_uri.ui

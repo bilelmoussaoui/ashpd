@@ -103,6 +103,12 @@
                         </child>
                         <child>
                           <object class="SidebarRow">
+                            <property name="title" translatable="yes">Global Shortcuts</property>
+                            <property name="page-name">global_shortcuts</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="SidebarRow">
                             <property name="title" translatable="yes">Inhibit</property>
                             <property name="page-name">inhibit</property>
                           </object>
@@ -258,6 +264,14 @@
                             <property name="name">inhibit</property>
                             <property name="child">
                               <object class="InhibitPage" id="inhibit" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">global_shortcuts</property>
+                            <property name="child">
+                              <object class="GlobalShortcutsPage" id="global_shortcuts" />
                             </property>
                           </object>
                         </child>
