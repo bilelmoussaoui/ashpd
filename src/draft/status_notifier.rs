@@ -8,7 +8,7 @@ use zbus::{
     export::futures_util::Stream,
     interface,
     object_server::{InterfaceRef, SignalContext},
-    zvariant::{OwnedObjectPath, Structure, StructureBuilder, Type, Value},
+    zvariant::{OwnedObjectPath, Structure, StructureBuilder, Type},
 };
 
 use crate::proxy::Proxy;
