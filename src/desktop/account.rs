@@ -34,6 +34,22 @@ struct UserInformationOptions {
     reason: Option<String>,
 }
 
+#[cfg(feature = "backend")]
+mod fdo_account {
+    #[zbus::proxy(
+        default_service = "org.freedesktop.Accounts",
+        interface = "org.freedesktop.Accounts.User",
+        gen_blocking = false
+    )]
+    trait Accounts {
+        #[zbus(property, name = "IconFile")]
+        fn icon_file(&self) -> zbus::Result<String>;
+        #[zbus(property, name = "UserName")]
+        fn user_name(&self) -> zbus::Result<String>;
+        #[zbus(property, name = "RealName")]
+        fn real_name(&self) -> zbus::Result<String>;
+    }
+}
 #[derive(Debug, DeserializeDict, SerializeDict, Type)]
 /// The response of a [`UserInformationRequest`] request.
 #[zvariant(signature = "dict")]
@@ -44,6 +60,37 @@ pub struct UserInformation {
 }
 
 impl UserInformation {
+    #[cfg(feature = "backend")]
+    /// Retrieve current user information by using the
+    /// `org.freedesktop.Accounts` interfaces.
+    pub async fn current_user() -> Result<Self, Error> {
+        let cnx = zbus::Connection::system().await?;
+        let uid = nix::unistd::Uid::current().as_raw();
+        let path = format!("/org/freedesktop/Accounts/User{}", uid);
+        let proxy = fdo_account::AccountsProxy::builder(&cnx)
+            .path(path)?
+            .build()
+            .await?;
+
+        let uri = format!("file://{}", proxy.icon_file().await?);
+
+        Ok(Self::new(
+            &proxy.user_name().await?,
+            &proxy.real_name().await?,
+            url::Url::parse(&uri)?,
+        ))
+    }
+
+    #[cfg(feature = "backend")]
+    /// Create a new instance of [`UserInformation`].
+    pub fn new(id: &str, name: &str, image: url::Url) -> Self {
+        Self {
+            id: id.to_owned(),
+            name: name.to_owned(),
+            image,
+        }
+    }
+
     /// User identifier.
     pub fn id(&self) -> &str {
         &self.id

@@ -1,6 +1,15 @@
-use crate::zvariant::{self, DeserializeDict, Type};
+use crate::zvariant::{self, DeserializeDict, SerializeDict, Type};
 
-#[derive(DeserializeDict, Clone, Copy, PartialEq, Type, zvariant::Value, zvariant::OwnedValue)]
+#[derive(
+    SerializeDict,
+    DeserializeDict,
+    Clone,
+    Copy,
+    PartialEq,
+    Type,
+    zvariant::Value,
+    zvariant::OwnedValue,
+)]
 /// A color as a RGB tuple.
 ///
 /// **Note** the values are normalized in the [0.0, 1.0] range.
@@ -9,9 +18,18 @@ pub struct Color {
     color: (f64, f64, f64),
 }
 
+impl From<(f64, f64, f64)> for Color {
+    fn from(value: (f64, f64, f64)) -> Self {
+        Self::new(value.0, value.1, value.2)
+    }
+}
+
 impl Color {
-    pub(crate) fn new(color: (f64, f64, f64)) -> Self {
-        Self { color }
+    /// Create a new instance of Color.
+    pub fn new(red: f64, green: f64, blue: f64) -> Self {
+        Self {
+            color: (red, green, blue),
+        }
     }
 
     /// Red.

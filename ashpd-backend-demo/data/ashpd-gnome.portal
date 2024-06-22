@@ -1,0 +1,4 @@
+[portal]
+DBusName=org.freedesktop.impl.portal.desktop.ashpd-backend-demo
+Interfaces=org.freedesktop.impl.portal.Account;org.freedesktop.impl.portal.Screenshot;org.freedesktop.impl.portal.Wallpaper;
+UseIn=gnome

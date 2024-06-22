@@ -263,8 +263,10 @@ impl HasWindowHandle for WindowIdentifier {
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 pub enum WindowIdentifierType {
+    /// X11.
     X11(std::os::raw::c_ulong),
     #[allow(dead_code)]
+    /// Wayland.
     Wayland(String),
 }
 
@@ -312,6 +314,12 @@ impl<'de> Deserialize<'de> for WindowIdentifierType {
 
 #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 mod gtk4;
+
+#[cfg(all(
+    feature = "backend",
+    any(feature = "gtk4_x11", feature = "gtk4_wayland")
+))]
+pub mod external_window;
 
 #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 pub use self::gtk4::Gtk4WindowIdentifier;

@@ -3,7 +3,7 @@ pub(crate) mod request;
 mod session;
 pub(crate) use self::handle_token::HandleToken;
 pub use self::{
-    request::{Request, Response, ResponseError},
+    request::{Request, Response, ResponseError, ResponseType},
     session::Session,
 };
 mod color;
