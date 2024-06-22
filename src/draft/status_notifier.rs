@@ -1,0 +1,560 @@
+use std::fmt::Display;
+
+use crate::Error;
+use zbus::{
+    export::futures_util::Stream,
+    interface,
+    object_server::{InterfaceRef, SignalContext},
+    zvariant::{OwnedObjectPath, Structure, StructureBuilder, Type},
+};
+
+use crate::proxy::Proxy;
+
+use super::dbusmenu::{DBusMenu, DBusMenuInterface, DBUS_MENU_PATH};
+
+struct StatusNotifierWatcher<'a>(Proxy<'a>);
+
+const STATUS_NOTIFIER_WATCHER_INTERFACE: &str = "org.kde.StatusNotifierWatcher";
+const STATUS_NOTIFIER_WATCHER_PATH: &str = "/StatusNotifierWatcher";
+const STATUS_NOTIFIER_WATCHER_DESTINATION: &str = "org.kde.StatusNotifierWatcher";
+
+const STATUS_NOTIFIER_ITEM_PATH: &str = "/StatusNotifierItem";
+
+#[allow(dead_code)]
+impl<'a> StatusNotifierWatcher<'a> {
+    async fn new() -> Result<Self, Error> {
+        let proxy = Proxy::new(
+            STATUS_NOTIFIER_WATCHER_INTERFACE,
+            STATUS_NOTIFIER_WATCHER_PATH,
+            STATUS_NOTIFIER_WATCHER_DESTINATION,
+        )
+        .await?;
+        Ok(Self(proxy))
+    }
+
+    async fn register_status_notifier_item(&self, service: impl Into<String>) -> Result<(), Error> {
+        self.0
+            .connection()
+            .call_method(
+                Some(STATUS_NOTIFIER_WATCHER_DESTINATION),
+                STATUS_NOTIFIER_WATCHER_PATH,
+                Some(STATUS_NOTIFIER_WATCHER_INTERFACE),
+                "RegisterStatusNotifierItem",
+                &(service.into()),
+            )
+            .await?;
+        Ok(())
+    }
+
+    async fn register_status_notifier_host(&self, service: impl Into<String>) -> Result<(), Error> {
+        self.0
+            .connection()
+            .call_method(
+                Some(STATUS_NOTIFIER_WATCHER_DESTINATION),
+                STATUS_NOTIFIER_WATCHER_PATH,
+                Some(STATUS_NOTIFIER_WATCHER_INTERFACE),
+                "RegisterStatusNotifierHost",
+                &(service.into()),
+            )
+            .await?;
+        Ok(())
+    }
+
+    async fn registered_status_notifier_items(&self) -> Result<Vec<String>, Error> {
+        Ok(self.0.get_property("RegisteredStatusNotifierItems").await?)
+    }
+
+    async fn is_status_notifier_host_registered(&self) -> Result<bool, Error> {
+        Ok(self
+            .0
+            .get_property("IsStatusNotifierHostRegistered")
+            .await?)
+    }
+
+    async fn receive_status_notifier_item_registered(
+        &self,
+    ) -> Result<impl Stream<Item = bool>, Error> {
+        self.0.signal("StatusNotifierItemRegistered").await
+    }
+
+    async fn receive_status_notifier_item_unregistered(
+        &self,
+    ) -> Result<impl Stream<Item = bool>, Error> {
+        self.0.signal("StatusNotifierItemUnregistered").await
+    }
+
+    async fn receive_status_notifier_host_registered(
+        &self,
+    ) -> Result<impl Stream<Item = bool>, Error> {
+        self.0.signal("StatusNotifierHostRegistered").await
+    }
+
+    async fn receive_status_notifier_host_unregistered(
+        &self,
+    ) -> Result<impl Stream<Item = bool>, Error> {
+        self.0.signal("StatusNotifierHostUnregistered").await
+    }
+}
+
+impl<'a> std::ops::Deref for StatusNotifierWatcher<'a> {
+    type Target = zbus::Proxy<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+///
+#[derive(Default, Debug, Type)]
+pub enum Category {
+    /// The item describes the status of a generic application,
+    /// for instance the current state of a media player.
+    /// In the case where the category of the item can not be known,
+    /// such as when the item is being proxied from another incompatible or emulated system,
+    /// ApplicationStatus can be used a sensible default fallback.
+    #[default]
+    ApplicationStatus,
+    /// The item describes the status of communication oriented applications,
+    /// like an instant messenger or an email client.
+    Communications,
+    /// The item describes services of the system not seen as a stand alone application by the user,
+    /// such as an indicator for the activity of a disk indexing service.
+    SystemServices,
+    /// The item describes the state and control of a particular hardware,
+    /// such as an indicator of the battery charge or sound card volume control.
+    Hardware,
+}
+
+impl Display for Category {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+///
+#[derive(Type, Default, Debug)]
+pub enum Status {
+    ///
+    #[default]
+    Active,
+    ///
+    Passive,
+    ///
+    NeedsAttention,
+}
+
+impl Display for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+///
+#[derive(Type, Default, Debug, Clone)]
+pub struct Pixmap {
+    width: i32,
+    height: i32,
+    bytes: Vec<u8>,
+}
+
+impl From<Pixmap> for Structure<'_> {
+    fn from(value: Pixmap) -> Self {
+        StructureBuilder::new()
+            .add_field(value.width)
+            .add_field(value.height)
+            .add_field(value.bytes)
+            .build()
+    }
+}
+
+///
+#[derive(Default, Debug, Clone, Type)]
+pub struct ToolTip {
+    icon: Icon,
+    title: String,
+    description: String,
+}
+
+impl From<ToolTip> for Structure<'_> {
+    fn from(value: ToolTip) -> Self {
+        StructureBuilder::new()
+            .add_field::<String>(value.icon.clone().name_or_default())
+            .add_field::<Vec<Pixmap>>(value.icon.pixmaps_or_default())
+            .add_field(value.title)
+            .add_field(value.description)
+            .build()
+    }
+}
+
+///
+#[derive(Clone, Debug, Type)]
+#[zvariant(signature = "(sv)")]
+pub enum Icon {
+    ///
+    Name(String),
+    ///
+    Pixmaps(Vec<Pixmap>),
+}
+
+impl Icon {
+    fn name_or_default(self) -> String {
+        if let Self::Name(name) = self {
+            name
+        } else {
+            String::default()
+        }
+    }
+
+    fn pixmaps_or_default(self) -> Vec<Pixmap> {
+        if let Self::Pixmaps(pixmaps) = self {
+            pixmaps
+        } else {
+            Vec::default()
+        }
+    }
+}
+
+impl Default for Icon {
+    fn default() -> Self {
+        Self::Name(String::default())
+    }
+}
+
+///
+#[derive(Default, Debug, Clone, Type)]
+pub struct Attention {
+    icon: Icon,
+    movie_name: String,
+}
+
+///
+#[derive(Default, Debug, Type)]
+pub struct StatusNotifierItemOptions {
+    ///
+    pub category: Category,
+    ///
+    pub title: String,
+    ///
+    pub status: Status,
+    ///
+    pub window_id: u32,
+    ///
+    pub icon_theme_path: String,
+    ///
+    pub icon: Icon,
+    ///
+    pub overlay: Icon,
+    ///
+    pub attention: Attention,
+    ///
+    pub is_menu: bool,
+    ///
+    pub tooltip: ToolTip,
+}
+
+#[derive(Default)]
+struct Callbacks {
+    on_activate: Option<Box<dyn Fn(i32, i32) + Sync + Send>>,
+    on_secondary_activate: Option<Box<dyn Fn(i32, i32) + Sync + Send>>,
+    on_scroll: Option<Box<dyn Fn(i32, String) + Sync + Send>>,
+    on_provide_xdg_activation_token: Option<Box<dyn Fn(String) + Sync + Send>>,
+}
+
+struct StatusNotifierItemInterface {
+    id: String,
+    callbacks: Callbacks,
+    options: StatusNotifierItemOptions,
+}
+
+#[interface(name = "org.kde.StatusNotifierItem")]
+impl StatusNotifierItemInterface {
+    #[zbus(property, name = "Category")]
+    pub async fn category(&self) -> String {
+        self.options.category.to_string()
+    }
+
+    #[zbus(property, name = "Id")]
+    pub async fn id(&self) -> String {
+        self.id.clone()
+    }
+
+    #[zbus(property, name = "Title")]
+    pub async fn title(&self) -> String {
+        self.options.title.clone()
+    }
+
+    #[zbus(property, name = "Status")]
+    pub async fn status(&self) -> String {
+        self.options.status.to_string()
+    }
+
+    #[zbus(property, name = "WindowId")]
+    pub async fn window_id(&self) -> u32 {
+        self.options.window_id
+    }
+
+    #[zbus(property, name = "IconThemePath")]
+    pub async fn icon_theme_path(&self) -> String {
+        self.options.icon_theme_path.clone()
+    }
+
+    #[zbus(property, name = "IconName")]
+    pub async fn icon_name(&self) -> String {
+        self.options.icon.clone().name_or_default()
+    }
+
+    #[zbus(property, name = "IconPixmap")]
+    pub async fn icon_pixmap(&self) -> Vec<Pixmap> {
+        self.options.icon.clone().pixmaps_or_default()
+    }
+
+    #[zbus(property, name = "OverlayIconName")]
+    pub async fn overlay_icon_name(&self) -> String {
+        self.options.overlay.clone().name_or_default()
+    }
+
+    #[zbus(property, name = "OverlayIconPixmap")]
+    pub async fn overlay_icon_pixmap(&self) -> Vec<Pixmap> {
+        self.options.overlay.clone().pixmaps_or_default()
+    }
+
+    #[zbus(property, name = "AttentionIconName")]
+    pub async fn attention_icon_name(&self) -> String {
+        self.options.attention.icon.clone().name_or_default()
+    }
+
+    #[zbus(property, name = "AttentionIconPixmap")]
+    pub async fn attention_icon_pixmap(&self) -> Vec<Pixmap> {
+        self.options.attention.icon.clone().pixmaps_or_default()
+    }
+
+    #[zbus(property, name = "AttentionMovieName")]
+    pub async fn attention_movie_name(&self) -> String {
+        self.options.attention.movie_name.clone()
+    }
+
+    #[zbus(property, name = "ToolTip")]
+    pub async fn tooltip(&self) -> ToolTip {
+        self.options.tooltip.clone()
+    }
+
+    #[zbus(property, name = "ItemIsMenu")]
+    pub async fn item_is_menu(&self) -> bool {
+        self.options.is_menu
+    }
+
+    #[zbus(property, name = "Menu")]
+    pub async fn menu(&self) -> OwnedObjectPath {
+        OwnedObjectPath::try_from(DBUS_MENU_PATH).unwrap()
+    }
+
+    pub async fn provide_xdg_activation_token(&self, token: String) {
+        self.callbacks
+            .on_provide_xdg_activation_token
+            .as_ref()
+            .map(move |xdg_activation_token| xdg_activation_token(token));
+    }
+
+    pub async fn activate(&self, x: i32, y: i32) {
+        self.callbacks
+            .on_activate
+            .as_ref()
+            .map(move |activate| activate(x, y));
+    }
+
+    pub async fn secondary_activate(&self, x: i32, y: i32) {
+        self.callbacks
+            .on_secondary_activate
+            .as_ref()
+            .map(move |activate| activate(x, y));
+    }
+
+    pub async fn scroll(&self, delta: i32, orientation: String) {
+        self.callbacks
+            .on_scroll
+            .as_ref()
+            .map(move |scroll| scroll(delta, orientation));
+    }
+
+    #[zbus(signal, name = "NewTitle")]
+    pub async fn new_title(&self, cx: &SignalContext<'_>) -> zbus::Result<()>;
+
+    #[zbus(signal, name = "NewIcon")]
+    pub async fn new_icon(&self, cx: &SignalContext<'_>) -> zbus::Result<()>;
+
+    #[zbus(signal, name = "NewAttentionIcon")]
+    pub async fn new_attention_icon(&self, cx: &SignalContext<'_>) -> zbus::Result<()>;
+
+    #[zbus(signal, name = "NewOverlayIcon")]
+    pub async fn new_overlay_icon(&self, cx: &SignalContext<'_>) -> zbus::Result<()>;
+
+    #[zbus(signal, name = "NewMenu")]
+    pub async fn new_menu(&self, cx: &SignalContext<'_>) -> zbus::Result<()>;
+
+    #[zbus(signal, name = "NewToolTip")]
+    pub async fn new_tooltip(&self, cx: &SignalContext<'_>) -> zbus::Result<()>;
+
+    #[zbus(signal, name = "NewStatus")]
+    pub async fn new_status(&self, cx: &SignalContext<'_>, status: String) -> zbus::Result<()>;
+}
+
+///
+pub struct StatusNotifierItem {
+    _conn: zbus::Connection,
+    item_ref: InterfaceRef<StatusNotifierItemInterface>,
+    menu_ref: InterfaceRef<DBusMenuInterface>,
+}
+
+impl StatusNotifierItem {
+    ///
+    pub async fn new(id: i32, options: StatusNotifierItemOptions) -> Result<Self, Error> {
+        let watcher = StatusNotifierWatcher::new().await?;
+        let item_iface = StatusNotifierItemInterface {
+            id: id.to_string(),
+            options,
+            callbacks: Default::default(),
+        };
+        let menu_iface = DBusMenuInterface::default();
+        let name = format!(
+            "org.freedesktop.StatusNotifierItem-{}-{}",
+            std::process::id(),
+            id
+        );
+
+        let conn = zbus::connection::Builder::session()?
+            .name(name.clone())?
+            .serve_at(STATUS_NOTIFIER_ITEM_PATH, item_iface)?
+            .serve_at(DBUS_MENU_PATH, menu_iface)?
+            .build()
+            .await?;
+        watcher.register_status_notifier_item(name).await?;
+
+        let item_ref = conn
+            .object_server()
+            .interface::<_, StatusNotifierItemInterface>(STATUS_NOTIFIER_ITEM_PATH)
+            .await?;
+        let menu_ref = conn
+            .object_server()
+            .interface::<_, DBusMenuInterface>(DBUS_MENU_PATH)
+            .await?;
+        Ok(Self {
+            _conn: conn,
+            item_ref,
+            menu_ref,
+        })
+    }
+
+    ///
+    pub async fn on_activate(&self, fun: Box<dyn Fn(i32, i32) + Sync + Send>) {
+        let mut iface = self.item_ref.get_mut().await;
+        iface.callbacks.on_activate = Some(fun);
+    }
+
+    ///
+    pub async fn on_secondary_activate(&self, fun: Box<dyn Fn(i32, i32) + Sync + Send>) {
+        let mut iface = self.item_ref.get_mut().await;
+        iface.callbacks.on_secondary_activate = Some(fun);
+    }
+
+    ///
+    pub async fn on_scroll(&self, fun: Box<dyn Fn(i32, String) + Sync + Send>) {
+        let mut iface = self.item_ref.get_mut().await;
+        iface.callbacks.on_scroll = Some(fun);
+    }
+
+    ///
+    pub async fn on_provide_xdg_activation_token(&self, fun: Box<dyn Fn(String) + Sync + Send>) {
+        let mut iface = self.item_ref.get_mut().await;
+        iface.callbacks.on_provide_xdg_activation_token = Some(fun);
+    }
+
+    ///
+    pub async fn set_title(&self, name: impl Into<String>) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.title = name.into();
+        iface.new_title(cx).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_icon(&self, icon: Icon) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.icon = icon;
+        iface.new_icon(cx).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_overlay(&self, overlay: Icon) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.overlay = overlay;
+        iface.new_overlay_icon(cx).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_attention(&self, attention: Attention) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.attention = attention;
+        iface.new_attention_icon(cx).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_tooltip(&self, tooltip: ToolTip) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.tooltip = tooltip;
+        iface.new_tooltip(cx).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_tooltip_title(&self, title: String) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.tooltip.title = title;
+        iface.new_tooltip(cx).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_tooltip_description(&self, description: String) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.tooltip.description = description;
+        iface.new_tooltip(cx).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_status(&self, status: Status) -> Result<(), Error> {
+        let cx = self.item_ref.signal_context();
+        let mut iface = self.item_ref.get_mut().await;
+        let status_str = status.to_string();
+        iface.options.status = status;
+        iface.new_status(cx, status_str).await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_category(&self, category: Category) -> Result<(), Error> {
+        let mut iface = self.item_ref.get_mut().await;
+        iface.options.category = category;
+        Ok(())
+    }
+
+    ///
+    pub async fn set_menu(&self, menu: DBusMenu) -> Result<(), Error> {
+        let cx = self.menu_ref.signal_context();
+        let mut iface = self.menu_ref.get_mut().await;
+        iface.menu = menu;
+        iface.revision += 1;
+        iface.layout_updated(cx, iface.revision, 0).await?;
+        Ok(())
+    }
+}

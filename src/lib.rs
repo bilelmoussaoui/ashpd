@@ -19,6 +19,8 @@ static IS_SANDBOXED: OnceLock<bool> = OnceLock::new();
 pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;
+///
+pub mod draft;
 mod error;
 mod window_identifier;
 
