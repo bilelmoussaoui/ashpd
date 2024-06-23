@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 use zbus::{
     interface,
     object_server::SignalContext,
-    zvariant::{OwnedValue, Structure, StructureBuilder, Type, Value},
+    zvariant::{Structure, StructureBuilder, Type, Value},
 };
 
 ///
@@ -32,7 +32,7 @@ pub enum MenuToggleType {
 #[derive(Default, Serialize, Type)]
 struct DBusMenuLayoutItem {
     id: i32,
-    properties: HashMap<&'static str, OwnedValue>,
+    properties: HashMap<&'static str, Value<'static>>,
     children: Vec<Value<'static>>,
 }
 
@@ -133,14 +133,12 @@ impl DBusMenuItem {
             id: self.id,
             ..Default::default()
         };
-        for (k, v) in &self.properties {
-            menu.properties.insert(*k, v.try_to_owned().unwrap());
-        }
+        self.properties.iter().for_each(|(k, v)| {
+            menu.properties.insert(*k, v.try_clone().unwrap());
+        });
         if !self.children.is_empty() && depth != 0 {
-            menu.properties.insert(
-                "children-display".into(),
-                Value::from("submenu").try_to_owned().unwrap(),
-            );
+            menu.properties
+                .insert("children-display", Value::from("submenu"));
 
             for child in &self.children {
                 menu.children.push(Value::from(child.to_dbus(depth - 1)));
@@ -255,10 +253,9 @@ impl DBusMenuInterface {
         let mut main_menu = DBusMenuLayoutItem::default();
         let menu = self.menu.find_by_id(parent_id).unwrap();
         if !menu.children.is_empty() {
-            main_menu.properties.insert(
-                "children-display".into(),
-                Value::from("submenu").try_to_owned().unwrap(),
-            );
+            main_menu
+                .properties
+                .insert("children-display", Value::from("submenu"));
             for child in &menu.children {
                 main_menu
                     .children
@@ -277,7 +274,7 @@ impl DBusMenuInterface {
         }
     }
 
-    async fn about_to_show(&self) -> bool {
+    async fn about_to_show(&self, id: i32) -> bool {
         false
     }
 
