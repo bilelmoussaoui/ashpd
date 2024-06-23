@@ -168,21 +168,19 @@ impl DBusMenuItem {
         filtered_props
     }
 
-    fn to_dbus(&self, depth: i32) -> DBusMenuLayoutItem {
+    fn to_dbus(&self, depth: i32, properties: &Vec<String>) -> DBusMenuLayoutItem {
         let mut menu = DBusMenuLayoutItem {
             id: self.id,
             ..Default::default()
         };
-        self.properties.iter().for_each(|(k, v)| {
-            menu.properties
-                .insert(k.to_string(), v.try_clone().unwrap());
-        });
+        menu.properties = self.filter_properties(properties);
         if !self.children.is_empty() && depth != 0 {
             menu.properties
                 .insert("children-display".into(), Value::from("submenu"));
 
             for child in &self.children {
-                menu.children.push(Value::from(child.to_dbus(depth - 1)));
+                menu.children
+                    .push(Value::from(child.to_dbus(depth - 1, properties)));
             }
         }
         menu
@@ -287,21 +285,15 @@ impl DBusMenuInterface {
         &self,
         parent_id: i32,
         recursion_depth: i32,
-        _property_names: Vec<String>,
+        properties: Vec<String>,
     ) -> (u32, DBusMenuLayoutItem) {
-        let mut main_menu = DBusMenuLayoutItem::default();
-        let menu = self.menu.find_by_id(parent_id).unwrap();
-        if !menu.children.is_empty() && recursion_depth != 0 {
-            main_menu
-                .properties
-                .insert("children-display".into(), Value::from("submenu"));
-            for child in &menu.children {
-                main_menu
-                    .children
-                    .push(Value::from(child.to_dbus(recursion_depth - 1)));
-            }
-        }
-        (self.revision, main_menu)
+        let menu = self
+            .menu
+            .find_by_id(parent_id)
+            .unwrap()
+            .to_dbus(recursion_depth, &properties);
+        println!("{parent_id} {recursion_depth}");
+        (self.revision, menu)
     }
 
     async fn get_group_properties(
