@@ -175,7 +175,7 @@ impl DBusMenu {
         F: FnOnce(&mut DBusMenuItem),
     {
         let mut next_id = self.next_id;
-        let Some(menu) = self.find_by_user_id(id) else {
+        let Some(menu) = self.find_by_user_id_mut(id) else {
             return None;
         };
         let updated = menu.id;
@@ -186,7 +186,7 @@ impl DBusMenu {
         Some(updated)
     }
 
-    pub(crate) fn find_by_user_id(&mut self, user_id: &str) -> Option<&mut DBusMenuItem> {
+    pub(crate) fn find_by_user_id_mut(&mut self, user_id: &str) -> Option<&mut DBusMenuItem> {
         self.find_mut(|item| item.user_id.as_ref().map_or(false, |id| id.eq(user_id)))
     }
 
@@ -274,7 +274,7 @@ impl DBusMenuInterface {
         }
     }
 
-    async fn about_to_show(&self, id: i32) -> bool {
+    async fn about_to_show(&self, _id: i32) -> bool {
         false
     }
 
@@ -316,5 +316,33 @@ mod test {
                 queue.push_back(child);
             }
         }
+    }
+
+    #[test]
+    fn test_dbus_user_id() {
+        let mut menu = DBusMenu::from_items(Vec::from_iter([
+            DBusMenuItem::new()
+                .id("id1")
+                .label("Test1")
+                .children(Vec::from_iter([
+                    DBusMenuItem::new().id("id10").label("Test-1"),
+                    DBusMenuItem::new().id("id20").label("Test-2"),
+                ])),
+            DBusMenuItem::new().id("id2").label("Test2"),
+        ]));
+        let mut found = menu.find_by_user_id_mut("id1");
+        assert!(found.is_some());
+
+        found = menu.find_by_user_id_mut("id2");
+        assert!(found.is_some());
+
+        found = menu.find_by_user_id_mut("id10");
+        assert!(found.is_some());
+
+        found = menu.find_by_user_id_mut("id20");
+        assert!(found.is_some());
+
+        found = menu.find_by_user_id_mut("id21");
+        assert!(found.is_none());
     }
 }

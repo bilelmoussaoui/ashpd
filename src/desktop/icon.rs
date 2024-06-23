@@ -44,6 +44,11 @@ pub enum Icon {
 }
 
 impl Icon {
+    /// Create an icon from a name
+    pub fn with_name(name: impl Into<String>) -> Self {
+        Self::Name(name.into())
+    }
+
     /// Create an icon from a list of names.
     pub fn with_names<N>(names: impl IntoIterator<Item = N>) -> Self
     where
