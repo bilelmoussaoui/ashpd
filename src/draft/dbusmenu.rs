@@ -8,6 +8,8 @@ use zbus::{
     zvariant::{Structure, StructureBuilder, Type, Value},
 };
 
+use crate::desktop::Icon;
+
 ///
 pub const DBUS_MENU_PATH: &str = "/MenuBar";
 
@@ -32,7 +34,7 @@ pub enum MenuToggleType {
 #[derive(Default, Serialize, Type)]
 struct DBusMenuLayoutItem {
     id: i32,
-    properties: HashMap<&'static str, Value<'static>>,
+    properties: HashMap<String, Value<'static>>,
     children: Vec<Value<'static>>,
 }
 
@@ -44,6 +46,12 @@ impl<'a> From<DBusMenuLayoutItem> for Structure<'a> {
             .add_field(value.children)
             .build()
     }
+}
+
+#[derive(Debug, Serialize, Type)]
+struct DBusMenuLayoutProperties {
+    id: i32,
+    properties: HashMap<String, Value<'static>>,
 }
 
 ///
@@ -102,9 +110,16 @@ impl DBusMenuItem {
     }
 
     ///
-    pub fn icon(mut self, icon: impl Into<String>) -> Self {
-        self.properties
-            .insert("icon-name", Value::from(icon.into()));
+    pub fn icon(mut self, icon: Icon) -> Self {
+        match icon {
+            Icon::Name(name) => {
+                self.properties.insert("icon-name", Value::from(name));
+            }
+            Icon::Pixmaps(pixmaps) => {
+                self.properties.insert("icon-data", Value::from(pixmaps));
+            }
+            _ => {}
+        };
         self
     }
 
@@ -115,8 +130,14 @@ impl DBusMenuItem {
     }
 
     ///
-    pub fn children(mut self, children: Vec<DBusMenuItem>) -> Self {
-        self.children = children;
+    pub fn child(mut self, child: DBusMenuItem) -> Self {
+        self.children.push(child);
+        self
+    }
+
+    ///
+    pub fn children(mut self, mut children: Vec<DBusMenuItem>) -> Self {
+        self.children.append(&mut children);
         self
     }
 
@@ -128,17 +149,37 @@ impl DBusMenuItem {
         });
     }
 
+    fn filter_properties(&self, props: &Vec<String>) -> HashMap<String, Value<'static>> {
+        if props.is_empty() {
+            return self
+                .properties
+                .iter()
+                .map(|(k, v)| (k.to_string(), v.try_clone().unwrap()))
+                .collect();
+        }
+        let mut filtered_props = HashMap::default();
+        for prop_name in props {
+            let prop_name = prop_name.as_str();
+            let Some(prop) = self.properties.get(prop_name) else {
+                continue;
+            };
+            filtered_props.insert(prop_name.to_string(), prop.try_clone().unwrap());
+        }
+        filtered_props
+    }
+
     fn to_dbus(&self, depth: i32) -> DBusMenuLayoutItem {
         let mut menu = DBusMenuLayoutItem {
             id: self.id,
             ..Default::default()
         };
         self.properties.iter().for_each(|(k, v)| {
-            menu.properties.insert(*k, v.try_clone().unwrap());
+            menu.properties
+                .insert(k.to_string(), v.try_clone().unwrap());
         });
         if !self.children.is_empty() && depth != 0 {
             menu.properties
-                .insert("children-display", Value::from("submenu"));
+                .insert("children-display".into(), Value::from("submenu"));
 
             for child in &self.children {
                 menu.children.push(Value::from(child.to_dbus(depth - 1)));
@@ -170,12 +211,14 @@ impl DBusMenu {
     }
 
     /// Returns the id of the updated item
-    pub(crate) fn update<F>(&mut self, id: &str, fun: F) -> Option<i32>
+    pub(crate) fn update<F>(&mut self, user_id: &str, fun: F) -> Option<i32>
     where
         F: FnOnce(&mut DBusMenuItem),
     {
         let mut next_id = self.next_id;
-        let Some(menu) = self.find_by_user_id_mut(id) else {
+        let Some(menu) =
+            self.find_mut(|item| item.user_id.as_ref().map_or(false, |id| id.eq(user_id)))
+        else {
             return None;
         };
         let updated = menu.id;
@@ -184,10 +227,6 @@ impl DBusMenu {
             child.fill_ids(&mut next_id);
         }
         Some(updated)
-    }
-
-    pub(crate) fn find_by_user_id_mut(&mut self, user_id: &str) -> Option<&mut DBusMenuItem> {
-        self.find_mut(|item| item.user_id.as_ref().map_or(false, |id| id.eq(user_id)))
     }
 
     fn find_by_id(&self, id: i32) -> Option<&DBusMenuItem> {
@@ -252,17 +291,34 @@ impl DBusMenuInterface {
     ) -> (u32, DBusMenuLayoutItem) {
         let mut main_menu = DBusMenuLayoutItem::default();
         let menu = self.menu.find_by_id(parent_id).unwrap();
-        if !menu.children.is_empty() {
+        if !menu.children.is_empty() && recursion_depth != 0 {
             main_menu
                 .properties
-                .insert("children-display", Value::from("submenu"));
+                .insert("children-display".into(), Value::from("submenu"));
             for child in &menu.children {
                 main_menu
                     .children
-                    .push(Value::from(child.to_dbus(recursion_depth)));
+                    .push(Value::from(child.to_dbus(recursion_depth - 1)));
             }
         }
         (self.revision, main_menu)
+    }
+
+    async fn get_group_properties(
+        &self,
+        ids: Vec<i32>,
+        property_names: Vec<String>,
+    ) -> Vec<DBusMenuLayoutProperties> {
+        let mut properties = Vec::default();
+        for id in ids {
+            let menu = self.menu.find_by_id(id).unwrap();
+            let new_properties = menu.filter_properties(&property_names);
+            properties.push(DBusMenuLayoutProperties {
+                id: menu.id,
+                properties: new_properties,
+            });
+        }
+        properties
     }
 
     async fn event(&self, id: i32, event_id: String, event_data: Value<'_>, _timestamp: u32) {
