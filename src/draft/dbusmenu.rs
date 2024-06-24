@@ -176,6 +176,15 @@ impl DBusMenuItem {
         filtered_props
     }
 
+    pub(crate) fn take_properties(&mut self) -> DBusMenuRemovedProperties {
+        let removed = DBusMenuRemovedProperties {
+            id: self.id,
+            property_names: self.properties.iter().map(|(k, _)| k.to_string()).collect(),
+        };
+        self.properties.clear();
+        removed
+    }
+
     fn to_dbus(&self, depth: i32, properties: &Vec<String>) -> DBusMenuLayoutItem {
         let mut menu = DBusMenuLayoutItem {
             id: self.id,
@@ -237,13 +246,8 @@ impl DBusMenu {
         let mut removed_props = Vec::default();
         queue.push_back(removed);
         while !queue.is_empty() {
-            let menu = queue.pop_front().unwrap();
-            let property_names: Vec<String> =
-                menu.properties.iter().map(|(k, _)| k.to_string()).collect();
-            removed_props.push(DBusMenuRemovedProperties {
-                id: menu.id,
-                property_names,
-            });
+            let mut menu = queue.pop_front().unwrap();
+            removed_props.push(menu.take_properties());
             for child in menu.children {
                 queue.push_back(child);
             }
