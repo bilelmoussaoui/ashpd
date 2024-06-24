@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 use zbus::{
     interface,
     object_server::SignalContext,
-    zvariant::{Structure, StructureBuilder, Type, Value},
+    zvariant::{Signature, Structure, StructureBuilder, Type, Value},
 };
 
 use crate::desktop::Icon;
@@ -31,20 +31,16 @@ pub enum MenuToggleType {
     Radio,
 }
 
-#[derive(Default, Serialize, Type)]
+#[derive(Default, Serialize)]
 struct DBusMenuLayoutItem {
     id: i32,
     properties: HashMap<String, Value<'static>>,
-    children: Vec<Value<'static>>,
+    children: Vec<DBusMenuLayoutItem>,
 }
 
-impl<'a> From<DBusMenuLayoutItem> for Structure<'a> {
-    fn from(value: DBusMenuLayoutItem) -> Self {
-        StructureBuilder::new()
-            .add_field(value.id)
-            .add_field(value.properties)
-            .add_field(value.children)
-            .build()
+impl Type for DBusMenuLayoutItem {
+    fn signature() -> zbus::zvariant::Signature<'static> {
+        Signature::from_static_str_unchecked("(ia{sv}av)")
     }
 }
 
@@ -187,8 +183,7 @@ impl DBusMenuItem {
                 .insert("children-display".into(), Value::from("submenu"));
 
             for child in &self.children {
-                menu.children
-                    .push(Value::from(child.to_dbus(depth - 1, properties)));
+                menu.children.push(child.to_dbus(depth - 1, properties));
             }
         }
         menu
