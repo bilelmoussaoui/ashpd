@@ -284,7 +284,7 @@
 //!             Position::Bottom => (x, y + 1.),
 //!         };
 //!         input_capture
-//!             .release(&session, activated.activation_id().unwrap(), cursor_pos)
+//!             .release(&session, activated.activation_id(), Some(cursor_pos))
 //!             .await?;
 //!     }
 //! }
