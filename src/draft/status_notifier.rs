@@ -13,7 +13,7 @@ use zbus::{
 
 use crate::proxy::Proxy;
 
-use super::dbusmenu::{DBusMenu, DBusMenuInterface, DBusMenuItem, DBUS_MENU_PATH};
+use super::dbusmenu::{DBusMenu, DBusMenuInterface, DBUS_MENU_PATH};
 
 struct StatusNotifierWatcher<'a>(Proxy<'a>);
 
@@ -630,7 +630,14 @@ impl StatusNotifierItem {
     pub async fn set_menu(&self, menu: DBusMenu) -> Result<(), Error> {
         let cx = self.menu_ref.signal_context();
         let mut iface = self.menu_ref.get_mut().await;
+        // let props = iface.menu.remove_root();
+        // if let Some(props) = props {
+        //     iface
+        //         .items_properties_updated(cx, Vec::default(), props)
+        //         .await?;
+        // }
         iface.menu = menu;
+
         iface.revision += 1;
         iface.layout_updated(cx, iface.revision, 0).await?;
         Ok(())
