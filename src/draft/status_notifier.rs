@@ -13,7 +13,7 @@ use zbus::{
 
 use crate::proxy::Proxy;
 
-use super::dbusmenu::{DBusMenu, DBusMenuInterface, DBUS_MENU_PATH};
+use super::dbusmenu::{DBusMenu, DBusMenuInterface, DBusMenuItem, MenuProperty, DBUS_MENU_PATH};
 
 struct StatusNotifierWatcher<'a>(Proxy<'a>);
 
@@ -485,14 +485,21 @@ pub struct StatusNotifierItem {
 
 impl StatusNotifierItem {
     ///
-    pub async fn new(id: i32, options: StatusNotifierItemOptions) -> Result<Self, Error> {
+    pub async fn new(
+        id: i32,
+        options: StatusNotifierItemOptions,
+        menu: Option<DBusMenu>,
+    ) -> Result<Self, Error> {
         let watcher = StatusNotifierWatcher::new().await?;
         let item_iface = StatusNotifierItemInterface {
             id: id.to_string(),
             options,
             callbacks: Default::default(),
         };
-        let menu_iface = DBusMenuInterface::default();
+        let menu_iface = DBusMenuInterface {
+            menu: menu.unwrap_or(DBusMenu::default()),
+            revision: 1,
+        };
         let name = format!(
             "org.freedesktop.StatusNotifierItem-{}-{}",
             std::process::id(),
@@ -627,19 +634,52 @@ impl StatusNotifierItem {
     }
 
     ///
-    pub async fn set_menu(&self, menu: DBusMenu) -> Result<(), Error> {
+    pub async fn add_submenu(&self, submenu: DBusMenuItem) -> Result<(), Error> {
         let cx = self.menu_ref.signal_context();
         let mut iface = self.menu_ref.get_mut().await;
-        // let props = iface.menu.remove_root();
-        // if let Some(props) = props {
-        //     iface
-        //         .items_properties_updated(cx, Vec::default(), props)
-        //         .await?;
-        // }
-        iface.menu = menu;
-
         iface.revision += 1;
+        let updated = iface.menu.add_submenu(submenu);
         iface.layout_updated(cx, iface.revision, 0).await?;
+        iface
+            .items_properties_updated(cx, updated, Vec::default())
+            .await?;
+        Ok(())
+    }
+
+    ///
+    pub async fn remove_submenu(&self, id: impl Into<String>) -> Result<(), Error> {
+        let cx = self.menu_ref.signal_context();
+        let mut iface = self.menu_ref.get_mut().await;
+        iface.revision += 1;
+        if let Some((parent_id, props)) = iface.menu.remove_submenu(id) {
+            iface.layout_updated(cx, iface.revision, parent_id).await?;
+            iface
+                .items_properties_updated(cx, Vec::default(), vec![props])
+                .await?;
+        }
+        Ok(())
+    }
+
+    ///
+    pub async fn update_submenu<'a>(
+        &self,
+        id: &str,
+        new_properties: Option<Vec<MenuProperty>>,
+        remove_properties: Option<impl IntoIterator<Item = &'a str>>,
+    ) -> Result<(), Error> {
+        let cx = self.menu_ref.signal_context();
+        let mut iface = self.menu_ref.get_mut().await;
+        iface.revision += 1;
+        let (parent_id, updated, removed) =
+            iface
+                .menu
+                .update_submenu_properties(id, new_properties, remove_properties);
+        let update = updated.map_or(Vec::default(), |prop| vec![prop]);
+        let removed = removed.map_or(Vec::default(), |prop| vec![prop]);
+        if !update.is_empty() || !removed.is_empty() {
+            iface.layout_updated(cx, iface.revision, parent_id).await?;
+            iface.items_properties_updated(cx, update, removed).await?;
+        }
         Ok(())
     }
 }
