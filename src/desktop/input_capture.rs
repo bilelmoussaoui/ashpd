@@ -284,7 +284,7 @@
 //!             Position::Bottom => (x, y + 1.),
 //!         };
 //!         input_capture
-//!             .release(&session, activated.activation_id().unwrap(), cursor_pos)
+//!             .release(&session, activated.activation_id(), Some(cursor_pos))
 //!             .await?;
 //!     }
 //! }
@@ -354,8 +354,8 @@ struct DisableOptions {}
 #[derive(Default, Debug, SerializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct ReleaseOptions {
-    activation_id: u32,
-    cursor_position: (f64, f64),
+    activation_id: Option<u32>,
+    cursor_position: Option<(f64, f64)>,
 }
 
 /// Indicates that an input capturing session was disabled.
@@ -378,7 +378,7 @@ impl Disabled {
 #[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct DeactivatedOptions {
-    activation_id: u32,
+    activation_id: Option<u32>,
 }
 
 /// Indicates that an input capturing session was deactivated.
@@ -394,7 +394,7 @@ impl Deactivated {
 
     /// The same activation_id number as in the corresponding "Activated"
     /// signal.
-    pub fn activation_id(&self) -> u32 {
+    pub fn activation_id(&self) -> Option<u32> {
         self.1.activation_id
     }
 }
@@ -437,7 +437,7 @@ impl Activated {
 #[derive(Debug, DeserializeDict, Type)]
 #[zvariant(signature = "dict")]
 struct ZonesChangedOptions {
-    zone_set: u32,
+    zone_set: Option<u32>,
 }
 
 /// Indicates that zones available to this session changed.
@@ -452,7 +452,7 @@ impl ZonesChanged {
     }
 
     ///  The zone_set ID of the invalidated zone.
-    pub fn zone_set(&self) -> u32 {
+    pub fn zone_set(&self) -> Option<u32> {
         self.1.zone_set
     }
 }
@@ -644,8 +644,8 @@ impl<'a> InputCapture<'a> {
     pub async fn release(
         &self,
         session: &Session<'_, Self>,
-        activation_id: u32,
-        cursor_position: (f64, f64),
+        activation_id: Option<u32>,
+        cursor_position: Option<(f64, f64)>,
     ) -> Result<(), Error> {
         let options = ReleaseOptions {
             activation_id,
