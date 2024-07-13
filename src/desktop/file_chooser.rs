@@ -233,7 +233,7 @@ struct OpenFileOptions {
     directory: Option<bool>,
     filters: Vec<FileFilter>,
     current_filter: Option<FileFilter>,
-    choices: Vec<Choice>,
+    choices: Option<Vec<Choice>>,
     current_folder: Option<FilePath>,
 }
 
@@ -248,7 +248,7 @@ struct SaveFileOptions {
     current_file: Option<FilePath>,
     filters: Vec<FileFilter>,
     current_filter: Option<FileFilter>,
-    choices: Vec<Choice>,
+    choices: Option<Vec<Choice>>,
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
@@ -257,7 +257,7 @@ struct SaveFilesOptions {
     handle_token: HandleToken,
     accept_label: Option<String>,
     modal: Option<bool>,
-    choices: Vec<Choice>,
+    choices: Option<Vec<Choice>>,
     current_folder: Option<FilePath>,
     files: Option<Vec<FilePath>>,
 }
@@ -440,14 +440,17 @@ impl OpenFileRequest {
     /// Adds a choice.
     #[must_use]
     pub fn choice(mut self, choice: Choice) -> Self {
-        self.options.choices.push(choice);
+        self.options
+            .choices
+            .get_or_insert_with(Vec::new)
+            .push(choice);
         self
     }
 
     #[must_use]
     /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
-        self.options.choices = choices.into_iter().collect();
+        self.options.choices = Some(choices.into_iter().collect());
         self
     }
 
@@ -515,14 +518,17 @@ impl SaveFilesRequest {
     /// Adds a choice.
     #[must_use]
     pub fn choice(mut self, choice: Choice) -> Self {
-        self.options.choices.push(choice);
+        self.options
+            .choices
+            .get_or_insert_with(Vec::new)
+            .push(choice);
         self
     }
 
     #[must_use]
     /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
-        self.options.choices = choices.into_iter().collect();
+        self.options.choices = Some(choices.into_iter().collect());
         self
     }
 
@@ -651,14 +657,17 @@ impl SaveFileRequest {
     /// Adds a choice.
     #[must_use]
     pub fn choice(mut self, choice: Choice) -> Self {
-        self.options.choices.push(choice);
+        self.options
+            .choices
+            .get_or_insert_with(Vec::new)
+            .push(choice);
         self
     }
 
     #[must_use]
     /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
-        self.options.choices = choices.into_iter().collect();
+        self.options.choices = Some(choices.into_iter().collect());
         self
     }
 
