@@ -46,19 +46,18 @@ impl Gtk4WindowIdentifier {
                             futures_channel::oneshot::channel::<Option<String>>();
                         let sender = Arc::new(Mutex::new(Some(sender)));
 
-                        let result = top_level.export_handle(glib::clone!(@strong sender => move |_, handle| {
-                            let ctx = glib::MainContext::default();
+                        let result = top_level.export_handle(glib::clone!(#[strong] sender, move |_, handle| {
                             let handle = handle.map(ToOwned::to_owned);
-                            ctx.spawn_local(glib::clone!(@strong sender, @strong handle => async move {
+                            glib::spawn_future_local(glib::clone!(#[strong] sender, #[strong] handle, async move {
                                 if let Some(m) = sender.lock().await.take() {
                                     match handle {
                                         Ok(h) => {
                                             let _ = m.send(Some(h.to_string()));
                                         },
-                                        Err(_) => {
+                                        Err(_err) => {
                                             let _ = m.send(None);
                                             #[cfg(feature = "tracing")]
-                                            tracing::warn!("Failed to export window identifier. The compositor doesn't support xdg-foreign protocol.");
+                                            tracing::warn!("Failed to export window identifier. The compositor doesn't support xdg-foreign protocol. {_err}");
                                         }
                                     }
                                 }
