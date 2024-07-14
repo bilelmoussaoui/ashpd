@@ -73,7 +73,7 @@ impl<'a> Proxy<'a> {
         let version = match inner
             .get_property::<u32>("version")
             .await
-            .map_err(|e| zbus::fdo::Error::from(e))
+            .map_err(zbus::fdo::Error::from)
         {
             Ok(v) => Ok(v),
             Err(zbus::fdo::Error::InvalidArgs(details)) => {
