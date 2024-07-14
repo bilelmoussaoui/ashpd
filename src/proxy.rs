@@ -69,19 +69,27 @@ impl<'a> Proxy<'a> {
             .destination(destination)?
             .build()
             .await?;
-        let version = match inner.get_property::<u32>("version").await {
+
+        let version = match inner
+            .get_property::<u32>("version")
+            .await
+            .map_err(|e| zbus::fdo::Error::from(e))
+        {
             Ok(v) => Ok(v),
-            Err(e) => {
-                // We forward the `PortalNotFound` error as this the perfect time to do so.
-                // As all the interfaces used inside the crate have a `version` property making
-                // getting the property would only fail if there is no portal implementation
-                // found.
-                let err = crate::Error::from(e);
-                match err {
-                    crate::Error::PortalNotFound(_) => Err(err),
-                    _ => Ok(1),
+            Err(e) => match e {
+                zbus::fdo::Error::InvalidArgs(details) => {
+                    if details.contains(interface) {
+                        Err(crate::Error::PortalNotFound(
+                            // We are sure it is a valid interface name, should fix the type system
+                            // here
+                            zbus::names::OwnedInterfaceName::try_from(interface).unwrap(),
+                        ))
+                    } else {
+                        Ok(1)
+                    }
                 }
-            }
+                _ => Ok(1),
+            },
         }?;
         Ok(Self { inner, version })
     }

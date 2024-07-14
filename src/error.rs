@@ -123,29 +123,7 @@ impl From<zbus::fdo::Error> for Error {
 
 impl From<zbus::Error> for Error {
     fn from(e: zbus::Error) -> Self {
-        match &e {
-            zbus::Error::MethodError(_name, Some(details), _reply) => {
-                // This is really a gross hack, needs to find a better way but it works.
-                let iface = details
-                    .trim_start_matches("No such interface")
-                    .trim_end_matches("on object at path /org/freedesktop/portal/desktop")
-                    .trim()
-                    .trim_matches('`')
-                    .trim_matches('“')
-                    .trim_matches('”');
-                match zbus::names::OwnedInterfaceName::try_from(iface) {
-                    Ok(iface) => Self::PortalNotFound(iface),
-                    Err(_err) => {
-                        #[cfg(feature = "tracing")]
-                        {
-                            tracing::warn!("Hack! The parsing of the iface name has failed: iface {iface}, error details {details}")
-                        };
-                        Self::Zbus(e)
-                    }
-                }
-            }
-            _ => Self::Zbus(e),
-        }
+        Self::Zbus(e)
     }
 }
 
