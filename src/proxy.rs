@@ -76,20 +76,18 @@ impl<'a> Proxy<'a> {
             .map_err(|e| zbus::fdo::Error::from(e))
         {
             Ok(v) => Ok(v),
-            Err(e) => match e {
-                zbus::fdo::Error::InvalidArgs(details) => {
-                    if details.contains(interface) {
-                        Err(crate::Error::PortalNotFound(
-                            // We are sure it is a valid interface name, should fix the type system
-                            // here
-                            zbus::names::OwnedInterfaceName::try_from(interface).unwrap(),
-                        ))
-                    } else {
-                        Ok(1)
-                    }
+            Err(zbus::fdo::Error::InvalidArgs(details)) => {
+                if details.contains(interface) {
+                    Err(crate::Error::PortalNotFound(
+                        // We are sure it is a valid interface name, should fix the type system
+                        // here
+                        zbus::names::OwnedInterfaceName::try_from(interface).unwrap(),
+                    ))
+                } else {
+                    Ok(1)
                 }
-                _ => Ok(1),
-            },
+            }
+            _ => Ok(1),
         }?;
         Ok(Self { inner, version })
     }
