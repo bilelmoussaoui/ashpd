@@ -58,6 +58,9 @@ pub enum Error {
     /// The inner fields are the required version and the version advertised by
     /// the interface.
     RequiresVersion(u32, u32),
+    /// Returned when the portal wasn't found. Either the user has no portals
+    /// frontend installed or the frontend doesn't support the used portal.
+    PortalNotFound(zbus::names::OwnedInterfaceName),
     /// An error indicating that a Icon::Bytes was expected but wrong type was
     /// passed
     UnexpectedIcon,
@@ -82,6 +85,9 @@ impl std::fmt::Display for Error {
                 f,
                 "This interface requires version {required}, but {current} is available"
             ),
+            Self::PortalNotFound(portal) => {
+                write!(f, "A portal frontend implementing `{portal}` was not found")
+            }
             Self::UnexpectedIcon => write!(
                 f,
                 "Expected icon of type Icon::Bytes but a different type was used."
@@ -117,7 +123,29 @@ impl From<zbus::fdo::Error> for Error {
 
 impl From<zbus::Error> for Error {
     fn from(e: zbus::Error) -> Self {
-        Self::Zbus(e)
+        match &e {
+            zbus::Error::MethodError(_name, Some(details), _reply) => {
+                // This is really a gross hack, needs to find a better way but it works.
+                let iface = details
+                    .trim_start_matches("No such interface")
+                    .trim_end_matches("on object at path /org/freedesktop/portal/desktop")
+                    .trim()
+                    .trim_matches('`')
+                    .trim_matches('“')
+                    .trim_matches('”');
+                match zbus::names::OwnedInterfaceName::try_from(iface) {
+                    Ok(iface) => Self::PortalNotFound(iface),
+                    Err(_err) => {
+                        #[cfg(feature = "tracing")]
+                        {
+                            tracing::warn!("Hack! The parsing of the iface name has failed: iface {iface}, error details {details}")
+                        };
+                        Self::Zbus(e)
+                    }
+                }
+            }
+            _ => Self::Zbus(e),
+        }
     }
 }
 
