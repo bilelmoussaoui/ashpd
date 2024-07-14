@@ -69,8 +69,20 @@ impl<'a> Proxy<'a> {
             .destination(destination)?
             .build()
             .await?;
-        let version = inner.get_property::<u32>("version").await.unwrap_or(1);
-
+        let version = match inner.get_property::<u32>("version").await {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                // We forward the `PortalNotFound` error as this the perfect time to do so.
+                // As all the interfaces used inside the crate have a `version` property making
+                // getting the property would only fail if there is no portal implementation
+                // found.
+                let err = crate::Error::from(e);
+                match err {
+                    crate::Error::PortalNotFound(_) => Err(err),
+                    _ => Ok(1),
+                }
+            }
+        }?;
         Ok(Self { inner, version })
     }
 
