@@ -23,8 +23,7 @@ pub mod documents;
 mod error;
 mod window_identifier;
 
-pub use self::activation_token::ActivationToken;
-pub use self::window_identifier::WindowIdentifier;
+pub use self::{activation_token::ActivationToken, window_identifier::WindowIdentifier};
 mod app_id;
 pub use self::app_id::AppID;
 mod file_path;
