@@ -6,8 +6,8 @@ use std::{
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::{
-        screencast::{CursorMode, PersistMode, Screencast, SourceType, Stream},
-        Session,
+        screencast::{CursorMode, Screencast, SourceType, Stream},
+        PersistMode, Session,
     },
     enumflags2::BitFlags,
     WindowIdentifier,
@@ -29,7 +29,7 @@ mod imp {
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub multiple_switch: TemplateChild<adw::SwitchRow>,
-        pub session: Arc<Mutex<Option<Session<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static, Screencast<'static>>>>>,
         #[template_child]
         pub monitor_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
@@ -74,25 +74,32 @@ mod imp {
     impl WidgetImpl for ScreenCastPage {
         fn map(&self) {
             let widget = self.obj();
-            glib::spawn_future_local(clone!(@weak widget as page => async move {
-                let imp = page.imp();
-                if let Ok((cursor_modes, source_types)) = available_types().await {
-                    imp.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
-                    imp.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
-                    imp.window_check.set_sensitive(source_types.contains(SourceType::Window));
-                    let model = gtk::StringList::default();
-                    if cursor_modes.contains(CursorMode::Hidden) {
-                        model.append("Hidden");
+            glib::spawn_future_local(clone!(
+                #[weak]
+                widget,
+                async move {
+                    let imp = widget.imp();
+                    if let Ok((cursor_modes, source_types)) = available_types().await {
+                        imp.virtual_check
+                            .set_sensitive(source_types.contains(SourceType::Virtual));
+                        imp.monitor_check
+                            .set_sensitive(source_types.contains(SourceType::Monitor));
+                        imp.window_check
+                            .set_sensitive(source_types.contains(SourceType::Window));
+                        let model = gtk::StringList::default();
+                        if cursor_modes.contains(CursorMode::Hidden) {
+                            model.append("Hidden");
+                        }
+                        if cursor_modes.contains(CursorMode::Metadata) {
+                            model.append("Metadata");
+                        }
+                        if cursor_modes.contains(CursorMode::Embedded) {
+                            model.append("Embedded");
+                        }
+                        imp.cursor_mode_combo.set_model(Some(&model));
                     }
-                    if cursor_modes.contains(CursorMode::Metadata) {
-                        model.append("Metadata");
-                    }
-                    if cursor_modes.contains(CursorMode::Embedded) {
-                        model.append("Embedded");
-                    }
-                    imp.cursor_mode_combo.set_model(Some(&model));
                 }
-            }));
+            ));
             self.parent_map();
         }
     }
@@ -209,7 +216,9 @@ impl ScreenCastPage {
         imp.response_group.set_visible(false);
     }
 
-    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, OwnedFd, Session<'static>)> {
+    async fn screencast(
+        &self,
+    ) -> ashpd::Result<(Vec<Stream>, OwnedFd, Session<'static, Screencast<'static>>)> {
         let imp = self.imp();
         let sources = self.selected_sources();
         let cursor_mode = self.selected_cursor_mode();

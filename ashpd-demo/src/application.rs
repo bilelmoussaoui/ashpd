@@ -86,9 +86,13 @@ mod imp {
             gtk::Window::set_default_icon_name(config::APP_ID);
             self.settings.connect_changed(
                 Some("dark-mode"),
-                clone!(@weak app => move |_, _| {
-                    app.update_color_scheme();
-                }),
+                clone!(
+                    #[weak]
+                    app,
+                    move |_, _| {
+                        app.update_color_scheme();
+                    }
+                ),
             );
             app.update_color_scheme();
         }
@@ -129,11 +133,15 @@ impl Application {
             .activate(move |app: &Self, _, _| {
                 // This is needed to trigger the delete event
                 // and saving the window state
-                glib::spawn_future_local(clone!(@weak app => async move {
-                    if let Err(err) = app.restart().await {
-                        tracing::error!("Failed to restart the application {}", err);
+                glib::spawn_future_local(clone!(
+                    #[weak]
+                    app,
+                    async move {
+                        if let Err(err) = app.restart().await {
+                            tracing::error!("Failed to restart the application {}", err);
+                        }
                     }
-                }));
+                ));
             })
             .build();
 

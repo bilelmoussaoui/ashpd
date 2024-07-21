@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use adw::subclass::prelude::*;
 use ashpd::desktop::device::{Device, DeviceProxy};
 use gtk::glib;

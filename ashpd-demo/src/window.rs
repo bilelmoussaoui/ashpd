@@ -155,10 +155,13 @@ mod imp {
 
             let row = self.sidebar.row_at_index(0).unwrap();
             self.sidebar.unselect_row(&row);
-            self.sidebar
-                .connect_row_activated(clone!(@weak obj as win => move |_, row| {
+            self.sidebar.connect_row_activated(clone!(
+                #[weak(rename_to = win)]
+                obj,
+                move |_, row| {
                     win.sidebar_row_selected(row);
-                }));
+                }
+            ));
             self.stack.set_visible_child_name("welcome");
             // load latest window state
             let button = self.color_scheme_btn.get();
@@ -167,15 +170,17 @@ mod imp {
             if !style_manager.system_supports_color_schemes() {
                 button.set_visible(true);
 
-                style_manager.connect_dark_notify(
-                    clone!(@weak obj as window, @weak button => move |manager| {
+                style_manager.connect_dark_notify(clone!(
+                    #[weak]
+                    button,
+                    move |manager| {
                         if manager.is_dark() {
                             button.set_icon_name("light-mode-symbolic");
                         } else {
                             button.set_icon_name("dark-mode-symbolic");
                         }
-                    }),
-                );
+                    }
+                ));
             }
             obj.load_window_state();
         }

@@ -32,7 +32,7 @@ mod imp {
         pub user_switch_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub suspend_check: TemplateChild<gtk::CheckButton>,
-        pub session: Arc<Mutex<Option<Session<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static, InhibitProxy<'static>>>>>,
     }
 
     #[glib::object_subclass]

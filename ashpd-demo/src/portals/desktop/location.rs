@@ -54,7 +54,7 @@ mod imp {
         #[template_child(id = "license")]
         pub map_license: TemplateChild<shumate::License>,
         pub marker: shumate::Marker,
-        pub session: Arc<Mutex<Option<Session<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static, LocationProxy<'static>>>>>,
         pub abort_handle: Arc<Mutex<Option<AbortHandle>>>,
     }
 
@@ -119,9 +119,13 @@ mod imp {
 
         fn dispose(&self) {
             let obj = self.obj();
-            glib::spawn_future_local(clone!(@weak obj as page => async move {
-                page.stop_session().await;
-            }));
+            glib::spawn_future_local(clone!(
+                #[weak(rename_to = page)]
+                obj,
+                async move {
+                    page.stop_session().await;
+                }
+            ));
         }
     }
     impl WidgetImpl for LocationPage {}
@@ -240,7 +244,7 @@ pub async fn locate<'a>(
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,
-) -> ashpd::Result<(Session<'a>, LocationProxy<'a>)> {
+) -> ashpd::Result<(Session<'a, LocationProxy<'a>>, LocationProxy<'a>)> {
     let proxy = LocationProxy::new().await?;
     let session = proxy
         .create_session(

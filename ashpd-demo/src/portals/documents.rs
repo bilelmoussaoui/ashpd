@@ -33,11 +33,15 @@ mod imp {
     impl WidgetImpl for DocumentsPage {
         fn map(&self) {
             let widget = self.obj();
-            glib::spawn_future_local(clone!(@weak widget => async move {
-                if let Err(err) = widget.refresh().await {
-                    tracing::error!("Failed to call a method on Documents portal{}", err);
+            glib::spawn_future_local(clone!(
+                #[weak]
+                widget,
+                async move {
+                    if let Err(err) = widget.refresh().await {
+                        tracing::error!("Failed to call a method on Documents portal{}", err);
+                    }
                 }
-            }));
+            ));
             self.parent_map();
         }
     }

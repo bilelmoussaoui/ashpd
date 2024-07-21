@@ -127,13 +127,21 @@ impl CameraPaintable {
             bin.upcast()
         };
 
-        paintable.connect_invalidate_contents(clone!(@weak self as pt => move |_| {
-            pt.invalidate_contents();
-        }));
+        paintable.connect_invalidate_contents(clone!(
+            #[weak(rename_to = pt)]
+            self,
+            move |_| {
+                pt.invalidate_contents();
+            }
+        ));
 
-        paintable.connect_invalidate_size(clone!(@weak self as pt => move |_| {
-            pt.invalidate_size();
-        }));
+        paintable.connect_invalidate_size(clone!(
+            #[weak(rename_to = pt)]
+            self,
+            move |_| {
+                pt.invalidate_size();
+            }
+        ));
         imp.sink_paintable.replace(Some(paintable));
 
         let queue1 = gst::ElementFactory::make("queue").build().unwrap();

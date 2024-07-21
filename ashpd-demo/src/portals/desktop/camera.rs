@@ -59,19 +59,23 @@ mod imp {
     impl WidgetImpl for CameraPage {
         fn map(&self) {
             let widget = self.obj();
-            glib::spawn_future_local(clone!(@weak widget as page => async move {
-                let imp = page.imp();
-                let is_available = camera_available().await.unwrap_or(false);
-                if is_available {
-                    imp.camera_available.set_text("Yes");
-                    page.action_set_enabled("camera.start", true);
-                } else {
-                    imp.camera_available.set_text("No");
+            glib::spawn_future_local(clone!(
+                #[weak]
+                widget,
+                async move {
+                    let imp = widget.imp();
+                    let is_available = camera_available().await.unwrap_or(false);
+                    if is_available {
+                        imp.camera_available.set_text("Yes");
+                        widget.action_set_enabled("camera.start", true);
+                    } else {
+                        imp.camera_available.set_text("No");
 
-                    page.action_set_enabled("camera.start", false);
-                    page.action_set_enabled("camera.stop", false);
+                        widget.action_set_enabled("camera.start", false);
+                        widget.action_set_enabled("camera.stop", false);
+                    }
                 }
-            }));
+            ));
             self.parent_map();
         }
     }

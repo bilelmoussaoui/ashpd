@@ -73,32 +73,45 @@ mod imp {
             let obj = self.obj();
             self.attachments_listbox.bind_model(
                 Some(&self.model),
-                clone!(@strong self.model as model => move |obj| {
-                    let attachment = obj.downcast_ref::<gio::File>().unwrap();
-                    let display_name = attachment
-                        .query_info(
-                            gio::FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
-                            gio::FileQueryInfoFlags::NONE,
-                            gio::Cancellable::NONE,
-                        )
-                        .unwrap()
-                        .display_name();
+                clone!(
+                    #[strong(rename_to = model)]
+                    self.model,
+                    move |obj| {
+                        let attachment = obj.downcast_ref::<gio::File>().unwrap();
+                        let display_name = attachment
+                            .query_info(
+                                gio::FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
+                                gio::FileQueryInfoFlags::NONE,
+                                gio::Cancellable::NONE,
+                            )
+                            .unwrap()
+                            .display_name();
 
-                    let row = RemovableRow::default();
-                    row.connect_removed(clone!(@strong model => move |row| {
-                        let index = row.index();
-                        model.remove(index as u32);
-                    }));
-                    row.set_title(&display_name);
-                    row.set_subtitle(&attachment.uri());
-                    row.upcast()
-                }),
+                        let row = RemovableRow::default();
+                        row.connect_removed(clone!(
+                            #[strong]
+                            model,
+                            move |row| {
+                                let index = row.index();
+                                model.remove(index as u32);
+                            }
+                        ));
+                        row.set_title(&display_name);
+                        row.set_subtitle(&attachment.uri());
+                        row.upcast()
+                    }
+                ),
             );
 
-            self.model
-                .connect_items_changed(clone!(@weak obj => move |model, _, _, _| {
-                    obj.imp().attachments_listbox.set_visible(model.n_items() > 0);
-                }));
+            self.model.connect_items_changed(clone!(
+                #[weak]
+                obj,
+                move |model, _, _, _| {
+                    obj.imp()
+                        .attachments_listbox
+                        .set_visible(model.n_items() > 0);
+                }
+            ));
         }
     }
     impl WidgetImpl for EmailPage {}

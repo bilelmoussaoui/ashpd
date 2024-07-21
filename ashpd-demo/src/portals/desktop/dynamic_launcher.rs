@@ -251,11 +251,15 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
-            glib::spawn_future_local(clone!(@weak obj => async move {
-                if let Err(err) = obj.load_cache().await {
-                    tracing::error!("Failed to load cache {err}");
+            glib::spawn_future_local(clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Err(err) = obj.load_cache().await {
+                        tracing::error!("Failed to load cache {err}");
+                    }
                 }
-            }));
+            ));
 
             let buffer = self.desktop_file_content.buffer();
             let mut pos = buffer.start_iter();

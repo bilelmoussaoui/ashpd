@@ -71,9 +71,13 @@ impl Notification {
 
         let source_id = glib::timeout_add_seconds_local_once(
             3,
-            clone!(@weak self as widget => move || {
-                widget.close();
-            }),
+            clone!(
+                #[weak(rename_to = widget)]
+                self,
+                move || {
+                    widget.close();
+                }
+            ),
         );
         imp.source_id.replace(Some(source_id));
     }

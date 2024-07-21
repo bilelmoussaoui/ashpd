@@ -73,9 +73,13 @@ glib::wrapper! {
 impl NotificationPage {
     fn add_button(&self) {
         let button = NotificationButton::default();
-        button.connect_removed(glib::clone!(@weak self as page => move |button| {
-            page.imp().buttons_box.remove(button);
-        }));
+        button.connect_removed(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            move |button| {
+                page.imp().buttons_box.remove(button);
+            }
+        ));
         self.imp().buttons_box.append(&button);
     }
 
@@ -246,9 +250,13 @@ mod button {
                 .margin_bottom(12)
                 .build();
             remove_button.add_css_class("destructive-action");
-            remove_button.connect_clicked(glib::clone!(@weak self as obj => move |_btn| {
-                obj.emit_by_name::<()>("removed", &[]);
-            }));
+            remove_button.connect_clicked(glib::clone!(
+                #[weak(rename_to = obj)]
+                self,
+                move |_btn| {
+                    obj.emit_by_name::<()>("removed", &[]);
+                }
+            ));
             container.append(&remove_button);
 
             self.set_child(Some(&container));

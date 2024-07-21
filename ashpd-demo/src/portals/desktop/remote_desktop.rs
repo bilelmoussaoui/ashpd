@@ -4,8 +4,8 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::{
         remote_desktop::{DeviceType, RemoteDesktop},
-        screencast::{CursorMode, PersistMode, Screencast, SourceType, Stream},
-        Session,
+        screencast::{CursorMode, Screencast, SourceType, Stream},
+        PersistMode, Session,
     },
     enumflags2::BitFlags,
     WindowIdentifier,
@@ -24,7 +24,7 @@ mod imp {
     pub struct RemoteDesktopPage {
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
-        pub session: Arc<Mutex<Option<Session<'static>>>>,
+        pub session: Arc<Mutex<Option<Session<'static, RemoteDesktop<'static>>>>>,
         #[template_child]
         pub screencast_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
@@ -76,31 +76,41 @@ mod imp {
     impl WidgetImpl for RemoteDesktopPage {
         fn map(&self) {
             let widget = self.obj();
-            glib::spawn_future_local(clone!(@weak widget as page => async move {
-                let imp = page.imp();
-                if let Ok((cursor_modes, source_types)) = available_types().await {
-                    imp.virtual_check.set_sensitive(source_types.contains(SourceType::Virtual));
-                    imp.monitor_check.set_sensitive(source_types.contains(SourceType::Monitor));
-                    imp.window_check.set_sensitive(source_types.contains(SourceType::Window));
-                    let model = gtk::StringList::default();
-                    if cursor_modes.contains(CursorMode::Hidden) {
-                        model.append("Hidden");
+            glib::spawn_future_local(clone!(
+                #[weak]
+                widget,
+                async move {
+                    let imp = widget.imp();
+                    if let Ok((cursor_modes, source_types)) = available_types().await {
+                        imp.virtual_check
+                            .set_sensitive(source_types.contains(SourceType::Virtual));
+                        imp.monitor_check
+                            .set_sensitive(source_types.contains(SourceType::Monitor));
+                        imp.window_check
+                            .set_sensitive(source_types.contains(SourceType::Window));
+                        let model = gtk::StringList::default();
+                        if cursor_modes.contains(CursorMode::Hidden) {
+                            model.append("Hidden");
+                        }
+                        if cursor_modes.contains(CursorMode::Metadata) {
+                            model.append("Metadata");
+                        }
+                        if cursor_modes.contains(CursorMode::Embedded) {
+                            model.append("Embedded");
+                        }
+                        imp.cursor_mode_combo.set_model(Some(&model));
                     }
-                    if cursor_modes.contains(CursorMode::Metadata) {
-                        model.append("Metadata");
-                    }
-                    if cursor_modes.contains(CursorMode::Embedded) {
-                        model.append("Embedded");
-                    }
-                    imp.cursor_mode_combo.set_model(Some(&model));
-                }
 
-                if let Ok(devices) = available_devices().await {
-                    imp.touchscreen_check.set_sensitive(devices.contains(DeviceType::Touchscreen));
-                    imp.pointer_check.set_sensitive(devices.contains(DeviceType::Pointer));
-                    imp.keyboard_check.set_sensitive(devices.contains(DeviceType::Keyboard));
+                    if let Ok(devices) = available_devices().await {
+                        imp.touchscreen_check
+                            .set_sensitive(devices.contains(DeviceType::Touchscreen));
+                        imp.pointer_check
+                            .set_sensitive(devices.contains(DeviceType::Pointer));
+                        imp.keyboard_check
+                            .set_sensitive(devices.contains(DeviceType::Keyboard));
+                    }
                 }
-            }));
+            ));
             self.parent_map();
         }
     }
@@ -195,7 +205,13 @@ impl RemoteDesktopPage {
         imp.response_group.set_visible(false);
     }
 
-    async fn remote(&self) -> ashpd::Result<(BitFlags<DeviceType>, Vec<Stream>, Session<'static>)> {
+    async fn remote(
+        &self,
+    ) -> ashpd::Result<(
+        BitFlags<DeviceType>,
+        Vec<Stream>,
+        Session<'static, RemoteDesktop<'static>>,
+    )> {
         let imp = self.imp();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -220,7 +236,9 @@ impl RemoteDesktopPage {
                 )
                 .await?;
         }
-        proxy.select_devices(&session, devices).await?;
+        proxy
+            .select_devices(&session, devices, None, PersistMode::default())
+            .await?;
 
         self.info("Starting a remote desktop session");
         let response = proxy.start(&session, &identifier).await?.response()?;

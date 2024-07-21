@@ -34,9 +34,13 @@ mod imp {
             remove_button.add_css_class("flat");
             obj.add_suffix(&remove_button);
 
-            remove_button.connect_clicked(glib::clone!(@weak obj => move |_btn| {
-                obj.emit_by_name::<()>("removed", &[]);
-            }));
+            remove_button.connect_clicked(glib::clone!(
+                #[weak]
+                obj,
+                move |_btn| {
+                    obj.emit_by_name::<()>("removed", &[]);
+                }
+            ));
             obj.set_activatable(true);
             obj.set_activatable_widget(Some(&remove_button));
         }
