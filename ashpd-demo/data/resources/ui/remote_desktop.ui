@@ -45,6 +45,21 @@
                     </child>
                   </object>
                 </child>
+                <child>
+                  <object class="AdwComboRow" id="persist_mode_combo">
+                    <property name="title" translatable="yes">Persist Session Mode</property>
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">Do Not</item>
+                          <item translatable="yes">Application</item>
+                          <item translatable="yes">Explicitly Revoked</item>
+                        </items>
+                      </object>
+                    </property>
+                    <property name="selected">0</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>

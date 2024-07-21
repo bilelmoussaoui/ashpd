@@ -43,6 +43,9 @@ mod imp {
         pub virtual_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub cursor_mode_combo: TemplateChild<adw::ComboRow>,
+        #[template_child]
+        pub persist_mode_combo: TemplateChild<adw::ComboRow>,
+        pub session_token: Arc<Mutex<Option<String>>>,
     }
 
     #[glib::object_subclass]
@@ -154,6 +157,15 @@ impl RemoteDesktopPage {
         sources
     }
 
+    fn selected_persist_mode(&self) -> PersistMode {
+        match self.imp().persist_mode_combo.selected() {
+            0 => PersistMode::DoNot,
+            1 => PersistMode::Application,
+            2 => PersistMode::ExplicitlyRevoked,
+            _ => unreachable!(),
+        }
+    }
+
     /// Returns the selected CursorMode
     fn selected_cursor_mode(&self) -> CursorMode {
         match self
@@ -220,6 +232,8 @@ impl RemoteDesktopPage {
         let cursor_mode = self.selected_cursor_mode();
         let sources = self.selected_sources();
         let devices = self.selected_devices();
+        let persist_mode = self.selected_persist_mode();
+        let mut token = imp.session_token.lock().await;
 
         let proxy = RemoteDesktop::new().await?;
         let session = proxy.create_session().await?;
@@ -237,11 +251,15 @@ impl RemoteDesktopPage {
                 .await?;
         }
         proxy
-            .select_devices(&session, devices, None, PersistMode::default())
+            .select_devices(&session, devices, token.as_deref(), persist_mode)
             .await?;
 
         self.info("Starting a remote desktop session");
         let response = proxy.start(&session, &identifier).await?.response()?;
+        if let Some(t) = response.restore_token() {
+            token.replace(t.to_owned());
+        }
+
         Ok((
             response.devices(),
             response.streams().unwrap_or_default().to_owned(),
