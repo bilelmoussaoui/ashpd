@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use futures_channel::{
@@ -16,10 +16,59 @@ use crate::{
         request::{Request, RequestImpl},
         Backend,
     },
-    desktop::request::Response,
-    zvariant::{OwnedObjectPath, OwnedValue},
+    desktop::{file_chooser::Choice, request::Response, Icon},
+    zvariant::{self, DeserializeDict, OwnedObjectPath, SerializeDict},
     AppID, WindowIdentifierType,
 };
+
+#[derive(DeserializeDict, zvariant::Type)]
+#[zvariant(signature = "dict")]
+pub struct AccessOptions {
+    modal: Option<bool>,
+    deny_label: Option<String>,
+    grant_label: Option<String>,
+    icon: Option<String>,
+    choices: Option<Vec<Choice>>,
+}
+
+impl AccessOptions {
+    pub fn is_modal(&self) -> Option<bool> {
+        self.modal
+    }
+
+    pub fn deny_label(&self) -> Option<&str> {
+        self.deny_label.as_deref()
+    }
+
+    pub fn grant_label(&self) -> Option<&str> {
+        self.grant_label.as_deref()
+    }
+
+    pub fn icon(&self) -> Option<Icon> {
+        self.icon.as_ref().map(|i| Icon::with_names(&[i]))
+    }
+
+    pub fn choices(&self) -> &[Choice] {
+        self.choices.as_deref().unwrap_or_default()
+    }
+}
+
+#[derive(SerializeDict, zvariant::Type, Default)]
+#[zvariant(signature = "dict")]
+pub struct AccessResponse {
+    choices: Option<Vec<(String, String)>>,
+}
+
+impl AccessResponse {
+    /// Adds a selected choice (key, value).
+    #[must_use]
+    pub fn choice(mut self, key: &str, value: &str) -> Self {
+        self.choices
+            .get_or_insert_with(Vec::new)
+            .push((key.to_owned(), value.to_owned()));
+        self
+    }
+}
 
 #[async_trait]
 pub trait AccessImpl {
@@ -30,8 +79,8 @@ pub trait AccessImpl {
         title: String,
         subtitle: String,
         body: String,
-        options: HashMap<String, OwnedValue>,
-    ) -> Response<HashMap<String, OwnedValue>>;
+        options: AccessOptions,
+    ) -> Response<AccessResponse>;
 }
 
 pub struct Access<T: AccessImpl + RequestImpl> {
@@ -105,8 +154,8 @@ enum Action {
         String,
         String,
         String,
-        HashMap<String, OwnedValue>,
-        oneshot::Sender<Response<HashMap<String, OwnedValue>>>,
+        AccessOptions,
+        oneshot::Sender<Response<AccessResponse>>,
     ),
 }
 
@@ -138,8 +187,8 @@ impl AccessInterface {
         title: String,
         subtitle: String,
         body: String,
-        options: HashMap<String, OwnedValue>,
-    ) -> Response<HashMap<String, OwnedValue>> {
+        options: AccessOptions,
+    ) -> Response<AccessResponse> {
         let (sender, receiver) = futures_channel::oneshot::channel();
         #[cfg(feature = "tracing")]
         tracing::debug!("Access::AccessDialog");
