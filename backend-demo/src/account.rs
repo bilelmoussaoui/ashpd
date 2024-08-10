@@ -22,7 +22,7 @@ impl RequestImpl for Account {
 impl AccountImpl for Account {
     async fn get_information(
         &self,
-        _app_id: AppID,
+        _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: UserInformationOptions,
     ) -> Response<UserInformation> {

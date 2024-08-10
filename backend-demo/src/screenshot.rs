@@ -22,7 +22,7 @@ impl RequestImpl for Screenshot {
 impl ScreenshotImpl for Screenshot {
     async fn screenshot(
         &self,
-        _app_id: AppID,
+        _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ScreenshotOptions,
     ) -> Response<ScreenshotResponse> {
@@ -33,7 +33,7 @@ impl ScreenshotImpl for Screenshot {
 
     async fn pick_color(
         &self,
-        _app_id: AppID,
+        _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ColorOptions,
     ) -> Response<Color> {

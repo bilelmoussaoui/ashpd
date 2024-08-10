@@ -37,7 +37,7 @@ impl UserInformationOptions {
 pub trait AccountImpl: RequestImpl {
     async fn get_information(
         &self,
-        app_id: AppID,
+        app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: UserInformationOptions,
     ) -> Response<UserInformation>;
@@ -101,7 +101,7 @@ impl<T: AccountImpl + RequestImpl> Account<T> {
 enum Action {
     GetUserInformation(
         OwnedObjectPath,
-        AppID,
+        Option<AppID>,
         Option<WindowIdentifierType>,
         UserInformationOptions,
         oneshot::Sender<Response<UserInformation>>,
@@ -131,7 +131,7 @@ impl AccountInterface {
     async fn get_user_information(
         &self,
         handle: OwnedObjectPath,
-        app_id: AppID,
+        app_id: &str,
         window_identifier: &str,
         options: UserInformationOptions,
     ) -> Response<UserInformation> {
@@ -139,11 +139,8 @@ impl AccountInterface {
         #[cfg(feature = "tracing")]
         tracing::debug!("Account::GetUserInformation");
 
-        let window_identifier = if window_identifier.is_empty() {
-            None
-        } else {
-            window_identifier.parse::<WindowIdentifierType>().ok()
-        };
+        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
+        let app_id = AppID::from_maybe_str(app_id);
 
         let _ = self
             .sender

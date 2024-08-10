@@ -22,7 +22,7 @@ impl RequestImpl for Wallpaper {
 impl WallpaperImpl for Wallpaper {
     async fn with_uri(
         &self,
-        _app_id: AppID,
+        _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _uri: url::Url,
         _options: WallpaperOptions,

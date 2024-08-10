@@ -53,7 +53,7 @@ impl AccessOptions {
     }
 }
 
-#[derive(SerializeDict, zvariant::Type, Default)]
+#[derive(SerializeDict, Debug, zvariant::Type, Default)]
 #[zvariant(signature = "dict")]
 pub struct AccessResponse {
     choices: Option<Vec<(String, String)>>,
@@ -74,7 +74,7 @@ impl AccessResponse {
 pub trait AccessImpl {
     async fn access_dialog(
         &self,
-        app_id: AppID,
+        app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         title: String,
         subtitle: String,
@@ -149,7 +149,7 @@ impl<T: AccessImpl + RequestImpl> Access<T> {
 enum Action {
     AccessDialog(
         OwnedObjectPath,
-        AppID,
+        Option<AppID>,
         Option<WindowIdentifierType>,
         String,
         String,
@@ -182,7 +182,7 @@ impl AccessInterface {
     async fn access_dialog(
         &self,
         handle: OwnedObjectPath,
-        app_id: AppID,
+        app_id: &str,
         window_identifier: &str,
         title: String,
         subtitle: String,
@@ -193,11 +193,8 @@ impl AccessInterface {
         #[cfg(feature = "tracing")]
         tracing::debug!("Access::AccessDialog");
 
-        let window_identifier = if window_identifier.is_empty() {
-            None
-        } else {
-            window_identifier.parse::<WindowIdentifierType>().ok()
-        };
+        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
+        let app_id = AppID::from_maybe_str(app_id);
 
         let _ = self
             .sender

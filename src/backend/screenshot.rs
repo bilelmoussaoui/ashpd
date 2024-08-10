@@ -51,14 +51,14 @@ pub struct ColorOptions;
 pub trait ScreenshotImpl {
     async fn screenshot(
         &self,
-        app_id: AppID,
+        app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ScreenshotOptions,
     ) -> Response<ScreenshotResponse>;
 
     async fn pick_color(
         &self,
-        app_id: AppID,
+        app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ColorOptions,
     ) -> Response<Color>;
@@ -151,14 +151,14 @@ impl<T: ScreenshotImpl + RequestImpl> Screenshot<T> {
 enum Action {
     Screenshot(
         OwnedObjectPath,
-        AppID,
+        Option<AppID>,
         Option<WindowIdentifierType>,
         ScreenshotOptions,
         oneshot::Sender<Response<ScreenshotResponse>>,
     ),
     PickColor(
         OwnedObjectPath,
-        AppID,
+        Option<AppID>,
         Option<WindowIdentifierType>,
         ColorOptions,
         oneshot::Sender<Response<Color>>,
@@ -188,18 +188,17 @@ impl ScreenshotInterface {
     async fn screenshot(
         &self,
         handle: OwnedObjectPath,
-        app_id: AppID,
+        app_id: &str,
         window_identifier: &str,
         options: ScreenshotOptions,
     ) -> Response<ScreenshotResponse> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Screenshot::Screenshot");
         let (sender, receiver) = futures_channel::oneshot::channel();
-        let window_identifier = if window_identifier.is_empty() {
-            None
-        } else {
-            window_identifier.parse::<WindowIdentifierType>().ok()
-        };
+
+        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
+        let app_id = AppID::from_maybe_str(app_id);
+
         let _ = self
             .sender
             .lock()
@@ -222,7 +221,7 @@ impl ScreenshotInterface {
     async fn pick_color(
         &self,
         handle: OwnedObjectPath,
-        app_id: AppID,
+        app_id: &str,
         window_identifier: &str,
         options: ColorOptions,
     ) -> Response<Color> {
@@ -230,11 +229,10 @@ impl ScreenshotInterface {
         tracing::debug!("Screenshot::PickColor");
 
         let (sender, receiver) = futures_channel::oneshot::channel();
-        let window_identifier = if window_identifier.is_empty() {
-            None
-        } else {
-            window_identifier.parse::<WindowIdentifierType>().ok()
-        };
+
+        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
+        let app_id = AppID::from_maybe_str(app_id);
+
         let _ = self
             .sender
             .lock()

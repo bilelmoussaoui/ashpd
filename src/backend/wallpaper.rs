@@ -47,7 +47,7 @@ impl WallpaperOptions {
 pub trait WallpaperImpl {
     async fn with_uri(
         &self,
-        app_id: AppID,
+        app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         uri: url::Url,
         options: WallpaperOptions,
@@ -110,7 +110,7 @@ impl<T: WallpaperImpl + RequestImpl> Wallpaper<T> {
 enum Action {
     SetWallpaperURI(
         OwnedObjectPath,
-        AppID,
+        Option<AppID>,
         Option<WindowIdentifierType>,
         url::Url,
         WallpaperOptions,
@@ -141,7 +141,7 @@ impl WallpaperInterface {
     async fn set_wallpaper_uri(
         &self,
         handle: OwnedObjectPath,
-        app_id: AppID,
+        app_id: &str,
         window_identifier: &str,
         uri: url::Url,
         options: WallpaperOptions,
@@ -150,11 +150,9 @@ impl WallpaperInterface {
         tracing::debug!("Wallpaper::SetWallpaperURI");
 
         let (sender, receiver) = futures_channel::oneshot::channel();
-        let window_identifier = if window_identifier.is_empty() {
-            None
-        } else {
-            window_identifier.parse::<WindowIdentifierType>().ok()
-        };
+
+        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
+        let app_id = AppID::from_maybe_str(app_id);
 
         let _ = self
             .sender
