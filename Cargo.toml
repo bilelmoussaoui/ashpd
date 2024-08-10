@@ -13,7 +13,7 @@ rust-version = "1.75"
 
 [features]
 async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net"]
-default = ["async-std"]
+default = ["tokio"]
 
 backend = ["async-trait", "nix", "futures-channel/sink", "tokio"]
 
