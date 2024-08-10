@@ -22,10 +22,7 @@ use crate::{desktop::HandleToken, proxy::Proxy, Error};
 /// of a [`Request`].
 #[derive(Debug, Type)]
 #[zvariant(signature = "(ua{sv})")]
-pub enum Response<T>
-where
-    T: for<'de> Deserialize<'de> + Type,
-{
+pub enum Response<T> {
     /// Success, the request is carried out.
     Ok(T),
     /// The user cancelled the request or something else happened.
@@ -33,10 +30,7 @@ where
 }
 
 #[cfg(feature = "backend")]
-impl<T> Response<T>
-where
-    T: for<'de> Deserialize<'de> + Type,
-{
+impl<T> Response<T> {
     /// The corresponding response type.
     pub fn response_type(self) -> ResponseType {
         match self {
@@ -113,7 +107,7 @@ where
 
 impl<T> Serialize for Response<T>
 where
-    T: for<'de> Deserialize<'de> + Serialize + Type,
+    T: Serialize + Type,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -135,10 +129,7 @@ where
 }
 
 #[doc(hidden)]
-impl<T> From<(ResponseType, Option<T>)> for Response<T>
-where
-    T: for<'de> Deserialize<'de> + Type,
-{
+impl<T> From<(ResponseType, Option<T>)> for Response<T> {
     fn from(f: (ResponseType, Option<T>)) -> Self {
         match f.0 {
             ResponseType::Success => {
