@@ -1,5 +1,3 @@
-use std::num::NonZeroU32;
-
 use ashpd::{
     backend::{
         account::{AccountImpl, UserInformationOptions},
@@ -22,8 +20,6 @@ impl RequestImpl for Account {
 
 #[async_trait]
 impl AccountImpl for Account {
-    const VERSION: NonZeroU32 = NonZeroU32::MIN;
-
     async fn get_information(
         &self,
         _app_id: AppID,

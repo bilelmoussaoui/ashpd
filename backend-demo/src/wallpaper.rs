@@ -1,5 +1,3 @@
-use std::num::NonZeroU32;
-
 use ashpd::{
     backend::{
         request::RequestImpl,
@@ -22,8 +20,6 @@ impl RequestImpl for Wallpaper {
 
 #[async_trait]
 impl WallpaperImpl for Wallpaper {
-    const VERSION: NonZeroU32 = NonZeroU32::MIN;
-
     async fn with_uri(
         &self,
         _app_id: AppID,

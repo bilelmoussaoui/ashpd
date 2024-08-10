@@ -1,6 +1,4 @@
-use std::num::NonZeroU32;
 
-use ashpd::{
     backend::{
         request::RequestImpl,
         screenshot::{ColorOptions, ScreenshotImpl, ScreenshotOptions},
@@ -22,8 +20,6 @@ impl RequestImpl for Screenshot {
 
 #[async_trait]
 impl ScreenshotImpl for Screenshot {
-    const VERSION: NonZeroU32 = NonZeroU32::MIN;
-
     async fn screenshot(
         &self,
         _app_id: AppID,
