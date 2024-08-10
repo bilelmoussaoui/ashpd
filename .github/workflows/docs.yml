@@ -34,7 +34,7 @@ jobs:
               --extern-html-root-url=enumflags2=https://docs.rs/enumflags2/latest/
         with:
           command: doc
-          args: --package ashpd --features "gtk4,pipewire,wayland,raw_handle" --no-deps
+          args: --package ashpd --features "gtk4,pipewire,wayland,raw_handle,backend" --no-deps
 
       - name: Fix permissions
         run: |
@@ -57,4 +57,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
