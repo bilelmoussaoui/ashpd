@@ -8,13 +8,18 @@ use futures_channel::{
 use futures_util::{SinkExt, StreamExt};
 use tokio::sync::Mutex;
 
-use crate::{backend::Backend, desktop::settings::Namespace, zvariant::OwnedValue};
+use crate::{backend::Backend, desktop::settings::Namespace, zbus::SignalContext, zvariant::{OwnedValue, Value}};
 
 #[async_trait]
 pub trait SettingsImpl {
     async fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, Namespace>;
 
     async fn read(&self, namespace: &str, key: &str) -> OwnedValue;
+
+    async fn changed(signal_ctxt: &SignalContext<'_>, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
+        SettingsInterface::setting_changed(signal_ctxt, namespace, key, value)
+            .await
+    }
 }
 
 pub struct Settings<T: SettingsImpl> {
@@ -119,4 +124,7 @@ impl SettingsInterface {
         tracing::debug!("Settings::Read returned {:#?}", response);
         response
     }
+
+    #[zbus(signal)]
+    async fn setting_changed(signal_ctxt: &SignalContext<'_>, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()>;
 }
