@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use futures_channel::{
@@ -35,8 +35,6 @@ impl UserInformationOptions {
 
 #[async_trait]
 pub trait AccountImpl: RequestImpl {
-    const VERSION: NonZeroU32;
-
     async fn get_information(
         &self,
         app_id: AppID,
@@ -54,7 +52,7 @@ pub struct Account<T: AccountImpl + RequestImpl> {
 impl<T: AccountImpl + RequestImpl> Account<T> {
     pub async fn new(imp: T, backend: &Backend) -> zbus::Result<Self> {
         let (sender, receiver) = futures_channel::mpsc::unbounded();
-        let iface = AccountInterface::new(sender, T::VERSION);
+        let iface = AccountInterface::new(sender);
         backend.serve(iface).await?;
         let provider = Self {
             receiver: Arc::new(Mutex::new(receiver)),
@@ -112,14 +110,12 @@ enum Action {
 
 struct AccountInterface {
     sender: Arc<Mutex<Sender<Action>>>,
-    version: NonZeroU32,
 }
 
 impl AccountInterface {
-    pub fn new(sender: Sender<Action>, version: NonZeroU32) -> Self {
+    pub fn new(sender: Sender<Action>) -> Self {
         Self {
             sender: Arc::new(Mutex::new(sender)),
-            version,
         }
     }
 }
@@ -128,7 +124,7 @@ impl AccountInterface {
 impl AccountInterface {
     #[zbus(property, name = "version")]
     fn version(&self) -> u32 {
-        self.version.into()
+        1
     }
 
     #[zbus(name = "GetUserInformation")]

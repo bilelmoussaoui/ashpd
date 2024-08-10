@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use futures_channel::{
@@ -49,8 +49,6 @@ pub struct ColorOptions;
 
 #[async_trait]
 pub trait ScreenshotImpl {
-    const VERSION: NonZeroU32;
-
     async fn screenshot(
         &self,
         app_id: AppID,
@@ -75,7 +73,7 @@ pub struct Screenshot<T: ScreenshotImpl + RequestImpl> {
 impl<T: ScreenshotImpl + RequestImpl> Screenshot<T> {
     pub async fn new(imp: T, backend: &Backend) -> zbus::Result<Self> {
         let (sender, receiver) = futures_channel::mpsc::unbounded();
-        let iface = ScreenshotInterface::new(sender, T::VERSION);
+        let iface = ScreenshotInterface::new(sender);
         backend.serve(iface).await?;
         let provider = Self {
             receiver: Arc::new(Mutex::new(receiver)),
@@ -169,14 +167,12 @@ enum Action {
 
 struct ScreenshotInterface {
     sender: Arc<Mutex<Sender<Action>>>,
-    version: NonZeroU32,
 }
 
 impl ScreenshotInterface {
-    pub fn new(sender: Sender<Action>, version: NonZeroU32) -> Self {
+    pub fn new(sender: Sender<Action>) -> Self {
         Self {
             sender: Arc::new(Mutex::new(sender)),
-            version,
         }
     }
 }
@@ -185,7 +181,7 @@ impl ScreenshotInterface {
 impl ScreenshotInterface {
     #[zbus(property, name = "version")]
     fn version(&self) -> u32 {
-        self.version.into()
+        2
     }
 
     #[zbus(name = "Screenshot")]

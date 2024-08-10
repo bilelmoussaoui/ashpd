@@ -1,4 +1,4 @@
-use std::{collections::HashMap, num::NonZeroU32, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
 use futures_channel::{
@@ -12,8 +12,6 @@ use crate::{backend::Backend, desktop::settings::Namespace, zvariant::OwnedValue
 
 #[async_trait]
 pub trait SettingsImpl {
-    const VERSION: NonZeroU32;
-
     async fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, Namespace>;
 
     async fn read(&self, namespace: &str, key: &str) -> OwnedValue;
@@ -27,7 +25,7 @@ pub struct Settings<T: SettingsImpl> {
 impl<T: SettingsImpl> Settings<T> {
     pub async fn new(imp: T, backend: &Backend) -> zbus::Result<Self> {
         let (sender, receiver) = futures_channel::mpsc::channel(10);
-        let iface = SettingsInterface::new(sender, T::VERSION);
+        let iface = SettingsInterface::new(sender);
         backend.serve(iface).await?;
         let provider = Self {
             receiver: Arc::new(Mutex::new(receiver)),
@@ -67,14 +65,12 @@ enum Action {
 
 struct SettingsInterface {
     sender: Arc<Mutex<Sender<Action>>>,
-    version: NonZeroU32,
 }
 
 impl SettingsInterface {
-    pub fn new(sender: Sender<Action>, version: NonZeroU32) -> Self {
+    pub fn new(sender: Sender<Action>) -> Self {
         Self {
             sender: Arc::new(Mutex::new(sender)),
-            version,
         }
     }
 }
@@ -83,7 +79,7 @@ impl SettingsInterface {
 impl SettingsInterface {
     #[zbus(property, name = "version")]
     fn version(&self) -> u32 {
-        self.version.into()
+        2
     }
 
     async fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, Namespace> {

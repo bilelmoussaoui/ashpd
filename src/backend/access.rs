@@ -1,4 +1,4 @@
-use std::{collections::HashMap, num::NonZeroU32, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
 use futures_channel::{
@@ -23,8 +23,6 @@ use crate::{
 
 #[async_trait]
 pub trait AccessImpl {
-    const VERSION: NonZeroU32;
-
     async fn access_dialog(
         &self,
         app_id: AppID,
@@ -45,7 +43,7 @@ pub struct Access<T: AccessImpl + RequestImpl> {
 impl<T: AccessImpl + RequestImpl> Access<T> {
     pub async fn new(imp: T, backend: &Backend) -> zbus::Result<Self> {
         let (sender, receiver) = futures_channel::mpsc::unbounded();
-        let iface = AccessInterface::new(sender, T::VERSION);
+        let iface = AccessInterface::new(sender);
         backend.serve(iface).await?;
         let provider = Self {
             receiver: Arc::new(Mutex::new(receiver)),
@@ -114,14 +112,12 @@ enum Action {
 
 struct AccessInterface {
     sender: Arc<Mutex<Sender<Action>>>,
-    version: NonZeroU32,
 }
 
 impl AccessInterface {
-    pub fn new(sender: Sender<Action>, version: NonZeroU32) -> Self {
+    pub fn new(sender: Sender<Action>) -> Self {
         Self {
             sender: Arc::new(Mutex::new(sender)),
-            version,
         }
     }
 }
@@ -130,7 +126,7 @@ impl AccessInterface {
 impl AccessInterface {
     #[dbus_interface(property, name = "version")]
     fn version(&self) -> u32 {
-        self.version.into()
+        1 // TODO: Is this correct?
     }
 
     #[allow(clippy::too_many_arguments)]

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, num::NonZeroU32, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
 use futures_channel::{
@@ -23,8 +23,6 @@ use crate::{
 
 #[async_trait]
 pub trait SecretImpl {
-    const VERSION: NonZeroU32;
-
     async fn retrieve(
         &self,
         app_id: AppID,
@@ -51,7 +49,7 @@ pub struct Secret<T: SecretImpl + RequestImpl> {
 impl<T: SecretImpl + RequestImpl> Secret<T> {
     pub async fn new(imp: T, backend: &Backend) -> zbus::Result<Self> {
         let (sender, receiver) = futures_channel::mpsc::unbounded();
-        let iface = SecretInterface::new(sender, T::VERSION);
+        let iface = SecretInterface::new(sender);
         backend.serve(iface).await?;
         let provider = Self {
             receiver: Arc::new(Mutex::new(receiver)),
@@ -96,14 +94,12 @@ impl<T: SecretImpl + RequestImpl> Secret<T> {
 
 struct SecretInterface {
     sender: Arc<Mutex<Sender<Action>>>,
-    version: NonZeroU32,
 }
 
 impl SecretInterface {
-    pub fn new(sender: Sender<Action>, version: NonZeroU32) -> Self {
+    pub fn new(sender: Sender<Action>) -> Self {
         Self {
             sender: Arc::new(Mutex::new(sender)),
-            version,
         }
     }
 }
@@ -111,7 +107,7 @@ impl SecretInterface {
 impl SecretInterface {
     #[dbus_interface(property, name = "version")]
     fn version(&self) -> u32 {
-        self.version.into()
+        1
     }
 
     #[dbus_interface(out_args("response", "results"))]

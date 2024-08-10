@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use futures_channel::{
@@ -45,8 +45,6 @@ impl WallpaperOptions {
 
 #[async_trait]
 pub trait WallpaperImpl {
-    const VERSION: NonZeroU32;
-
     async fn with_uri(
         &self,
         app_id: AppID,
@@ -65,7 +63,7 @@ pub struct Wallpaper<T: WallpaperImpl + RequestImpl> {
 impl<T: WallpaperImpl + RequestImpl> Wallpaper<T> {
     pub async fn new(imp: T, backend: &Backend) -> zbus::Result<Self> {
         let (sender, receiver) = futures_channel::mpsc::unbounded();
-        let iface = WallpaperInterface::new(sender, T::VERSION);
+        let iface = WallpaperInterface::new(sender);
         backend.serve(iface).await?;
         let provider = Self {
             receiver: Arc::new(Mutex::new(receiver)),
@@ -122,14 +120,12 @@ enum Action {
 
 struct WallpaperInterface {
     sender: Arc<Mutex<Sender<Action>>>,
-    version: NonZeroU32,
 }
 
 impl WallpaperInterface {
-    pub fn new(sender: Sender<Action>, version: NonZeroU32) -> Self {
+    pub fn new(sender: Sender<Action>) -> Self {
         Self {
             sender: Arc::new(Mutex::new(sender)),
-            version,
         }
     }
 }
@@ -138,7 +134,7 @@ impl WallpaperInterface {
 impl WallpaperInterface {
     #[zbus(property, name = "version")]
     fn version(&self) -> u32 {
-        self.version.into()
+        1
     }
 
     #[zbus(name = "SetWallpaperURI")]
