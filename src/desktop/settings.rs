@@ -132,10 +132,14 @@ impl TryFrom<Value<'_>> for Contrast {
     }
 }
 
-const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
-const COLOR_SCHEME_KEY: &str = "color-scheme";
-const ACCENT_COLOR_SCHEME_KEY: &str = "accent-color";
-const CONTRAST_KEY: &str = "contrast";
+/// Apperance namespace
+pub const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
+/// Color scheme key
+pub const COLOR_SCHEME_KEY: &str = "color-scheme";
+/// Accent color key
+pub const ACCENT_COLOR_SCHEME_KEY: &str = "accent-color";
+/// Contrast key
+pub const CONTRAST_KEY: &str = "contrast";
 
 /// The interface provides read-only access to a small number of host settings
 /// required for toolkits similar to XSettings. It is not for general purpose
