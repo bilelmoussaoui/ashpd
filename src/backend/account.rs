@@ -33,14 +33,14 @@ pub trait AccountImpl: RequestImpl {
 }
 
 pub struct AccountInterface {
-    imp: Arc<Box<dyn AccountImpl>>,
+    imp: Arc<dyn AccountImpl>,
     cnx: zbus::Connection,
 }
 
 impl AccountInterface {
     pub fn new(imp: impl AccountImpl + 'static, cnx: zbus::Connection) -> Self {
         Self {
-            imp: Arc::new(Box::new(imp)),
+            imp: Arc::new(imp),
             cnx,
         }
     }
@@ -67,16 +67,16 @@ impl AccountInterface {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
 
-        let imp: Arc<Box<dyn AccountImpl>> = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let (fut, request_handle) = abortable(async {
             imp.get_user_information(app_id, window_identifier, options)
                 .await
         });
 
-        let imp_request = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let close_cb = || {
             tokio::spawn(async move {
-                RequestImpl::close(&**imp_request).await;
+                RequestImpl::close(&*imp).await;
             });
         };
         let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());

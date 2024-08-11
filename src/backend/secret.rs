@@ -20,14 +20,14 @@ pub trait SecretImpl: RequestImpl {
 }
 
 pub struct SecretInterface {
-    imp: Arc<Box<dyn SecretImpl>>,
+    imp: Arc<dyn SecretImpl>,
     cnx: zbus::Connection,
 }
 
 impl SecretInterface {
     pub fn new(imp: impl SecretImpl + 'static, cnx: zbus::Connection) -> Self {
         Self {
-            imp: Arc::new(Box::new(imp)),
+            imp: Arc::new(imp),
             cnx,
         }
     }
@@ -52,13 +52,13 @@ impl SecretInterface {
         #[cfg(feature = "tracing")]
         tracing::debug!("Secret::RetrieveSecret");
 
-        let imp: Arc<Box<dyn SecretImpl>> = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let (fut, request_handle) = abortable(async { imp.retrieve(app_id, fd).await });
 
-        let imp_request = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let close_cb = || {
             tokio::spawn(async move {
-                RequestImpl::close(&**imp_request).await;
+                RequestImpl::close(&*imp).await;
             });
         };
         let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());

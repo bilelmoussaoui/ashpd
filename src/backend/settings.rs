@@ -23,14 +23,14 @@ pub trait SettingsImpl: Send + Sync {
 }
 
 pub struct SettingsInterface {
-    imp: Arc<Box<dyn SettingsImpl>>,
+    imp: Arc<dyn SettingsImpl>,
     cnx: zbus::Connection,
 }
 
 impl SettingsInterface {
     pub fn new(imp: impl SettingsImpl + 'static, cnx: zbus::Connection) -> Self {
         Self {
-            imp: Arc::new(Box::new(imp)),
+            imp: Arc::new(imp),
             cnx,
         }
     }

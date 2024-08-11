@@ -44,14 +44,14 @@ pub trait WallpaperImpl: RequestImpl {
 }
 
 pub struct WallpaperInterface {
-    imp: Arc<Box<dyn WallpaperImpl>>,
+    imp: Arc<dyn WallpaperImpl>,
     cnx: zbus::Connection,
 }
 
 impl WallpaperInterface {
     pub fn new(imp: impl WallpaperImpl + 'static, cnx: zbus::Connection) -> Self {
         Self {
-            imp: Arc::new(Box::new(imp)),
+            imp: Arc::new(imp),
             cnx,
         }
     }
@@ -79,14 +79,14 @@ impl WallpaperInterface {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
 
-        let imp: Arc<Box<dyn WallpaperImpl>> = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let (fut, request_handle) =
             abortable(async { imp.with_uri(app_id, window_identifier, uri, options).await });
 
-        let imp_request = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let close_cb = || {
             tokio::spawn(async move {
-                RequestImpl::close(&**imp_request).await;
+                RequestImpl::close(&*imp).await;
             });
         };
         let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());

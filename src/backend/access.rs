@@ -73,14 +73,14 @@ pub trait AccessImpl: RequestImpl {
 }
 
 pub struct AccessInterface {
-    imp: Arc<Box<dyn AccessImpl>>,
+    imp: Arc<dyn AccessImpl>,
     cnx: zbus::Connection,
 }
 
 impl AccessInterface {
     pub fn new(imp: impl AccessImpl + 'static, cnx: zbus::Connection) -> Self {
         Self {
-            imp: Arc::new(Box::new(imp)),
+            imp: Arc::new(imp),
             cnx,
         }
     }
@@ -110,16 +110,16 @@ impl AccessInterface {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
 
-        let imp: Arc<Box<dyn AccessImpl>> = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let (fut, request_handle) = abortable(async {
             imp.access_dialog(app_id, window_identifier, title, subtitle, body, options)
                 .await
         });
 
-        let imp_request = Arc::clone(&self.imp);
+        let imp = Arc::clone(&self.imp);
         let close_cb = || {
             tokio::spawn(async move {
-                RequestImpl::close(&**imp_request).await;
+                RequestImpl::close(&*imp).await;
             });
         };
         let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
