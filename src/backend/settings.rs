@@ -8,23 +8,32 @@ use futures_channel::{
 use futures_util::{SinkExt, StreamExt};
 use tokio::sync::Mutex;
 
-use crate::{backend::Backend, desktop::settings::Namespace, zbus::SignalContext, zvariant::{OwnedValue, Value}};
+use crate::{
+    backend::Backend,
+    desktop::{
+        settings::{
+            ColorScheme, Contrast, Namespace, ACCENT_COLOR_SCHEME_KEY, APPEARANCE_NAMESPACE,
+            COLOR_SCHEME_KEY, CONTRAST_KEY,
+        },
+        Color,
+    },
+    zbus::SignalContext,
+    zvariant::{OwnedValue, Value},
+    PortalError,
+};
 
 #[async_trait]
 pub trait SettingsImpl {
     async fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, Namespace>;
 
-    async fn read(&self, namespace: &str, key: &str) -> OwnedValue;
-
-    async fn changed(signal_ctxt: &SignalContext<'_>, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
-        SettingsInterface::setting_changed(signal_ctxt, namespace, key, value)
-            .await
-    }
+    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError>;
 }
 
+#[derive(Clone)]
 pub struct Settings<T: SettingsImpl> {
     receiver: Arc<Mutex<Receiver<Action>>>,
     imp: T,
+    cnx: zbus::Connection,
 }
 
 impl<T: SettingsImpl> Settings<T> {
@@ -35,6 +44,7 @@ impl<T: SettingsImpl> Settings<T> {
         let provider = Self {
             receiver: Arc::new(Mutex::new(receiver)),
             imp,
+            cnx: backend.cnx().clone(),
         };
 
         Ok(provider)
@@ -55,6 +65,43 @@ impl<T: SettingsImpl> Settings<T> {
         Ok(())
     }
 
+    pub async fn contrast_changed(&self, contrast: Contrast) -> zbus::Result<()> {
+        self.changed(
+            APPEARANCE_NAMESPACE,
+            CONTRAST_KEY,
+            OwnedValue::from(contrast).into(),
+        )
+        .await
+    }
+
+    pub async fn accent_color_changed(&self, color: Color) -> zbus::Result<()> {
+        self.changed(
+            APPEARANCE_NAMESPACE,
+            ACCENT_COLOR_SCHEME_KEY,
+            OwnedValue::try_from(color).unwrap().into(),
+        )
+        .await
+    }
+
+    pub async fn color_scheme_changed(&self, scheme: ColorScheme) -> zbus::Result<()> {
+        self.changed(
+            APPEARANCE_NAMESPACE,
+            COLOR_SCHEME_KEY,
+            OwnedValue::from(scheme).into(),
+        )
+        .await
+    }
+
+    pub async fn changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
+        let object_server = self.cnx.object_server();
+        let iface_ref = object_server
+            .interface::<_, SettingsInterface>(crate::proxy::DESKTOP_PATH)
+            .await?;
+        let signal_context = iface_ref.signal_context();
+
+        SettingsInterface::setting_changed(signal_context, namespace, key, value).await
+    }
+
     pub async fn try_next(&self) -> Result<(), crate::Error> {
         if let Some(action) = (*self.receiver.lock().await).next().await {
             self.activate(action).await?;
@@ -65,7 +112,11 @@ impl<T: SettingsImpl> Settings<T> {
 
 enum Action {
     ReadAll(Vec<String>, oneshot::Sender<HashMap<String, Namespace>>),
-    Read(String, String, oneshot::Sender<OwnedValue>),
+    Read(
+        String,
+        String,
+        oneshot::Sender<Result<OwnedValue, PortalError>>,
+    ),
 }
 
 struct SettingsInterface {
@@ -99,14 +150,14 @@ impl SettingsInterface {
             .send(Action::ReadAll(namespaces, sender))
             .await;
 
-        let response = receiver.await.unwrap();
+        let response = receiver.await.unwrap_or_default();
 
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::ReadAll returned {:#?}", response);
         response
     }
 
-    async fn read(&self, namespace: String, key: String) -> OwnedValue {
+    async fn read(&self, namespace: String, key: String) -> Result<OwnedValue, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::Read");
 
@@ -126,5 +177,10 @@ impl SettingsInterface {
     }
 
     #[zbus(signal)]
-    async fn setting_changed(signal_ctxt: &SignalContext<'_>, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()>;
+    async fn setting_changed(
+        signal_ctxt: &SignalContext<'_>,
+        namespace: &str,
+        key: &str,
+        value: Value<'_>,
+    ) -> zbus::Result<()>;
 }
