@@ -1,21 +1,10 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use futures_channel::{
-    mpsc::{UnboundedReceiver as Receiver, UnboundedSender as Sender},
-    oneshot,
-};
-use futures_util::{
-    future::{try_select, Either},
-    pin_mut, SinkExt, StreamExt,
-};
-use tokio::sync::Mutex;
+use futures_util::future::abortable;
 
 use crate::{
-    backend::{
-        request::{Request, RequestImpl},
-        Backend,
-    },
+    backend::request::{Request, RequestImpl},
     desktop::{request::Response, screenshot::Screenshot as ScreenshotResponse, Color},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
@@ -48,7 +37,7 @@ impl ScreenshotOptions {
 pub struct ColorOptions;
 
 #[async_trait]
-pub trait ScreenshotImpl {
+pub trait ScreenshotImpl: RequestImpl {
     async fn screenshot(
         &self,
         app_id: Option<AppID>,
@@ -64,122 +53,23 @@ pub trait ScreenshotImpl {
     ) -> Response<Color>;
 }
 
-pub struct Screenshot<T: ScreenshotImpl + RequestImpl> {
-    receiver: Arc<Mutex<Receiver<Action>>>,
-    imp: Arc<T>,
+pub struct ScreenshotInterface {
+    imp: Arc<Box<dyn ScreenshotImpl>>,
     cnx: zbus::Connection,
 }
 
-impl<T: ScreenshotImpl + RequestImpl> Screenshot<T> {
-    pub async fn new(imp: T, backend: &Backend) -> zbus::Result<Self> {
-        let (sender, receiver) = futures_channel::mpsc::unbounded();
-        let iface = ScreenshotInterface::new(sender);
-        backend.serve(iface).await?;
-        let provider = Self {
-            receiver: Arc::new(Mutex::new(receiver)),
-            imp: Arc::new(imp),
-            cnx: backend.cnx().clone(),
-        };
-
-        Ok(provider)
-    }
-
-    async fn activate(&self, action: Action) -> Result<(), crate::Error> {
-        match action {
-            Action::Screenshot(handle_path, app_id, window_identifier, options, sender) => {
-                let future1 = async {
-                    let result = self
-                        .imp
-                        .screenshot(app_id, window_identifier, options)
-                        .await;
-                    let _ = sender.send(result);
-                    Ok(()) as Result<(), crate::Error>
-                };
-
-                let request = Request::new(Arc::clone(&self.imp), handle_path, &self.cnx).await?;
-
-                let future2 = async {
-                    request.next().await?;
-                    Ok(()) as Result<(), crate::Error>
-                };
-
-                pin_mut!(future1); // 'select' requires Future + Unpin bounds
-                pin_mut!(future2);
-                match try_select(future1, future2).await {
-                    Ok(_) => Ok(()),
-                    Err(Either::Left((err, _))) => Err(err),
-                    Err(Either::Right((err, _))) => Err(err),
-                }?;
-            }
-            Action::PickColor(handle_path, app_id, window_identifier, options, sender) => {
-                let future1 = async {
-                    let result = self
-                        .imp
-                        .pick_color(app_id, window_identifier, options)
-                        .await;
-                    let _ = sender.send(result);
-                    Ok(()) as Result<(), crate::Error>
-                };
-
-                let request = Request::new(Arc::clone(&self.imp), handle_path, &self.cnx).await?;
-
-                let future2 = async {
-                    request.next().await?;
-                    Ok(()) as Result<(), crate::Error>
-                };
-
-                pin_mut!(future1); // 'select' requires Future + Unpin bounds
-                pin_mut!(future2);
-                match try_select(future1, future2).await {
-                    Ok(_) => Ok(()),
-                    Err(Either::Left((err, _))) => Err(err),
-                    Err(Either::Right((err, _))) => Err(err),
-                }?;
-            }
-        };
-        Ok(())
-    }
-
-    pub async fn try_next(&self) -> Result<(), crate::Error> {
-        if let Some(action) = (*self.receiver.lock().await).next().await {
-            self.activate(action).await?;
-        }
-        Ok(())
-    }
-}
-
-enum Action {
-    Screenshot(
-        OwnedObjectPath,
-        Option<AppID>,
-        Option<WindowIdentifierType>,
-        ScreenshotOptions,
-        oneshot::Sender<Response<ScreenshotResponse>>,
-    ),
-    PickColor(
-        OwnedObjectPath,
-        Option<AppID>,
-        Option<WindowIdentifierType>,
-        ColorOptions,
-        oneshot::Sender<Response<Color>>,
-    ),
-}
-
-struct ScreenshotInterface {
-    sender: Arc<Mutex<Sender<Action>>>,
-}
-
 impl ScreenshotInterface {
-    pub fn new(sender: Sender<Action>) -> Self {
+    pub fn new(imp: impl ScreenshotImpl + 'static, cnx: zbus::Connection) -> Self {
         Self {
-            sender: Arc::new(Mutex::new(sender)),
+            imp: Arc::new(Box::new(imp)),
+            cnx,
         }
     }
 }
 
 #[zbus::interface(name = "org.freedesktop.impl.portal.Screenshot")]
 impl ScreenshotInterface {
-    #[zbus(property, name = "version")]
+    #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
         2
     }
@@ -187,6 +77,7 @@ impl ScreenshotInterface {
     #[zbus(name = "Screenshot")]
     async fn screenshot(
         &self,
+        #[zbus(object_server)] server: &zbus::object_server::ObjectServer,
         handle: OwnedObjectPath,
         app_id: &str,
         window_identifier: &str,
@@ -194,24 +85,28 @@ impl ScreenshotInterface {
     ) -> Response<ScreenshotResponse> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Screenshot::Screenshot");
-        let (sender, receiver) = futures_channel::oneshot::channel();
 
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
 
-        let _ = self
-            .sender
-            .lock()
-            .await
-            .send(Action::Screenshot(
-                handle,
-                app_id,
-                window_identifier,
-                options,
-                sender,
-            ))
-            .await;
-        let response = receiver.await.unwrap_or(Response::cancelled());
+        let imp: Arc<Box<dyn ScreenshotImpl>> = Arc::clone(&self.imp);
+        let (fut, request_handle) =
+            abortable(async { imp.screenshot(app_id, window_identifier, options).await });
+
+        let imp_request = Arc::clone(&self.imp);
+        let close_cb = || {
+            tokio::spawn(async move {
+                RequestImpl::close(&**imp_request).await;
+            });
+        };
+        let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
+        server.at(&handle, request).await.unwrap();
+
+        let response = fut.await.unwrap_or(Response::cancelled());
+        #[cfg(feature = "tracing")]
+        tracing::debug!("Releasing request {:?}", handle.as_str());
+        server.remove::<Request, _>(&handle).await.unwrap();
+
         #[cfg(feature = "tracing")]
         tracing::debug!("Screenshot::Screenshot returned {:#?}", response);
         response
@@ -220,6 +115,7 @@ impl ScreenshotInterface {
     #[zbus(name = "PickColor")]
     async fn pick_color(
         &self,
+        #[zbus(object_server)] server: &zbus::object_server::ObjectServer,
         handle: OwnedObjectPath,
         app_id: &str,
         window_identifier: &str,
@@ -227,25 +123,27 @@ impl ScreenshotInterface {
     ) -> Response<Color> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Screenshot::PickColor");
-
-        let (sender, receiver) = futures_channel::oneshot::channel();
-
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
 
-        let _ = self
-            .sender
-            .lock()
-            .await
-            .send(Action::PickColor(
-                handle,
-                app_id,
-                window_identifier,
-                options,
-                sender,
-            ))
-            .await;
-        let response = receiver.await.unwrap_or(Response::cancelled());
+        let imp: Arc<Box<dyn ScreenshotImpl>> = Arc::clone(&self.imp);
+        let (fut, request_handle) =
+            abortable(async { imp.pick_color(app_id, window_identifier, options).await });
+
+        let imp_request = Arc::clone(&self.imp);
+        let close_cb = || {
+            tokio::spawn(async move {
+                RequestImpl::close(&**imp_request).await;
+            });
+        };
+        let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
+        server.at(&handle, request).await.unwrap();
+
+        let response = fut.await.unwrap_or(Response::cancelled());
+        #[cfg(feature = "tracing")]
+        tracing::debug!("Releasing request {:?}", handle.as_str());
+        server.remove::<Request, _>(&handle).await.unwrap();
+
         #[cfg(feature = "tracing")]
         tracing::debug!("Screenshot::PickColor returned {:#?}", response);
         response

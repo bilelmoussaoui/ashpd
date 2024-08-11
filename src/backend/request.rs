@@ -1,93 +1,59 @@
-use std::sync::Arc;
+use std::boxed::Box;
 
 use async_trait::async_trait;
-use futures_channel::{
-    mpsc::{UnboundedReceiver as Receiver, UnboundedSender as Sender},
-    oneshot,
-};
-use futures_util::{SinkExt, StreamExt};
+use futures_util::future::AbortHandle;
 use tokio::sync::Mutex;
 use zbus::zvariant::OwnedObjectPath;
 
 #[async_trait]
-pub trait RequestImpl {
+pub trait RequestImpl: Send + Sync {
     async fn close(&self);
 }
 
-pub(crate) struct Request<T: RequestImpl> {
-    receiver: Arc<Mutex<Receiver<Action>>>,
-    imp: Arc<T>,
+pub(crate) struct Request {
+    close_cb: Mutex<Option<Box<dyn FnOnce() + Send + Sync>>>,
+    handle_path: OwnedObjectPath,
+    request_handle: AbortHandle,
+    #[allow(dead_code)]
+    cnx: zbus::Connection,
 }
 
-impl<T: RequestImpl> Request<T> {
-    pub async fn new(
-        imp: Arc<T>,
+impl Request {
+    pub(crate) fn new(
+        close_cb: impl FnOnce() + Send + Sync + 'static,
         handle_path: OwnedObjectPath,
-        cnx: &zbus::Connection,
-    ) -> zbus::Result<Self> {
-        let (sender, receiver) = futures_channel::mpsc::unbounded();
-        let iface = RequestInterface::new(sender, handle_path.clone());
-        let object_server = cnx.object_server();
-
+        request_handle: AbortHandle,
+        cnx: zbus::Connection,
+    ) -> Self {
         #[cfg(feature = "tracing")]
         tracing::debug!(
             "Serving `org.freedesktop.impl.portal.Request` at {:?}",
             handle_path.as_str()
         );
-        object_server.at(handle_path, iface).await?;
-        let provider = Self {
-            receiver: Arc::new(Mutex::new(receiver)),
-            imp,
-        };
-
-        Ok(provider)
-    }
-
-    pub async fn next(&self) -> zbus::fdo::Result<()> {
-        let action = (*self.receiver.lock().await).next().await;
-        if let Some(Action::Close(sender)) = action {
-            self.imp.close().await;
-            let _ = sender.send(());
-        };
-
-        Ok(())
-    }
-}
-
-enum Action {
-    Close(oneshot::Sender<()>),
-}
-
-struct RequestInterface {
-    sender: Arc<Mutex<Sender<Action>>>,
-    handle_path: OwnedObjectPath,
-}
-
-impl RequestInterface {
-    pub fn new(sender: Sender<Action>, handle_path: OwnedObjectPath) -> Self {
         Self {
-            sender: Arc::new(Mutex::new(sender)),
+            close_cb: Mutex::new(Some(Box::new(close_cb))),
             handle_path,
+            request_handle,
+            cnx,
         }
     }
 }
 
 #[zbus::interface(name = "org.freedesktop.impl.portal.Request")]
-impl RequestInterface {
+impl Request {
     async fn close(
         &self,
         #[zbus(object_server)] server: &zbus::ObjectServer,
     ) -> zbus::fdo::Result<()> {
-        let (sender, receiver) = futures_channel::oneshot::channel();
-        let _ = self.sender.lock().await.send(Action::Close(sender)).await;
-        receiver.await.unwrap();
+        self.request_handle.abort();
+        if let Some(close_cb) = self.close_cb.lock().await.take() {
+            close_cb();
+        }
 
         // Drop the request as it served it purpose once closed
         #[cfg(feature = "tracing")]
         tracing::debug!("Releasing request {:?}", self.handle_path.as_str());
-        server
-            .remove::<Self, &OwnedObjectPath>(&self.handle_path)
-            .await?;
+        server.remove::<Self, _>(&self.handle_path).await?;
         Ok(())
     }
 }

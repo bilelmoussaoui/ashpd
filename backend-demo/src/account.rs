@@ -20,7 +20,7 @@ impl RequestImpl for Account {
 
 #[async_trait]
 impl AccountImpl for Account {
-    async fn get_information(
+    async fn get_user_information(
         &self,
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
