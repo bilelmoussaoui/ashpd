@@ -72,14 +72,26 @@ impl std::fmt::Debug for Setting {
 /// The system's preferred color scheme
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdColorScheme"))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum ColorScheme {
     /// No preference
+    #[default]
     NoPreference,
     /// Prefers dark appearance
     PreferDark,
     /// Prefers light appearance
     PreferLight,
+}
+
+impl From<ColorScheme> for OwnedValue {
+    fn from(value: ColorScheme) -> Self {
+        match value {
+            ColorScheme::PreferDark => 1,
+            ColorScheme::PreferLight => 2,
+            _ => 0,
+        }
+        .into()
+    }
 }
 
 impl TryFrom<OwnedValue> for ColorScheme {
@@ -105,12 +117,23 @@ impl TryFrom<Value<'_>> for ColorScheme {
 /// The system's preferred contrast level
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdContrast"))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Contrast {
     /// No preference
+    #[default]
     NoPreference,
     /// Higher contrast
     High,
+}
+
+impl From<Contrast> for OwnedValue {
+    fn from(value: Contrast) -> Self {
+        match value {
+            Contrast::High => 1,
+            _ => 0,
+        }
+        .into()
+    }
 }
 
 impl TryFrom<OwnedValue> for Contrast {
