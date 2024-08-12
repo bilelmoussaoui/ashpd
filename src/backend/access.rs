@@ -33,7 +33,7 @@ impl AccessOptions {
     }
 
     pub fn icon(&self) -> Option<Icon> {
-        self.icon.as_ref().map(|i| Icon::with_names(&[i]))
+        self.icon.as_ref().map(|i| Icon::with_names([i]))
     }
 
     pub fn choices(&self) -> &[Choice] {
@@ -92,6 +92,7 @@ impl AccessInterface {
         1 // TODO: Is this correct?
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn access_dialog(
         &self,
         handle: OwnedObjectPath,

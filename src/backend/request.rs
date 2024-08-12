@@ -34,7 +34,7 @@ impl Request {
     {
         #[cfg(feature = "tracing")]
         tracing::debug!("{_method}");
-        let (fut, abort_handle) = abortable(async { callback.await });
+        let (fut, abort_handle) = abortable(callback);
         let close_cb = || {
             tokio::spawn(async move {
                 RequestImpl::close(&*imp).await;

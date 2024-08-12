@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     backend::request::{Request, RequestImpl},
     desktop::request::Response,
-    zvariant::{self, DeserializeDict, OwnedObjectPath, SerializeDict},
+    zvariant::{self, DeserializeDict, OwnedObjectPath},
     ActivationToken, AppID, WindowIdentifierType,
 };
 
@@ -52,10 +52,7 @@ impl Options {
     }
 
     pub fn activation_token(&self) -> Option<&ActivationToken> {
-        match self.activation_token {
-            Some(ref t) => Some(t),
-            None => None,
-        }
+        self.activation_token.as_ref()
     }
 }
 
