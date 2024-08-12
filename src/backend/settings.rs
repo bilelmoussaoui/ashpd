@@ -85,6 +85,7 @@ impl SettingsInterface {
         2
     }
 
+    #[dbus_interface(out_args("value"))]
     async fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, Namespace> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::ReadAll");
@@ -96,6 +97,7 @@ impl SettingsInterface {
         response
     }
 
+    #[dbus_interface(out_args("value"))]
     async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::Read");

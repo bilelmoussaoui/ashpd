@@ -87,6 +87,7 @@ impl EmailInterface {
         4
     }
 
+    #[dbus_interface(out_args("response", "results"))]
     async fn compose_email(
         &self,
         handle: OwnedObjectPath,

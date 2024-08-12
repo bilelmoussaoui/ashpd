@@ -53,6 +53,7 @@ impl AccountInterface {
     }
 
     #[zbus(name = "GetUserInformation")]
+    #[dbus_interface(out_args("response", "results"))]
     async fn get_user_information(
         &self,
         handle: OwnedObjectPath,

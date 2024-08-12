@@ -93,6 +93,7 @@ impl AccessInterface {
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[dbus_interface(out_args("response", "results"))]
     async fn access_dialog(
         &self,
         handle: OwnedObjectPath,

@@ -64,6 +64,7 @@ impl WallpaperInterface {
     }
 
     #[zbus(name = "SetWallpaperURI")]
+    #[dbus_interface(out_args("response"))]
     async fn set_wallpaper_uri(
         &self,
         handle: OwnedObjectPath,
