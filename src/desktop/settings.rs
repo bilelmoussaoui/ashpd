@@ -155,7 +155,7 @@ impl TryFrom<Value<'_>> for Contrast {
     }
 }
 
-/// Apperance namespace
+/// Appearance namespace
 pub const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 /// Color scheme key
 pub const COLOR_SCHEME_KEY: &str = "color-scheme";
