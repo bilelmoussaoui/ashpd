@@ -2,9 +2,7 @@ use std::collections::HashMap;
 
 use ashpd::{
     backend::{request::RequestImpl, settings::SettingsImpl},
-    desktop::{
-        settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY},
-    },
+    desktop::settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY},
     zbus::zvariant::OwnedValue,
     PortalError,
 };
@@ -26,12 +24,12 @@ impl RequestImpl for Settings {
 impl SettingsImpl for Settings {
     async fn read_all(&self, _namespaces: Vec<String>) -> HashMap<String, Namespace> {
         let mut namespace_map = HashMap::new();
-        namespace_map.insert(COLOR_SCHEME_KEY.to_owned(), OwnedValue::from(self.color_scheme));
-        let mut map = HashMap::new();
-        map.insert(
-            APPEARANCE_NAMESPACE.to_owned(),
-            namespace_map,
+        namespace_map.insert(
+            COLOR_SCHEME_KEY.to_owned(),
+            OwnedValue::from(self.color_scheme),
         );
+        let mut map = HashMap::new();
+        map.insert(APPEARANCE_NAMESPACE.to_owned(), namespace_map);
         map
     }
 
