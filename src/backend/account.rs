@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use futures_util::future::abortable;
 
 use crate::{
     backend::request::{Request, RequestImpl},
@@ -56,39 +55,26 @@ impl AccountInterface {
     #[zbus(name = "GetUserInformation")]
     async fn get_user_information(
         &self,
-        #[zbus(object_server)] server: &zbus::object_server::ObjectServer,
         handle: OwnedObjectPath,
         app_id: &str,
         window_identifier: &str,
         options: UserInformationOptions,
     ) -> Response<UserInformation> {
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Account::GetUserInformation");
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
-
         let imp = Arc::clone(&self.imp);
-        let (fut, request_handle) = abortable(async {
-            imp.get_user_information(app_id, window_identifier, options)
-                .await
-        });
 
-        let imp = Arc::clone(&self.imp);
-        let close_cb = || {
-            tokio::spawn(async move {
-                RequestImpl::close(&*imp).await;
-            });
-        };
-        let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
-        server.at(&handle, request).await.unwrap();
-
-        let response = fut.await.unwrap_or(Response::cancelled());
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Releasing request {:?}", handle.as_str());
-        server.remove::<Request, _>(&handle).await.unwrap();
-
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Account::GetUserInformation returned {:#?}", response);
-        response
+        Request::spawn(
+            "Account::GetUserInformation",
+            &self.cnx,
+            handle,
+            Arc::clone(&self.imp),
+            async move {
+                imp.get_user_information(app_id, window_identifier, options)
+                    .await
+            },
+        )
+        .await
+        .unwrap_or(Response::other())
     }
 }

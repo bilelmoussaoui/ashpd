@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use futures_util::future::abortable;
 
 use crate::{
     backend::request::{Request, RequestImpl},
@@ -77,75 +76,46 @@ impl ScreenshotInterface {
     #[zbus(name = "Screenshot")]
     async fn screenshot(
         &self,
-        #[zbus(object_server)] server: &zbus::object_server::ObjectServer,
         handle: OwnedObjectPath,
         app_id: &str,
         window_identifier: &str,
         options: ScreenshotOptions,
     ) -> Response<ScreenshotResponse> {
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Screenshot::Screenshot");
-
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
-
         let imp = Arc::clone(&self.imp);
-        let (fut, request_handle) =
-            abortable(async { imp.screenshot(app_id, window_identifier, options).await });
 
-        let imp = Arc::clone(&self.imp);
-        let close_cb = || {
-            tokio::spawn(async move {
-                RequestImpl::close(&*imp).await;
-            });
-        };
-        let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
-        server.at(&handle, request).await.unwrap();
-
-        let response = fut.await.unwrap_or(Response::cancelled());
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Releasing request {:?}", handle.as_str());
-        server.remove::<Request, _>(&handle).await.unwrap();
-
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Screenshot::Screenshot returned {:#?}", response);
-        response
+        Request::spawn(
+            "Screenshot::Screenshot",
+            &self.cnx,
+            handle,
+            Arc::clone(&self.imp),
+            async move { imp.screenshot(app_id, window_identifier, options).await },
+        )
+        .await
+        .unwrap_or(Response::other())
     }
 
     #[zbus(name = "PickColor")]
     async fn pick_color(
         &self,
-        #[zbus(object_server)] server: &zbus::object_server::ObjectServer,
         handle: OwnedObjectPath,
         app_id: &str,
         window_identifier: &str,
         options: ColorOptions,
     ) -> Response<Color> {
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Screenshot::PickColor");
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
-
         let imp = Arc::clone(&self.imp);
-        let (fut, request_handle) =
-            abortable(async { imp.pick_color(app_id, window_identifier, options).await });
 
-        let imp = Arc::clone(&self.imp);
-        let close_cb = || {
-            tokio::spawn(async move {
-                RequestImpl::close(&*imp).await;
-            });
-        };
-        let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
-        server.at(&handle, request).await.unwrap();
-
-        let response = fut.await.unwrap_or(Response::cancelled());
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Releasing request {:?}", handle.as_str());
-        server.remove::<Request, _>(&handle).await.unwrap();
-
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Screenshot::PickColor returned {:#?}", response);
-        response
+        Request::spawn(
+            "Screenshot::PickColor",
+            &self.cnx,
+            handle,
+            Arc::clone(&self.imp),
+            async move { imp.pick_color(app_id, window_identifier, options).await },
+        )
+        .await
+        .unwrap_or(Response::other())
     }
 }

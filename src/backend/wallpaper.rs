@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use futures_util::future::abortable;
 
 use crate::{
     backend::request::{Request, RequestImpl},
@@ -67,38 +66,25 @@ impl WallpaperInterface {
     #[zbus(name = "SetWallpaperURI")]
     async fn set_wallpaper_uri(
         &self,
-        #[zbus(object_server)] server: &zbus::object_server::ObjectServer,
         handle: OwnedObjectPath,
         app_id: &str,
         window_identifier: &str,
         uri: url::Url,
         options: WallpaperOptions,
     ) -> ResponseType {
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Wallpaper::SetWallpaperURI");
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
-
         let imp = Arc::clone(&self.imp);
-        let (fut, request_handle) =
-            abortable(async { imp.with_uri(app_id, window_identifier, uri, options).await });
 
-        let imp = Arc::clone(&self.imp);
-        let close_cb = || {
-            tokio::spawn(async move {
-                RequestImpl::close(&*imp).await;
-            });
-        };
-        let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
-        server.at(&handle, request).await.unwrap();
-
-        let response = fut.await.unwrap_or(Response::cancelled()).response_type();
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Releasing request {:?}", handle.as_str());
-        server.remove::<Request, _>(&handle).await.unwrap();
-
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Wallpaper::SetWallpaperURI returned {:#?}", response);
-        response
+        Request::spawn(
+            "Wallpaper::SetWallpaperURI",
+            &self.cnx,
+            handle,
+            Arc::clone(&self.imp),
+            async move { imp.with_uri(app_id, window_identifier, uri, options).await },
+        )
+        .await
+        .unwrap_or(Response::other())
+        .response_type()
     }
 }

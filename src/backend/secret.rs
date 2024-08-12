@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use futures_util::future::abortable;
 use zbus::zvariant::{self, OwnedValue};
 
 use crate::{
@@ -43,34 +42,21 @@ impl SecretInterface {
     #[dbus_interface(out_args("response", "results"))]
     async fn retrieve_secret(
         &self,
-        #[zbus(object_server)] server: &zbus::object_server::ObjectServer,
         handle: zvariant::OwnedObjectPath,
         app_id: AppID,
         fd: zvariant::OwnedFd,
         _options: HashMap<String, OwnedValue>,
     ) -> Response<HashMap<String, OwnedValue>> {
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Secret::RetrieveSecret");
-
         let imp = Arc::clone(&self.imp);
-        let (fut, request_handle) = abortable(async { imp.retrieve(app_id, fd).await });
 
-        let imp = Arc::clone(&self.imp);
-        let close_cb = || {
-            tokio::spawn(async move {
-                RequestImpl::close(&*imp).await;
-            });
-        };
-        let request = Request::new(close_cb, handle.clone(), request_handle, self.cnx.clone());
-        server.at(&handle, request).await.unwrap();
-
-        let response = fut.await.unwrap_or(Response::cancelled());
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Releasing request {:?}", handle.as_str());
-        server.remove::<Request, _>(&handle).await.unwrap();
-
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Secret::RetrieveSecret returned {:#?}", response);
-        response
+        Request::spawn(
+            "Secret::RetrieveSecret",
+            &self.cnx,
+            handle,
+            Arc::clone(&self.imp),
+            async move { imp.retrieve(app_id, fd).await },
+        )
+        .await
+        .unwrap_or(Response::other())
     }
 }
