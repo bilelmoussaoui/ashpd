@@ -1,7 +1,7 @@
 //! Interact with the clipboard.
 //!
 //! The portal is mostly meant to be used along with
-//! [`RemoteDesktop`](crate::desktop::remote_desktop::RemoteDesktop)
+//! [`RemoteDesktop`]
 
 use std::collections::HashMap;
 
