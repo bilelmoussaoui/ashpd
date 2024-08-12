@@ -61,6 +61,7 @@ pub struct UserInformation {
 
 impl UserInformation {
     #[cfg(feature = "backend")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
     /// Retrieve current user information by using the
     /// `org.freedesktop.Accounts` interfaces.
     pub async fn current_user() -> Result<Self, Error> {
@@ -82,6 +83,7 @@ impl UserInformation {
     }
 
     #[cfg(feature = "backend")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
     /// Create a new instance of [`UserInformation`].
     pub fn new(id: &str, name: &str, image: url::Url) -> Self {
         Self {

@@ -30,6 +30,7 @@ pub enum Response<T> {
 }
 
 #[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 impl<T> Response<T> {
     /// The corresponding response type.
     pub fn response_type(self) -> ResponseType {

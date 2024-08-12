@@ -32,8 +32,10 @@ pub use self::file_path::FilePath;
 mod proxy;
 
 #[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 pub use self::window_identifier::WindowIdentifierType;
 #[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 #[allow(missing_docs)]
 /// Build your custom portals backend.
 pub mod backend;

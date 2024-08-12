@@ -14,6 +14,13 @@ impl AppID {
         feature = "backend",
         any(feature = "gtk4_x11", feature = "gtk4_wayland")
     ))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(
+            feature = "backend",
+            any(feature = "gtk4_x11", feature = "gtk4_wayland")
+        )))
+    )]
     /// Retrieves the associated `gio::DesktopAppInfo` if found
     pub fn app_info(&self) -> Option<gtk4::gio::DesktopAppInfo> {
         let desktop_file = format!("{}.desktop", self.0);
