@@ -614,7 +614,7 @@ impl PrintOptions {
     }
 }
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(DeserializeDict, SerializeDict, Type, Debug)]
 /// A response to a [`PrintProxy::prepare_print`] request.
 #[zvariant(signature = "dict")]
 pub struct PreparePrint {
