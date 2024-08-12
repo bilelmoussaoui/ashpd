@@ -1,5 +1,6 @@
 pub mod access;
 pub mod account;
+pub mod email;
 pub mod lockdown;
 pub mod request;
 pub mod screenshot;
