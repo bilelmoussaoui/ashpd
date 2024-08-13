@@ -45,6 +45,9 @@ pub mod flatpak;
 mod helpers;
 use std::sync::OnceLock;
 
+#[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+pub use async_trait;
 pub use enumflags2;
 pub use url;
 pub use zbus::{self, zvariant};
