@@ -14,7 +14,7 @@ pub trait SecretImpl: RequestImpl {
     async fn retrieve(
         &self,
         app_id: AppID,
-        fd: zvariant::OwnedFd,
+        fd: std::os::fd::OwnedFd,
     ) -> Response<HashMap<String, OwnedValue>>;
 }
 
@@ -54,7 +54,7 @@ impl SecretInterface {
             &self.cnx,
             handle,
             Arc::clone(&self.imp),
-            async move { imp.retrieve(app_id, fd).await },
+            async move { imp.retrieve(app_id, std::os::fd::OwnedFd::from(fd)).await },
         )
         .await
         .unwrap_or(Response::other())
