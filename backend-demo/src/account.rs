@@ -18,6 +18,42 @@ impl RequestImpl for Account {
     }
 }
 
+mod fdo_account {
+    #[zbus::proxy(
+        default_service = "org.freedesktop.Accounts",
+        interface = "org.freedesktop.Accounts.User",
+        gen_blocking = false
+    )]
+    trait Accounts {
+        #[zbus(property, name = "IconFile")]
+        fn icon_file(&self) -> zbus::Result<String>;
+        #[zbus(property, name = "UserName")]
+        fn user_name(&self) -> zbus::Result<String>;
+        #[zbus(property, name = "RealName")]
+        fn real_name(&self) -> zbus::Result<String>;
+    }
+}
+
+/// Retrieve current user information by using the
+/// `org.freedesktop.Accounts` interfaces.
+pub async fn current_user() -> ashpd::Result<UserInformation> {
+    let cnx = zbus::Connection::system().await?;
+    let uid = nix::unistd::Uid::current().as_raw();
+    let path = format!("/org/freedesktop/Accounts/User{}", uid);
+    let proxy = fdo_account::AccountsProxy::builder(&cnx)
+        .path(path)?
+        .build()
+        .await?;
+
+    let uri = format!("file://{}", proxy.icon_file().await?);
+
+    Ok(UserInformation::new(
+        &proxy.user_name().await?,
+        &proxy.real_name().await?,
+        url::Url::parse(&uri)?,
+    ))
+}
+
 #[async_trait]
 impl AccountImpl for Account {
     async fn get_user_information(
@@ -26,7 +62,7 @@ impl AccountImpl for Account {
         _window_identifier: Option<WindowIdentifierType>,
         _options: UserInformationOptions,
     ) -> Response<UserInformation> {
-        match UserInformation::current_user().await {
+        match current_user().await {
             Ok(info) => Response::ok(info),
             Err(err) => {
                 tracing::error!("Failed to get user info: {err}");
