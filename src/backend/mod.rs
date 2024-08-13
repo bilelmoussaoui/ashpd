@@ -57,6 +57,7 @@ pub mod access;
 pub mod account;
 pub mod email;
 pub mod lockdown;
+pub mod permission_store;
 pub mod print;
 pub mod request;
 pub mod screenshot;
