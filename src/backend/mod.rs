@@ -55,6 +55,7 @@ impl<'de> Deserialize<'de> for MaybeAppID {
 
 pub mod access;
 pub mod account;
+pub mod app_chooser;
 pub mod background;
 pub mod email;
 pub mod lockdown;

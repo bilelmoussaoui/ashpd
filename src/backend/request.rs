@@ -3,7 +3,7 @@ use std::{boxed::Box, future::Future, sync::Arc};
 use async_trait::async_trait;
 use futures_util::future::{abortable, AbortHandle};
 use tokio::sync::Mutex;
-use zbus::zvariant::OwnedObjectPath;
+use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
 use crate::desktop::Response;
 
@@ -12,7 +12,7 @@ pub trait RequestImpl: Send + Sync {
     async fn close(&self);
 }
 
-pub(crate) struct Request {
+pub struct Request {
     close_cb: Mutex<Option<Box<dyn FnOnce() + Send + Sync>>>,
     path: OwnedObjectPath,
     abort_handle: AbortHandle,
@@ -21,6 +21,10 @@ pub(crate) struct Request {
 }
 
 impl Request {
+    pub fn path(&self) -> ObjectPath<'_> {
+        self.path.as_ref()
+    }
+
     pub(crate) async fn spawn<T, R>(
         _method: &'static str,
         cnx: &zbus::Connection,
@@ -75,6 +79,13 @@ impl Request {
         }
     }
 }
+
+impl PartialEq for Request {
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path
+    }
+}
+impl Eq for Request {}
 
 #[zbus::interface(name = "org.freedesktop.impl.portal.Request")]
 impl Request {
