@@ -17,7 +17,10 @@ use crate::{
 
 #[async_trait]
 pub trait SettingsImpl: Send + Sync {
-    async fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, Namespace>;
+    async fn read_all(
+        &self,
+        namespaces: Vec<String>,
+    ) -> Result<HashMap<String, Namespace>, PortalError>;
 
     async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError>;
 }
@@ -86,7 +89,10 @@ impl SettingsInterface {
     }
 
     #[dbus_interface(out_args("value"))]
-    async fn read_all(&self, namespaces: Vec<String>) -> HashMap<String, Namespace> {
+    async fn read_all(
+        &self,
+        namespaces: Vec<String>,
+    ) -> Result<HashMap<String, Namespace>, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::ReadAll");
 

@@ -1,3 +1,5 @@
+pub type Result<T> = std::result::Result<T, crate::error::PortalError>;
+
 pub mod access;
 pub mod account;
 pub mod email;

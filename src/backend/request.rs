@@ -26,8 +26,8 @@ impl Request {
         cnx: &zbus::Connection,
         path: OwnedObjectPath,
         imp: Arc<R>,
-        callback: impl Future<Output = Response<T>>,
-    ) -> zbus::Result<Response<T>>
+        callback: impl Future<Output = crate::backend::Result<T>>,
+    ) -> crate::backend::Result<Response<T>>
     where
         R: RequestImpl + 'static + ?Sized,
         T: std::fmt::Debug,
@@ -49,7 +49,10 @@ impl Request {
         );
         server.at(&path, request).await?;
 
-        let response = fut.await.unwrap_or(Response::cancelled());
+        let response = match fut.await {
+            Err(_) => Response::cancelled(),
+            Ok(response) => Response::ok(response?),
+        };
         #[cfg(feature = "tracing")]
         tracing::debug!("{_method} returned {:#?}", response);
         #[cfg(feature = "tracing")]

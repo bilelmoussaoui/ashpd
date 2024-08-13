@@ -2,8 +2,8 @@ use ashpd::{
     backend::{
         request::RequestImpl,
         wallpaper::{WallpaperImpl, WallpaperOptions},
+        Result,
     },
-    desktop::Response,
     AppID, WindowIdentifierType,
 };
 use async_trait::async_trait;
@@ -26,7 +26,7 @@ impl WallpaperImpl for Wallpaper {
         _window_identifier: Option<WindowIdentifierType>,
         _uri: url::Url,
         _options: WallpaperOptions,
-    ) -> Response<()> {
-        Response::ok(())
+    ) -> Result<()> {
+        Ok(())
     }
 }

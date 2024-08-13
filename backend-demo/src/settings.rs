@@ -22,7 +22,10 @@ impl RequestImpl for Settings {
 
 #[async_trait]
 impl SettingsImpl for Settings {
-    async fn read_all(&self, _namespaces: Vec<String>) -> HashMap<String, Namespace> {
+    async fn read_all(
+        &self,
+        _namespaces: Vec<String>,
+    ) -> Result<HashMap<String, Namespace>, PortalError> {
         let mut namespace_map = HashMap::new();
         namespace_map.insert(
             COLOR_SCHEME_KEY.to_owned(),
@@ -30,7 +33,7 @@ impl SettingsImpl for Settings {
         );
         let mut map = HashMap::new();
         map.insert(APPEARANCE_NAMESPACE.to_owned(), namespace_map);
-        map
+        Ok(map)
     }
 
     async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError> {

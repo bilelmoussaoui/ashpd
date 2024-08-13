@@ -2,8 +2,9 @@ use ashpd::{
     backend::{
         request::RequestImpl,
         screenshot::{ColorOptions, ScreenshotImpl, ScreenshotOptions},
+        Result,
     },
-    desktop::{screenshot::Screenshot as ScreenshotResponse, Color, Response},
+    desktop::{screenshot::Screenshot as ScreenshotResponse, Color},
     AppID, WindowIdentifierType,
 };
 use async_trait::async_trait;
@@ -25,8 +26,8 @@ impl ScreenshotImpl for Screenshot {
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ScreenshotOptions,
-    ) -> Response<ScreenshotResponse> {
-        Response::ok(ScreenshotResponse::new(
+    ) -> Result<ScreenshotResponse> {
+        Ok(ScreenshotResponse::new(
             url::Url::parse("file:///some/sreenshot").unwrap(),
         ))
     }
@@ -36,7 +37,7 @@ impl ScreenshotImpl for Screenshot {
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ColorOptions,
-    ) -> Response<Color> {
-        Response::ok(Color::new(1.0, 1.0, 1.0))
+    ) -> Result<Color> {
+        Ok(Color::new(1.0, 1.0, 1.0))
     }
 }

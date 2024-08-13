@@ -4,7 +4,10 @@ use async_trait::async_trait;
 use zbus::zvariant::{self, OwnedValue};
 
 use crate::{
-    backend::request::{Request, RequestImpl},
+    backend::{
+        request::{Request, RequestImpl},
+        Result,
+    },
     desktop::Response,
     AppID,
 };
@@ -15,7 +18,7 @@ pub trait SecretImpl: RequestImpl {
         &self,
         app_id: AppID,
         fd: std::os::fd::OwnedFd,
-    ) -> Response<HashMap<String, OwnedValue>>;
+    ) -> Result<HashMap<String, OwnedValue>>;
 }
 
 pub struct SecretInterface {
@@ -46,7 +49,7 @@ impl SecretInterface {
         app_id: AppID,
         fd: zvariant::OwnedFd,
         _options: HashMap<String, OwnedValue>,
-    ) -> Response<HashMap<String, OwnedValue>> {
+    ) -> Result<Response<HashMap<String, OwnedValue>>> {
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -57,6 +60,5 @@ impl SecretInterface {
             async move { imp.retrieve(app_id, std::os::fd::OwnedFd::from(fd)).await },
         )
         .await
-        .unwrap_or(Response::other())
     }
 }

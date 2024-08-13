@@ -3,7 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    backend::request::{Request, RequestImpl},
+    backend::{
+        request::{Request, RequestImpl},
+        Result,
+    },
     desktop::{request::Response, screenshot::Screenshot as ScreenshotResponse, Color},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
@@ -42,14 +45,14 @@ pub trait ScreenshotImpl: RequestImpl {
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ScreenshotOptions,
-    ) -> Response<ScreenshotResponse>;
+    ) -> Result<ScreenshotResponse>;
 
     async fn pick_color(
         &self,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ColorOptions,
-    ) -> Response<Color>;
+    ) -> Result<Color>;
 }
 
 pub struct ScreenshotInterface {
@@ -81,7 +84,7 @@ impl ScreenshotInterface {
         app_id: &str,
         window_identifier: &str,
         options: ScreenshotOptions,
-    ) -> Response<ScreenshotResponse> {
+    ) -> Result<Response<ScreenshotResponse>> {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -94,7 +97,6 @@ impl ScreenshotInterface {
             async move { imp.screenshot(app_id, window_identifier, options).await },
         )
         .await
-        .unwrap_or(Response::other())
     }
 
     #[zbus(name = "PickColor")]
@@ -105,7 +107,7 @@ impl ScreenshotInterface {
         app_id: &str,
         window_identifier: &str,
         options: ColorOptions,
-    ) -> Response<Color> {
+    ) -> Result<Response<Color>> {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -118,6 +120,5 @@ impl ScreenshotInterface {
             async move { imp.pick_color(app_id, window_identifier, options).await },
         )
         .await
-        .unwrap_or(Response::other())
     }
 }

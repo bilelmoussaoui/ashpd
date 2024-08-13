@@ -3,11 +3,11 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    backend::request::{Request, RequestImpl},
-    desktop::{
-        request::{Response, ResponseType},
-        wallpaper::SetOn,
+    backend::{
+        request::{Request, RequestImpl},
+        Result,
     },
+    desktop::{request::ResponseType, wallpaper::SetOn},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
 };
@@ -39,7 +39,7 @@ pub trait WallpaperImpl: RequestImpl {
         window_identifier: Option<WindowIdentifierType>,
         uri: url::Url,
         options: WallpaperOptions,
-    ) -> Response<()>;
+    ) -> Result<()>;
 }
 
 pub struct WallpaperInterface {
@@ -72,7 +72,7 @@ impl WallpaperInterface {
         window_identifier: &str,
         uri: url::Url,
         options: WallpaperOptions,
-    ) -> ResponseType {
+    ) -> Result<ResponseType> {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -85,7 +85,6 @@ impl WallpaperInterface {
             async move { imp.with_uri(app_id, window_identifier, uri, options).await },
         )
         .await
-        .unwrap_or(Response::other())
-        .response_type()
+        .map(|r| r.response_type())
     }
 }

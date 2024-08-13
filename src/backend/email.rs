@@ -3,7 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    backend::request::{Request, RequestImpl},
+    backend::{
+        request::{Request, RequestImpl},
+        Result,
+    },
     desktop::request::Response,
     zvariant::{self, DeserializeDict, OwnedObjectPath},
     ActivationToken, AppID, WindowIdentifierType,
@@ -63,7 +66,7 @@ pub trait EmailImpl: RequestImpl {
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: Options,
-    ) -> Response<()>;
+    ) -> Result<()>;
 }
 
 pub struct EmailInterface {
@@ -94,7 +97,7 @@ impl EmailInterface {
         app_id: &str,
         parent_window: &str,
         options: Options,
-    ) -> Response<()> {
+    ) -> Result<Response<()>> {
         let window_identifier = WindowIdentifierType::from_maybe_str(parent_window);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -107,6 +110,5 @@ impl EmailInterface {
             async move { imp.compose(app_id, window_identifier, options).await },
         )
         .await
-        .unwrap_or(Response::other())
     }
 }

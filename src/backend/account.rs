@@ -3,7 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    backend::request::{Request, RequestImpl},
+    backend::{
+        request::{Request, RequestImpl},
+        Result,
+    },
     desktop::{account::UserInformation, request::Response},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
@@ -28,7 +31,7 @@ pub trait AccountImpl: RequestImpl {
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: UserInformationOptions,
-    ) -> Response<UserInformation>;
+    ) -> Result<UserInformation>;
 }
 
 pub struct AccountInterface {
@@ -60,7 +63,7 @@ impl AccountInterface {
         app_id: &str,
         window_identifier: &str,
         options: UserInformationOptions,
-    ) -> Response<UserInformation> {
+    ) -> Result<Response<UserInformation>> {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -76,6 +79,5 @@ impl AccountInterface {
             },
         )
         .await
-        .unwrap_or(Response::other())
     }
 }

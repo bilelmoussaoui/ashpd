@@ -3,7 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    backend::request::{Request, RequestImpl},
+    backend::{
+        request::{Request, RequestImpl},
+        Result,
+    },
     desktop::{file_chooser::Choice, request::Response, Icon},
     zvariant::{self, DeserializeDict, OwnedObjectPath, SerializeDict},
     AppID, WindowIdentifierType,
@@ -68,7 +71,7 @@ pub trait AccessImpl: RequestImpl {
         subtitle: String,
         body: String,
         options: AccessOptions,
-    ) -> Response<AccessResponse>;
+    ) -> Result<AccessResponse>;
 }
 
 pub struct AccessInterface {
@@ -103,7 +106,7 @@ impl AccessInterface {
         subtitle: String,
         body: String,
         options: AccessOptions,
-    ) -> Response<AccessResponse> {
+    ) -> Result<Response<AccessResponse>> {
         let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -119,6 +122,5 @@ impl AccessInterface {
             },
         )
         .await
-        .unwrap_or(Response::other())
     }
 }

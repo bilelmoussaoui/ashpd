@@ -5,25 +5,28 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait LockdownImpl: Send + Sync {
     async fn disable_printing(&self) -> bool;
-    async fn set_disable_printing(&self, disable_printing: bool);
+    async fn set_disable_printing(&self, disable_printing: bool) -> zbus::Result<()>;
 
     async fn disable_save_to_disk(&self) -> bool;
-    async fn set_disable_save_to_disk(&self, disable_save_to_disk: bool);
+    async fn set_disable_save_to_disk(&self, disable_save_to_disk: bool) -> zbus::Result<()>;
 
     async fn disable_application_handlers(&self) -> bool;
-    async fn set_disable_application_handlers(&self, disable_application_handlers: bool);
+    async fn set_disable_application_handlers(
+        &self,
+        disable_application_handlers: bool,
+    ) -> zbus::Result<()>;
 
     async fn disable_location(&self) -> bool;
-    async fn set_disable_location(&self, disable_location: bool);
+    async fn set_disable_location(&self, disable_location: bool) -> zbus::Result<()>;
 
     async fn disable_camera(&self) -> bool;
-    async fn set_disable_camera(&self, disable_camera: bool);
+    async fn set_disable_camera(&self, disable_camera: bool) -> zbus::Result<()>;
 
     async fn disable_microphone(&self) -> bool;
-    async fn set_disable_microphone(&self, disable_microphone: bool);
+    async fn set_disable_microphone(&self, disable_microphone: bool) -> zbus::Result<()>;
 
     async fn disable_sound_output(&self) -> bool;
-    async fn set_disable_sound_output(&self, disable_sound_output: bool);
+    async fn set_disable_sound_output(&self, disable_sound_output: bool) -> zbus::Result<()>;
 }
 
 pub struct LockdownInterface {
@@ -61,7 +64,7 @@ impl LockdownInterface {
             .await?;
         let ctxt = iface_ref.signal_context();
 
-        self.imp.set_disable_printing(disable_printing).await;
+        self.imp.set_disable_printing(disable_printing).await?;
         self.disable_printing_changed(ctxt).await?;
         Ok(())
     }
@@ -81,7 +84,7 @@ impl LockdownInterface {
 
         self.imp
             .set_disable_save_to_disk(disable_save_to_disk)
-            .await;
+            .await?;
         self.disable_save_to_disk_changed(ctxt).await?;
         Ok(())
     }
@@ -104,7 +107,7 @@ impl LockdownInterface {
 
         self.imp
             .set_disable_application_handlers(disable_application_handlers)
-            .await;
+            .await?;
         self.disable_application_handlers_changed(ctxt).await?;
         Ok(())
     }
@@ -122,7 +125,7 @@ impl LockdownInterface {
             .await?;
         let ctxt = iface_ref.signal_context();
 
-        self.imp.set_disable_location(disable_location).await;
+        self.imp.set_disable_location(disable_location).await?;
         self.disable_location_changed(ctxt).await?;
         Ok(())
     }
@@ -140,7 +143,7 @@ impl LockdownInterface {
             .await?;
         let ctxt = iface_ref.signal_context();
 
-        self.imp.set_disable_camera(disable_camera).await;
+        self.imp.set_disable_camera(disable_camera).await?;
         self.disable_camera_changed(ctxt).await?;
         Ok(())
     }
@@ -158,7 +161,7 @@ impl LockdownInterface {
             .await?;
         let ctxt = iface_ref.signal_context();
 
-        self.imp.set_disable_microphone(disable_microphone).await;
+        self.imp.set_disable_microphone(disable_microphone).await?;
         self.disable_microphone_changed(ctxt).await?;
         Ok(())
     }
@@ -178,7 +181,7 @@ impl LockdownInterface {
 
         self.imp
             .set_disable_sound_output(disable_sound_output)
-            .await;
+            .await?;
         self.disable_sound_output_changed(ctxt).await?;
         Ok(())
     }

@@ -3,7 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    backend::request::{Request, RequestImpl},
+    backend::{
+        request::{Request, RequestImpl},
+        Result,
+    },
     desktop::{
         print::{PageSetup, PreparePrint, Settings},
         request::Response,
@@ -56,7 +59,7 @@ pub trait PrintImpl: RequestImpl {
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
-    ) -> Response<PreparePrint>;
+    ) -> Result<PreparePrint>;
 
     async fn print(
         &self,
@@ -65,7 +68,7 @@ pub trait PrintImpl: RequestImpl {
         title: String,
         fd: zvariant::OwnedFd,
         options: PrintOptions,
-    ) -> Response<()>;
+    ) -> Result<()>;
 }
 
 pub struct PrintInterface {
@@ -100,7 +103,7 @@ impl PrintInterface {
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
-    ) -> Response<PreparePrint> {
+    ) -> Result<Response<PreparePrint>> {
         let window_identifier = WindowIdentifierType::from_maybe_str(parent_window);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -123,7 +126,6 @@ impl PrintInterface {
             },
         )
         .await
-        .unwrap_or(Response::other())
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -136,7 +138,7 @@ impl PrintInterface {
         title: String,
         fd: zvariant::OwnedFd,
         options: PrintOptions,
-    ) -> Response<()> {
+    ) -> Result<Response<()>> {
         let window_identifier = WindowIdentifierType::from_maybe_str(parent_window);
         let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
@@ -152,6 +154,5 @@ impl PrintInterface {
             },
         )
         .await
-        .unwrap_or(Response::other())
     }
 }

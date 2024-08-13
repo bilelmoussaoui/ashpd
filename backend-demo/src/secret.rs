@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
 use ashpd::{
-    backend::{request::RequestImpl, secret::SecretImpl},
-    desktop::Response,
+    backend::{request::RequestImpl, secret::SecretImpl, Result},
     zbus::zvariant::OwnedValue,
     AppID,
 };
@@ -24,7 +23,7 @@ impl SecretImpl for Secret {
         &self,
         _app_id: AppID,
         _fd: std::os::fd::OwnedFd,
-    ) -> Response<HashMap<String, OwnedValue>> {
-        Response::Ok(Default::default())
+    ) -> Result<HashMap<String, OwnedValue>> {
+        Ok(Default::default())
     }
 }

@@ -2,8 +2,9 @@ use ashpd::{
     backend::{
         account::{AccountImpl, UserInformationOptions},
         request::RequestImpl,
+        Result,
     },
-    desktop::{account::UserInformation, Response},
+    desktop::account::UserInformation,
     AppID, WindowIdentifierType,
 };
 use async_trait::async_trait;
@@ -34,26 +35,6 @@ mod fdo_account {
     }
 }
 
-/// Retrieve current user information by using the
-/// `org.freedesktop.Accounts` interfaces.
-pub async fn current_user() -> ashpd::Result<UserInformation> {
-    let cnx = zbus::Connection::system().await?;
-    let uid = nix::unistd::Uid::current().as_raw();
-    let path = format!("/org/freedesktop/Accounts/User{}", uid);
-    let proxy = fdo_account::AccountsProxy::builder(&cnx)
-        .path(path)?
-        .build()
-        .await?;
-
-    let uri = format!("file://{}", proxy.icon_file().await?);
-
-    Ok(UserInformation::new(
-        &proxy.user_name().await?,
-        &proxy.real_name().await?,
-        url::Url::parse(&uri)?,
-    ))
-}
-
 #[async_trait]
 impl AccountImpl for Account {
     async fn get_user_information(
@@ -61,13 +42,27 @@ impl AccountImpl for Account {
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: UserInformationOptions,
-    ) -> Response<UserInformation> {
-        match current_user().await {
-            Ok(info) => Response::ok(info),
-            Err(err) => {
-                tracing::error!("Failed to get user info: {err}");
-                Response::other()
-            }
-        }
+    ) -> Result<UserInformation> {
+        // Retrieve current user information by using the
+        // `org.freedesktop.Accounts` interfaces.
+        let cnx = zbus::Connection::system().await?;
+        let uid = nix::unistd::Uid::current().as_raw();
+        let path = format!("/org/freedesktop/Accounts/User{}", uid);
+        let proxy = fdo_account::AccountsProxy::builder(&cnx)
+            .path(path)?
+            .build()
+            .await?;
+
+        let uri = format!("file://{}", proxy.icon_file().await?);
+
+        Ok(UserInformation::new(
+            &proxy.user_name().await?,
+            &proxy.real_name().await?,
+            url::Url::parse(&uri).map_err(|e| {
+                ashpd::PortalError::Failed(format!(
+                    "Failed to parse user avatar uri from `{uri}` with {e}"
+                ))
+            })?,
+        ))
     }
 }
