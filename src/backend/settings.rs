@@ -38,13 +38,16 @@ impl SettingsInterface {
         }
     }
 
-    pub async fn contrast_changed(&self, contrast: Contrast) -> zbus::Result<()> {
+    pub async fn changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
         let object_server = self.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        Self::setting_changed(
-            iface_ref.signal_context(),
+        Self::setting_changed(iface_ref.signal_context(), namespace, key, value).await
+    }
+
+    pub async fn contrast_changed(&self, contrast: Contrast) -> zbus::Result<()> {
+        self.changed(
             APPEARANCE_NAMESPACE,
             CONTRAST_KEY,
             OwnedValue::from(contrast).into(),
@@ -53,12 +56,7 @@ impl SettingsInterface {
     }
 
     pub async fn accent_color_changed(&self, color: Color) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
-        let iface_ref = object_server
-            .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
-            .await?;
-        Self::setting_changed(
-            iface_ref.signal_context(),
+        self.changed(
             APPEARANCE_NAMESPACE,
             ACCENT_COLOR_SCHEME_KEY,
             OwnedValue::try_from(color).unwrap().into(),
@@ -67,12 +65,7 @@ impl SettingsInterface {
     }
 
     pub async fn color_scheme_changed(&self, scheme: ColorScheme) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
-        let iface_ref = object_server
-            .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
-            .await?;
-        Self::setting_changed(
-            iface_ref.signal_context(),
+        self.changed(
             APPEARANCE_NAMESPACE,
             COLOR_SCHEME_KEY,
             OwnedValue::from(scheme).into(),
