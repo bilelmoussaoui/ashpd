@@ -58,6 +58,7 @@ pub mod account;
 pub mod app_chooser;
 pub mod background;
 pub mod email;
+pub mod file_chooser;
 pub mod lockdown;
 pub mod permission_store;
 pub mod print;
