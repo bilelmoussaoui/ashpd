@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     backend::{
         request::{Request, RequestImpl},
-        Result,
+        MaybeAppID, MaybeWindowIdentifier, Result,
     },
     desktop::{file_chooser::Choice, request::Response, Icon},
     zvariant::{self, DeserializeDict, OwnedObjectPath, SerializeDict},
@@ -100,15 +100,13 @@ impl AccessInterface {
     async fn access_dialog(
         &self,
         handle: OwnedObjectPath,
-        app_id: &str,
-        window_identifier: &str,
+        app_id: MaybeAppID,
+        window_identifier: MaybeWindowIdentifier,
         title: String,
         subtitle: String,
         body: String,
         options: AccessOptions,
     ) -> Result<Response<AccessResponse>> {
-        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
-        let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -117,8 +115,15 @@ impl AccessInterface {
             handle,
             Arc::clone(&self.imp),
             async move {
-                imp.access_dialog(app_id, window_identifier, title, subtitle, body, options)
-                    .await
+                imp.access_dialog(
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    title,
+                    subtitle,
+                    body,
+                    options,
+                )
+                .await
             },
         )
         .await

@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     backend::{
         request::{Request, RequestImpl},
-        Result,
+        MaybeAppID, MaybeWindowIdentifier, Result,
     },
     desktop::request::Response,
     zvariant::{self, DeserializeDict, OwnedObjectPath},
@@ -94,12 +94,10 @@ impl EmailInterface {
     async fn compose_email(
         &self,
         handle: OwnedObjectPath,
-        app_id: &str,
-        parent_window: &str,
+        app_id: MaybeAppID,
+        window_identifier: MaybeWindowIdentifier,
         options: Options,
     ) -> Result<Response<()>> {
-        let window_identifier = WindowIdentifierType::from_maybe_str(parent_window);
-        let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -107,7 +105,10 @@ impl EmailInterface {
             &self.cnx,
             handle,
             Arc::clone(&self.imp),
-            async move { imp.compose(app_id, window_identifier, options).await },
+            async move {
+                imp.compose(app_id.inner(), window_identifier.inner(), options)
+                    .await
+            },
         )
         .await
     }

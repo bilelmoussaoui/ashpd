@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     backend::{
         request::{Request, RequestImpl},
-        Result,
+        MaybeAppID, MaybeWindowIdentifier, Result,
     },
     desktop::{
         print::{PageSetup, PreparePrint, Settings},
@@ -97,15 +97,13 @@ impl PrintInterface {
     async fn prepare_print(
         &self,
         handle: OwnedObjectPath,
-        app_id: &str,
-        parent_window: &str,
+        app_id: MaybeAppID,
+        window_identifier: MaybeWindowIdentifier,
         title: String,
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
     ) -> Result<Response<PreparePrint>> {
-        let window_identifier = WindowIdentifierType::from_maybe_str(parent_window);
-        let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -115,8 +113,8 @@ impl PrintInterface {
             Arc::clone(&self.imp),
             async move {
                 imp.prepare_print(
-                    app_id,
-                    window_identifier,
+                    app_id.inner(),
+                    window_identifier.inner(),
                     title,
                     settings,
                     page_setup,
@@ -133,14 +131,12 @@ impl PrintInterface {
     async fn print(
         &self,
         handle: OwnedObjectPath,
-        app_id: &str,
-        parent_window: &str,
+        app_id: MaybeAppID,
+        window_identifier: MaybeWindowIdentifier,
         title: String,
         fd: zvariant::OwnedFd,
         options: PrintOptions,
     ) -> Result<Response<()>> {
-        let window_identifier = WindowIdentifierType::from_maybe_str(parent_window);
-        let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -149,8 +145,14 @@ impl PrintInterface {
             handle,
             Arc::clone(&self.imp),
             async move {
-                imp.print(app_id, window_identifier, title, fd, options)
-                    .await
+                imp.print(
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    title,
+                    fd,
+                    options,
+                )
+                .await
             },
         )
         .await

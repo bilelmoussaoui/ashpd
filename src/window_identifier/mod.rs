@@ -270,17 +270,6 @@ pub enum WindowIdentifierType {
     Wayland(String),
 }
 
-impl WindowIdentifierType {
-    #[cfg(feature = "backend")]
-    pub(crate) fn from_maybe_str(val: &str) -> Option<Self> {
-        if val.is_empty() {
-            None
-        } else {
-            val.parse::<Self>().ok()
-        }
-    }
-}
-
 impl fmt::Display for WindowIdentifierType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

@@ -28,17 +28,6 @@ impl AppID {
     }
 }
 
-impl AppID {
-    #[cfg(feature = "backend")]
-    pub(crate) fn from_maybe_str(val: &str) -> Option<Self> {
-        if val.is_empty() {
-            None
-        } else {
-            val.parse::<Self>().ok()
-        }
-    }
-}
-
 impl FromStr for AppID {
     type Err = crate::Error;
     fn from_str(value: &str) -> Result<Self, Self::Err> {

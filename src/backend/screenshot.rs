@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     backend::{
         request::{Request, RequestImpl},
-        Result,
+        MaybeAppID, MaybeWindowIdentifier, Result,
     },
     desktop::{request::Response, screenshot::Screenshot as ScreenshotResponse, Color},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
@@ -81,12 +81,10 @@ impl ScreenshotInterface {
     async fn screenshot(
         &self,
         handle: OwnedObjectPath,
-        app_id: &str,
-        window_identifier: &str,
+        app_id: MaybeAppID,
+        window_identifier: MaybeWindowIdentifier,
         options: ScreenshotOptions,
     ) -> Result<Response<ScreenshotResponse>> {
-        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
-        let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -94,7 +92,10 @@ impl ScreenshotInterface {
             &self.cnx,
             handle,
             Arc::clone(&self.imp),
-            async move { imp.screenshot(app_id, window_identifier, options).await },
+            async move {
+                imp.screenshot(app_id.inner(), window_identifier.inner(), options)
+                    .await
+            },
         )
         .await
     }
@@ -104,12 +105,10 @@ impl ScreenshotInterface {
     async fn pick_color(
         &self,
         handle: OwnedObjectPath,
-        app_id: &str,
-        window_identifier: &str,
+        app_id: MaybeAppID,
+        window_identifier: MaybeWindowIdentifier,
         options: ColorOptions,
     ) -> Result<Response<Color>> {
-        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
-        let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -117,7 +116,10 @@ impl ScreenshotInterface {
             &self.cnx,
             handle,
             Arc::clone(&self.imp),
-            async move { imp.pick_color(app_id, window_identifier, options).await },
+            async move {
+                imp.pick_color(app_id.inner(), window_identifier.inner(), options)
+                    .await
+            },
         )
         .await
     }

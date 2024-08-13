@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     backend::{
         request::{Request, RequestImpl},
-        Result,
+        MaybeAppID, MaybeWindowIdentifier, Result,
     },
     desktop::{request::ResponseType, wallpaper::SetOn},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
@@ -68,13 +68,11 @@ impl WallpaperInterface {
     async fn set_wallpaper_uri(
         &self,
         handle: OwnedObjectPath,
-        app_id: &str,
-        window_identifier: &str,
+        app_id: MaybeAppID,
+        window_identifier: MaybeWindowIdentifier,
         uri: url::Url,
         options: WallpaperOptions,
     ) -> Result<ResponseType> {
-        let window_identifier = WindowIdentifierType::from_maybe_str(window_identifier);
-        let app_id = AppID::from_maybe_str(app_id);
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -82,7 +80,10 @@ impl WallpaperInterface {
             &self.cnx,
             handle,
             Arc::clone(&self.imp),
-            async move { imp.with_uri(app_id, window_identifier, uri, options).await },
+            async move {
+                imp.with_uri(app_id.inner(), window_identifier.inner(), uri, options)
+                    .await
+            },
         )
         .await
         .map(|r| r.response_type())
