@@ -6,8 +6,6 @@ use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type};
 
 use crate::{desktop::HandleToken, proxy::Proxy, Error};
 
-pub type SessionDetails = HashMap<String, OwnedValue>;
-
 /// Shared by all portal interfaces that involve long lived sessions.
 ///
 /// When a method that creates a session is called, if successful, the reply
@@ -59,7 +57,7 @@ where
     ///
     /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Session.html#org-freedesktop-portal-session-closed).
     #[doc(alias = "Closed")]
-    pub async fn receive_closed(&self) -> Result<impl Stream<Item = SessionDetails>, Error> {
+    pub async fn receive_closed(&self) -> Result<impl Stream<Item = ()>, Error> {
         self.0.signal("Closed").await
     }
 
