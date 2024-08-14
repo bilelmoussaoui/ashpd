@@ -4,11 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0"
 async-trait = "0.1.60"
 tokio = { version = "1.0", features = ["io-util", "net", "time", "macros", "rt-multi-thread"] }
-byteorder = "1.4.3"
-futures-channel = "0.3.25"
 futures-util = "0.3.25"
 nix = { version = "0.29", features = ["user"], default-features = false}
 tracing = "0.1"
