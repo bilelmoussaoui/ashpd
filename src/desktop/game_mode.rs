@@ -20,7 +20,7 @@ use std::{fmt::Debug, os::fd::BorrowedFd};
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{Fd, Type};
 
-use crate::{error::PortalError, proxy::Proxy, Error};
+use crate::{error::PortalError, proxy::Proxy, Error, Pid};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdGameModeStatus"))]
@@ -95,8 +95,8 @@ impl<'a> GameMode<'a> {
     ///
     /// See also [`QueryStatus`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html#org-freedesktop-portal-gamemode-querystatus).
     #[doc(alias = "QueryStatus")]
-    pub async fn query_status(&self, pid: u32) -> Result<Status, Error> {
-        self.0.call("QueryStatus", &(pid)).await
+    pub async fn query_status(&self, pid: Pid) -> Result<Status, Error> {
+        self.0.call("QueryStatus", &(pid as i32)).await
     }
 
     /// Query the GameMode status for a process.
@@ -135,8 +135,10 @@ impl<'a> GameMode<'a> {
     ///
     /// See also [`QueryStatusByPid`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html#org-freedesktop-portal-gamemode-querystatusbypid).
     #[doc(alias = "QueryStatusByPid")]
-    pub async fn query_status_by_pid(&self, target: u32, requester: u32) -> Result<Status, Error> {
-        self.0.call("QueryStatusByPid", &(target, requester)).await
+    pub async fn query_status_by_pid(&self, target: Pid, requester: Pid) -> Result<Status, Error> {
+        self.0
+            .call("QueryStatusByPid", &(target as i32, requester as i32))
+            .await
     }
 
     /// Register a game with GameMode and thus request GameMode to be activated.
@@ -153,8 +155,8 @@ impl<'a> GameMode<'a> {
     ///
     /// See also [`RegisterGame`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html#org-freedesktop-portal-gamemode-registergame).
     #[doc(alias = "RegisterGame")]
-    pub async fn register(&self, pid: u32) -> Result<(), Error> {
-        let status = self.0.call("RegisterGame", &(pid)).await?;
+    pub async fn register(&self, pid: Pid) -> Result<(), Error> {
+        let status = self.0.call("RegisterGame", &(pid as i32)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
@@ -206,10 +208,10 @@ impl<'a> GameMode<'a> {
     ///
     /// See also [`RegisterGameByPid`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html#org-freedesktop-portal-gamemode-registergamebypid).
     #[doc(alias = "RegisterGameByPid")]
-    pub async fn register_by_pid(&self, target: u32, requester: u32) -> Result<(), Error> {
+    pub async fn register_by_pid(&self, target: Pid, requester: Pid) -> Result<(), Error> {
         let status = self
             .0
-            .call("RegisterGameByPid", &(target, requester))
+            .call("RegisterGameByPid", &(target as i32, requester as i32))
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
@@ -233,8 +235,8 @@ impl<'a> GameMode<'a> {
     ///
     /// See also [`UnregisterGame`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html#org-freedesktop-portal-gamemode-unregistergame).
     #[doc(alias = "UnregisterGame")]
-    pub async fn unregister(&self, pid: u32) -> Result<(), Error> {
-        let status = self.0.call("UnregisterGame", &(pid)).await?;
+    pub async fn unregister(&self, pid: Pid) -> Result<(), Error> {
+        let status = self.0.call("UnregisterGame", &(pid as i32)).await?;
         match status {
             RegisterStatus::Success => Ok(()),
             RegisterStatus::Rejected => Err(Error::Portal(PortalError::Failed(format!(
@@ -287,10 +289,10 @@ impl<'a> GameMode<'a> {
     ///
     /// See also [`UnregisterGameByPid`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html#org-freedesktop-portal-gamemode-unregistergamebypid).
     #[doc(alias = "UnregisterGameByPid")]
-    pub async fn unregister_by_pid(&self, target: u32, requester: u32) -> Result<(), Error> {
+    pub async fn unregister_by_pid(&self, target: Pid, requester: Pid) -> Result<(), Error> {
         let status = self
             .0
-            .call("UnregisterGameByPid", &(target, requester))
+            .call("UnregisterGameByPid", &(target as i32, requester as i32))
             .await?;
         match status {
             RegisterStatus::Success => Ok(()),
