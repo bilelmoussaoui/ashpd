@@ -91,11 +91,13 @@ impl FromStr for Device {
 }
 
 /// The interface lets services ask if an application should get access to
-/// devices such as microphones, speakers or cameras. Not a portal in the strict
-/// sense, since the API is not directly accessible to applications inside the
-/// sandbox.
+/// devices such as microphones, speakers or cameras.
 ///
-/// Wrapper of the DBus interface: [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Device.html).
+/// Not a portal in the strict sense, since the API is not directly
+/// accessible to applications inside the sandbox.
+///
+/// Wrapper of the DBus interface:
+/// [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Device.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Device")]
 pub struct DeviceProxy<'a>(Proxy<'a>);

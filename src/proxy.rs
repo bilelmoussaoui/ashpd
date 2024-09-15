@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::{fmt::Debug, future::ready, ops::Deref, sync::OnceLock};
 
 use futures_util::{Stream, StreamExt};
