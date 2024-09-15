@@ -2,7 +2,7 @@
 //!
 //! Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Realtime.html).
 
-use crate::{proxy::Proxy, Error};
+use crate::{proxy::Proxy, Error, Pid};
 
 /// Interface for setting a thread to realtime from within the sandbox.
 ///
@@ -22,12 +22,12 @@ impl<'a> Realtime<'a> {
     #[allow(missing_docs)]
     pub async fn max_thread_realtime_with_pid(
         &self,
-        process: u64,
+        process: Pid,
         thread: u64,
         priority: u32,
     ) -> Result<(), Error> {
         self.0
-            .call("MakeThreadRealtimeWithPID", &(&process, &thread, &priority))
+            .call("MakeThreadRealtimeWithPID", &(process as u64, thread, priority))
             .await
     }
 
@@ -35,14 +35,14 @@ impl<'a> Realtime<'a> {
     #[allow(missing_docs)]
     pub async fn max_thread_high_priority_with_pid(
         &self,
-        process: u64,
+        process: Pid,
         thread: u64,
         priority: i32,
     ) -> Result<(), Error> {
         self.0
             .call(
                 "MakeThreadHighPriorityWithPID",
-                &(&process, &thread, &priority),
+                &(process as u64, thread, priority),
             )
             .await
     }
