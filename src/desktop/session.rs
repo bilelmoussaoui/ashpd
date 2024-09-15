@@ -103,7 +103,7 @@ where
 }
 
 /// Portals that have a long-lived interaction
-pub trait SessionPortal {}
+pub trait SessionPortal: crate::Sealed {}
 
 /// A response to a `create_session` request.
 #[derive(Type, Debug)]

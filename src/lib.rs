@@ -61,3 +61,10 @@ pub async fn is_sandboxed() -> bool {
 }
 
 pub use self::error::{Error, PortalError};
+
+mod sealed {
+    /// Use as a supertrait for public traits that users should not be able to implement
+    pub trait Sealed {}
+}
+
+pub(crate) use sealed::Sealed;
