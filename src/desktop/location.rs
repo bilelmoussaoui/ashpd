@@ -285,6 +285,7 @@ impl<'a> LocationProxy<'a> {
     }
 }
 
+impl crate::Sealed for LocationProxy<'_> {}
 impl SessionPortal for LocationProxy<'_> {}
 
 impl<'a> std::ops::Deref for LocationProxy<'a> {
