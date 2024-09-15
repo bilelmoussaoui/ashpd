@@ -9,6 +9,7 @@ use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
 use serde::{ser::Serializer, Deserialize, Serialize};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
+///
 /// These dialogs should generally be placed on top of the application window
 /// that triggered them. To arrange this, the compositor needs to know about the
 /// application window. Many portal requests expect a [`WindowIdentifier`] for

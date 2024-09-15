@@ -71,7 +71,9 @@ impl<'a> Clipboard<'a> {
         mime_types: &[&str],
     ) -> Result<()> {
         let options = SetSelectionOptions { mime_types };
-        self.0.call("SetSelection", &(session, options)).await?;
+        self.0
+            .call::<()>("SetSelection", &(session, options))
+            .await?;
 
         Ok(())
     }

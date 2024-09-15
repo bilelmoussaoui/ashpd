@@ -185,6 +185,7 @@ impl From<ResponseError> for ResponseType {
 }
 
 /// The Request interface is shared by all portal interfaces.
+///
 /// When a portal method is called, the reply includes a handle (i.e. object
 /// path) for a Request object, which will stay alive for the duration of the
 /// user interaction related to the method call.

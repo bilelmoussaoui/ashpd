@@ -32,7 +32,6 @@ pub use self::file_path::FilePath;
 mod proxy;
 #[cfg(feature = "backend")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
-#[allow(missing_docs)]
 pub use proxy::{
     DESKTOP_DESTINATION, DESKTOP_PATH, DOCUMENTS_DESTINATION, DOCUMENTS_PATH, FLATPAK_DESTINATION,
     FLATPAK_DEVELOPMENT_DESTINATION, FLATPAK_DEVELOPMENT_PATH, FLATPAK_PATH,
