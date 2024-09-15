@@ -11,11 +11,10 @@ jobs:
       image: bilelmoussaoui/flatpak-github-actions:gnome-nightly
       options: --privileged
     steps:
-    - uses: actions/checkout@v4
-    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-      with:
-        bundle: "ashpd-demo.flatpak"
-        repository-name: "flathub-beta"
-        manifest-path: "ashpd-demo/build-aux/com.belmoussaoui.ashpd.demo.Devel.json"
-        run-tests: true
-        cache-key: flatpak-builder-${{ github.sha }}
+      - uses: actions/checkout@v4
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: "ashpd-demo.flatpak"
+          manifest-path: "ashpd-demo/build-aux/com.belmoussaoui.ashpd.demo.Devel.json"
+          run-tests: true
+          cache-key: flatpak-builder-${{ github.sha }}
