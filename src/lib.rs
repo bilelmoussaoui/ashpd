@@ -68,3 +68,8 @@ mod sealed {
 }
 
 pub(crate) use sealed::Sealed;
+
+/// Process ID.
+///
+/// Matches the type used in std.
+pub type Pid = u32;
