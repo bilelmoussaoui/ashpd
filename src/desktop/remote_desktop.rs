@@ -695,4 +695,5 @@ impl<'a> std::ops::Deref for RemoteDesktop<'a> {
     }
 }
 
+impl crate::Sealed for RemoteDesktop<'_> {}
 impl SessionPortal for RemoteDesktop<'_> {}

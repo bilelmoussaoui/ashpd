@@ -251,4 +251,5 @@ impl<'a> std::ops::Deref for InhibitProxy<'a> {
     }
 }
 
+impl crate::Sealed for InhibitProxy<'_> {}
 impl SessionPortal for InhibitProxy<'_> {}
