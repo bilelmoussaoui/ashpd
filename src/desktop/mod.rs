@@ -4,7 +4,7 @@ mod session;
 pub(crate) use self::handle_token::HandleToken;
 pub use self::{
     request::{Request, Response, ResponseError},
-    session::Session,
+    session::{Session, SessionPortal},
 };
 mod color;
 pub use color::Color;

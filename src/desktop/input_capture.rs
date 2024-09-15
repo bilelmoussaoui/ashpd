@@ -732,4 +732,5 @@ impl<'a> std::ops::Deref for InputCapture<'a> {
     }
 }
 
+impl crate::Sealed for InputCapture<'_> {}
 impl SessionPortal for InputCapture<'_> {}

@@ -316,4 +316,5 @@ impl<'a> std::ops::Deref for GlobalShortcuts<'a> {
     }
 }
 
+impl crate::Sealed for GlobalShortcuts<'_> {}
 impl SessionPortal for GlobalShortcuts<'_> {}

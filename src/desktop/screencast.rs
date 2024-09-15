@@ -424,6 +424,7 @@ impl<'a> std::ops::Deref for Screencast<'a> {
     }
 }
 
+impl crate::Sealed for Screencast<'_> {}
 impl SessionPortal for Screencast<'_> {}
 
 /// Defines which portals session can be used in a screen-cast.
