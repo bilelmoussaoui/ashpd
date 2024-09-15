@@ -9,7 +9,7 @@ use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
-use crate::{proxy::Proxy, Error, FilePath};
+use crate::{proxy::Proxy, Error, FilePath, Pid};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -106,7 +106,7 @@ impl<'a> Development<'a> {
     #[doc(alias = "xdp_portal_spawn_signal")]
     pub async fn host_command_signal(
         &self,
-        pid: u32,
+        pid: Pid,
         signal: u32,
         to_process_group: bool,
     ) -> Result<(), Error> {
