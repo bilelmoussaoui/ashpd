@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::{SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error};
+use crate::{proxy::Proxy, Error, Pid};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.
@@ -124,7 +124,7 @@ impl<'a> DeviceProxy<'a> {
     ///
     /// See also [`AccessDevice`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Device.html#org-freedesktop-portal-device-accessdevice).
     #[doc(alias = "AccessDevice")]
-    pub async fn access_device(&self, pid: u32, devices: &[Device]) -> Result<Request<()>, Error> {
+    pub async fn access_device(&self, pid: Pid, devices: &[Device]) -> Result<Request<()>, Error> {
         let options = AccessDeviceOptions::default();
         self.0
             .empty_request(
