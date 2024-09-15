@@ -27,7 +27,10 @@ impl<'a> Realtime<'a> {
         priority: u32,
     ) -> Result<(), Error> {
         self.0
-            .call("MakeThreadRealtimeWithPID", &(process as u64, thread, priority))
+            .call(
+                "MakeThreadRealtimeWithPID",
+                &(process as u64, thread, priority),
+            )
             .await
     }
 
