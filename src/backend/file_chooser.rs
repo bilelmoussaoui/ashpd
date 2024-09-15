@@ -20,9 +20,9 @@ use crate::{
 pub struct SelectedFiles {
     uris: Vec<url::Url>,
     choices: Option<Vec<(String, String)>>,
-    // Not relavant for SaveFiles
+    // Not relevant for SaveFiles
     current_filter: Option<FileFilter>,
-    // Only relavant for OpenFile
+    // Only relevant for OpenFile
     writable: Option<bool>,
 }
 
