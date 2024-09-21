@@ -21,11 +21,11 @@
 use std::os::fd::AsFd;
 
 #[cfg(feature = "async-std")]
-use async_net::unix::UnixStream;
+use async_net::{unix::UnixStream, Shutdown};
 #[cfg(feature = "async-std")]
 use futures_util::AsyncReadExt;
 #[cfg(feature = "tokio")]
-use tokio::{io::AsyncReadExt, net::UnixStream};
+use tokio::{io::AsyncReadExt, io::AsyncWriteExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
@@ -93,11 +93,23 @@ impl<'a> std::ops::Deref for Secret<'a> {
 /// It crates a UnixStream internally for receiving the secret.
 pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
-
-    let (mut x1, x2) = UnixStream::pair()?;
-    proxy.retrieve(&x2.as_fd()).await?;
-    drop(x2);
     let mut buf = Vec::new();
+
+    #[cfg(feature = "tokio")]
+    let mut x1 = {
+        let (x1, mut x2) = UnixStream::pair()?;
+        proxy.retrieve(&x2.as_fd()).await?;
+        x2.shutdown().await?;
+        x1
+    };
+    #[cfg(feature = "async-std")]
+    let mut x1 = {
+        let (x1, x2) = UnixStream::pair()?;
+        proxy.retrieve(&x2.as_fd()).await?;
+        x2.shutdown(Shutdown::Write)?;
+        x1
+    };
+
     x1.read_to_end(&mut buf).await?;
 
     Ok(buf)
