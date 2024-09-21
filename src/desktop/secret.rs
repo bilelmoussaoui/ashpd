@@ -9,7 +9,7 @@
 //!     let secret = Secret::new().await?;
 //!
 //!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair()?;
-//!     secret.retrieve(&x2.as_fd()).await?;
+//!     secret.retrieve(&x2).await?;
 //!     drop(x2);
 //!     let mut buf = Vec::new();
 //!     x1.read_to_end(&mut buf)?;
@@ -98,14 +98,14 @@ pub async fn retrieve() -> Result<Vec<u8>, Error> {
     #[cfg(feature = "tokio")]
     let mut x1 = {
         let (x1, mut x2) = UnixStream::pair()?;
-        proxy.retrieve(&x2.as_fd()).await?;
+        proxy.retrieve(&x2).await?;
         x2.shutdown().await?;
         x1
     };
     #[cfg(feature = "async-std")]
     let mut x1 = {
         let (x1, x2) = UnixStream::pair()?;
-        proxy.retrieve(&x2.as_fd()).await?;
+        proxy.retrieve(&x2).await?;
         x2.shutdown(Shutdown::Write)?;
         x1
     };
