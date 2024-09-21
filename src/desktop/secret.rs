@@ -93,7 +93,7 @@ impl<'a> std::ops::Deref for Secret<'a> {
 /// It crates a UnixStream internally for receiving the secret.
 pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
-    let mut buf = Vec::new();
+    let mut buf = Vec::with_capacity(64);
 
     #[cfg(feature = "tokio")]
     let mut x1 = {
