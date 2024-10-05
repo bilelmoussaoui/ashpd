@@ -15,7 +15,7 @@
 //! }
 //! ```
 
-use std::{fmt::Debug, os::fd::BorrowedFd};
+use std::{fmt::Debug, os::fd::AsFd};
 
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{Fd, Type};
@@ -113,13 +113,13 @@ impl<'a> GameMode<'a> {
     #[doc(alias = "QueryStatusByPIDFd")]
     pub async fn query_status_by_pidfd(
         &self,
-        target: &BorrowedFd<'_>,
-        requester: &BorrowedFd<'_>,
+        target: impl AsFd,
+        requester: impl AsFd,
     ) -> Result<Status, Error> {
         self.0
             .call(
                 "QueryStatusByPIDFd",
-                &(Fd::from(target), Fd::from(requester)),
+                &(Fd::from(&target), Fd::from(&requester)),
             )
             .await
     }
@@ -179,14 +179,14 @@ impl<'a> GameMode<'a> {
     #[doc(alias = "RegisterGameByPIDFd")]
     pub async fn register_by_pidfd(
         &self,
-        target: &BorrowedFd<'_>,
-        requester: &BorrowedFd<'_>,
+        target: impl AsFd,
+        requester: impl AsFd,
     ) -> Result<(), Error> {
         let status = self
             .0
             .call(
                 "RegisterGameByPIDFd",
-                &(Fd::from(target), Fd::from(requester)),
+                &(Fd::from(&target), Fd::from(&requester)),
             )
             .await?;
         match status {
@@ -259,14 +259,14 @@ impl<'a> GameMode<'a> {
     #[doc(alias = "UnregisterGameByPIDFd")]
     pub async fn unregister_by_pidfd(
         &self,
-        target: &BorrowedFd<'_>,
-        requester: &BorrowedFd<'_>,
+        target: impl AsFd,
+        requester: impl AsFd,
     ) -> Result<(), Error> {
         let status = self
             .0
             .call(
                 "UnregisterGameByPIDFd",
-                &(Fd::from(target), Fd::from(requester)),
+                &(Fd::from(&target), Fd::from(&requester)),
             )
             .await?;
         match status {

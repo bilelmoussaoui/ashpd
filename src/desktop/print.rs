@@ -38,7 +38,7 @@
 //! }
 //! ```
 
-use std::{fmt, os::fd::BorrowedFd, str::FromStr};
+use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
@@ -704,7 +704,7 @@ impl<'a> PrintProxy<'a> {
         &self,
         identifier: &WindowIdentifier,
         title: &str,
-        fd: &BorrowedFd<'_>,
+        fd: impl AsFd,
         token: Option<u32>,
         modal: bool,
     ) -> Result<Request<()>, Error> {
@@ -715,7 +715,7 @@ impl<'a> PrintProxy<'a> {
             .empty_request(
                 &options.handle_token,
                 "Print",
-                &(&identifier, title, Fd::from(fd), &options),
+                &(&identifier, title, Fd::from(&fd), &options),
             )
             .await
     }
