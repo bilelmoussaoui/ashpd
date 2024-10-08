@@ -73,8 +73,8 @@ pub async fn is_sandboxed() -> bool {
         || std::env::var("GTK_USE_PORTAL")
             .map(|v| v == "1")
             .unwrap_or(false);
-    IS_SANDBOXED.set(new_value).unwrap(); // Safe to unwrap here
-    new_value
+
+    *IS_SANDBOXED.get_or_init(|| new_value)
 }
 
 pub use self::error::{Error, PortalError};
