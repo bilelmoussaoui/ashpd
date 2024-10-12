@@ -4,7 +4,7 @@
 //! Only available for Flatpak applications.
 //!
 //! ```rust,no_run
-//! use ashpd::{flatpak::Flatpak, WindowIdentifier};
+//! use ashpd::flatpak::Flatpak;
 //! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -13,7 +13,7 @@
 //!     let monitor = proxy.create_update_monitor().await?;
 //!     let info = monitor.receive_update_available().await?;
 //!
-//!     monitor.update(&WindowIdentifier::default()).await?;
+//!     monitor.update(None).await?;
 //!     let progress = monitor
 //!         .receive_progress()
 //!         .await?
@@ -160,8 +160,10 @@ impl<'a> UpdateMonitor<'a> {
     /// See also [`Update`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Update).
     #[doc(alias = "Update")]
     #[doc(alias = "xdp_portal_update_install")]
-    pub async fn update(&self, identifier: &WindowIdentifier) -> Result<(), Error> {
+    pub async fn update(&self, identifier: Option<&WindowIdentifier>) -> Result<(), Error> {
         let options = UpdateOptions::default();
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+
         self.0.call("Update", &(&identifier, options)).await
     }
 

@@ -6,12 +6,9 @@
 //! The portal is currently useless without PipeWire & Rust support.
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::{
-//!         screencast::{CursorMode, Screencast, SourceType},
-//!         PersistMode,
-//!     },
-//!     WindowIdentifier,
+//! use ashpd::desktop::{
+//!     screencast::{CursorMode, Screencast, SourceType},
+//!     PersistMode,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -28,10 +25,7 @@
 //!         )
 //!         .await?;
 //!
-//!     let response = proxy
-//!         .start(&session, &WindowIdentifier::default())
-//!         .await?
-//!         .response()?;
+//!     let response = proxy.start(&session, None).await?.response()?;
 //!     response.streams().iter().for_each(|stream| {
 //!         println!("node id: {}", stream.pipe_wire_node_id());
 //!         println!("size: {:?}", stream.size());
@@ -383,9 +377,10 @@ impl<'a> Screencast<'a> {
     pub async fn start(
         &self,
         session: &Session<'_, impl HasScreencastSession>,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<Streams>, Error> {
         let options = StartCastOptions::default();
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,

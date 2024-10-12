@@ -5,17 +5,16 @@
 //! ```rust,no_run
 //! use std::{fs::File, os::fd::AsFd};
 //!
-//! use ashpd::{desktop::print::PrintProxy, WindowIdentifier};
+//! use ashpd::desktop::print::PrintProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = PrintProxy::new().await?;
-//!     let identifier = WindowIdentifier::default();
 //!
 //!     let file =
 //!         File::open("/home/bilelmoussaoui/gitlog.pdf").expect("file to print was not found");
 //!     let pre_print = proxy
 //!         .prepare_print(
-//!             &identifier,
+//!             None,
 //!             "prepare print",
 //!             Default::default(),
 //!             Default::default(),
@@ -25,13 +24,7 @@
 //!         .await?
 //!         .response()?;
 //!     proxy
-//!         .print(
-//!             &identifier,
-//!             "test",
-//!             &file.as_fd(),
-//!             Some(pre_print.token),
-//!             true,
-//!         )
+//!         .print(None, "test", &file.as_fd(), Some(pre_print.token), true)
 //!         .await?;
 //!
 //!     Ok(())
@@ -662,7 +655,7 @@ impl<'a> PrintProxy<'a> {
     #[doc(alias = "xdp_portal_prepare_print")]
     pub async fn prepare_print(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
@@ -672,6 +665,7 @@ impl<'a> PrintProxy<'a> {
         let options = PreparePrintOptions::default()
             .modal(modal)
             .accept_label(accept_label);
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
@@ -702,7 +696,7 @@ impl<'a> PrintProxy<'a> {
     #[doc(alias = "xdp_portal_print_file")]
     pub async fn print(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         title: &str,
         fd: &BorrowedFd<'_>,
         token: Option<u32>,
@@ -711,6 +705,8 @@ impl<'a> PrintProxy<'a> {
         let options = PrintOptions::default()
             .token(token.unwrap_or(0))
             .modal(modal);
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+
         self.0
             .empty_request(
                 &options.handle_token,

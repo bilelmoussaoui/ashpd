@@ -310,10 +310,11 @@ impl<'a> FileChooserProxy<'a> {
 
     pub async fn open_file(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         title: &str,
         options: OpenFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
@@ -325,10 +326,11 @@ impl<'a> FileChooserProxy<'a> {
 
     pub async fn save_file(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         title: &str,
         options: SaveFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
@@ -340,10 +342,11 @@ impl<'a> FileChooserProxy<'a> {
 
     pub async fn save_files(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         title: &str,
         options: SaveFilesOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
@@ -368,7 +371,7 @@ impl<'a> std::ops::Deref for FileChooserProxy<'a> {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct OpenFileRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     title: String,
     options: OpenFileOptions,
 }
@@ -377,7 +380,7 @@ impl OpenFileRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -470,7 +473,7 @@ impl OpenFileRequest {
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
-            .open_file(&self.identifier, &self.title, self.options)
+            .open_file(self.identifier.as_ref(), &self.title, self.options)
             .await
     }
 }
@@ -481,7 +484,7 @@ impl OpenFileRequest {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct SaveFilesRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     title: String,
     options: SaveFilesOptions,
 }
@@ -490,7 +493,7 @@ impl SaveFilesRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -560,7 +563,7 @@ impl SaveFilesRequest {
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
-            .save_files(&self.identifier, &self.title, self.options)
+            .save_files(self.identifier.as_ref(), &self.title, self.options)
             .await
     }
 }
@@ -571,7 +574,7 @@ impl SaveFilesRequest {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct SaveFileRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     title: String,
     options: SaveFileOptions,
 }
@@ -580,7 +583,7 @@ impl SaveFileRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -675,7 +678,7 @@ impl SaveFileRequest {
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
         let proxy = FileChooserProxy::new().await?;
         proxy
-            .save_file(&self.identifier, &self.title, self.options)
+            .save_file(self.identifier.as_ref(), &self.title, self.options)
             .await
     }
 }

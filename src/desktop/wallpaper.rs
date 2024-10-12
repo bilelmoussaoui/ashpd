@@ -125,10 +125,11 @@ impl<'a> WallpaperProxy<'a> {
 
     pub async fn set_wallpaper_file(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         file: &BorrowedFd<'_>,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -140,10 +141,11 @@ impl<'a> WallpaperProxy<'a> {
 
     pub async fn set_wallpaper_uri(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         uri: &url::Url,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -169,7 +171,7 @@ impl<'a> std::ops::Deref for WallpaperProxy<'a> {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct WallpaperRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     options: WallpaperOptions,
 }
 
@@ -177,7 +179,7 @@ impl WallpaperRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -201,7 +203,7 @@ impl WallpaperRequest {
     pub async fn build_uri(self, uri: &url::Url) -> Result<Request<()>, Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
-            .set_wallpaper_uri(&self.identifier, uri, self.options)
+            .set_wallpaper_uri(self.identifier.as_ref(), uri, self.options)
             .await
     }
 
@@ -209,7 +211,7 @@ impl WallpaperRequest {
     pub async fn build_file(self, file: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let proxy = WallpaperProxy::new().await?;
         proxy
-            .set_wallpaper_file(&self.identifier, file, self.options)
+            .set_wallpaper_file(self.identifier.as_ref(), file, self.options)
             .await
     }
 }

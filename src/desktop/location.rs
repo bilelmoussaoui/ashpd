@@ -1,22 +1,18 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::location::{Accuracy, LocationProxy},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::location::{Accuracy, LocationProxy};
 //! use futures_util::{FutureExt, StreamExt};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = LocationProxy::new().await?;
-//!     let identifier = WindowIdentifier::default();
 //!     let session = proxy
 //!         .create_session(None, None, Some(Accuracy::Street))
 //!         .await?;
 //!     let mut stream = proxy.receive_location_updated().await?;
 //!     let (_, location) = futures_util::join!(
 //!         proxy
-//!             .start(&session, &identifier)
+//!             .start(&session, None)
 //!             .map(|e| e.expect("Couldn't start session")),
 //!         stream.next().map(|e| e.expect("Stream is exhausted"))
 //!     );
@@ -272,9 +268,10 @@ impl<'a> LocationProxy<'a> {
     pub async fn start(
         &self,
         session: &Session<'_, Self>,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<()>, Error> {
         let options = SessionStartOptions::default();
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,

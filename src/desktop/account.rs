@@ -89,9 +89,10 @@ impl<'a> AccountProxy<'a> {
 
     pub async fn user_information(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         options: UserInformationOptions,
     ) -> Result<Request<UserInformation>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
@@ -118,7 +119,7 @@ impl<'a> std::ops::Deref for AccountProxy<'a> {
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct UserInformationRequest {
     options: UserInformationOptions,
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
 }
 
 impl UserInformationRequest {
@@ -132,13 +133,15 @@ impl UserInformationRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
     /// Build the [`UserInformation`].
     pub async fn send(self) -> Result<Request<UserInformation>, Error> {
         let proxy = AccountProxy::new().await?;
-        proxy.user_information(&self.identifier, self.options).await
+        proxy
+            .user_information(self.identifier.as_ref(), self.options)
+            .await
     }
 }

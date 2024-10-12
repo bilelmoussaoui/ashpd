@@ -5,17 +5,12 @@
 //! ```rust,no_run
 //! use std::{thread, time};
 //!
-//! use ashpd::{
-//!     desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState},
-//!     WindowIdentifier,
-//! };
+//! use ashpd::desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState};
 //! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = InhibitProxy::new().await?;
-//!     let identifier = WindowIdentifier::default();
-//!
-//!     let session = proxy.create_monitor(&identifier).await?;
+//!     let session = proxy.create_monitor(None).await?;
 //!
 //!     let state = proxy.receive_state_changed().await?.next().await.unwrap();
 //!     match state.session_state() {
@@ -23,7 +18,7 @@
 //!         SessionState::QueryEnd => {
 //!             proxy
 //!                 .inhibit(
-//!                     &identifier,
+//!                     None,
 //!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
 //!                     "please save the opened project first",
 //!                 )
@@ -166,9 +161,10 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "xdp_portal_session_monitor_start")]
     pub async fn create_monitor(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
     ) -> Result<Session<'a, Self>, Error> {
         let options = CreateMonitorOptions::default();
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         let body = &(&identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
             self.0
@@ -195,7 +191,7 @@ impl<'a> InhibitProxy<'a> {
     #[doc(alias = "xdp_portal_session_inhibit")]
     pub async fn inhibit(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         flags: BitFlags<InhibitFlags>,
         reason: &str,
     ) -> Result<Request<()>, Error> {
@@ -203,6 +199,7 @@ impl<'a> InhibitProxy<'a> {
             reason: Some(reason.to_owned()),
             handle_token: Default::default(),
         };
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,

@@ -127,9 +127,10 @@ impl<'a> BackgroundProxy<'a> {
 
     async fn request_background(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         options: BackgroundOptions,
     ) -> Result<Request<Background>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
@@ -154,7 +155,7 @@ impl<'a> std::ops::Deref for BackgroundProxy<'a> {
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 #[derive(Debug, Default)]
 pub struct BackgroundRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     options: BackgroundOptions,
 }
 
@@ -162,7 +163,7 @@ impl BackgroundRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -205,7 +206,7 @@ impl BackgroundRequest {
     pub async fn send(self) -> Result<Request<Background>, Error> {
         let proxy = BackgroundProxy::new().await?;
         proxy
-            .request_background(&self.identifier, self.options)
+            .request_background(self.identifier.as_ref(), self.options)
             .await
     }
 }

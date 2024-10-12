@@ -113,9 +113,10 @@ impl<'a> ScreenshotProxy<'a> {
     #[doc(alias = "xdp_portal_pick_color")]
     pub async fn pick_color(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         options: ColorOptions,
     ) -> Result<Request<Color>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(&options.handle_token, "PickColor", &(&identifier, &options))
             .await
@@ -141,9 +142,10 @@ impl<'a> ScreenshotProxy<'a> {
     #[doc(alias = "xdp_portal_take_screenshot")]
     pub async fn screenshot(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         options: ScreenshotOptions,
     ) -> Result<Request<Screenshot>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
@@ -168,22 +170,24 @@ impl<'a> std::ops::Deref for ScreenshotProxy<'a> {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct ColorRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     options: ColorOptions,
 }
 
 impl ColorRequest {
     #[must_use]
     /// Sets a window identifier.
-    pub fn identifier(mut self, identifier: WindowIdentifier) -> Self {
-        self.identifier = identifier;
+    pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.identifier = identifier.into();
         self
     }
 
     /// Build the [`Color`].
     pub async fn send(self) -> Result<Request<Color>, Error> {
         let proxy = ScreenshotProxy::new().await?;
-        proxy.pick_color(&self.identifier, self.options).await
+        proxy
+            .pick_color(self.identifier.as_ref(), self.options)
+            .await
     }
 }
 
@@ -204,14 +208,14 @@ impl Color {
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct ScreenshotRequest {
     options: ScreenshotOptions,
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
 }
 
 impl ScreenshotRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -233,6 +237,8 @@ impl ScreenshotRequest {
     /// Build the [`Screenshot`].
     pub async fn send(self) -> Result<Request<Screenshot>, Error> {
         let proxy = ScreenshotProxy::new().await?;
-        proxy.screenshot(&self.identifier, self.options).await
+        proxy
+            .screenshot(self.identifier.as_ref(), self.options)
+            .await
     }
 }

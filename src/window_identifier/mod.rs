@@ -83,14 +83,7 @@ use zbus::zvariant::Type;
 ///
 /// /// Open some portals
 /// ```
-///
-/// In case you don't have access to a WindowIdentifier:
-/// ```rust
-/// use ashpd::WindowIdentifier;
-///
-/// let identifier = WindowIdentifier::default();
-/// ```
-#[derive(Default, Type)]
+#[derive(Type)]
 #[zvariant(signature = "s")]
 #[doc(alias = "XdpParent")]
 #[non_exhaustive]
@@ -104,9 +97,6 @@ pub enum WindowIdentifier {
     Wayland(WaylandWindowIdentifier),
     #[doc(hidden)]
     X11(WindowIdentifierType),
-    #[doc(hidden)]
-    #[default]
-    None,
 }
 
 unsafe impl Send for WindowIdentifier {}
@@ -129,7 +119,6 @@ impl std::fmt::Display for WindowIdentifier {
             #[cfg(feature = "wayland")]
             Self::Wayland(identifier) => f.write_str(&format!("{identifier}")),
             Self::X11(identifier) => f.write_str(&format!("{identifier}")),
-            Self::None => f.write_str(""),
         }
     }
 }
@@ -152,11 +141,8 @@ impl WindowIdentifier {
     /// **Note** the function has to be async as the Wayland handle retrieval
     /// API is async as well.
     #[doc(alias = "xdp_parent_new_gtk")]
-    pub async fn from_native(native: &impl ::gtk4::prelude::IsA<::gtk4::Native>) -> Self {
-        match Gtk4WindowIdentifier::new(native).await {
-            Some(identifier) => Self::Gtk4(identifier),
-            None => Self::default(),
-        }
+    pub async fn from_native(native: &impl ::gtk4::prelude::IsA<::gtk4::Native>) -> Option<Self> {
+        Gtk4WindowIdentifier::new(native).await.map(Self::Gtk4)
     }
 
     #[cfg(feature = "raw_handle")]
@@ -171,7 +157,7 @@ impl WindowIdentifier {
     pub async fn from_raw_handle(
         window_handle: &RawWindowHandle,
         display_handle: Option<&RawDisplayHandle>,
-    ) -> Self {
+    ) -> Option<Self> {
         use raw_window_handle::{
             RawDisplayHandle::Wayland as DisplayHandle,
             RawWindowHandle::{Wayland, Xcb, Xlib},
@@ -181,9 +167,9 @@ impl WindowIdentifier {
                 Self::from_wayland_raw(wl_handle.surface.as_ptr(), wl_display.display.as_ptr())
                     .await
             },
-            (Xlib(x_handle), _) => Self::from_xid(x_handle.window),
-            (Xcb(x_handle), _) => Self::from_xid(x_handle.window.get().into()),
-            _ => Self::default(), // Fallback to default
+            (Xlib(x_handle), _) => Some(Self::from_xid(x_handle.window)),
+            (Xcb(x_handle), _) => Some(Self::from_xid(x_handle.window.get().into())),
+            _ => None,
         }
     }
 
@@ -204,21 +190,21 @@ impl WindowIdentifier {
     pub async unsafe fn from_wayland_raw(
         surface_ptr: *mut std::ffi::c_void,
         display_ptr: *mut std::ffi::c_void,
-    ) -> Self {
-        match WaylandWindowIdentifier::from_raw(surface_ptr, display_ptr).await {
-            Some(identifier) => Self::Wayland(identifier),
-            None => Self::default(),
-        }
+    ) -> Option<Self> {
+        WaylandWindowIdentifier::from_raw(surface_ptr, display_ptr)
+            .await
+            .map(Self::Wayland)
     }
 
     #[cfg(feature = "wayland")]
     #[cfg_attr(docsrs, doc(cfg(feature = "wayland")))]
     /// Create an instance of [`WindowIdentifier`] from a Wayland surface.
-    pub async fn from_wayland(surface: &wayland_client::protocol::wl_surface::WlSurface) -> Self {
-        match WaylandWindowIdentifier::new(surface).await {
-            Some(identifier) => Self::Wayland(identifier),
-            None => Self::default(),
-        }
+    pub async fn from_wayland(
+        surface: &wayland_client::protocol::wl_surface::WlSurface,
+    ) -> Option<Self> {
+        WaylandWindowIdentifier::new(surface)
+            .await
+            .map(Self::Wayland)
     }
 }
 
@@ -337,8 +323,6 @@ mod tests {
     fn test_serialize() {
         let x11 = WindowIdentifier::from_xid(1024);
         assert_eq!(x11.to_string(), "x11:0x400");
-
-        assert_eq!(WindowIdentifier::default().to_string(), "");
 
         assert_eq!(
             WindowIdentifierType::from_str("x11:0x11432").unwrap(),

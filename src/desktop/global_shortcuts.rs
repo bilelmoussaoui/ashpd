@@ -246,14 +246,15 @@ impl<'a> GlobalShortcuts<'a> {
         &self,
         session: &Session<'_, Self>,
         shortcuts: &[NewShortcut],
-        parent_window: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<BindShortcuts>, Error> {
         let options = BindShortcutsOptions::default();
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
                 "BindShortcuts",
-                &(session, shortcuts, parent_window, &options),
+                &(session, shortcuts, identifier, &options),
             )
             .await
     }

@@ -1,12 +1,9 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::{
-//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
-//!         PersistMode,
-//!     },
-//!     WindowIdentifier,
+//! use ashpd::desktop::{
+//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!     PersistMode,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -21,10 +18,7 @@
 //!         )
 //!         .await?;
 //!
-//!     let response = proxy
-//!         .start(&session, &WindowIdentifier::default())
-//!         .await?
-//!         .response()?;
+//!     let response = proxy.start(&session, None).await?.response()?;
 //!     println!("{:#?}", response.devices());
 //!
 //!     // 13 for Enter key code
@@ -43,19 +37,15 @@
 //! [`RemoteDesktop::create_session()`][create_session]
 //!
 //! ```rust,no_run
-//! use ashpd::{
-//!     desktop::{
-//!         remote_desktop::{DeviceType, KeyState, RemoteDesktop},
-//!         screencast::{CursorMode, Screencast, SourceType},
-//!         PersistMode,
-//!     },
-//!     WindowIdentifier,
+//! use ashpd::desktop::{
+//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!     screencast::{CursorMode, Screencast, SourceType},
+//!     PersistMode,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let remote_desktop = RemoteDesktop::new().await?;
 //!     let screencast = Screencast::new().await?;
-//!     let identifier = WindowIdentifier::default();
 //!     let session = remote_desktop.create_session().await?;
 //!
 //!     remote_desktop
@@ -77,10 +67,7 @@
 //!         )
 //!         .await?;
 //!
-//!     let response = remote_desktop
-//!         .start(&session, &identifier)
-//!         .await?
-//!         .response()?;
+//!     let response = remote_desktop.start(&session, None).await?.response()?;
 //!     println!("{:#?}", response.devices());
 //!     println!("{:#?}", response.streams());
 //!
@@ -310,9 +297,10 @@ impl<'a> RemoteDesktop<'a> {
     pub async fn start(
         &self,
         session: &Session<'_, Self>,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<SelectedDevices>, Error> {
         let options = StartRemoteOptions::default();
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,

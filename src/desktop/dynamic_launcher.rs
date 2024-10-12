@@ -24,7 +24,7 @@
 //!     let icon = Icon::Bytes(buffer);
 //!     let response = proxy
 //!         .prepare_install(
-//!             &WindowIdentifier::default(),
+//!             None,
 //!             "SomeApp",
 //!             icon,
 //!             PrepareInstallOptions::default()
@@ -249,7 +249,7 @@ impl<'a> DynamicLauncherProxy<'a> {
     #[doc(alias = "xdp_portal_dynamic_launcher_prepare_install_finish")]
     pub async fn prepare_install(
         &self,
-        parent_window: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         name: &str,
         icon: Icon,
         options: PrepareInstallOptions,
@@ -257,12 +257,12 @@ impl<'a> DynamicLauncherProxy<'a> {
         if !icon.is_bytes() {
             return Err(UnexpectedIconError {}.into());
         }
-
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .request(
                 &options.handle_token,
                 "PrepareInstall",
-                &(parent_window, name, icon.as_value(), &options),
+                &(identifier, name, icon.as_value(), &options),
             )
             .await
     }

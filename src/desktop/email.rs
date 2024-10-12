@@ -73,9 +73,10 @@ impl<'a> EmailProxy<'a> {
     #[doc(alias = "ComposeEmail")]
     pub async fn compose(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         options: EmailOptions,
     ) -> Result<Request<()>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -100,7 +101,7 @@ impl<'a> std::ops::Deref for EmailProxy<'a> {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct EmailRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     options: EmailOptions,
 }
 
@@ -108,7 +109,7 @@ impl EmailRequest {
     /// Sets a window identifier.
     #[must_use]
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -201,6 +202,6 @@ impl EmailRequest {
     /// Send the request.
     pub async fn send(self) -> Result<Request<()>, Error> {
         let proxy = EmailProxy::new().await?;
-        proxy.compose(&self.identifier, self.options).await
+        proxy.compose(self.identifier.as_ref(), self.options).await
     }
 }

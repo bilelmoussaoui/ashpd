@@ -43,7 +43,7 @@
 //!     let input_capture = InputCapture::new().await?;
 //!     let (session, capabilities) = input_capture
 //!         .create_session(
-//!             &ashpd::WindowIdentifier::default(),
+//!             None,
 //!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
 //!         )
 //!         .await?;
@@ -93,7 +93,7 @@
 //!     let input_capture = InputCapture::new().await?;
 //!     let (session, _capabilities) = input_capture
 //!         .create_session(
-//!             &ashpd::WindowIdentifier::default(),
+//!             None,
 //!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
 //!         )
 //!         .await?;
@@ -166,7 +166,7 @@
 //!
 //!     let (session, _cap) = input_capture
 //!         .create_session(
-//!             &ashpd::WindowIdentifier::default(),
+//!             None,
 //!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
 //!         )
 //!         .await?;
@@ -557,7 +557,7 @@ impl<'a> InputCapture<'a> {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-createsession).
     pub async fn create_session(
         &self,
-        parent_window: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         capabilities: BitFlags<Capabilities>,
     ) -> Result<(Session<'_, Self>, BitFlags<Capabilities>), Error> {
         let options = CreateSessionOptions {
@@ -565,13 +565,13 @@ impl<'a> InputCapture<'a> {
             session_handle_token: Default::default(),
             capabilities,
         };
-
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         let (request, proxy) = futures_util::try_join!(
             self.0
                 .request::<CreateSessionResponse>(
                     &options.handle_token,
                     "CreateSession",
-                    (parent_window, &options)
+                    (identifier, &options)
                 )
                 .into_future(),
             Session::from_unique_name(&options.session_handle_token).into_future(),

@@ -86,10 +86,11 @@ impl<'a> OpenURIProxy<'a> {
 
     pub async fn open_directory(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         directory: &BorrowedFd<'_>,
         options: OpenDirOptions,
     ) -> Result<Request<()>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -101,10 +102,11 @@ impl<'a> OpenURIProxy<'a> {
 
     pub async fn open_file(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         file: &BorrowedFd<'_>,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -116,10 +118,11 @@ impl<'a> OpenURIProxy<'a> {
 
     pub async fn open_uri(
         &self,
-        identifier: &WindowIdentifier,
+        identifier: Option<&WindowIdentifier>,
         uri: &url::Url,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -145,7 +148,7 @@ impl<'a> std::ops::Deref for OpenURIProxy<'a> {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct OpenFileRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     options: OpenFileOptions,
 }
 
@@ -153,7 +156,7 @@ impl OpenFileRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -184,13 +187,17 @@ impl OpenFileRequest {
     /// Send the request for a file.
     pub async fn send_file(self, file: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
-        proxy.open_file(&self.identifier, file, self.options).await
+        proxy
+            .open_file(self.identifier.as_ref(), file, self.options)
+            .await
     }
 
     /// Send the request for a URI.
     pub async fn send_uri(self, uri: &Url) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
-        proxy.open_uri(&self.identifier, uri, self.options).await
+        proxy
+            .open_uri(self.identifier.as_ref(), uri, self.options)
+            .await
     }
 }
 
@@ -201,7 +208,7 @@ impl OpenFileRequest {
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct OpenDirectoryRequest {
-    identifier: WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     options: OpenDirOptions,
 }
 
@@ -209,7 +216,7 @@ impl OpenDirectoryRequest {
     #[must_use]
     /// Sets a window identifier.
     pub fn identifier(mut self, identifier: impl Into<Option<WindowIdentifier>>) -> Self {
-        self.identifier = identifier.into().unwrap_or_default();
+        self.identifier = identifier.into();
         self
     }
 
@@ -227,7 +234,7 @@ impl OpenDirectoryRequest {
     pub async fn send(self, directory: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
-            .open_directory(&self.identifier, directory, self.options)
+            .open_directory(self.identifier.as_ref(), directory, self.options)
             .await
     }
 }
