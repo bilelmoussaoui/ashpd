@@ -16,9 +16,11 @@
     </screenshot>
     <screenshot>
       <image>https://github.com/bilelmoussaoui/ashpd/raw/master/ashpd-demo/data/resources/screenshots/screenshot2.png</image>
+      <caption>Account Portal Panel</caption>
     </screenshot>
     <screenshot>
       <image>https://github.com/bilelmoussaoui/ashpd/raw/master/ashpd-demo/data/resources/screenshots/screenshot3.png</image>
+      <caption>Screenshot Portal Panel</caption>
     </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/bilelmoussaoui/ashpd</url>
