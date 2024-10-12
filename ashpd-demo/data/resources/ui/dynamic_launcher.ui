@@ -76,11 +76,18 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkTextView" id="desktop_file_content">
+                  <object class="AdwBin">
                     <property name="margin-top">12</property>
                     <style>
                       <class name="card" />
                     </style>
+                    <child>
+                      <object class="GtkTextView" id="desktop_file_content">
+                        <style>
+                          <class name="inline" />
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
