@@ -47,7 +47,7 @@ mod desktop_file_row {
             #[template_child]
             pub(super) size_row: TemplateChild<adw::ActionRow>,
             #[template_child]
-            uninstall_button: TemplateChild<gtk::Button>,
+            uninstall_button: TemplateChild<adw::ButtonRow>,
         }
 
         #[glib::object_subclass]
