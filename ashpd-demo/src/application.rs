@@ -202,16 +202,14 @@ impl Application {
     }
 
     fn show_about_dialog(&self) {
-        adw::AboutWindow::builder()
+        adw::AboutDialog::builder()
             .application_icon(config::APP_ID)
             .license_type(gtk::License::MitX11)
             .website("https://github.com/bilelmoussaoui/ashpd/")
             .version(config::VERSION)
-            .transient_for(&self.main_window())
-            .modal(true)
             .developer_name("Bilal Elmoussaoui")
             .build()
-            .present();
+            .present(Some(&self.main_window()));
     }
 
     async fn restart(&self) -> ashpd::Result<()> {
