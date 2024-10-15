@@ -15,6 +15,9 @@
             <property name="margin-top">6</property>
             <property name="margin-bottom">6</property>
             <property name="pixel-size">96</property>
+            <style>
+              <class name="icon-dropshadow"/>
+            </style>
           </object>
         </child>
         <child>
