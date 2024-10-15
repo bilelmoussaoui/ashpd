@@ -49,18 +49,13 @@
               </object>
             </child>
             <child>
-              <object class="GtkListBoxRow">
-                <property name="activatable">False</property>
-                <child>
-                  <object class="GtkButton" id="uninstall_button">
-                    <property name="label" translatable="yes">Uninstall</property>
-                    <property name="action-name">dynamic_launcher.uninstall</property>
-                    <property name="halign">end</property>
-                    <style>
-                      <class name="destructive-action" />
-                    </style>
-                  </object>
-                </child>
+              <object class="AdwButtonRow" id="uninstall_button">
+                <property name="title" translatable="yes">Uninstall</property>
+                <property name="action-name">dynamic_launcher.uninstall</property>
+                <property name="start-icon-name">user-trash-symbolic</property>
+                <style>
+                  <class name="destructive-action" />
+                </style>
               </object>
             </child>
             <style>

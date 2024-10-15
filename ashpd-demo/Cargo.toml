@@ -5,7 +5,7 @@ name = "ashpd-demo"
 version = "0.4.1"
 
 [dependencies]
-adw = {version = "0.7", package = "libadwaita", features = ["v1_4"]}
+adw = {version = "0.7", package = "libadwaita", features = ["v1_6"]}
 anyhow = "1.0"
 ashpd = {version = "^0.9", features = ["gtk4", "tracing", "pipewire"]}
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
