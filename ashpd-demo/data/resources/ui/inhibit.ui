@@ -29,6 +29,9 @@
                     <child>
                       <object class="GtkCheckButton" id="logout_check">
                         <property name="valign">center</property>
+                        <style>
+                          <class name="selection-mode" />
+                        </style>
                       </object>
                     </child>
                   </object>
@@ -40,6 +43,9 @@
                     <child>
                       <object class="GtkCheckButton" id="user_switch_check">
                         <property name="valign">center</property>
+                        <style>
+                          <class name="selection-mode" />
+                        </style>
                       </object>
                     </child>
                   </object>
@@ -51,6 +57,9 @@
                     <child>
                       <object class="GtkCheckButton" id="suspend_check">
                         <property name="valign">center</property>
+                        <style>
+                          <class name="selection-mode" />
+                        </style>
                       </object>
                     </child>
                   </object>
@@ -62,6 +71,9 @@
                     <child>
                       <object class="GtkCheckButton" id="idle_check">
                         <property name="valign">center</property>
+                        <style>
+                          <class name="selection-mode" />
+                        </style>
                       </object>
                     </child>
                   </object>
