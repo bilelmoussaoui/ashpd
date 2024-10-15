@@ -55,6 +55,9 @@
                           <object class="GtkCheckButton" id="monitor_check">
                             <property name="active">True</property>
                             <property name="valign">center</property>
+                            <style>
+                              <class name="selection-mode" />
+                            </style>
                           </object>
                         </child>
                       </object>
@@ -66,6 +69,9 @@
                         <child>
                           <object class="GtkCheckButton" id="window_check">
                             <property name="valign">center</property>
+                            <style>
+                              <class name="selection-mode" />
+                            </style>
                           </object>
                         </child>
                       </object>
@@ -77,6 +83,9 @@
                         <child>
                           <object class="GtkCheckButton" id="virtual_check">
                             <property name="valign">center</property>
+                            <style>
+                              <class name="selection-mode" />
+                            </style>
                           </object>
                         </child>
                       </object>
