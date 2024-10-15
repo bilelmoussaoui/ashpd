@@ -76,8 +76,16 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkTextView" id="desktop_file_content">
+                  <object class="GtkScrolledWindow">
                     <property name="margin-top">12</property>
+                    <property name="height_request">140</property>
+                    <child>
+                      <object class="GtkTextView" id="desktop_file_content">
+                        <style>
+                          <class name="inline" />
+                        </style>
+                      </object>
+                    </child>
                     <style>
                       <class name="card" />
                     </style>

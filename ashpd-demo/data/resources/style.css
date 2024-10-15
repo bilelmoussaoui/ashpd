@@ -38,3 +38,9 @@ banner.success revealer widget {
 .installed-apps {
     background-color: var(--window-bg-color);
 }
+
+toolbarview scrolledwindow.card undershoot.top,
+toolbarview scrolledwindow.card undershoot.bottom {
+  box-shadow: none;
+  background: none;
+}
