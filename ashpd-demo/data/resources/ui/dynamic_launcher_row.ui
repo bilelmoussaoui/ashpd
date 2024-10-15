@@ -41,6 +41,9 @@
                 <property name="activatable">False</property>
                 <child>
                   <object class="GtkTextView" id="text_view">
+                    <style>
+                      <class name="inline"/>
+                    </style>
                   </object>
                 </child>
               </object>
