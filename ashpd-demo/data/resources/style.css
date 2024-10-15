@@ -22,19 +22,19 @@ notification infobar label {
 }
 
 .map-marker {
-    color: #e01b24;
+    color: var(--red-3);
 }
 
 banner.error revealer widget {
-    background-color: @error_bg_color;
-    color: @error_fg_color;
+    background-color: var(--error-bg-color);
+    color: var(--error-fg-color);
 }
 
 banner.success revealer widget {
-    background-color: @success_bg_color;
-    color: @success_fg_color;
+    background-color: var(--success-bg-color);
+    color: var(--success-fg-color);
 }
 
 .installed-apps {
-    background-color: @bg_color;
+    background-color: var(--window-bg-color);
 }
