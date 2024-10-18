@@ -23,7 +23,7 @@ async fn main() -> ashpd::Result<()> {
     // Enable debug with `RUST_LOG=ashpd_backend_demo=debug COMMAND`.
     tracing_subscriber::fmt::init();
 
-    let cnx = zbus::ConnectionBuilder::session()?
+    let cnx = zbus::connection::Builder::session()?
         .name(NAME)?
         .build()
         .await?;

@@ -25,7 +25,7 @@ mod fdo_account {
         interface = "org.freedesktop.Accounts.User",
         gen_blocking = false
     )]
-    trait Accounts {
+    pub trait Accounts {
         #[zbus(property, name = "IconFile")]
         fn icon_file(&self) -> zbus::Result<String>;
         #[zbus(property, name = "UserName")]
