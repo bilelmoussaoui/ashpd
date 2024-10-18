@@ -3,6 +3,9 @@ use std::ops::Deref;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::Type;
 
+#[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
+mod gtk4;
+
 /// A token that can be used to activate an application.
 ///
 /// No guarantees are made for the token structure.
