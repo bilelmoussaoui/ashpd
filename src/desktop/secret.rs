@@ -9,7 +9,7 @@
 //!     let secret = Secret::new().await?;
 //!
 //!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair()?;
-//!     secret.retrieve(&x2.as_fd()).await?;
+//!     secret.retrieve(&x2).await?;
 //!     drop(x2);
 //!     let mut buf = Vec::new();
 //!     x1.read_to_end(&mut buf)?;
@@ -18,14 +18,14 @@
 //! }
 //! ```
 
-use std::os::fd::{AsFd, BorrowedFd};
+use std::os::fd::AsFd;
 
 #[cfg(feature = "async-std")]
-use async_net::unix::UnixStream;
+use async_net::{unix::UnixStream, Shutdown};
 #[cfg(feature = "async-std")]
 use futures_util::AsyncReadExt;
 #[cfg(feature = "tokio")]
-use tokio::{io::AsyncReadExt, net::UnixStream};
+use tokio::{io::AsyncReadExt, io::AsyncWriteExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
@@ -68,7 +68,7 @@ impl<'a> Secret<'a> {
     ///
     /// See also [`RetrieveSecret`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Secret.html#org-freedesktop-portal-secret-retrievesecret)
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve(&self, fd: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
+    pub async fn retrieve(&self, fd: &impl AsFd) -> Result<Request<()>, Error> {
         let options = RetrieveOptions::default();
         self.0
             .empty_request(
@@ -93,11 +93,23 @@ impl<'a> std::ops::Deref for Secret<'a> {
 /// It crates a UnixStream internally for receiving the secret.
 pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
+    let mut buf = Vec::with_capacity(64);
 
-    let (mut x1, x2) = UnixStream::pair()?;
-    proxy.retrieve(&x2.as_fd()).await?;
-    drop(x2);
-    let mut buf = Vec::new();
+    #[cfg(feature = "tokio")]
+    let mut x1 = {
+        let (x1, mut x2) = UnixStream::pair()?;
+        proxy.retrieve(&x2).await?;
+        x2.shutdown().await?;
+        x1
+    };
+    #[cfg(feature = "async-std")]
+    let mut x1 = {
+        let (x1, x2) = UnixStream::pair()?;
+        proxy.retrieve(&x2).await?;
+        x2.shutdown(Shutdown::Write)?;
+        x1
+    };
+
     x1.read_to_end(&mut buf).await?;
 
     Ok(buf)
