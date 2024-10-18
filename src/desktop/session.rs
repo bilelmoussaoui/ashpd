@@ -77,7 +77,7 @@ where
     }
 }
 
-impl<'a, T> Serialize for Session<'a, T>
+impl<T> Serialize for Session<'_, T>
 where
     T: SessionPortal,
 {
@@ -89,7 +89,7 @@ where
     }
 }
 
-impl<'a, T> Debug for Session<'a, T>
+impl<T> Debug for Session<'_, T>
 where
     T: SessionPortal,
 {

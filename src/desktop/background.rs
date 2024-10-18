@@ -112,7 +112,6 @@ impl<'a> BackgroundProxy<'a> {
     /// # Specifications
     ///
     /// See also [`SetStatus`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html#org-freedesktop-portal-background-setstatus).
-
     pub async fn set_status(&self, message: &str) -> Result<(), Error> {
         self.0
             .call_versioned(
