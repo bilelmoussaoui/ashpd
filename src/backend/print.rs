@@ -87,13 +87,13 @@ impl PrintInterface {
 
 #[zbus::interface(name = "org.freedesktop.impl.portal.Print")]
 impl PrintInterface {
-    #[dbus_interface(property(emits_changed_signal = "const"), name = "version")]
+    #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
         3
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn prepare_print(
         &self,
         handle: OwnedObjectPath,
@@ -127,7 +127,7 @@ impl PrintInterface {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn print(
         &self,
         handle: OwnedObjectPath,

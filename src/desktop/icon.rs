@@ -37,7 +37,7 @@ impl Icon {
     pub(crate) fn inner_bytes(&self) -> Value {
         match self {
             Self::Bytes(bytes) => {
-                let mut array = zvariant::Array::new(u8::signature());
+                let mut array = zvariant::Array::new(u8::SIGNATURE);
                 for byte in bytes.iter() {
                     // Safe to unwrap because we are sure it is of the correct type
                     array.append(Value::from(*byte)).unwrap();
@@ -52,7 +52,7 @@ impl Icon {
         let tuple = match self {
             Self::Uri(uri) => ("file", Value::from(uri.as_str())),
             Self::Names(names) => {
-                let mut array = zvariant::Array::new(String::signature());
+                let mut array = zvariant::Array::new(String::SIGNATURE);
                 for name in names.iter() {
                     // Safe to unwrap because we are sure it is of the correct type
                     array.append(Value::from(name)).unwrap();
@@ -79,7 +79,7 @@ impl Serialize for Icon {
             }
             Self::Names(names) => {
                 tuple.serialize_element("themed")?;
-                let mut array = zvariant::Array::new(String::signature());
+                let mut array = zvariant::Array::new(String::SIGNATURE);
                 for name in names.iter() {
                     // Safe to unwrap because we are sure it is of the correct type
                     array.append(Value::from(name)).unwrap();
@@ -196,7 +196,7 @@ mod test {
 
     #[test]
     fn check_icon_signature() {
-        assert_eq!(Icon::signature(), "(sv)");
+        assert_eq!(Icon::SIGNATURE, "(sv)");
     }
 
     #[test]

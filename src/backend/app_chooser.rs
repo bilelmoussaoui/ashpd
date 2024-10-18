@@ -113,7 +113,7 @@ impl AppChooserInterface {
         2
     }
 
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn choose_application(
         &self,
         handle: OwnedObjectPath,

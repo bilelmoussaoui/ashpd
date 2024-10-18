@@ -10,7 +10,7 @@ use crate::{
         },
         Color,
     },
-    zbus::SignalContext,
+    zbus::object_server::SignalEmitter,
     zvariant::{OwnedValue, Value},
     PortalError,
 };
@@ -43,7 +43,7 @@ impl SettingsInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        Self::setting_changed(iface_ref.signal_context(), namespace, key, value).await
+        Self::setting_changed(iface_ref.signal_emitter(), namespace, key, value).await
     }
 
     pub async fn contrast_changed(&self, contrast: Contrast) -> zbus::Result<()> {
@@ -81,7 +81,7 @@ impl SettingsInterface {
         2
     }
 
-    #[dbus_interface(out_args("value"))]
+    #[zbus(out_args("value"))]
     async fn read_all(
         &self,
         namespaces: Vec<String>,
@@ -96,7 +96,7 @@ impl SettingsInterface {
         response
     }
 
-    #[dbus_interface(out_args("value"))]
+    #[zbus(out_args("value"))]
     async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::Read");
@@ -110,7 +110,7 @@ impl SettingsInterface {
 
     #[zbus(signal)]
     async fn setting_changed(
-        signal_ctxt: &SignalContext<'_>,
+        signal_ctxt: &SignalEmitter<'_>,
         namespace: &str,
         key: &str,
         value: Value<'_>,

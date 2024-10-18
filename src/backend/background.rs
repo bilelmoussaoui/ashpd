@@ -7,7 +7,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use crate::{
     backend::request::{Request, RequestImpl},
     desktop::Response,
-    zbus::SignalContext,
+    zbus::object_server::SignalEmitter,
     zvariant::{OwnedObjectPath, SerializeDict, Type},
     AppID, PortalError,
 };
@@ -81,7 +81,7 @@ impl BackgroundInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        Self::running_applications_changed(iface_ref.signal_context()).await
+        Self::running_applications_changed(iface_ref.signal_emitter()).await
     }
 }
 
@@ -92,7 +92,7 @@ impl BackgroundInterface {
         2
     }
 
-    #[dbus_interface(out_args("apps"))]
+    #[zbus(out_args("apps"))]
     async fn get_app_state(&self) -> Result<HashMap<AppID, AppState>, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Background::GetAppState");
@@ -104,7 +104,7 @@ impl BackgroundInterface {
         response
     }
 
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn notify_background(
         &self,
         handle: OwnedObjectPath,
@@ -123,7 +123,7 @@ impl BackgroundInterface {
         .await
     }
 
-    #[dbus_interface(out_args("result"))]
+    #[zbus(out_args("result"))]
     async fn enable_autostart(
         &self,
         app_id: AppID,
@@ -145,5 +145,5 @@ impl BackgroundInterface {
     }
 
     #[zbus(signal)]
-    async fn running_applications_changed(signal_ctxt: &SignalContext<'_>) -> zbus::Result<()>;
+    async fn running_applications_changed(signal_ctxt: &SignalEmitter<'_>) -> zbus::Result<()>;
 }

@@ -77,7 +77,7 @@ impl ScreenshotInterface {
     }
 
     #[zbus(name = "Screenshot")]
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn screenshot(
         &self,
         handle: OwnedObjectPath,
@@ -101,7 +101,7 @@ impl ScreenshotInterface {
     }
 
     #[zbus(name = "PickColor")]
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn pick_color(
         &self,
         handle: OwnedObjectPath,

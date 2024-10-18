@@ -37,12 +37,12 @@ impl SecretInterface {
 
 #[zbus::interface(name = "org.freedesktop.impl.portal.Secret")]
 impl SecretInterface {
-    #[dbus_interface(property(emits_changed_signal = "const"), name = "version")]
+    #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
         1
     }
 
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn retrieve_secret(
         &self,
         handle: zvariant::OwnedObjectPath,

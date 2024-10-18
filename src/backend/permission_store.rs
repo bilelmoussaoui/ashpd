@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::{
     documents::{DocumentID, Permission},
-    zbus::SignalContext,
+    zbus::object_server::SignalEmitter,
     zvariant::{OwnedValue, Value},
     AppID, PortalError,
 };
@@ -89,7 +89,7 @@ impl PermissionStoreInterface {
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
         Self::changed(
-            iface_ref.signal_context(),
+            iface_ref.signal_emitter(),
             table,
             id,
             deleted,
@@ -107,7 +107,7 @@ impl PermissionStoreInterface {
         2
     }
 
-    #[dbus_interface(out_args("permissions", "data"))]
+    #[zbus(out_args("permissions", "data"))]
     async fn lookup(
         &self,
         table: &str,
@@ -158,7 +158,7 @@ impl PermissionStoreInterface {
         response
     }
 
-    #[dbus_interface(out_args("ids"))]
+    #[zbus(out_args("ids"))]
     async fn list(&self, table: &str) -> Result<Vec<DocumentID>, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::List");
@@ -170,7 +170,7 @@ impl PermissionStoreInterface {
         response
     }
 
-    #[dbus_interface(out_args("permissions"))]
+    #[zbus(out_args("permissions"))]
     async fn get_permission(
         &self,
         table: &str,
@@ -237,7 +237,7 @@ impl PermissionStoreInterface {
 
     #[zbus(signal)]
     async fn changed(
-        signal_ctxt: &SignalContext<'_>,
+        signal_ctxt: &SignalEmitter<'_>,
         table: &str,
         id: DocumentID,
         deleted: bool,

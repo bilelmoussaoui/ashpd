@@ -62,7 +62,7 @@ impl LockdownInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        let ctxt = iface_ref.signal_context();
+        let ctxt = iface_ref.signal_emitter();
 
         self.imp.set_disable_printing(disable_printing).await?;
         self.disable_printing_changed(ctxt).await?;
@@ -80,7 +80,7 @@ impl LockdownInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        let ctxt = iface_ref.signal_context();
+        let ctxt = iface_ref.signal_emitter();
 
         self.imp
             .set_disable_save_to_disk(disable_save_to_disk)
@@ -103,7 +103,7 @@ impl LockdownInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        let ctxt = iface_ref.signal_context();
+        let ctxt = iface_ref.signal_emitter();
 
         self.imp
             .set_disable_application_handlers(disable_application_handlers)
@@ -123,7 +123,7 @@ impl LockdownInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        let ctxt = iface_ref.signal_context();
+        let ctxt = iface_ref.signal_emitter();
 
         self.imp.set_disable_location(disable_location).await?;
         self.disable_location_changed(ctxt).await?;
@@ -141,7 +141,7 @@ impl LockdownInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        let ctxt = iface_ref.signal_context();
+        let ctxt = iface_ref.signal_emitter();
 
         self.imp.set_disable_camera(disable_camera).await?;
         self.disable_camera_changed(ctxt).await?;
@@ -159,7 +159,7 @@ impl LockdownInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        let ctxt = iface_ref.signal_context();
+        let ctxt = iface_ref.signal_emitter();
 
         self.imp.set_disable_microphone(disable_microphone).await?;
         self.disable_microphone_changed(ctxt).await?;
@@ -177,7 +177,7 @@ impl LockdownInterface {
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
-        let ctxt = iface_ref.signal_context();
+        let ctxt = iface_ref.signal_emitter();
 
         self.imp
             .set_disable_sound_output(disable_sound_output)

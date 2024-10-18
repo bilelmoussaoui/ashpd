@@ -85,12 +85,12 @@ impl EmailInterface {
 
 #[zbus::interface(name = "org.freedesktop.impl.portal.Email")]
 impl EmailInterface {
-    #[dbus_interface(property(emits_changed_signal = "const"), name = "version")]
+    #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
         4
     }
 
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn compose_email(
         &self,
         handle: OwnedObjectPath,

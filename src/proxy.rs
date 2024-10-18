@@ -64,7 +64,7 @@ impl<'a> Proxy<'a> {
         P::Error: Into<zbus::Error>,
     {
         let connection = Self::connection().await?;
-        let inner: zbus::Proxy = zbus::ProxyBuilder::new(&connection)
+        let inner: zbus::Proxy = zbus::proxy::Builder::new(&connection)
             .interface(interface)?
             .path(path)?
             .destination(destination)?

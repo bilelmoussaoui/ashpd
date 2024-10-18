@@ -232,7 +232,7 @@ impl FileChooserInterface {
         4
     }
 
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn open_file(
         &self,
         handle: OwnedObjectPath,
@@ -256,7 +256,7 @@ impl FileChooserInterface {
         .await
     }
 
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn save_file(
         &self,
         handle: OwnedObjectPath,
@@ -280,7 +280,7 @@ impl FileChooserInterface {
         .await
     }
 
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn save_files(
         &self,
         handle: OwnedObjectPath,

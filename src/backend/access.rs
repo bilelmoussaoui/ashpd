@@ -90,13 +90,13 @@ impl AccessInterface {
 
 #[zbus::interface(name = "org.freedesktop.impl.portal.Access")]
 impl AccessInterface {
-    #[dbus_interface(property(emits_changed_signal = "const"), name = "version")]
+    #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
         1 // TODO: Is this correct?
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[dbus_interface(out_args("response", "results"))]
+    #[zbus(out_args("response", "results"))]
     async fn access_dialog(
         &self,
         handle: OwnedObjectPath,
