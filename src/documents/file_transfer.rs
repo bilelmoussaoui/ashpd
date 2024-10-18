@@ -22,7 +22,7 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, os::fd::BorrowedFd};
+use std::{collections::HashMap, os::fd::AsFd};
 
 use futures_util::Stream;
 use zbus::zvariant::{Fd, SerializeDict, Type, Value};
@@ -98,7 +98,7 @@ impl<'a> FileTransfer<'a> {
     ///
     /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html#org-freedesktop-portal-filetransfer-addfiles).
     #[doc(alias = "AddFiles")]
-    pub async fn add_files(&self, key: &str, fds: &[&BorrowedFd<'_>]) -> Result<(), Error> {
+    pub async fn add_files(&self, key: &str, fds: &[impl AsFd]) -> Result<(), Error> {
         // `options` parameter doesn't seems to be used yet
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let files: Vec<Fd> = fds.iter().map(Fd::from).collect();
