@@ -369,8 +369,7 @@ mod test {
 
     #[test]
     fn test_icon_signature() {
-        let signature = LauncherIcon::signature();
-        assert_eq!(signature.as_str(), "(vsu)");
+        assert_eq!(LauncherIcon::SIGNATURE, "(vsu)");
 
         let icon = vec![IconType::Png];
         assert_eq!(serde_json::to_string(&icon).unwrap(), "[\"png\"]");

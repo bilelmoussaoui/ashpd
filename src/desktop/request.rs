@@ -294,13 +294,13 @@ mod tests {
     fn response_signature() {
         use crate::desktop::account::UserInformation;
         assert_eq!(
-            <(ResponseType, HashMap<&str, Value<'_>>)>::signature(),
-            Response::<()>::signature(),
+            <(ResponseType, HashMap<&str, Value<'_>>)>::SIGNATURE,
+            Response::<()>::SIGNATURE,
         );
         assert_eq!(
-            <(ResponseType, UserInformation)>::signature(),
-            Response::<UserInformation>::signature(),
+            <(ResponseType, UserInformation)>::SIGNATURE,
+            Response::<UserInformation>::SIGNATURE,
         );
-        assert_eq!(Response::<()>::signature(), "(ua{sv})");
+        assert_eq!(Response::<()>::SIGNATURE, "(ua{sv})");
     }
 }

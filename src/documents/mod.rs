@@ -531,6 +531,6 @@ mod tests {
         let decoded = serde_json::from_str(&string).unwrap();
         assert_eq!(permission, decoded);
 
-        assert_eq!(HashMap::<DocumentID, FilePath>::signature(), "a{say}");
+        assert_eq!(HashMap::<DocumentID, FilePath>::SIGNATURE, "a{say}");
     }
 }
