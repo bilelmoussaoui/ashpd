@@ -404,7 +404,7 @@ impl Deactivated {
 struct ActivatedOptions {
     activation_id: Option<u32>,
     cursor_position: Option<(f32, f32)>,
-    barrier_id: ActivatedBarrier,
+    barrier_id: Option<ActivatedBarrier>,
 }
 
 /// Indicates that an input capturing session was activated.
@@ -428,24 +428,23 @@ impl Activated {
         self.1.cursor_position
     }
 
-    /// The barrier id of the barrier that triggered
-    pub fn barrier_id(&self) -> ActivatedBarrier {
+    /// The barrier that was triggered or None,
+    /// if the input-capture was not triggered by a barrier
+    pub fn barrier_id(&self) -> Option<ActivatedBarrier> {
         self.1.barrier_id
     }
 }
 
 #[derive(zvariant::Type)]
-#[zvariant(signature = "gu")]
+#[zvariant(signature = "u")]
 #[derive(Clone, Copy, Debug)]
 /// information about an activation barrier
 pub enum ActivatedBarrier {
     /// [`BarrierID`] of the triggered barrier
     Barrier(BarrierID),
-    /// The id of the triggered barrier could not be deteremined,
+    /// The id of the triggered barrier could not be determined,
     /// e.g. because of multiple barriers at the same location.
     UnknownBarrier,
-    /// input capture was not triggered by a pointer barrier
-    NoBarrier,
 }
 
 impl<'de> Deserialize<'de> for ActivatedBarrier {
@@ -454,7 +453,7 @@ impl<'de> Deserialize<'de> for ActivatedBarrier {
         D: serde::Deserializer<'de>,
     {
         let visitor = ActivatedBarrierVisitor {};
-        deserializer.deserialize_option(visitor)
+        deserializer.deserialize_u32(visitor)
     }
 }
 
@@ -464,21 +463,7 @@ impl<'de> Visitor<'de> for ActivatedBarrierVisitor {
     type Value = ActivatedBarrier;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(formatter, "an optional unsigned 32bit integer (u32)")
-    }
-
-    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        deserializer.deserialize_u32(self)
-    }
-
-    fn visit_none<E>(self) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        Ok(ActivatedBarrier::NoBarrier)
+        write!(formatter, "an unsigned 32bit integer (u32)")
     }
 
     fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
