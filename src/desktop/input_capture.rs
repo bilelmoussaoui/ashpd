@@ -435,9 +435,8 @@ impl Activated {
     }
 }
 
-#[derive(zvariant::Type)]
+#[derive(Clone, Copy, Debug, Type)]
 #[zvariant(signature = "u")]
-#[derive(Clone, Copy, Debug)]
 /// information about an activation barrier
 pub enum ActivatedBarrier {
     /// [`BarrierID`] of the triggered barrier
