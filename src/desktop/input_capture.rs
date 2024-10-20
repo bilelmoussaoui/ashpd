@@ -290,11 +290,11 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, os::fd::OwnedFd};
+use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::{Stream, TryFutureExt};
-use serde::Deserialize;
+use serde::{de::Visitor, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
     self, DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
@@ -404,7 +404,7 @@ impl Deactivated {
 struct ActivatedOptions {
     activation_id: Option<u32>,
     cursor_position: Option<(f32, f32)>,
-    barrier_id: Option<BarrierID>,
+    barrier_id: ActivatedBarrier,
 }
 
 /// Indicates that an input capturing session was activated.
@@ -429,8 +429,66 @@ impl Activated {
     }
 
     /// The barrier id of the barrier that triggered
-    pub fn barrier_id(&self) -> Option<BarrierID> {
+    pub fn barrier_id(&self) -> ActivatedBarrier {
         self.1.barrier_id
+    }
+}
+
+#[derive(zvariant::Type)]
+#[zvariant(signature = "gu")]
+#[derive(Clone, Copy, Debug)]
+/// information about an activation barrier
+pub enum ActivatedBarrier {
+    /// [`BarrierID`] of the triggered barrier
+    Barrier(BarrierID),
+    /// The id of the triggered barrier could not be deteremined,
+    /// e.g. because of multiple barriers at the same location.
+    UnknownBarrier,
+    /// input capture was not triggered by a pointer barrier
+    NoBarrier,
+}
+
+impl<'de> Deserialize<'de> for ActivatedBarrier {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let visitor = ActivatedBarrierVisitor {};
+        deserializer.deserialize_option(visitor)
+    }
+}
+
+struct ActivatedBarrierVisitor {}
+
+impl<'de> Visitor<'de> for ActivatedBarrierVisitor {
+    type Value = ActivatedBarrier;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "an optional unsigned 32bit integer (u32)")
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_u32(self)
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(ActivatedBarrier::NoBarrier)
+    }
+
+    fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        match BarrierID::new(v) {
+            Some(v) => Ok(ActivatedBarrier::Barrier(v)),
+            None => Ok(ActivatedBarrier::UnknownBarrier),
+        }
     }
 }
 
@@ -505,7 +563,7 @@ impl Zones {
 }
 
 /// A barrier ID.
-pub type BarrierID = u32;
+pub type BarrierID = NonZeroU32;
 
 #[derive(Debug, SerializeDict, Type)]
 #[zvariant(signature = "dict")]
