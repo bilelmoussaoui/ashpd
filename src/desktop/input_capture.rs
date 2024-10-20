@@ -79,7 +79,7 @@
 //! and returned in the `failed_barrier_ids` vector.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::input_capture::{Barrier, Capabilities, InputCapture};
+//! use ashpd::desktop::input_capture::{Barrier, BarrierID, Capabilities, InputCapture};
 //!
 //! #[allow(unused)]
 //! enum Position {
@@ -106,7 +106,7 @@
 //!         .iter()
 //!         .enumerate()
 //!         .map(|(n, r)| {
-//!             let id = (n + 1) as u32;
+//!             let id = BarrierID::new((n + 1) as u32).expect("barrier-id must be non-zero");
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
@@ -143,7 +143,7 @@
 //! ```rust,no_run
 //! use std::{collections::HashMap, os::unix::net::UnixStream, sync::OnceLock, time::Duration};
 //!
-//! use ashpd::desktop::input_capture::{Barrier, Capabilities, InputCapture};
+//! use ashpd::desktop::input_capture::{Barrier, BarrierID, Capabilities, InputCapture};
 //! use futures_util::StreamExt;
 //! use reis::{
 //!     ei::{self, keyboard::KeyState},
@@ -217,7 +217,7 @@
 //!         .iter()
 //!         .enumerate()
 //!         .map(|(n, r)| {
-//!             let id = (n + 1) as u32;
+//!             let id = BarrierID::new((n + 1) as u32).expect("barrier-id must be non-zero");
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
