@@ -79,7 +79,7 @@
 //! and returned in the `failed_barrier_ids` vector.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::input_capture::{Barrier, Capabilities, InputCapture};
+//! use ashpd::desktop::input_capture::{Barrier, BarrierID, Capabilities, InputCapture};
 //!
 //! #[allow(unused)]
 //! enum Position {
@@ -106,7 +106,7 @@
 //!         .iter()
 //!         .enumerate()
 //!         .map(|(n, r)| {
-//!             let id = n as u32;
+//!             let id = BarrierID::new((n + 1) as u32).expect("barrier-id must be non-zero");
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
@@ -143,7 +143,7 @@
 //! ```rust,no_run
 //! use std::{collections::HashMap, os::unix::net::UnixStream, sync::OnceLock, time::Duration};
 //!
-//! use ashpd::desktop::input_capture::{Barrier, Capabilities, InputCapture};
+//! use ashpd::desktop::input_capture::{Barrier, BarrierID, Capabilities, InputCapture};
 //! use futures_util::StreamExt;
 //! use reis::{
 //!     ei::{self, keyboard::KeyState},
@@ -217,7 +217,7 @@
 //!         .iter()
 //!         .enumerate()
 //!         .map(|(n, r)| {
-//!             let id = n as u32;
+//!             let id = BarrierID::new((n + 1) as u32).expect("barrier-id must be non-zero");
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
@@ -290,11 +290,11 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, os::fd::OwnedFd};
+use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::{Stream, TryFutureExt};
-use serde::Deserialize;
+use serde::{de::Visitor, Deserialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
     self, DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
@@ -404,7 +404,7 @@ impl Deactivated {
 struct ActivatedOptions {
     activation_id: Option<u32>,
     cursor_position: Option<(f32, f32)>,
-    barrier_id: Option<BarrierID>,
+    barrier_id: Option<ActivatedBarrier>,
 }
 
 /// Indicates that an input capturing session was activated.
@@ -428,9 +428,51 @@ impl Activated {
         self.1.cursor_position
     }
 
-    /// The barrier id of the barrier that triggered
-    pub fn barrier_id(&self) -> Option<BarrierID> {
+    /// The barrier that was triggered or None,
+    /// if the input-capture was not triggered by a barrier
+    pub fn barrier_id(&self) -> Option<ActivatedBarrier> {
         self.1.barrier_id
+    }
+}
+
+#[derive(Clone, Copy, Debug, Type)]
+#[zvariant(signature = "u")]
+/// information about an activation barrier
+pub enum ActivatedBarrier {
+    /// [`BarrierID`] of the triggered barrier
+    Barrier(BarrierID),
+    /// The id of the triggered barrier could not be determined,
+    /// e.g. because of multiple barriers at the same location.
+    UnknownBarrier,
+}
+
+impl<'de> Deserialize<'de> for ActivatedBarrier {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let visitor = ActivatedBarrierVisitor {};
+        deserializer.deserialize_u32(visitor)
+    }
+}
+
+struct ActivatedBarrierVisitor {}
+
+impl<'de> Visitor<'de> for ActivatedBarrierVisitor {
+    type Value = ActivatedBarrier;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "an unsigned 32bit integer (u32)")
+    }
+
+    fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        match BarrierID::new(v) {
+            Some(v) => Ok(ActivatedBarrier::Barrier(v)),
+            None => Ok(ActivatedBarrier::UnknownBarrier),
+        }
     }
 }
 
@@ -505,7 +547,7 @@ impl Zones {
 }
 
 /// A barrier ID.
-pub type BarrierID = u32;
+pub type BarrierID = NonZeroU32;
 
 #[derive(Debug, SerializeDict, Type)]
 #[zvariant(signature = "dict")]
