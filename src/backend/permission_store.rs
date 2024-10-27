@@ -10,6 +10,18 @@ use crate::{
 };
 
 #[async_trait]
+pub trait PermissionStoreEmitter: Send + Sync {
+    async fn emit_document_changed(
+        &self,
+        table: &str,
+        id: DocumentID,
+        deleted: bool,
+        data: Value<'_>,
+        permissions: HashMap<AppID, Vec<Permission>>,
+    ) -> zbus::Result<()>;
+}
+
+#[async_trait]
 pub trait PermissionStoreImpl: Send + Sync {
     async fn lookup(
         &self,
@@ -60,6 +72,9 @@ pub trait PermissionStoreImpl: Send + Sync {
         id: DocumentID,
         app: AppID,
     ) -> Result<(), PortalError>;
+
+    // Set the signal emitter, allowing to notify of changes.
+    fn set_signal_emitter(&mut self, signal_emitter: Arc<dyn PermissionStoreEmitter>);
 }
 
 pub(crate) struct PermissionStoreInterface {
@@ -94,6 +109,21 @@ impl PermissionStoreInterface {
             permissions,
         )
         .await
+    }
+}
+
+#[async_trait]
+impl PermissionStoreEmitter for PermissionStoreInterface {
+    async fn emit_document_changed(
+        &self,
+        table: &str,
+        id: DocumentID,
+        deleted: bool,
+        data: Value<'_>,
+        permissions: HashMap<AppID, Vec<Permission>>,
+    ) -> zbus::Result<()> {
+        self.document_changed(table, id, deleted, data, permissions)
+            .await
     }
 }
 

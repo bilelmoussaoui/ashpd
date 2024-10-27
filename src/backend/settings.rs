@@ -16,6 +16,14 @@ use crate::{
 };
 
 #[async_trait]
+pub trait SettingsSignalEmitter: Send + Sync {
+    async fn emit_changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()>;
+    async fn emit_contrast_changed(&self, contrast: Contrast) -> zbus::Result<()>;
+    async fn emit_accent_color_changed(&self, color: Color) -> zbus::Result<()>;
+    async fn emit_color_scheme_changed(&self, scheme: ColorScheme) -> zbus::Result<()>;
+}
+
+#[async_trait]
 pub trait SettingsImpl: Send + Sync {
     async fn read_all(
         &self,
@@ -23,6 +31,9 @@ pub trait SettingsImpl: Send + Sync {
     ) -> Result<HashMap<String, Namespace>, PortalError>;
 
     async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError>;
+
+    // Set the signal emitter, allowing to notify of changes.
+    fn set_signal_emitter(&mut self, signal_emitter: Arc<dyn SettingsSignalEmitter>);
 }
 
 pub(crate) struct SettingsInterface {
@@ -68,6 +79,25 @@ impl SettingsInterface {
             OwnedValue::from(scheme).into(),
         )
         .await
+    }
+}
+
+#[async_trait]
+impl SettingsSignalEmitter for SettingsInterface {
+    async fn emit_changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
+        self.changed(namespace, key, value).await
+    }
+
+    async fn emit_contrast_changed(&self, contrast: Contrast) -> zbus::Result<()> {
+        self.contrast_changed(contrast).await
+    }
+
+    async fn emit_accent_color_changed(&self, color: Color) -> zbus::Result<()> {
+        self.accent_color_changed(color).await
+    }
+
+    async fn emit_color_scheme_changed(&self, scheme: ColorScheme) -> zbus::Result<()> {
+        self.color_scheme_changed(scheme).await
     }
 }
 

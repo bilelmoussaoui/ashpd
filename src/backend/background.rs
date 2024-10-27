@@ -48,6 +48,11 @@ pub enum AutoStartFlags {
 }
 
 #[async_trait]
+pub trait BackgroundSignalEmitter: Send + Sync {
+    async fn emit_changed(&self) -> zbus::Result<()>;
+}
+
+#[async_trait]
 pub trait BackgroundImpl: RequestImpl {
     async fn get_app_state(&self) -> Result<HashMap<AppID, AppState>, PortalError>;
 
@@ -61,6 +66,9 @@ pub trait BackgroundImpl: RequestImpl {
         commandline: Vec<String>,
         flags: BitFlags<AutoStartFlags>,
     ) -> Result<bool, PortalError>;
+
+    // Set the signal emitter, allowing to notify of changes.
+    fn set_signal_emitter(&mut self, signal_emitter: Arc<dyn BackgroundSignalEmitter>);
 }
 
 pub(crate) struct BackgroundInterface {
@@ -79,6 +87,13 @@ impl BackgroundInterface {
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
         Self::running_applications_changed(iface_ref.signal_emitter()).await
+    }
+}
+
+#[async_trait]
+impl BackgroundSignalEmitter for BackgroundInterface {
+    async fn emit_changed(&self) -> zbus::Result<()> {
+        self.changed().await
     }
 }
 

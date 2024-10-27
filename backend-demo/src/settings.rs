@@ -1,7 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use ashpd::{
-    backend::{request::RequestImpl, settings::SettingsImpl},
+    backend::{
+        request::RequestImpl,
+        settings::{SettingsImpl, SettingsSignalEmitter},
+    },
     desktop::settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY},
     zbus::zvariant::OwnedValue,
     PortalError,
@@ -11,6 +14,8 @@ use async_trait::async_trait;
 #[derive(Default, Clone)]
 pub struct Settings {
     color_scheme: ColorScheme,
+    // The signal emitter allows dispatching changed events without exposing DBus internals
+    signal_emitter: Option<Arc<dyn SettingsSignalEmitter>>,
 }
 
 #[async_trait]
@@ -44,5 +49,9 @@ impl SettingsImpl for Settings {
                 "Unsupported namespace=`{namespace}` & key=`{key}`"
             )))
         }
+    }
+
+    fn set_signal_emitter(&mut self, signal_emitter: Arc<dyn SettingsSignalEmitter>) {
+        self.signal_emitter.replace(signal_emitter);
     }
 }
