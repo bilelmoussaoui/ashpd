@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use enumflags2::BitFlags;
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
 use crate::backend::{
@@ -21,6 +22,7 @@ use crate::backend::{
 
 pub struct Builder {
     name: OwnedWellKnownName,
+    flags: BitFlags<zbus::fdo::RequestNameFlags>,
     account_impl: Option<Arc<dyn AccountImpl>>,
     access_impl: Option<Arc<dyn AccessImpl>>,
     app_chooser_impl: Option<Arc<dyn AppChooserImpl>>,
@@ -45,6 +47,9 @@ impl Builder {
         let well_known_name = well_known_name.try_into().map_err(Into::into)?;
         Ok(Self {
             name: well_known_name.into(),
+            // same flags as zbus::Connection::request_name
+            flags: zbus::fdo::RequestNameFlags::ReplaceExisting
+                | zbus::fdo::RequestNameFlags::DoNotQueue,
             account_impl: None,
             access_impl: None,
             app_chooser_impl: None,
@@ -59,6 +64,11 @@ impl Builder {
             settings_impl: None,
             wallpaper_impl: None,
         })
+    }
+
+    pub fn with_flags(mut self, flags: BitFlags<zbus::fdo::RequestNameFlags>) -> Self {
+        self.flags = flags;
+        self
     }
 
     pub fn account(mut self, imp: impl AccountImpl + 'static) -> Self {
@@ -127,10 +137,8 @@ impl Builder {
     }
 
     pub async fn build(self) -> Result<()> {
-        let cnx = zbus::connection::Builder::session()?
-            .name(self.name)?
-            .build()
-            .await?;
+        let cnx = zbus::Connection::session().await?;
+        cnx.request_name_with_flags(self.name, self.flags).await?;
         let object_server = cnx.object_server();
         if let Some(imp) = self.account_impl {
             let portal = AccountInterface::new(imp, cnx.clone());
