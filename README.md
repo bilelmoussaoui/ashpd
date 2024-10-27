@@ -52,6 +52,7 @@ pub async fn run() -> ashpd::Result<()> {
 | pipewire | Provides `ashpd::desktop::camera::pipewire_streams` that helps you retrieve the various camera streams associated with the retrieved file descriptor| No |
 | raw_handle | Provides `WindowIdentifier::from_raw_handle` and `WindowIdentifier::as_raw_handle` for [raw-window-handle](https://lib.rs/crates/raw-window-handle) crate | No |
 | wayland | Provides `WindowIdentifier::from_wayland` for [wayland-client](https://lib.rs/crates/wayland-client) crate | No |
+| backend | Enables portal backend implementation supoport | No |
 
 ## Demo
 
