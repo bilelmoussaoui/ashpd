@@ -74,17 +74,14 @@ pub trait AccessImpl: RequestImpl {
     ) -> Result<AccessResponse>;
 }
 
-pub struct AccessInterface {
+pub(crate) struct AccessInterface {
     imp: Arc<dyn AccessImpl>,
     cnx: zbus::Connection,
 }
 
 impl AccessInterface {
-    pub fn new(imp: impl AccessImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn AccessImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

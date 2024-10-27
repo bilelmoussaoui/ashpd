@@ -55,17 +55,14 @@ pub trait ScreenshotImpl: RequestImpl {
     ) -> Result<Color>;
 }
 
-pub struct ScreenshotInterface {
+pub(crate) struct ScreenshotInterface {
     imp: Arc<dyn ScreenshotImpl>,
     cnx: zbus::Connection,
 }
 
 impl ScreenshotInterface {
-    pub fn new(imp: impl ScreenshotImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn ScreenshotImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

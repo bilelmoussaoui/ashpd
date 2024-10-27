@@ -34,17 +34,14 @@ pub trait AccountImpl: RequestImpl {
     ) -> Result<UserInformation>;
 }
 
-pub struct AccountInterface {
+pub(crate) struct AccountInterface {
     imp: Arc<dyn AccountImpl>,
     cnx: zbus::Connection,
 }
 
 impl AccountInterface {
-    pub fn new(imp: impl AccountImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn AccountImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

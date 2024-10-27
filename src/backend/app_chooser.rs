@@ -92,17 +92,14 @@ pub trait AppChooserImpl: RequestImpl {
     ) -> Result<(), PortalError>;
 }
 
-pub struct AppChooserInterface {
+pub(crate) struct AppChooserInterface {
     imp: Arc<dyn AppChooserImpl>,
     cnx: zbus::Connection,
 }
 
 impl AppChooserInterface {
-    pub fn new(imp: impl AppChooserImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn AppChooserImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

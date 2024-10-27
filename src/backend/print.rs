@@ -71,17 +71,14 @@ pub trait PrintImpl: RequestImpl {
     ) -> Result<()>;
 }
 
-pub struct PrintInterface {
+pub(crate) struct PrintInterface {
     imp: Arc<dyn PrintImpl>,
     cnx: zbus::Connection,
 }
 
 impl PrintInterface {
-    pub fn new(imp: impl PrintImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn PrintImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

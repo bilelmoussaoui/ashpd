@@ -62,18 +62,15 @@ pub trait PermissionStoreImpl: Send + Sync {
     ) -> Result<(), PortalError>;
 }
 
-pub struct PermissionStoreInterface {
+pub(crate) struct PermissionStoreInterface {
     imp: Arc<dyn PermissionStoreImpl>,
     #[allow(dead_code)]
     cnx: zbus::Connection,
 }
 
 impl PermissionStoreInterface {
-    pub fn new(imp: impl PermissionStoreImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn PermissionStoreImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 
     pub async fn document_changed(

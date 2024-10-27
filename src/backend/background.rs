@@ -63,17 +63,14 @@ pub trait BackgroundImpl: RequestImpl {
     ) -> Result<bool, PortalError>;
 }
 
-pub struct BackgroundInterface {
+pub(crate) struct BackgroundInterface {
     imp: Arc<dyn BackgroundImpl>,
     cnx: zbus::Connection,
 }
 
 impl BackgroundInterface {
-    pub fn new(imp: impl BackgroundImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn BackgroundImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 
     pub async fn changed(&self) -> zbus::Result<()> {

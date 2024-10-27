@@ -69,17 +69,14 @@ pub trait EmailImpl: RequestImpl {
     ) -> Result<()>;
 }
 
-pub struct EmailInterface {
+pub(crate) struct EmailInterface {
     imp: Arc<dyn EmailImpl>,
     cnx: zbus::Connection,
 }
 
 impl EmailInterface {
-    pub fn new(imp: impl EmailImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn EmailImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

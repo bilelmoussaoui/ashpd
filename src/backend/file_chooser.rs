@@ -211,17 +211,14 @@ pub trait FileChooserImpl: RequestImpl {
     ) -> Result<SelectedFiles>;
 }
 
-pub struct FileChooserInterface {
+pub(crate) struct FileChooserInterface {
     imp: Arc<dyn FileChooserImpl>,
     cnx: zbus::Connection,
 }
 
 impl FileChooserInterface {
-    pub fn new(imp: impl FileChooserImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn FileChooserImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

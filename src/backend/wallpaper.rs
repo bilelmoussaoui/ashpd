@@ -42,17 +42,14 @@ pub trait WallpaperImpl: RequestImpl {
     ) -> Result<()>;
 }
 
-pub struct WallpaperInterface {
+pub(crate) struct WallpaperInterface {
     imp: Arc<dyn WallpaperImpl>,
     cnx: zbus::Connection,
 }
 
 impl WallpaperInterface {
-    pub fn new(imp: impl WallpaperImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn WallpaperImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

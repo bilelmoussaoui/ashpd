@@ -25,17 +25,14 @@ pub trait SettingsImpl: Send + Sync {
     async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError>;
 }
 
-pub struct SettingsInterface {
+pub(crate) struct SettingsInterface {
     imp: Arc<dyn SettingsImpl>,
     cnx: zbus::Connection,
 }
 
 impl SettingsInterface {
-    pub fn new(imp: impl SettingsImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn SettingsImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 
     pub async fn changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {

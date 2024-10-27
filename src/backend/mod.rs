@@ -57,6 +57,8 @@ pub mod access;
 pub mod account;
 pub mod app_chooser;
 pub mod background;
+mod builder;
+pub use builder::Builder;
 pub mod email;
 pub mod file_chooser;
 pub mod lockdown;

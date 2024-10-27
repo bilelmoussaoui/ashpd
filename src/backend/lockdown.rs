@@ -29,18 +29,15 @@ pub trait LockdownImpl: Send + Sync {
     async fn set_disable_sound_output(&self, disable_sound_output: bool) -> zbus::Result<()>;
 }
 
-pub struct LockdownInterface {
+pub(crate) struct LockdownInterface {
     imp: Arc<dyn LockdownImpl>,
     #[allow(dead_code)]
     cnx: zbus::Connection,
 }
 
 impl LockdownInterface {
-    pub fn new(imp: impl LockdownImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn LockdownImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 

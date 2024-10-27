@@ -21,17 +21,14 @@ pub trait SecretImpl: RequestImpl {
     ) -> Result<HashMap<String, OwnedValue>>;
 }
 
-pub struct SecretInterface {
+pub(crate) struct SecretInterface {
     imp: Arc<dyn SecretImpl>,
     cnx: zbus::Connection,
 }
 
 impl SecretInterface {
-    pub fn new(imp: impl SecretImpl + 'static, cnx: zbus::Connection) -> Self {
-        Self {
-            imp: Arc::new(imp),
-            cnx,
-        }
+    pub fn new(imp: Arc<dyn SecretImpl>, cnx: zbus::Connection) -> Self {
+        Self { imp, cnx }
     }
 }
 
