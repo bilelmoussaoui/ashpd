@@ -12,17 +12,17 @@ use crate::{
     Error, PortalError,
 };
 
-pub const DESKTOP_DESTINATION: &str = "org.freedesktop.portal.Desktop";
-pub const DESKTOP_PATH: &str = "/org/freedesktop/portal/desktop";
+pub(crate) const DESKTOP_DESTINATION: &str = "org.freedesktop.portal.Desktop";
+pub(crate) const DESKTOP_PATH: &str = "/org/freedesktop/portal/desktop";
 
-pub const DOCUMENTS_DESTINATION: &str = "org.freedesktop.portal.Documents";
-pub const DOCUMENTS_PATH: &str = "/org/freedesktop/portal/documents";
+pub(crate) const DOCUMENTS_DESTINATION: &str = "org.freedesktop.portal.Documents";
+pub(crate) const DOCUMENTS_PATH: &str = "/org/freedesktop/portal/documents";
 
-pub const FLATPAK_DESTINATION: &str = "org.freedesktop.portal.Flatpak";
-pub const FLATPAK_PATH: &str = "/org/freedesktop/portal/Flatpak";
+pub(crate) const FLATPAK_DESTINATION: &str = "org.freedesktop.portal.Flatpak";
+pub(crate) const FLATPAK_PATH: &str = "/org/freedesktop/portal/Flatpak";
 
-pub const FLATPAK_DEVELOPMENT_DESTINATION: &str = "org.freedesktop.Flatpak";
-pub const FLATPAK_DEVELOPMENT_PATH: &str = "/org/freedesktop/Flatpak/Development";
+pub(crate) const FLATPAK_DEVELOPMENT_DESTINATION: &str = "org.freedesktop.Flatpak";
+pub(crate) const FLATPAK_DEVELOPMENT_PATH: &str = "/org/freedesktop/Flatpak/Development";
 
 static SESSION: OnceLock<zbus::Connection> = OnceLock::new();
 
