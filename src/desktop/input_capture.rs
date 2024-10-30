@@ -148,7 +148,6 @@
 //! use reis::{
 //!     ei::{self, keyboard::KeyState},
 //!     event::{DeviceCapability, EiEvent, KeyboardKey},
-//!     tokio::{EiConvertEventStream, EiEventStream},
 //! };
 //!
 //! #[allow(unused)]
@@ -182,32 +181,10 @@
 //!     let context = ei::Context::new(stream)?;
 //!     context.flush().unwrap();
 //!
-//!     let mut event_stream = EiEventStream::new(context.clone())?;
-//!     let interfaces = INTERFACES.get_or_init(|| {
-//!         HashMap::from([
-//!             ("ei_connection", 1),
-//!             ("ei_callback", 1),
-//!             ("ei_pingpong", 1),
-//!             ("ei_seat", 1),
-//!             ("ei_device", 2),
-//!             ("ei_pointer", 1),
-//!             ("ei_pointer_absolute", 1),
-//!             ("ei_scroll", 1),
-//!             ("ei_button", 1),
-//!             ("ei_keyboard", 1),
-//!             ("ei_touchscreen", 1),
-//!         ])
-//!     });
-//!     let response = reis::tokio::ei_handshake(
-//!         &mut event_stream,
-//!         "ashpd-mre",
-//!         ei::handshake::ContextType::Receiver,
-//!         interfaces,
-//!     )
-//!     .await
-//!     .expect("ei handshake failed");
-//!
-//!     let mut event_stream = EiConvertEventStream::new(event_stream, response.serial);
+//!     let (_connection, mut event_stream) = context
+//!         .handshake_tokio("ashpd-mre", ei::handshake::ContextType::Receiver)
+//!         .await
+//!         .expect("ei handshake failed");
 //!
 //!     let pos = Position::Left;
 //!     let zones = input_capture.zones(&session).await?.response()?;
