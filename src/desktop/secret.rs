@@ -18,7 +18,7 @@
 //! }
 //! ```
 
-use std::os::fd::{AsFd, BorrowedFd};
+use std::os::fd::AsFd;
 
 #[cfg(feature = "async-std")]
 use async_net::unix::UnixStream;
@@ -68,7 +68,7 @@ impl<'a> Secret<'a> {
     ///
     /// See also [`RetrieveSecret`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Secret.html#org-freedesktop-portal-secret-retrievesecret)
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve(&self, fd: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
+    pub async fn retrieve(&self, fd: &impl AsFd) -> Result<Request<()>, Error> {
         let options = RetrieveOptions::default();
         self.0
             .empty_request(

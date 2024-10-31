@@ -33,7 +33,7 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, fmt, os::fd::BorrowedFd, path::Path, str::FromStr};
+use std::{collections::HashMap, fmt, os::fd::AsFd, path::Path, str::FromStr};
 
 use enumflags2::{bitflags, BitFlags};
 use serde::{Deserialize, Serialize};
@@ -178,7 +178,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "Add")]
     pub async fn add(
         &self,
-        o_path_fd: &BorrowedFd<'_>,
+        o_path_fd: &impl AsFd,
         reuse_existing: bool,
         persistent: bool,
     ) -> Result<DocumentID, Error> {
@@ -213,7 +213,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddFull")]
     pub async fn add_full(
         &self,
-        o_path_fds: &[&BorrowedFd<'_>],
+        o_path_fds: &[impl AsFd],
         flags: BitFlags<DocumentFlags>,
         app_id: Option<&AppID>,
         permissions: &[Permission],
@@ -246,7 +246,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddNamed")]
     pub async fn add_named(
         &self,
-        o_path_parent_fd: &BorrowedFd<'_>,
+        o_path_parent_fd: &impl AsFd,
         filename: impl AsRef<Path>,
         reuse_existing: bool,
         persistent: bool,
@@ -292,7 +292,7 @@ impl<'a> Documents<'a> {
     #[doc(alias = "AddNamedFull")]
     pub async fn add_named_full(
         &self,
-        o_path_fd: &BorrowedFd<'_>,
+        o_path_fd: &impl AsFd,
         filename: impl AsRef<Path>,
         flags: BitFlags<DocumentFlags>,
         app_id: Option<&AppID>,

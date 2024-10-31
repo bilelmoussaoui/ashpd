@@ -51,7 +51,7 @@
 //! }
 //! ```
 
-use std::os::fd::BorrowedFd;
+use std::os::fd::AsFd;
 
 use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
@@ -87,7 +87,7 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_directory(
         &self,
         identifier: Option<&WindowIdentifier>,
-        directory: &BorrowedFd<'_>,
+        directory: &impl AsFd,
         options: OpenDirOptions,
     ) -> Result<Request<()>, Error> {
         let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
@@ -103,7 +103,7 @@ impl<'a> OpenURIProxy<'a> {
     pub async fn open_file(
         &self,
         identifier: Option<&WindowIdentifier>,
-        file: &BorrowedFd<'_>,
+        file: &impl AsFd,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
         let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
@@ -185,7 +185,7 @@ impl OpenFileRequest {
     }
 
     /// Send the request for a file.
-    pub async fn send_file(self, file: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
+    pub async fn send_file(self, file: &impl AsFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
             .open_file(self.identifier.as_ref(), file, self.options)
@@ -231,7 +231,7 @@ impl OpenDirectoryRequest {
     }
 
     /// Send the request.
-    pub async fn send(self, directory: &BorrowedFd<'_>) -> Result<Request<()>, Error> {
+    pub async fn send(self, directory: &impl AsFd) -> Result<Request<()>, Error> {
         let proxy = OpenURIProxy::new().await?;
         proxy
             .open_directory(self.identifier.as_ref(), directory, self.options)
