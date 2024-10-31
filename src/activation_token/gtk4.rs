@@ -24,7 +24,7 @@ impl ActivationToken {
         if glib::check_version(2, 82, 0).is_some() {
             unsafe {
                 let klass: *mut gtk4::gio::ffi::GAppLaunchContextClass =
-                    std::ptr::addr_of!((*context.class().parent()?)) as *mut _;
+                    &context.class().parent()? as *const _ as *mut _;
                 let get_startup_notify_id = (*klass).get_startup_notify_id.as_ref()?;
                 from_glib_full::<_, Option<String>>(get_startup_notify_id(
                     context.as_ptr().cast(),
