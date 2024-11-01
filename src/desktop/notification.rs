@@ -59,8 +59,6 @@ use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Type, Value};
 use super::Icon;
 use crate::{proxy::Proxy, Error};
 
-#[cfg_attr(feature = "glib", derive(glib::Enum))]
-#[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationCategory"))]
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 /// The content of a notification.
@@ -229,7 +227,7 @@ impl FromStr for Priority {
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationDisplayHint"))]
-#[derive(Debug, Clone, PartialEq, Eq, Type)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 /// Ways to display a notification.
 pub enum DisplayHint {
@@ -409,8 +407,6 @@ impl Notification {
     }
 }
 
-#[cfg_attr(feature = "glib", derive(glib::Enum))]
-#[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationButtonPurpose"))]
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]
 /// The purpose of a button.
