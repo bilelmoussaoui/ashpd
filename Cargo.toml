@@ -66,6 +66,6 @@ serde_json = "1.0"
 reis = { version = "0.4", features = ["tokio"] }
 
 [package.metadata.docs.rs]
-features = ["gtk4", "raw_handle"]
+features = ["backend", "gtk4", "raw_handle"]
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
