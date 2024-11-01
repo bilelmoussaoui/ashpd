@@ -8,7 +8,7 @@ keywords = ["portal", "flatpak", "xdg", "desktop", "dbus"]
 license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
-version = "0.9.0"
+version = "0.10.0"
 rust-version = "1.75"
 
 [features]
@@ -26,9 +26,9 @@ glib = ["dep:glib"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
 
 [dependencies]
-async-fs = { version = "2.1.0", optional = true }
-async-net = { version = "2.0.0", optional = true }
-async-trait = { version = "0.1.60", optional = true }
+async-fs = { version = "2.1", optional = true }
+async-net = { version = "2.0", optional = true }
+async-trait = { version = "0.1", optional = true }
 enumflags2 = "0.7"
 futures-channel = "0.3"
 futures-util = "0.3"
@@ -44,12 +44,12 @@ rand = { version = "0.8", default-features = false, features = [
 raw-window-handle = { version = "0.6", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_repr = "0.1"
-tokio = { version = "1.21", features = [
+tokio = { version = "1.41", features = [
     "fs",
     "io-util",
 ], optional = true, default-features = false }
 tracing = { version = "0.1", optional = true }
-url = { version = "2.3", features = ["serde"] }
+url = { version = "2.5", features = ["serde"] }
 wayland-backend = { version = "0.3", optional = true, features = [
     "client_system",
 ] }
@@ -63,7 +63,7 @@ zbus = { version = "5.0", default-features = false, features = ["url"] }
 
 [dev-dependencies]
 serde_json = "1.0"
-reis = { version = "0.4.0", features = ["tokio"] }
+reis = { version = "0.4", features = ["tokio"] }
 
 [package.metadata.docs.rs]
 features = ["gtk4", "raw_handle"]
