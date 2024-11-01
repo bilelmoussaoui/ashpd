@@ -1,3 +1,5 @@
+use std::os::fd::AsFd;
+
 use serde::{
     de,
     ser::{Serialize, SerializeTuple},
@@ -7,7 +9,7 @@ use zbus::zvariant::{self, OwnedValue, Type, Value};
 
 use crate::Error;
 
-#[derive(Debug, PartialEq, Eq, Type)]
+#[derive(Debug, Type)]
 #[zvariant(signature = "(sv)")]
 /// A representation of an icon.
 ///
@@ -19,6 +21,8 @@ pub enum Icon {
     Names(Vec<String>),
     /// Icon bytes.
     Bytes(Vec<u8>),
+    /// A file descriptor.
+    FileDescriptor(std::os::fd::OwnedFd),
 }
 
 impl Icon {
@@ -61,6 +65,7 @@ impl Icon {
                 ("themed", Value::from(array))
             }
             Self::Bytes(_) => ("bytes", self.inner_bytes()),
+            Self::FileDescriptor(fd) => ("file-descriptor", zvariant::Fd::from(fd).into()),
         };
         Value::new(tuple)
     }
@@ -89,6 +94,10 @@ impl Serialize for Icon {
             Self::Bytes(_) => {
                 tuple.serialize_element("bytes")?;
                 tuple.serialize_element(&self.inner_bytes())?;
+            }
+            Self::FileDescriptor(fd) => {
+                tuple.serialize_element("file-descriptor")?;
+                tuple.serialize_element(&Value::from(zvariant::Fd::from(fd)))?;
             }
         }
         tuple.end()
@@ -124,6 +133,14 @@ impl<'de> Deserialize<'de> for Icon {
                     names.push(name.as_str().to_owned());
                 }
                 Ok(Self::Names(names))
+            }
+            "file-descriptor" => {
+                let fd = data.downcast_ref::<zvariant::Fd>().unwrap();
+                Ok(Self::FileDescriptor(
+                    fd.as_fd()
+                        .try_clone_to_owned()
+                        .expect("Failed to clone file descriptor"),
+                ))
             }
             _ => Err(de::Error::custom("Invalid Icon type")),
         }
@@ -162,6 +179,14 @@ impl TryFrom<&OwnedValue> for Icon {
                     names.push(name.as_str().to_owned());
                 }
                 Ok(Self::Names(names))
+            }
+            "file-descriptor" => {
+                let fd = fields[1].downcast_ref::<zvariant::Fd>().unwrap();
+                Ok(Self::FileDescriptor(
+                    fd.as_fd()
+                        .try_clone_to_owned()
+                        .expect("Failed to clone file descriptor"),
+                ))
             }
             _ => Err(Error::ParseError("Invalid Icon type")),
         }
@@ -207,16 +232,22 @@ mod test {
 
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = encoded.deserialize().unwrap().0;
-        assert_eq!(decoded, icon);
+        assert!(matches!(decoded, Icon::Names(_)));
 
         let icon = Icon::Uri(url::Url::parse("file://some/icon.png").unwrap());
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = encoded.deserialize().unwrap().0;
-        assert_eq!(decoded, icon);
+        assert!(matches!(decoded, Icon::Uri(_)));
 
         let icon = Icon::Bytes(vec![1, 0, 1, 0]);
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = encoded.deserialize().unwrap().0;
-        assert_eq!(decoded, icon);
+        assert!(matches!(decoded, Icon::Bytes(_)));
+
+        let fd = std::fs::File::open("/tmp").unwrap();
+        let icon = Icon::FileDescriptor(fd.as_fd().try_clone_to_owned().unwrap());
+        let encoded = to_bytes(ctxt, &icon).unwrap();
+        let decoded: Icon = encoded.deserialize().unwrap().0;
+        assert!(matches!(decoded, Icon::FileDescriptor(_)));
     }
 }

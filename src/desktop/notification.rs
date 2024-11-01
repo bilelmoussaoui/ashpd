@@ -50,14 +50,118 @@
 //! }
 //! ```
 
-use std::{fmt, str::FromStr};
+use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use futures_util::Stream;
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{OwnedValue, SerializeDict, Type, Value};
+use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Type, Value};
 
 use super::Icon;
 use crate::{proxy::Proxy, Error};
+
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationCategory"))]
+#[derive(Debug, Clone, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+/// The content of a notification.
+pub enum Category {
+    /// Instant messaging apps message.
+    #[doc(alias = "im.message")]
+    ImMessage,
+    /// Ringing alarm.
+    #[doc(alias = "alarm.ringing")]
+    AlarmRinging,
+    /// Incoming call.
+    #[doc(alias = "call.incoming")]
+    IncomingCall,
+    /// Ongoing call.
+    #[doc(alias = "call.ongoing")]
+    OngoingCall,
+    /// Missed call.
+    #[doc(alias = "call.missed")]
+    MissedCall,
+    /// Extreme weather warning.
+    #[doc(alias = "weather.warning.extreme")]
+    ExtremeWeather,
+    /// Extreme danger broadcast.
+    #[doc(alias = "cellbroadcast.danger.extreme")]
+    CellNetworkExtremeDanger,
+    /// Severe danger broadcast.
+    #[doc(alias = "cellbroadcast.danger.severe")]
+    CellNetworkSevereDanger,
+    /// Amber alert broadcast.
+    #[doc(alias = "cellbroadcast.amber-alert")]
+    CellNetworkAmberAlert,
+    /// Test broadcast.
+    #[doc(alias = "cellbroadcast.test")]
+    CellNetworkBroadcastTest,
+    /// Low battery.
+    #[doc(alias = "os.battery.low")]
+    LowBattery,
+    /// Browser websites notifications.
+    #[doc(alias = "browser.web-notification")]
+    WebNotification,
+    /// Vendor specific.
+    Other(String),
+}
+
+impl Serialize for Category {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let category_str = match self {
+            Self::ImMessage => "im.message",
+            Self::AlarmRinging => "alarm.ringing",
+            Self::IncomingCall => "call.incoming",
+            Self::OngoingCall => "call.ongoing",
+            Self::MissedCall => "call.missed",
+            Self::ExtremeWeather => "weather.warning.extreme",
+            Self::CellNetworkExtremeDanger => "cellbroadcast.danger.extreme",
+            Self::CellNetworkSevereDanger => "cellbroadcast.danger.severe",
+            Self::CellNetworkAmberAlert => "cellbroadcast.amber-alert",
+            Self::CellNetworkBroadcastTest => "cellbroadcast.test",
+            Self::LowBattery => "os.battery.low",
+            Self::WebNotification => "browser.web-notification",
+            Self::Other(other) => other.as_str(),
+        };
+        serializer.serialize_str(category_str)
+    }
+}
+
+impl FromStr for Category {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "im.message" => Ok(Self::ImMessage),
+            "alarm.ringing" => Ok(Self::AlarmRinging),
+            "call.incoming" => Ok(Self::IncomingCall),
+            "call.ongoing" => Ok(Self::OngoingCall),
+            "call.missed" => Ok(Self::MissedCall),
+            "weather.warning.extreme" => Ok(Self::ExtremeWeather),
+            "cellbroadcast.danger.extreme" => Ok(Self::CellNetworkExtremeDanger),
+            "cellbroadcast.danger.severe" => Ok(Self::CellNetworkSevereDanger),
+            "cellbroadcast.amber-alert" => Ok(Self::CellNetworkAmberAlert),
+            "cellbroadcast.test" => Ok(Self::CellNetworkBroadcastTest),
+            "os.battery.low" => Ok(Self::LowBattery),
+            "browser.web-notification" => Ok(Self::WebNotification),
+            _ => Ok(Self::Other(s.to_owned())),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Category {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let category = String::deserialize(deserializer)?;
+        category
+            .parse::<Self>()
+            .map_err(|_e| serde::de::Error::custom("Failed to parse category"))
+    }
+}
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdPriority"))]
@@ -123,6 +227,49 @@ impl FromStr for Priority {
     }
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationDisplayHint"))]
+#[derive(Debug, Clone, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+/// Ways to display a notification.
+pub enum DisplayHint {
+    /// Transient.
+    #[doc(alias = "transient")]
+    Transient,
+    /// Tray.
+    #[doc(alias = "tray")]
+    Tray,
+    /// Persistent.
+    #[doc(alias = "persistent")]
+    Persistent,
+    /// Hide on lockscreen.
+    #[doc(alias = "hide-on-lockscreen")]
+    HideOnLockScreen,
+    /// Enable speakerphone.
+    #[doc(alias = "hide-content-on-lockscreen")]
+    HideContentOnLockScreen,
+    /// Show as new.
+    #[doc(alias = "show-as-new")]
+    ShowAsNew,
+}
+
+impl Serialize for DisplayHint {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let purpose = match self {
+            Self::Transient => "transient",
+            Self::Tray => "tray",
+            Self::Persistent => "persistent",
+            Self::HideOnLockScreen => "hide-on-lockscreen",
+            Self::HideContentOnLockScreen => "hide-content-on-lockscreen",
+            Self::ShowAsNew => "show-as-new",
+        };
+        serializer.serialize_str(purpose)
+    }
+}
+
 #[derive(SerializeDict, Type, Debug)]
 /// A notification
 #[zvariant(signature = "dict")]
@@ -131,6 +278,8 @@ pub struct Notification {
     title: String,
     /// User-visible string to display as the body.
     body: Option<String>,
+    #[zvariant(rename = "markup-body")]
+    markup_body: Option<String>,
     /// Serialized icon (e.g using gio::Icon::serialize).
     icon: Option<Icon>,
     /// The priority for the notification.
@@ -144,6 +293,10 @@ pub struct Notification {
     default_action_target: Option<OwnedValue>,
     /// Array of buttons to add to the notification.
     buttons: Option<Vec<Button>>,
+    category: Option<Category>,
+    #[zvariant(rename = "display-hint")]
+    display_hints: Option<Vec<DisplayHint>>,
+    sound: Option<OwnedValue>,
 }
 
 impl Notification {
@@ -156,11 +309,15 @@ impl Notification {
         Self {
             title: title.to_owned(),
             body: None,
+            markup_body: None,
             priority: None,
             icon: None,
             default_action: None,
             default_action_target: None,
             buttons: None,
+            category: None,
+            display_hints: None,
+            sound: None,
         }
     }
 
@@ -171,10 +328,45 @@ impl Notification {
         self
     }
 
+    /// Same as [`Notification::body`] but supports markup formatting.
+    #[must_use]
+    pub fn markup_body<'a>(mut self, markup_body: impl Into<Option<&'a str>>) -> Self {
+        self.markup_body = markup_body.into().map(ToOwned::to_owned);
+        self
+    }
+
     /// Sets an icon to the notification.
     #[must_use]
     pub fn icon(mut self, icon: impl Into<Option<Icon>>) -> Self {
         self.icon = icon.into();
+        self
+    }
+
+    /// Sets the notification sound.
+    #[must_use]
+    pub fn sound<S>(mut self, sound: impl Into<Option<S>>) -> Self
+    where
+        S: AsFd,
+    {
+        self.sound = sound.into().map(|s| {
+            zbus::zvariant::Value::from(zbus::zvariant::Fd::from(s.as_fd()))
+                .try_to_owned()
+                .unwrap()
+        });
+        self
+    }
+
+    /// Sets the notification category.
+    #[must_use]
+    pub fn category(mut self, category: impl Into<Option<Category>>) -> Self {
+        self.category = category.into();
+        self
+    }
+
+    #[must_use]
+    /// Sets the notification display hints.
+    pub fn display_hint(mut self, hints: impl IntoIterator<Item = DisplayHint>) -> Self {
+        self.display_hints = Some(hints.into_iter().collect());
         self
     }
 
@@ -217,6 +409,85 @@ impl Notification {
     }
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationButtonPurpose"))]
+#[derive(Debug, Clone, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+/// The purpose of a button.
+pub enum ButtonPurpose {
+    /// Instant messaging reply with text.
+    #[doc(alias = "im.reply-with-text")]
+    ImReplyWithText,
+    /// Accept call.
+    #[doc(alias = "call.accept")]
+    CallAccept,
+    /// Decline call.
+    #[doc(alias = "call.decline")]
+    CallDecline,
+    /// Hangup call.
+    #[doc(alias = "call.hang-up")]
+    CallHangup,
+    /// Enable speakerphone.
+    #[doc(alias = "call.enable-speakerphone")]
+    CallEnableSpeakerphone,
+    /// Disable speakerphone.
+    #[doc(alias = "call.disable-speakerphone")]
+    CallDisableSpeakerphone,
+    /// System custom alert.
+    #[doc(alias = "system.custom-alert")]
+    SystemCustomAlert,
+    /// Vendor specific.
+    Other(String),
+}
+
+impl Serialize for ButtonPurpose {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let purpose = match self {
+            Self::ImReplyWithText => "im.reply-with-text",
+            Self::CallAccept => "call.accept",
+            Self::CallDecline => "call.decline",
+            Self::CallHangup => "call.hang-up",
+            Self::CallEnableSpeakerphone => "call.enable-speakerphone",
+            Self::CallDisableSpeakerphone => "call.disable-speakerphone",
+            Self::SystemCustomAlert => "system.custom-alert",
+            Self::Other(other) => other.as_str(),
+        };
+        serializer.serialize_str(purpose)
+    }
+}
+
+impl FromStr for ButtonPurpose {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "im.reply-with-text" => Ok(Self::ImReplyWithText),
+            "call.accept" => Ok(Self::CallAccept),
+            "call.decline" => Ok(Self::CallDecline),
+            "call.hang-up" => Ok(Self::CallHangup),
+            "call.enable-speakerphone" => Ok(Self::CallEnableSpeakerphone),
+            "call.disable-speakerphone" => Ok(Self::CallDisableSpeakerphone),
+            "system.custom-alert" => Ok(Self::SystemCustomAlert),
+            _ => Ok(Self::Other(s.to_owned())),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for ButtonPurpose {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let purpose = String::deserialize(deserializer)?;
+        purpose
+            .parse::<Self>()
+            .map_err(|_e| serde::de::Error::custom("Failed to parse purpose"))
+    }
+}
+
 #[derive(SerializeDict, Type, Debug)]
 /// A notification button
 #[zvariant(signature = "dict")]
@@ -228,6 +499,7 @@ pub struct Button {
     action: String,
     /// Target parameter to send along when activating the action.
     target: Option<OwnedValue>,
+    purpose: Option<ButtonPurpose>,
 }
 
 impl Button {
@@ -243,6 +515,7 @@ impl Button {
             label: label.to_owned(),
             action: action.to_owned(),
             target: None,
+            purpose: None,
         }
     }
 
@@ -250,6 +523,13 @@ impl Button {
     #[must_use]
     pub fn target<'a, T: Into<Value<'a>>>(mut self, target: impl Into<Option<T>>) -> Self {
         self.target = target.into().map(|t| t.into().try_to_owned().unwrap());
+        self
+    }
+
+    /// Sets the button purpose.
+    #[must_use]
+    pub fn purpose(mut self, purpose: impl Into<Option<ButtonPurpose>>) -> Self {
+        self.purpose = purpose.into();
         self
     }
 }
@@ -273,6 +553,15 @@ impl Action {
     pub fn parameter(&self) -> &Vec<OwnedValue> {
         &self.2
     }
+}
+
+#[derive(DeserializeDict, Type, Debug, OwnedValue)]
+#[zvariant(signature = "dict")]
+// TODO: figure out why this can't use the enums
+struct SupportedOptions {
+    category: Vec<String>,
+    #[zvariant(rename = "button-purpose")]
+    button_purpose: Vec<String>,
 }
 
 /// The interface lets sandboxed applications send and withdraw notifications.
@@ -352,6 +641,34 @@ impl<'a> NotificationProxy<'a> {
     #[doc(alias = "xdp_portal_remove_notification")]
     pub async fn remove_notification(&self, id: &str) -> Result<(), Error> {
         self.0.call("RemoveNotification", &(id)).await
+    }
+
+    /// Supported options by the notifications server.
+    ///
+    /// # Required version
+    ///
+    /// The method requires the 2nd version implementation of the portal and
+    /// would fail with [`Error::RequiresVersion`] otherwise.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`SupportedOptions`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html#org-freedesktop-portal-notification-supportedoptions).
+    pub async fn supported_options(&self) -> Result<(Vec<Category>, Vec<ButtonPurpose>), Error> {
+        let options = self
+            .0
+            .property_versioned::<SupportedOptions>("SupportedOptions", 2)
+            .await?;
+        let categories = options
+            .category
+            .into_iter()
+            .map(|c| Category::from_str(&c).unwrap())
+            .collect();
+        let purposes = options
+            .button_purpose
+            .into_iter()
+            .map(|c| ButtonPurpose::from_str(&c).unwrap())
+            .collect();
+        Ok((categories, purposes))
     }
 }
 
