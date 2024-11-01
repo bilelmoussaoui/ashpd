@@ -6,7 +6,7 @@ use zbus::zvariant::Type;
 #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 mod gtk4;
 
-#[cfg(any(feature = "wayland"))]
+#[cfg(feature = "wayland")]
 mod wayland;
 
 /// A token that can be used to activate an application.
