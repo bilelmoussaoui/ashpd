@@ -184,7 +184,7 @@ impl WindowIdentifier {
     ///
     /// # Safety
     ///
-    /// Both pointers have to be valid surface and display pointers. You must
+    /// Both surface and display pointers have to be valid . You must
     /// ensure the `display_ptr` lives longer than the returned
     /// `WindowIdentifier`.
     pub async unsafe fn from_wayland_raw(

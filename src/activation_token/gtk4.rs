@@ -8,6 +8,7 @@ impl ActivationToken {
     ///
     /// Support for the XDG Activation Protocol was added in GLib 2.76, this
     /// method will return `None` on older versions.
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))))]
     pub fn from_window(widget: &impl IsA<::gtk4::Widget>) -> Option<Self> {
         if glib::check_version(2, 76, 0).is_some() {
             #[cfg(feature = "tracing")]

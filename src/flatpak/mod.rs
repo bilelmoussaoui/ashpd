@@ -3,14 +3,13 @@
 //! Spawn a process inside of the sandbox, only works in a Flatpak.
 //!
 //! ```rust,no_run
-//! use std::collections::HashMap;
-//! use std::os::fd::BorrowedFd;
+//! use std::{collections::HashMap, os::fd::BorrowedFd};
 //!
 //! use ashpd::flatpak::{Flatpak, SpawnFlags, SpawnOptions};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Flatpak::new().await?;
-//!     let fds: HashMap::<_, BorrowedFd<'_>> = HashMap::new();
+//!     let fds: HashMap<_, BorrowedFd<'_>> = HashMap::new();
 //!
 //!     proxy
 //!         .spawn(
