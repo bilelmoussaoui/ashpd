@@ -1,4 +1,4 @@
-use std::{collections::HashMap, convert::TryFrom};
+use std::{collections::HashMap, str::FromStr, convert::TryFrom};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
@@ -161,7 +161,7 @@ impl Application {
 
     pub async fn stop_current_instance() -> ashpd::Result<()> {
         let cnx = zbus::Connection::session().await?;
-        let proxy: zbus::Proxy = zbus::ProxyBuilder::new(&cnx)
+        let proxy: zbus::Proxy = zbus::proxy::Builder::new(&cnx)
             .path(format!(
                 "/{}",
                 config::APP_ID.split('.').collect::<Vec<_>>().join("/")
@@ -177,10 +177,9 @@ impl Application {
             HashMap<String, zvariant::OwnedValue>,
         );
 
-        impl zvariant::Type for Params {
-            fn signature() -> zvariant::Signature<'static> {
-                zvariant::Signature::from_str_unchecked("(sava{sv})")
-            }
+        impl zvariant::DynamicType for Params {
+            fn signature(&self) -> zvariant::Signature {
+                zvariant::Signature::from_str("(sava{sv})").unwrap() }
         }
 
         proxy
@@ -214,11 +213,12 @@ impl Application {
 
     async fn restart(&self) -> ashpd::Result<()> {
         let proxy = Flatpak::new().await?;
+        let fds: HashMap<u32, std::fs::File> = HashMap::new();
         proxy
             .spawn(
                 "/",
                 &["ashpd-demo", "--replace"],
-                HashMap::new(),
+                fds,
                 HashMap::new(),
                 SpawnFlags::LatestVersion.into(),
                 SpawnOptions::default(),

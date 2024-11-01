@@ -398,7 +398,7 @@ impl DynamicLauncherPage {
         let icon = Icon::Bytes(data.to_vec());
 
         let response = proxy
-            .prepare_install(&identifier, &launcher_name, icon, options)
+            .prepare_install(identifier.as_ref(), &launcher_name, icon, options)
             .await?
             .response()?;
 

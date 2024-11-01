@@ -155,7 +155,7 @@ impl LocationPage {
         let root = self.native().unwrap();
 
         let identifier = WindowIdentifier::from_native(&root).await;
-        match locate(&identifier, distance_threshold, time_threshold, accuracy).await {
+        match locate(identifier, distance_threshold, time_threshold, accuracy).await {
             Ok((session, location_proxy)) => {
                 imp.session.lock().await.replace(session);
                 self.action_set_enabled("location.stop", true);
@@ -240,7 +240,7 @@ impl LocationPage {
 }
 
 pub async fn locate<'a>(
-    identifier: &WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,
@@ -253,6 +253,6 @@ pub async fn locate<'a>(
             Some(accuracy),
         )
         .await?;
-    proxy.start(&session, identifier).await?;
+    proxy.start(&session, identifier.as_ref()).await?;
     Ok((session, proxy))
 }

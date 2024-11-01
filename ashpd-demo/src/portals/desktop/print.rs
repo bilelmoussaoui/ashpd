@@ -80,7 +80,7 @@ impl PrintPage {
         let file = std::fs::File::open(path).unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        match print(&identifier, &title, file.as_fd(), modal).await {
+        match print(identifier, &title, file.as_fd(), modal).await {
             Ok(_) => {
                 self.success("Print request was successful");
             }
@@ -94,7 +94,7 @@ impl PrintPage {
 }
 
 async fn print(
-    identifier: &WindowIdentifier,
+    identifier: Option<WindowIdentifier>,
     title: &str,
     file: BorrowedFd<'_>,
     modal: bool,
@@ -103,7 +103,7 @@ async fn print(
 
     let out = proxy
         .prepare_print(
-            identifier,
+            identifier.as_ref(),
             title,
             Settings::default(),
             PageSetup::default(),
@@ -114,7 +114,7 @@ async fn print(
         .response()?;
 
     proxy
-        .print(identifier, title, &file, Some(out.token), modal)
+        .print(identifier.as_ref(), title, &file, Some(out.token), modal)
         .await?;
 
     Ok(())

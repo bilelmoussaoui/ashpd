@@ -243,7 +243,10 @@ impl ScreenCastPage {
             )
             .await?;
         self.info("Starting a screen cast session");
-        let response = proxy.start(&session, &identifier).await?.response()?;
+        let response = proxy
+            .start(&session, identifier.as_ref())
+            .await?
+            .response()?;
         if let Some(t) = response.restore_token() {
             token.replace(t.to_owned());
         }

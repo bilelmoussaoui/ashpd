@@ -103,7 +103,7 @@ impl InhibitPage {
         let flags = self.inhibit_flags();
 
         let proxy = InhibitProxy::new().await?;
-        let monitor = proxy.create_monitor(&identifier).await?;
+        let monitor = proxy.create_monitor(identifier.as_ref()).await?;
 
         imp.session.lock().await.replace(monitor);
         self.action_set_enabled("inhibit.stop", true);
@@ -119,7 +119,7 @@ impl InhibitPage {
             SessionState::Running => tracing::info!("Session running"),
             SessionState::QueryEnd => {
                 tracing::info!("Session: query end");
-                proxy.inhibit(&identifier, flags, &reason).await?;
+                proxy.inhibit(identifier.as_ref(), flags, &reason).await?;
                 if let Some(session) = imp.session.lock().await.as_ref() {
                     proxy.query_end_response(session).await?;
                 }
