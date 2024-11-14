@@ -151,8 +151,10 @@ impl CameraPage {
         for paintable in imp.paintables.take() {
             paintable.close_pipeline();
         }
-        while let Some(child) = imp.picture_stack.first_child() {
-            imp.picture_stack.remove(&child);
+        let pages = imp.picture_stack.pages();
+        for object in pages.snapshot().iter() {
+            let page = object.downcast_ref::<adw::ViewStackPage>().unwrap();
+            imp.picture_stack.remove(&page.child());
         }
 
         imp.revealer.set_reveal_child(false);
