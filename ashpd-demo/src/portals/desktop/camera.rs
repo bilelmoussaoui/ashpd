@@ -20,9 +20,9 @@ mod imp {
         #[template_child]
         pub camera_available: TemplateChild<gtk::Label>,
         #[template_child]
-        pub picture_stack: TemplateChild<gtk::Stack>,
+        pub picture_stack: TemplateChild<adw::ViewStack>,
         #[template_child]
-        pub picture_stack_switcher: TemplateChild<gtk::StackSwitcher>,
+        pub picture_stack_switcher: TemplateChild<adw::InlineViewSwitcher>,
         #[template_child]
         pub revealer: TemplateChild<gtk::Revealer>,
 

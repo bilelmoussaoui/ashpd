@@ -78,16 +78,15 @@
                 <property name="orientation">vertical</property>
                 <property name="spacing">12</property>
                 <child>
-                  <object class="GtkStackSwitcher" id="picture_stack_switcher">
+                  <object class="AdwInlineViewSwitcher" id="picture_stack_switcher">
                     <property name="stack">picture_stack</property>
-                    <property name="hexpand">True</property>
                     <property name="halign">center</property>
                     <property name="margin-top">12</property>
                     <property name="margin-end">12</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkStack" id="picture_stack" />
+                  <object class="AdwViewStack" id="picture_stack" />
                 </child>
               </object>
             </child>
