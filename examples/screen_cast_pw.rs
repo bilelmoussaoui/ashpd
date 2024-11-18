@@ -37,12 +37,12 @@ async fn open_portal() -> ashpd::Result<(ScreencastStream, OwnedFd)> {
     Ok((stream, fd))
 }
 
-async fn start_streaming(node_id: u32) -> Result<(), pw::Error> {
+async fn start_streaming(node_id: u32, fd: OwnedFd) -> Result<(), pw::Error> {
     pw::init();
 
     let mainloop = pw::main_loop::MainLoop::new(None)?;
     let context = pw::context::Context::new(&mainloop)?;
-    let core = context.connect(None)?;
+    let core = context.connect_fd(fd, None)?;
 
     let data = UserData {
         format: Default::default(),
@@ -212,9 +212,13 @@ async fn main() {
     let (stream, fd) = open_portal().await.expect("failed to open portal");
     let pipewire_node_id = stream.pipe_wire_node_id();
 
-    println!("node id {}, fd {}", pipewire_node_id, &fd.into_raw_fd());
+    println!(
+        "node id {}, fd {}",
+        pipewire_node_id,
+        &fd.try_clone().unwrap().into_raw_fd()
+    );
 
-    if let Err(e) = start_streaming(pipewire_node_id).await {
+    if let Err(e) = start_streaming(pipewire_node_id, fd).await {
         eprintln!("Error: {}", e);
     };
 }
