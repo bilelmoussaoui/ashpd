@@ -18,7 +18,7 @@
 //! ```
 //! An example on how to connect with Pipewire can be found [here](https://github.com/bilelmoussaoui/ashpd/blob/master/examples/screen_cast_pw.rs).
 //! Although the example's primary focus is screen casting, stream connection logic remains the same -- with one accessibility change:
-//! ```rust,no_run
+//! ```rust,ignore
 //! let stream = pw::stream::Stream::new(
 //!    &core,
 //!    "video-test",
