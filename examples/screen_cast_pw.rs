@@ -1,19 +1,17 @@
 use std::os::fd::{IntoRawFd, OwnedFd};
 
 use ashpd::desktop::{
-    screencast::{CursorMode, Screencast, SourceType, Stream as AshStream},
+    screencast::{CursorMode, Screencast, SourceType, Stream as ScreencastStream},
     PersistMode,
 };
 use pipewire as pw;
 use pw::{properties::properties, spa};
 
-use spa::pod::Pod;
-
 struct UserData {
     format: spa::param::video::VideoInfoRaw,
 }
 
-async fn open_portal() -> ashpd::Result<(AshStream, OwnedFd)> {
+async fn open_portal() -> ashpd::Result<(ScreencastStream, OwnedFd)> {
     let proxy = Screencast::new().await?;
     let session = proxy.create_session().await?;
     proxy
@@ -28,7 +26,11 @@ async fn open_portal() -> ashpd::Result<(AshStream, OwnedFd)> {
         .await?;
 
     let response = proxy.start(&session, None).await?.response()?;
-    let stream = response.streams().first().unwrap().to_owned();
+    let stream = response
+        .streams()
+        .first()
+        .expect("no stream found / selected")
+        .to_owned();
 
     let fd = proxy.open_pipe_wire_remote(&session).await?;
 
@@ -88,17 +90,17 @@ async fn start_streaming(node_id: u32) -> Result<(), pw::Error> {
 
             println!("got video format:");
             println!(
-                "  format: {} ({:?})",
+                "\tformat: {} ({:?})",
                 user_data.format.format().as_raw(),
                 user_data.format.format()
             );
             println!(
-                "  size: {}x{}",
+                "\tsize: {}x{}",
                 user_data.format.size().width,
                 user_data.format.size().height
             );
             println!(
-                "  framerate: {}/{}",
+                "\tframerate: {}/{}",
                 user_data.format.framerate().num,
                 user_data.format.framerate().denom
             );
@@ -189,7 +191,7 @@ async fn start_streaming(node_id: u32) -> Result<(), pw::Error> {
     .0
     .into_inner();
 
-    let mut params = [Pod::from_bytes(&values).unwrap()];
+    let mut params = [spa::pod::Pod::from_bytes(&values).unwrap()];
 
     stream.connect(
         spa::utils::Direction::Input,
