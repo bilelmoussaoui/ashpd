@@ -37,6 +37,14 @@ pub async fn run() -> ashpd::Result<()> {
 }
 ```
 
+Open a Screencast stream and connect using [pipewire-rs](https://gitlab.freedesktop.org/pipewire/pipewire-rs/)
+
+```bash
+$ cargo run --example screen_cast_pw
+```
+
+The source can be read [here](examples/screen_cast_pw.rs).
+
 ## Optional features
 
 | Feature | Description | Default |
