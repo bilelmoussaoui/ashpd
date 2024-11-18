@@ -34,6 +34,7 @@
 //!     Ok(())
 //! }
 //! ```
+//! An example on how to connect with Pipewire can be found [here](https://github.com/bilelmoussaoui/ashpd/blob/master/examples/screen_cast_pw.rs).
 
 use std::{collections::HashMap, fmt::Debug, os::fd::OwnedFd};
 
