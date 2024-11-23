@@ -14,6 +14,7 @@
         "--socket=wayland",
         "--device=dri",
         "--own-name=com.belmoussaoui.ashpd.demo",
+        "--usb=all",
         "--env=RUST_LOG=ashpd_demo=debug,ashpd=debug",
         "--env=G_MESSAGES_DEBUG=none",
         "--env=RUST_BACKTRACE=1"
@@ -31,6 +32,16 @@
         ]
     },
     "modules": [
+        {
+            "name": "libusb",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://github.com/libusb/libusb/releases/download/v1.0.27/libusb-1.0.27.tar.bz2",
+                    "sha256": "ffaa41d741a8a3bee244ac8e54a72ea05bf2879663c098c82fc5757853441575"
+                }
+            ]
+        },
         {
             "name": "libshumate",
             "buildsystem": "meson",
