@@ -14,6 +14,7 @@ gettext-rs = {version = "0.7", features = ["gettext-system"]}
 gst = {package = "gstreamer", version = "0.23"}
 gst4gtk = {package = "gst-plugin-gtk4", version = "0.13", features = ["wayland", "x11egl", "x11glx", "gtk_v4_14"]}
 gtk = {package = "gtk4", version = "0.9", features = ["v4_14"]}
+rusb = "0.9.4"
 serde = {version = "1.0", features = ["derive"]}
 shumate = {version = "0.6", package = "libshumate"}
 tracing = "0.1"

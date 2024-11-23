@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="UsbPage" parent="PortalPage">
+    <child>
+      <object class="AdwClamp">
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="AdwPreferencesGroup" id="usb_devices">
+                <property name="title" translatable="yes">Device Access</property>
+                <property name="description" translatable="yes">Calls AcquireDevices or ReleaseDevices on org.freedesktop.portal.Usb.</property>
+                <property name="header-suffix">
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">Refresh</property>
+                    <property name="icon-name">view-refresh-symbolic</property>
+                    <property name="action-name">usb.refresh</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label">_Start Session</property>
+                    <property name="use-underline">True</property>
+                    <property name="halign">start</property>
+                    <property name="action-name">usb.start_session</property>
+                    <style>
+                      <class name="pill" />
+                      <class name="suggested-action" />
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label">_Stop Session</property>
+                    <property name="use-underline">True</property>
+                    <property name="sensitive">false</property>
+                    <property name="halign">end</property>
+                    <property name="hexpand">true</property>
+                    <property name="action-name">usb.stop_session</property>
+                    <style>
+                      <class name="pill" />
+                      <class name="destructive-action" />
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <style>
+          <class name="page-content" />
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>

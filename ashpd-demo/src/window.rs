@@ -14,7 +14,7 @@ use crate::{
             AccountPage, BackgroundPage, CameraPage, DevicePage, DynamicLauncherPage, EmailPage,
             FileChooserPage, InhibitPage, LocationPage, NetworkMonitorPage, NotificationPage,
             OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage, ScreenCastPage,
-            ScreenshotPage, SecretPage, WallpaperPage,
+            ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
         },
         DocumentsPage,
     },
@@ -44,6 +44,8 @@ mod imp {
         pub screenshot: TemplateChild<ScreenshotPage>,
         #[template_child]
         pub camera: TemplateChild<CameraPage>,
+        #[template_child]
+        pub usb: TemplateChild<UsbPage>,
         #[template_child]
         pub wallpaper: TemplateChild<WallpaperPage>,
         #[template_child]
@@ -88,6 +90,7 @@ mod imp {
                 split_view: TemplateChild::default(),
                 camera: TemplateChild::default(),
                 dynamic_launcher: TemplateChild::default(),
+                usb: TemplateChild::default(),
                 wallpaper: TemplateChild::default(),
                 location: TemplateChild::default(),
                 notification: TemplateChild::default(),
