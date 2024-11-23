@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr, convert::TryFrom};
+use std::{collections::HashMap, convert::TryFrom, str::FromStr};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
@@ -179,7 +179,8 @@ impl Application {
 
         impl zvariant::DynamicType for Params {
             fn signature(&self) -> zvariant::Signature {
-                zvariant::Signature::from_str("(sava{sv})").unwrap() }
+                zvariant::Signature::from_str("(sava{sv})").unwrap()
+            }
         }
 
         proxy
