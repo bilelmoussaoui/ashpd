@@ -157,6 +157,12 @@
                         </child>
                         <child>
                           <object class="SidebarRow">
+                            <property name="title" translatable="yes">USB</property>
+                            <property name="page-name">usb</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="SidebarRow">
                             <property name="title" translatable="yes">Wallpaper</property>
                             <property name="page-name">wallpaper</property>
                           </object>
@@ -322,6 +328,14 @@
                             <property name="name">secret</property>
                             <property name="child">
                               <object class="SecretPage" id="secret" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">usb</property>
+                            <property name="child">
+                              <object class="UsbPage" id="usb" />
                             </property>
                           </object>
                         </child>
