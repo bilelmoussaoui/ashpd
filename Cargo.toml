@@ -64,6 +64,8 @@ zbus = { version = "5.0", default-features = false, features = ["url"] }
 [dev-dependencies]
 serde_json = "1.0"
 reis = { version = "0.4", features = ["tokio"] }
+pipewire = "0.8.0"
+tokio = { version = "1.41", features = [ "rt-multi-thread", "macros" ] }
 
 [package.metadata.docs.rs]
 features = ["backend", "gtk4", "raw_handle"]
