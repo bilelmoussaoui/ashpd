@@ -1,6 +1,6 @@
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    desktop::file_chooser::{OpenFileRequest, SaveFileRequest, SaveFilesRequest},
+    desktop::file_chooser::{OpenFileRequest, SaveFileRequest, SaveFilesRequest, FileFilter},
     WindowIdentifier,
 };
 use gtk::glib;
@@ -27,6 +27,8 @@ mod imp {
         #[template_child]
         pub open_directory_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
+        pub open_filter_combo: TemplateChild<adw::ComboRow>,
+        #[template_child]
         pub open_response_group: TemplateChild<adw::PreferencesGroup>,
 
         #[template_child]
@@ -41,6 +43,8 @@ mod imp {
         pub save_file_current_folder_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub save_file_modal_switch: TemplateChild<adw::SwitchRow>,
+        #[template_child]
+        pub save_file_filter_combo: TemplateChild<adw::ComboRow>,
         #[template_child]
         pub save_file_response_group: TemplateChild<adw::PreferencesGroup>,
 
@@ -98,6 +102,22 @@ glib::wrapper! {
 }
 
 impl FileChooserPage {
+
+    fn filters(&self, pos: u32) -> Vec<FileFilter> {
+        let mut filters = Vec::new();
+
+        if pos > 0 {
+            filters.push(FileFilter::new("Text files").mimetype("text/*").glob("*.txt"));
+        };
+        if pos > 1 {
+            filters.push(FileFilter::new("Images").mimetype("image/*"));
+        };
+        if pos > 2 {
+            filters.push(FileFilter::new("Videos").mimetype("video/*"));
+        };
+        filters
+    }
+
     async fn open_file(&self) {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -108,12 +128,16 @@ impl FileChooserPage {
         let multiple = imp.open_multiple_switch.is_active();
         let accept_label = is_empty(imp.open_accept_label_entry.text());
 
+        let filters = self.filters(imp.open_filter_combo.selected());
+        let current_filter = filters.first().cloned();
         let request = OpenFileRequest::default()
             .directory(directory)
             .identifier(identifier)
             .modal(modal)
             .title(&*title)
             .multiple(multiple)
+            .filters(filters)
+            .current_filter(current_filter)
             .accept_label(accept_label.as_deref());
         match request.send().await.and_then(|r| r.response()) {
             Ok(files) => {
@@ -146,10 +170,14 @@ impl FileChooserPage {
         let current_name = is_empty(imp.save_file_current_name_entry.text());
         let current_folder = is_empty(imp.save_file_current_folder_entry.text());
         let current_file = is_empty(imp.save_file_current_file_entry.text());
+        let filters = self.filters(imp.save_file_filter_combo.selected());
+        let current_filter = filters.first().cloned();
         let request = SaveFileRequest::default()
             .identifier(identifier)
             .modal(modal)
             .title(&*title)
+            .filters(filters)
+            .current_filter(current_filter)
             .accept_label(accept_label.as_deref())
             .current_name(current_name.as_deref())
             .current_folder::<String>(current_folder)?
