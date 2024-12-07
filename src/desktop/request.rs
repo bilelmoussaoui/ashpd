@@ -268,7 +268,8 @@ where
         self.0.call("Close", &()).await
     }
 
-    pub(crate) fn path(&self) -> &ObjectPath<'_> {
+    /// Return the object path of the request.
+    pub fn path(&self) -> &ObjectPath<'_> {
         self.0.path()
     }
 }

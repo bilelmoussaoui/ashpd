@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="UsbDeviceRow" parent="AdwActionRow">
+    <child type="prefix">
+      <object class="GtkCheckButton" id="checkbox">
+        <property name="sensitive">false</property>
+      </object>
+    </child>
+    <child type="suffix">
+      <object class="GtkBox" id="box1">
+        <property name="margin-top">6</property>
+        <property name="margin-bottom">6</property>
+        <style>
+          <class name="linked" />
+        </style>
+        <child>
+          <object class="GtkButton" id="acquire">
+            <signal name="clicked" handler="handle_acquire_clicked" swapped="true" />
+            <property name="icon-name">preferences-system-sharing-symbolic</property>
+          </object>
+        </child>
+        <child type="suffix">
+          <object class="GtkButton" id="release">
+            <signal name="clicked" handler="handle_release_clicked" swapped="true"/>
+            <property name="icon-name">process-stop-symbolic</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
