@@ -435,7 +435,7 @@ impl<'de> Deserialize<'de> for ActivatedBarrier {
 
 struct ActivatedBarrierVisitor {}
 
-impl<'de> Visitor<'de> for ActivatedBarrierVisitor {
+impl Visitor<'_> for ActivatedBarrierVisitor {
     type Value = ActivatedBarrier;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
