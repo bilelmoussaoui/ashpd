@@ -14,8 +14,8 @@ pub struct Account;
 
 #[async_trait]
 impl RequestImpl for Account {
-    async fn close(&self) {
-        tracing::debug!("IN Close()");
+    async fn close(&self, token: HandleToken) {
+        tracing::debug!("IN Close(): {token}");
     }
 }
 
