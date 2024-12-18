@@ -7,7 +7,7 @@ use crate::{
         request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier, Result,
     },
-    desktop::{request::Response, screenshot::Screenshot as ScreenshotResponse, Color},
+    desktop::{request::Response, screenshot::Screenshot as ScreenshotResponse, Color, HandleToken},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
 };
@@ -42,6 +42,7 @@ pub struct ColorOptions;
 pub trait ScreenshotImpl: RequestImpl {
     async fn screenshot(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ScreenshotOptions,
@@ -49,6 +50,7 @@ pub trait ScreenshotImpl: RequestImpl {
 
     async fn pick_color(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ColorOptions,
@@ -87,10 +89,10 @@ impl ScreenshotInterface {
         Request::spawn(
             "Screenshot::Screenshot",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.screenshot(app_id.inner(), window_identifier.inner(), options)
+                imp.screenshot(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), options)
                     .await
             },
         )
@@ -111,10 +113,10 @@ impl ScreenshotInterface {
         Request::spawn(
             "Screenshot::PickColor",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.pick_color(app_id.inner(), window_identifier.inner(), options)
+                imp.pick_color(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), options)
                     .await
             },
         )

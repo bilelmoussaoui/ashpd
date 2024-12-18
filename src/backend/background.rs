@@ -6,7 +6,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
     backend::request::{Request, RequestImpl},
-    desktop::Response,
+    desktop::{HandleToken, Response},
     zbus::object_server::SignalEmitter,
     zvariant::{OwnedObjectPath, SerializeDict, Type},
     AppID, PortalError,
@@ -56,7 +56,7 @@ pub trait BackgroundSignalEmitter: Send + Sync {
 pub trait BackgroundImpl: RequestImpl {
     async fn get_app_state(&self) -> Result<HashMap<AppID, AppState>, PortalError>;
 
-    async fn notify_background(&self, app_id: AppID, name: &str)
+    async fn notify_background(&self, token: HandleToken, app_id: AppID, name: &str)
         -> Result<Background, PortalError>;
 
     async fn enable_autostart(
@@ -128,9 +128,9 @@ impl BackgroundInterface {
         Request::spawn(
             "Background::NotifyBackground",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
-            async move { imp.notify_background(app_id, &name).await },
+            async move { imp.notify_background(HandleToken::try_from(&handle).unwrap(), app_id, &name).await },
         )
         .await
     }
