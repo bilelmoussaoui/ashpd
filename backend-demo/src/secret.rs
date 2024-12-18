@@ -13,8 +13,8 @@ pub struct Secret;
 
 #[async_trait]
 impl RequestImpl for Secret {
-    async fn close(&self) {
-        tracing::debug!("IN Close()");
+    async fn close(&self, token: HandleToken) {
+        tracing::debug!("IN Close(): {token}");
     }
 }
 

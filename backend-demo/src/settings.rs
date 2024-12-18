@@ -5,7 +5,10 @@ use ashpd::{
         request::RequestImpl,
         settings::{SettingsImpl, SettingsSignalEmitter},
     },
-    desktop::settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY},
+    desktop::{
+        settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY},
+        HandleToken,
+    },
     zbus::zvariant::OwnedValue,
     PortalError,
 };
@@ -20,8 +23,8 @@ pub struct Settings {
 
 #[async_trait]
 impl RequestImpl for Settings {
-    async fn close(&self) {
-        tracing::debug!("IN Close()");
+    async fn close(&self, token: HandleToken) {
+        tracing::debug!("IN Close(): {token}");
     }
 }
 
