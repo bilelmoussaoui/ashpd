@@ -10,6 +10,7 @@ use crate::{
     desktop::{
         file_chooser::{Choice, FileFilter},
         request::Response,
+        HandleToken,
     },
     zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
     AppID, FilePath, WindowIdentifierType,
@@ -188,6 +189,7 @@ impl SaveFilesOptions {
 pub trait FileChooserImpl: RequestImpl {
     async fn open_file(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         title: &str,
@@ -196,6 +198,7 @@ pub trait FileChooserImpl: RequestImpl {
 
     async fn save_file(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         title: &str,
@@ -204,6 +207,7 @@ pub trait FileChooserImpl: RequestImpl {
 
     async fn save_files(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         title: &str,
@@ -243,11 +247,17 @@ impl FileChooserInterface {
         Request::spawn(
             "FileChooser::OpenFile",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.open_file(app_id.inner(), window_identifier.inner(), &title, options)
-                    .await
+                imp.open_file(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    &title,
+                    options,
+                )
+                .await
             },
         )
         .await
@@ -267,11 +277,17 @@ impl FileChooserInterface {
         Request::spawn(
             "FileChooser::SaveFile",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.save_file(app_id.inner(), window_identifier.inner(), &title, options)
-                    .await
+                imp.save_file(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    &title,
+                    options,
+                )
+                .await
             },
         )
         .await
@@ -291,11 +307,17 @@ impl FileChooserInterface {
         Request::spawn(
             "FileChooser::SaveFiles",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.save_files(app_id.inner(), window_identifier.inner(), &title, options)
-                    .await
+                imp.save_files(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    &title,
+                    options,
+                )
+                .await
             },
         )
         .await

@@ -7,7 +7,7 @@ use crate::{
         request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier, Result,
     },
-    desktop::request::Response,
+    desktop::{request::Response, HandleToken},
     zvariant::{self, DeserializeDict, OwnedObjectPath},
     ActivationToken, AppID, WindowIdentifierType,
 };
@@ -63,6 +63,7 @@ impl Options {
 pub trait EmailImpl: RequestImpl {
     async fn compose(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: Options,
@@ -100,11 +101,16 @@ impl EmailInterface {
         Request::spawn(
             "Email::ComposeEmail",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.compose(app_id.inner(), window_identifier.inner(), options)
-                    .await
+                imp.compose(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    options,
+                )
+                .await
             },
         )
         .await
