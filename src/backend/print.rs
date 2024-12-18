@@ -10,6 +10,7 @@ use crate::{
     desktop::{
         print::{PageSetup, PreparePrint, Settings},
         request::Response,
+        HandleToken,
     },
     zvariant::{self, DeserializeDict, OwnedObjectPath},
     AppID, WindowIdentifierType,
@@ -51,8 +52,10 @@ impl PrintOptions {
 
 #[async_trait]
 pub trait PrintImpl: RequestImpl {
+    #[allow(clippy::too_many_arguments)]
     async fn prepare_print(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         parent_window: Option<WindowIdentifierType>,
         title: String,
@@ -63,6 +66,7 @@ pub trait PrintImpl: RequestImpl {
 
     async fn print(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         parent_window: Option<WindowIdentifierType>,
         title: String,
@@ -106,10 +110,11 @@ impl PrintInterface {
         Request::spawn(
             "Print::PreparePrint",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
                 imp.prepare_print(
+                    HandleToken::try_from(&handle).unwrap(),
                     app_id.inner(),
                     window_identifier.inner(),
                     title,
@@ -139,10 +144,11 @@ impl PrintInterface {
         Request::spawn(
             "Print::Print",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
                 imp.print(
+                    HandleToken::try_from(&handle).unwrap(),
                     app_id.inner(),
                     window_identifier.inner(),
                     title,
