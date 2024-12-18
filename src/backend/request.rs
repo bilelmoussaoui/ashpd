@@ -5,11 +5,11 @@ use futures_util::future::{abortable, AbortHandle};
 use tokio::sync::Mutex;
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
-use crate::desktop::Response;
+use crate::desktop::{HandleToken, Response};
 
 #[async_trait]
 pub trait RequestImpl: Send + Sync {
-    async fn close(&self);
+    async fn close(&self, token: HandleToken);
 }
 
 pub struct Request {
@@ -39,9 +39,10 @@ impl Request {
         #[cfg(feature = "tracing")]
         tracing::debug!("{_method}");
         let (fut, abort_handle) = abortable(callback);
+        let token = HandleToken::try_from(&path).unwrap();
         let close_cb = || {
             tokio::spawn(async move {
-                RequestImpl::close(&*imp).await;
+                RequestImpl::close(&*imp, token).await;
             });
         };
         let request = Request::new(close_cb, path.clone(), abort_handle, cnx.clone());
