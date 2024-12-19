@@ -1,6 +1,9 @@
 mod handle_token;
 pub(crate) mod request;
 mod session;
+#[cfg(feature = "backend")]
+pub use self::handle_token::HandleToken;
+#[cfg(not(feature = "backend"))]
 pub(crate) use self::handle_token::HandleToken;
 pub use self::{
     request::{Request, Response, ResponseError, ResponseType},
