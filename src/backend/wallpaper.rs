@@ -7,7 +7,7 @@ use crate::{
         request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier, Result,
     },
-    desktop::{request::ResponseType, wallpaper::SetOn},
+    desktop::{request::ResponseType, wallpaper::SetOn, HandleToken},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
 };
@@ -35,6 +35,7 @@ impl WallpaperOptions {
 pub trait WallpaperImpl: RequestImpl {
     async fn with_uri(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         uri: url::Url,
@@ -75,11 +76,17 @@ impl WallpaperInterface {
         Request::spawn(
             "Wallpaper::SetWallpaperURI",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.with_uri(app_id.inner(), window_identifier.inner(), uri, options)
-                    .await
+                imp.with_uri(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    uri,
+                    options,
+                )
+                .await
             },
         )
         .await

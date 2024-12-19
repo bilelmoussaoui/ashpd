@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use ashpd::{
     backend::{request::RequestImpl, secret::SecretImpl, Result},
+    desktop::HandleToken,
     zbus::zvariant::OwnedValue,
     AppID,
 };
@@ -12,8 +13,8 @@ pub struct Secret;
 
 #[async_trait]
 impl RequestImpl for Secret {
-    async fn close(&self) {
-        tracing::debug!("IN Close()");
+    async fn close(&self, token: HandleToken) {
+        tracing::debug!("IN Close(): {token}");
     }
 }
 
@@ -21,6 +22,7 @@ impl RequestImpl for Secret {
 impl SecretImpl for Secret {
     async fn retrieve(
         &self,
+        _token: HandleToken,
         _app_id: AppID,
         _fd: std::os::fd::OwnedFd,
     ) -> Result<HashMap<String, OwnedValue>> {

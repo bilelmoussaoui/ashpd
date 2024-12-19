@@ -4,7 +4,7 @@ use ashpd::{
         request::RequestImpl,
         Result,
     },
-    desktop::account::UserInformation,
+    desktop::{account::UserInformation, HandleToken},
     AppID, WindowIdentifierType,
 };
 use async_trait::async_trait;
@@ -14,8 +14,8 @@ pub struct Account;
 
 #[async_trait]
 impl RequestImpl for Account {
-    async fn close(&self) {
-        tracing::debug!("IN Close()");
+    async fn close(&self, token: HandleToken) {
+        tracing::debug!("IN Close(): {token}");
     }
 }
 
@@ -39,6 +39,7 @@ mod fdo_account {
 impl AccountImpl for Account {
     async fn get_user_information(
         &self,
+        _token: HandleToken,
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: UserInformationOptions,

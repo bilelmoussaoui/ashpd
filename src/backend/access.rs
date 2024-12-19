@@ -7,7 +7,7 @@ use crate::{
         request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier, Result,
     },
-    desktop::{file_chooser::Choice, request::Response, Icon},
+    desktop::{file_chooser::Choice, request::Response, HandleToken, Icon},
     zvariant::{self, DeserializeDict, OwnedObjectPath, SerializeDict},
     AppID, WindowIdentifierType,
 };
@@ -65,6 +65,7 @@ impl AccessResponse {
 pub trait AccessImpl: RequestImpl {
     async fn access_dialog(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         title: String,
@@ -109,10 +110,11 @@ impl AccessInterface {
         Request::spawn(
             "Access::AccessDialog",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
                 imp.access_dialog(
+                    HandleToken::try_from(&handle).unwrap(),
                     app_id.inner(),
                     window_identifier.inner(),
                     title,
