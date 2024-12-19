@@ -5,7 +5,10 @@ use std::{
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Serialize};
-use zbus::{names::OwnedMemberName, zvariant::{OwnedObjectPath, Type}};
+use zbus::{
+    names::OwnedMemberName,
+    zvariant::{OwnedObjectPath, Type},
+};
 
 /// A handle token is a DBus Object Path element, specified in the
 /// [`Request`](crate::desktop::Request)  or

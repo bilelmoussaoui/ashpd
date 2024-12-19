@@ -70,8 +70,13 @@ impl AccountInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.get_user_information(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), options)
-                    .await
+                imp.get_user_information(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    options,
+                )
+                .await
             },
         )
         .await

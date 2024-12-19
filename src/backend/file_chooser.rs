@@ -250,8 +250,14 @@ impl FileChooserInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.open_file(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), &title, options)
-                    .await
+                imp.open_file(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    &title,
+                    options,
+                )
+                .await
             },
         )
         .await
@@ -274,8 +280,14 @@ impl FileChooserInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.save_file(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), &title, options)
-                    .await
+                imp.save_file(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    &title,
+                    options,
+                )
+                .await
             },
         )
         .await
@@ -298,8 +310,14 @@ impl FileChooserInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.save_files(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), &title, options)
-                    .await
+                imp.save_files(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    &title,
+                    options,
+                )
+                .await
             },
         )
         .await

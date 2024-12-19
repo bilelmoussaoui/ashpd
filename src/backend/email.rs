@@ -104,8 +104,13 @@ impl EmailInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.compose(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), options)
-                    .await
+                imp.compose(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    options,
+                )
+                .await
             },
         )
         .await

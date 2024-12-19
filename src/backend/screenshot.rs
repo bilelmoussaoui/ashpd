@@ -7,7 +7,9 @@ use crate::{
         request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier, Result,
     },
-    desktop::{request::Response, screenshot::Screenshot as ScreenshotResponse, Color, HandleToken},
+    desktop::{
+        request::Response, screenshot::Screenshot as ScreenshotResponse, Color, HandleToken,
+    },
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
 };
@@ -92,8 +94,13 @@ impl ScreenshotInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.screenshot(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), options)
-                    .await
+                imp.screenshot(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    options,
+                )
+                .await
             },
         )
         .await
@@ -116,8 +123,13 @@ impl ScreenshotInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.pick_color(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), options)
-                    .await
+                imp.pick_color(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    options,
+                )
+                .await
             },
         )
         .await

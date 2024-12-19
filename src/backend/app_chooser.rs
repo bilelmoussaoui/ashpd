@@ -128,8 +128,14 @@ impl AppChooserInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.choose_application(HandleToken::try_from(&handle).unwrap(), app_id.inner(), parent_window.inner(), choices, options)
-                    .await
+                imp.choose_application(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    parent_window.inner(),
+                    choices,
+                    options,
+                )
+                .await
             },
         )
         .await

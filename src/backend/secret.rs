@@ -55,7 +55,14 @@ impl SecretInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
-            async move { imp.retrieve(HandleToken::try_from(&handle).unwrap(), app_id, std::os::fd::OwnedFd::from(fd)).await },
+            async move {
+                imp.retrieve(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id,
+                    std::os::fd::OwnedFd::from(fd),
+                )
+                .await
+            },
         )
         .await
     }

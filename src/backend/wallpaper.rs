@@ -79,8 +79,14 @@ impl WallpaperInterface {
             handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.with_uri(HandleToken::try_from(&handle).unwrap(), app_id.inner(), window_identifier.inner(), uri, options)
-                    .await
+                imp.with_uri(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    uri,
+                    options,
+                )
+                .await
             },
         )
         .await

@@ -5,7 +5,10 @@ use ashpd::{
         request::RequestImpl,
         settings::{SettingsImpl, SettingsSignalEmitter},
     },
-    desktop::{settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY}, HandleToken},
+    desktop::{
+        settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY},
+        HandleToken,
+    },
     zbus::zvariant::OwnedValue,
     PortalError,
 };
