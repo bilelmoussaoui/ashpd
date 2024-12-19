@@ -5,6 +5,8 @@ use std::{
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "backend")]
+use zbus::zvariant::OwnedObjectPath;
 use zbus::{names::OwnedMemberName, zvariant::Type};
 
 /// A handle token is a DBus Object Path element, specified in the
@@ -16,6 +18,7 @@ use zbus::{names::OwnedMemberName, zvariant::Type};
 /// A valid object path element must only contain the ASCII characters
 /// `[A-Z][a-z][0-9]_`
 #[derive(Serialize, Type)]
+#[cfg_attr(feature = "backend", derive(PartialEq, Eq, Hash))]
 pub struct HandleToken(OwnedMemberName);
 
 impl Display for HandleToken {
@@ -81,6 +84,20 @@ impl TryFrom<&str> for HandleToken {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         value.parse::<Self>()
+    }
+}
+
+#[cfg(feature = "backend")]
+impl TryFrom<&OwnedObjectPath> for HandleToken {
+    type Error = HandleInvalidCharacter;
+
+    fn try_from(value: &OwnedObjectPath) -> Result<Self, Self::Error> {
+        let base_segment = value
+            .as_str()
+            .split('/')
+            .last()
+            .expect("A valid request ObjectPath");
+        HandleToken::try_from(base_segment)
     }
 }
 
