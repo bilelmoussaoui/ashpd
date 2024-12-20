@@ -158,11 +158,13 @@ impl WindowIdentifier {
         window_handle: &RawWindowHandle,
         display_handle: Option<&RawDisplayHandle>,
     ) -> Option<Self> {
+        use raw_window_handle::RawWindowHandle::{Xcb, Xlib};
+        #[cfg(feature = "wayland")]
         use raw_window_handle::{
-            RawDisplayHandle::Wayland as DisplayHandle,
-            RawWindowHandle::{Wayland, Xcb, Xlib},
+            RawDisplayHandle::Wayland as DisplayHandle, RawWindowHandle::Wayland,
         };
         match (window_handle, display_handle) {
+            #[cfg(feature = "wayland")]
             (Wayland(wl_handle), Some(DisplayHandle(wl_display))) => unsafe {
                 Self::from_wayland_raw(wl_handle.surface.as_ptr(), wl_display.display.as_ptr())
                     .await
