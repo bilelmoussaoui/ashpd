@@ -7,7 +7,7 @@ use crate::{
         request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier, Result,
     },
-    desktop::{account::UserInformation, request::Response},
+    desktop::{account::UserInformation, request::Response, HandleToken},
     zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
 };
@@ -28,6 +28,7 @@ impl UserInformationOptions {
 pub trait AccountImpl: RequestImpl {
     async fn get_user_information(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: UserInformationOptions,
@@ -66,11 +67,16 @@ impl AccountInterface {
         Request::spawn(
             "Account::GetUserInformation",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.get_user_information(app_id.inner(), window_identifier.inner(), options)
-                    .await
+                imp.get_user_information(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    window_identifier.inner(),
+                    options,
+                )
+                .await
             },
         )
         .await

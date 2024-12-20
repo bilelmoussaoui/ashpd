@@ -4,7 +4,7 @@ use ashpd::{
         screenshot::{ColorOptions, ScreenshotImpl, ScreenshotOptions},
         Result,
     },
-    desktop::{screenshot::Screenshot as ScreenshotResponse, Color},
+    desktop::{screenshot::Screenshot as ScreenshotResponse, Color, HandleToken},
     AppID, WindowIdentifierType,
 };
 use async_trait::async_trait;
@@ -14,8 +14,8 @@ pub struct Screenshot;
 
 #[async_trait]
 impl RequestImpl for Screenshot {
-    async fn close(&self) {
-        tracing::debug!("IN Close()");
+    async fn close(&self, token: HandleToken) {
+        tracing::debug!("IN Close(): {token}");
     }
 }
 
@@ -23,6 +23,7 @@ impl RequestImpl for Screenshot {
 impl ScreenshotImpl for Screenshot {
     async fn screenshot(
         &self,
+        _token: HandleToken,
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ScreenshotOptions,
@@ -34,6 +35,7 @@ impl ScreenshotImpl for Screenshot {
 
     async fn pick_color(
         &self,
+        _token: HandleToken,
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ColorOptions,

@@ -8,7 +8,7 @@ use crate::{
         request::{Request, RequestImpl},
         Result,
     },
-    desktop::Response,
+    desktop::{HandleToken, Response},
     AppID,
 };
 
@@ -16,6 +16,7 @@ use crate::{
 pub trait SecretImpl: RequestImpl {
     async fn retrieve(
         &self,
+        token: HandleToken,
         app_id: AppID,
         fd: std::os::fd::OwnedFd,
     ) -> Result<HashMap<String, OwnedValue>>;
@@ -52,9 +53,16 @@ impl SecretInterface {
         Request::spawn(
             "Secret::RetrieveSecret",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
-            async move { imp.retrieve(app_id, std::os::fd::OwnedFd::from(fd)).await },
+            async move {
+                imp.retrieve(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id,
+                    std::os::fd::OwnedFd::from(fd),
+                )
+                .await
+            },
         )
         .await
     }

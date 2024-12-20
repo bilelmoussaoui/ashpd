@@ -5,7 +5,10 @@ use std::{
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Serialize};
-use zbus::{names::OwnedMemberName, zvariant::Type};
+use zbus::{
+    names::OwnedMemberName,
+    zvariant::{OwnedObjectPath, Type},
+};
 
 /// A handle token is a DBus Object Path element, specified in the
 /// [`Request`](crate::desktop::Request)  or
@@ -81,6 +84,16 @@ impl TryFrom<&str> for HandleToken {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         value.parse::<Self>()
+    }
+}
+
+#[cfg(feature = "backend")]
+impl TryFrom<&OwnedObjectPath> for HandleToken {
+    type Error = HandleInvalidCharacter;
+
+    fn try_from(value: &OwnedObjectPath) -> Result<Self, Self::Error> {
+        let base_segment = value.as_str().split('/').last();
+        HandleToken::try_from(base_segment.unwrap())
     }
 }
 

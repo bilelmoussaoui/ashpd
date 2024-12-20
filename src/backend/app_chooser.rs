@@ -7,7 +7,7 @@ use crate::{
         request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier,
     },
-    desktop::Response,
+    desktop::{HandleToken, Response},
     zbus::object_server::{InterfaceRef, ObjectServer},
     zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
     ActivationToken, AppID, PortalError, WindowIdentifierType,
@@ -79,6 +79,7 @@ impl Choice {
 pub trait AppChooserImpl: RequestImpl {
     async fn choose_application(
         &self,
+        token: HandleToken,
         app_id: Option<AppID>,
         parent_window: Option<WindowIdentifierType>,
         choices: Vec<AppID>,
@@ -124,11 +125,17 @@ impl AppChooserInterface {
         Request::spawn(
             "AppChooser::ChooseApplication",
             &self.cnx,
-            handle,
+            handle.clone(),
             Arc::clone(&self.imp),
             async move {
-                imp.choose_application(app_id.inner(), parent_window.inner(), choices, options)
-                    .await
+                imp.choose_application(
+                    HandleToken::try_from(&handle).unwrap(),
+                    app_id.inner(),
+                    parent_window.inner(),
+                    choices,
+                    options,
+                )
+                .await
             },
         )
         .await
