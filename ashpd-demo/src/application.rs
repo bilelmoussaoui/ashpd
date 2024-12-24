@@ -198,6 +198,7 @@ impl Application {
         self.set_accels_for_action("app.dark-mode", &["<control>T"]);
         self.set_accels_for_action("app.restart", &["<control>R"]);
         self.set_accels_for_action("app.quit", &["<control>Q"]);
+        self.set_accels_for_action("window.close", &["<control>W"]);
         self.set_accels_for_action("win.show-help-overlay", &["<control>question"]);
     }
 
