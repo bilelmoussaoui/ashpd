@@ -195,10 +195,10 @@ impl Application {
 
     // Sets up keyboard shortcuts
     fn setup_accels(&self) {
-        self.set_accels_for_action("app.dark-mode", &["<primary>T"]);
-        self.set_accels_for_action("app.restart", &["<primary>R"]);
-        self.set_accels_for_action("app.quit", &["<primary>Q"]);
-        self.set_accels_for_action("win.show-help-overlay", &["<primary>question"]);
+        self.set_accels_for_action("app.dark-mode", &["<control>T"]);
+        self.set_accels_for_action("app.restart", &["<control>R"]);
+        self.set_accels_for_action("app.quit", &["<control>Q"]);
+        self.set_accels_for_action("win.show-help-overlay", &["<control>question"]);
     }
 
     fn show_about_dialog(&self) {
