@@ -1,6 +1,7 @@
 mod handle_token;
 pub(crate) mod request;
 mod session;
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 #[cfg(feature = "backend")]
 pub use self::handle_token::HandleToken;
 #[cfg(not(feature = "backend"))]

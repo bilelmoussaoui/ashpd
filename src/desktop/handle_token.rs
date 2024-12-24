@@ -9,8 +9,9 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::OwnedObjectPath;
 use zbus::{names::OwnedMemberName, zvariant::Type};
 
-/// A handle token is a DBus Object Path element, specified in the
-/// [`Request`](crate::desktop::Request)  or
+/// A handle token is a DBus Object Path element.
+///
+/// Specified in the [`Request`](crate::desktop::Request)  or
 /// [`Session`](crate::desktop::Session) object path following this format
 /// `/org/freedesktop/portal/desktop/request/SENDER/TOKEN` where sender is the
 /// caller's unique name and token is the [`HandleToken`].
