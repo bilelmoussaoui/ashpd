@@ -8,6 +8,8 @@
 #![doc = include_str!("../README.md")]
 #[cfg(all(all(feature = "tokio", feature = "async-std"), not(doc)))]
 compile_error!("You can't enable both async-std & tokio features at once");
+#[cfg(all(not(feature = "tokio"), not(feature = "async-std"), not(doc)))]
+compile_error!("Either the `async-std` or the `tokio` feature has to be enabled");
 
 /// Alias for a [`Result`] with the error type `ashpd::Error`.
 pub type Result<T> = std::result::Result<T, Error>;
