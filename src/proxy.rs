@@ -143,6 +143,7 @@ impl<'a> Proxy<'a> {
         futures_util::try_join!(request.prepare_response(), async {
             self.call_method(method_name, &body)
                 .await
+                .map_err::<PortalError, _>(From::from)
                 .map_err(From::from)
         })?;
         Ok(request)
