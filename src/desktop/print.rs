@@ -196,7 +196,7 @@ pub struct Settings {
     pub resolution: Option<String>,
     /// Whether to use color.
     #[zvariant(rename = "use-color")]
-    pub use_color: Option<bool>,
+    pub use_color: Option<String>,
     /// Duplex printing mode, one of simplex, horizontal or vertical.
     pub duplex: Option<String>,
     /// Whether to collate copies.
@@ -311,7 +311,12 @@ impl Settings {
     /// Sets whether to use color.
     #[must_use]
     pub fn use_color(mut self, use_color: impl Into<Option<bool>>) -> Self {
-        self.use_color = use_color.into();
+        let use_color = use_color.into().unwrap_or_default();
+        if use_color {
+            self.use_color = Some("yes".to_owned());
+        } else {
+            self.use_color = Some("no".to_owned())
+        };
         self
     }
 
