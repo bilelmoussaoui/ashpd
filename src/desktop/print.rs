@@ -329,15 +329,25 @@ impl Settings {
 
     /// Whether to collate copies.
     #[must_use]
-    pub fn collate<'a>(mut self, collate: impl Into<Option<&'a str>>) -> Self {
-        self.collate = collate.into().map(ToOwned::to_owned);
+    pub fn collate(mut self, collate: impl Into<Option<bool>>) -> Self {
+        let collate = collate.into().unwrap_or_default();
+        if collate {
+            self.collate = Some("yes".to_owned());
+        } else {
+            self.collate = Some("no".to_owned())
+        };
         self
     }
 
     /// Sets whether to reverse the order of the printed pages.
     #[must_use]
-    pub fn reverse<'a>(mut self, reverse: impl Into<Option<&'a str>>) -> Self {
-        self.reverse = reverse.into().map(ToOwned::to_owned);
+    pub fn reverse(mut self, reverse: impl Into<Option<bool>>) -> Self {
+        let reverse = reverse.into().unwrap_or_default();
+        if reverse {
+            self.reverse = Some("yes".to_owned());
+        } else {
+            self.reverse = Some("no".to_owned())
+        };
         self
     }
 
