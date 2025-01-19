@@ -461,22 +461,31 @@ pub struct PageSetup {
     #[zvariant(rename = "PPDName")]
     pub ppdname: Option<String>,
     /// The name of the page setup.
+    #[zvariant(rename = "Name")]
     pub name: Option<String>,
     /// The user-visible name of the page setup.
+    #[zvariant(rename = "DisplayName")]
     pub display_name: Option<String>,
     /// Paper width in millimeters.
+    #[zvariant(rename = "Width")]
     pub width: Option<f64>,
     /// Paper height in millimeters.
+    #[zvariant(rename = "Height")]
     pub height: Option<f64>,
     /// Top margin in millimeters.
+    #[zvariant(rename = "MarginTop")]
     pub margin_top: Option<f64>,
     /// Bottom margin in millimeters.
+    #[zvariant(rename = "MarginBottom")]
     pub margin_bottom: Option<f64>,
     /// Right margin in millimeters.
+    #[zvariant(rename = "MarginRight")]
     pub margin_right: Option<f64>,
     /// Left margin in millimeters.
+    #[zvariant(rename = "MarginLeft")]
     pub margin_left: Option<f64>,
     /// The page orientation.
+    #[zvariant(rename = "Orientation")]
     pub orientation: Option<Orientation>,
 }
 
