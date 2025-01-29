@@ -59,6 +59,7 @@ pub mod secret;
 /// Read & listen to system settings changes.
 pub mod settings;
 pub mod trash;
+pub mod usb;
 pub mod wallpaper;
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
