@@ -8,7 +8,7 @@ name: CI
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
@@ -27,7 +27,7 @@ jobs:
 
   test:
     name: Test Suite
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
@@ -46,7 +46,7 @@ jobs:
 
   fmt:
     name: Rustfmt
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
@@ -66,7 +66,7 @@ jobs:
 
   clippy:
     name: Clippy
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
@@ -83,3 +83,9 @@ jobs:
         with:
           command: clippy
           args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend" -- -D warnings
+
+  cargo-deny:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: EmbarkStudios/cargo-deny-action@v1
