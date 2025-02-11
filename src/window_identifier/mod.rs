@@ -301,6 +301,15 @@ impl<'de> Deserialize<'de> for WindowIdentifierType {
     }
 }
 
+impl Serialize for WindowIdentifierType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.to_string().serialize(serializer)
+    }
+}
+
 #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 mod gtk4;
 
