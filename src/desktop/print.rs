@@ -196,7 +196,7 @@ pub struct Settings {
     pub resolution: Option<String>,
     /// Whether to use color.
     #[zvariant(rename = "use-color")]
-    pub use_color: Option<bool>,
+    pub use_color: Option<String>,
     /// Duplex printing mode, one of simplex, horizontal or vertical.
     pub duplex: Option<String>,
     /// Whether to collate copies.
@@ -311,7 +311,12 @@ impl Settings {
     /// Sets whether to use color.
     #[must_use]
     pub fn use_color(mut self, use_color: impl Into<Option<bool>>) -> Self {
-        self.use_color = use_color.into();
+        let use_color = use_color.into().unwrap_or_default();
+        if use_color {
+            self.use_color = Some("yes".to_owned());
+        } else {
+            self.use_color = Some("no".to_owned())
+        };
         self
     }
 
@@ -324,15 +329,25 @@ impl Settings {
 
     /// Whether to collate copies.
     #[must_use]
-    pub fn collate<'a>(mut self, collate: impl Into<Option<&'a str>>) -> Self {
-        self.collate = collate.into().map(ToOwned::to_owned);
+    pub fn collate(mut self, collate: impl Into<Option<bool>>) -> Self {
+        let collate = collate.into().unwrap_or_default();
+        if collate {
+            self.collate = Some("yes".to_owned());
+        } else {
+            self.collate = Some("no".to_owned())
+        };
         self
     }
 
     /// Sets whether to reverse the order of the printed pages.
     #[must_use]
-    pub fn reverse<'a>(mut self, reverse: impl Into<Option<&'a str>>) -> Self {
-        self.reverse = reverse.into().map(ToOwned::to_owned);
+    pub fn reverse(mut self, reverse: impl Into<Option<bool>>) -> Self {
+        let reverse = reverse.into().unwrap_or_default();
+        if reverse {
+            self.reverse = Some("yes".to_owned());
+        } else {
+            self.reverse = Some("no".to_owned())
+        };
         self
     }
 
@@ -461,22 +476,31 @@ pub struct PageSetup {
     #[zvariant(rename = "PPDName")]
     pub ppdname: Option<String>,
     /// The name of the page setup.
+    #[zvariant(rename = "Name")]
     pub name: Option<String>,
     /// The user-visible name of the page setup.
+    #[zvariant(rename = "DisplayName")]
     pub display_name: Option<String>,
     /// Paper width in millimeters.
+    #[zvariant(rename = "Width")]
     pub width: Option<f64>,
     /// Paper height in millimeters.
+    #[zvariant(rename = "Height")]
     pub height: Option<f64>,
     /// Top margin in millimeters.
+    #[zvariant(rename = "MarginTop")]
     pub margin_top: Option<f64>,
     /// Bottom margin in millimeters.
+    #[zvariant(rename = "MarginBottom")]
     pub margin_bottom: Option<f64>,
     /// Right margin in millimeters.
+    #[zvariant(rename = "MarginRight")]
     pub margin_right: Option<f64>,
     /// Left margin in millimeters.
+    #[zvariant(rename = "MarginLeft")]
     pub margin_left: Option<f64>,
     /// The page orientation.
+    #[zvariant(rename = "Orientation")]
     pub orientation: Option<Orientation>,
 }
 
