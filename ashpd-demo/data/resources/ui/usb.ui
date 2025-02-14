@@ -17,6 +17,7 @@
                     <property name="label" translatable="yes">Refresh</property>
                     <property name="icon-name">view-refresh-symbolic</property>
                     <property name="action-name">usb.refresh</property>
+                    <property name="valign">center</property>
                   </object>
                 </property>
               </object>

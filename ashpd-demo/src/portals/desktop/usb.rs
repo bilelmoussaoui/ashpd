@@ -16,9 +16,7 @@ use ashpd::{
     WindowIdentifier,
 };
 use futures_util::{lock::Mutex, StreamExt};
-use glib::clone;
-use gtk::glib;
-use rusb::UsbContext;
+use gtk::glib::{self, clone};
 
 use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
 
@@ -164,7 +162,10 @@ mod imp {
             klass.bind_template();
 
             klass.install_action_async("usb.refresh", None, |page, _, _| async move {
-                page.refresh_devices().await
+                if let Err(err) =  page.imp().refresh_devices().await {
+                    tracing::error!("Failed to refresh USB devices: {err}");
+                    page.error(&format!("Failed to refresh USB devices: {err}."));
+                }
             });
             klass.install_action_async("usb.start_session", None, |page, _, _| async move {
                 page.start_session().await
@@ -192,7 +193,15 @@ mod imp {
                 #[weak(rename_to = widget)]
                 self,
                 async move {
-                    widget.obj().refresh_devices().await;
+                    if let Err(err) =  widget.refresh_devices().await {
+                        tracing::error!("Failed to refresh USB devices: {err}");
+                        widget.obj().error(&format!("Failed to refresh USB devices: {err}."));
+                        widget.obj().action_set_enabled("usb.start_session", false);
+                        widget.obj().action_set_enabled("usb.stop_session", false);
+                    } else {
+                        widget.obj().action_set_enabled("usb.start_session", true);
+                        widget.obj().action_set_enabled("usb.stop_session", true);
+                    }
                 }
             ));
 
@@ -210,16 +219,6 @@ glib::wrapper! {
 }
 
 impl UsbPage {
-    async fn refresh_devices(&self) {
-        match self.imp().refresh_devices().await {
-            Ok(_) => {}
-            Err(err) => {
-                tracing::error!("Failed to refresh USB devices: {err}");
-                self.error(&format!("Failed to refresh USB devices: {err}."));
-            }
-        }
-    }
-
     async fn start_session(&self) {
         self.action_set_enabled("usb.start_session", false);
         self.action_set_enabled("usb.stop_session", true);
@@ -248,7 +247,7 @@ impl UsbPage {
         }
     }
 
-    async fn do_share(&self, device_id: &String, device_writable: bool) -> ashpd::Result<()> {
+    async fn share(&self, device_id: &String, device_writable: bool) -> ashpd::Result<()> {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
         let usb = UsbProxy::new().await?;
@@ -261,14 +260,6 @@ impl UsbPage {
 
         self.imp().finish_acquire_devices(&devices);
         Ok(())
-    }
-
-    async fn share(&self, device_id: &String, device_writable: bool) {
-        let result = self.do_share(device_id, device_writable).await;
-        if let Err(err) = result {
-            tracing::error!("Acquire device error: {err}");
-            self.error(&format!("Acquire device error: {err}"));
-        }
     }
 
     async fn unshare(&self, device_id: &str) {
@@ -293,6 +284,7 @@ mod row {
 
     mod imp {
         use std::cell::{Cell, RefCell};
+        use super::super::PortalPageExt;
 
         use adw::subclass::prelude::*;
         use gtk::glib;
@@ -335,7 +327,10 @@ mod row {
                 if let Some(page) = page {
                     let device_id = self.device_id.borrow().clone();
                     let writable = self.writable.get();
-                    page.share(&device_id, writable).await;
+                    if let Err(err) = page.share(&device_id, writable).await {
+                        tracing::error!("Acquire device error: {err}");
+                        page.error(&format!("Acquire device error: {err}"));
+                    }
                 }
             }
 
