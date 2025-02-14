@@ -2,8 +2,8 @@
 #![deny(rustdoc::broken_intra_doc_links)]
 #![deny(missing_docs)]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/ashpd-demo/data/icons/com.belmoussaoui.ashpd.demo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/ashpd-demo/data/icons/com.belmoussaoui.ashpd.demo-symbolic.svg"
+    html_logo_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/demo/client/data/icons/com.belmoussaoui.ashpd.demo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/demo/client/data/icons/com.belmoussaoui.ashpd.demo-symbolic.svg"
 )]
 #![doc = include_str!("../README.md")]
 #[cfg(all(all(feature = "tokio", feature = "async-std"), not(doc)))]

@@ -17,6 +17,7 @@ allow = [
   "Apache-2.0", # pipewire -> libspa -> bindgen -> clang-sys
   "ISC", # pipewire -> libspa -> bindgen -> clang-sys -> libloading
   "Apache-2.0 WITH LLVM-exception", # cfg-expr
+  "MPL-2.0", # gst-plugin-gtk4
 ]
 
 [bans]
@@ -30,6 +31,15 @@ skip = [
     { name = "nix", version = "0.27.1" },
     # pipewire -> libspa uses an old version
     { name = "system-deps", version = "6.2.2" },
+    # pipewire -> libspa uses an old version
+    { name = "itertools", version = "0.12.1" },
     # pipewire -> libspa -> system-deps uses an old version
     { name = "cfg-expr", version = "0.15.8" },
+    # pipewire -> libspa -> system-deps uses an old version
+    { name = "cfg-expr", version = "0.15.8" },
+    # pipewire uses an old version
+    { name = "thiserror", version = "1.0.69" },
+    # pipewire uses an old version
+    { name = "thiserror-impl", version = "1.0.69" },
+
 ]

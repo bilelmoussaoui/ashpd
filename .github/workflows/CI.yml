@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -47,12 +47,8 @@ jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -72,7 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal

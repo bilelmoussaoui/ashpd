@@ -15,6 +15,6 @@ jobs:
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: "ashpd-demo.flatpak"
-          manifest-path: "ashpd-demo/build-aux/com.belmoussaoui.ashpd.demo.Devel.json"
+          manifest-path: "demo/client/build-aux/com.belmoussaoui.ashpd.demo.Devel.json"
           run-tests: true
           cache-key: flatpak-builder-${{ github.sha }}
