@@ -146,7 +146,7 @@ impl From<AcquiredDevice> for Result<OwnedFd, UsbError> {
 /// Device to acquire.
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-pub struct AcquireDevice {
+struct AcquireDevice {
     writable: bool,
 }
 
