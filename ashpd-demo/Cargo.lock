@@ -45,6 +45,8 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 [[package]]
 name = "ashpd"
 version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6cbdf310d77fd3aaee6ea2093db7011dc2d35d2eb3481e5607f1f8d942ed99df"
 dependencies = [
  "async-fs",
  "async-net",
@@ -66,7 +68,7 @@ dependencies = [
 
 [[package]]
 name = "ashpd-demo"
-version = "0.4.1"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "ashpd",
