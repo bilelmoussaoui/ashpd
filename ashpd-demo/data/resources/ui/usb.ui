@@ -39,7 +39,7 @@
                 </child>
                 <child>
                   <object class="GtkButton">
-                    <property name="label">_Stop Session</property>
+                    <property name="label">S_top Session</property>
                     <property name="use-underline">True</property>
                     <property name="sensitive">false</property>
                     <property name="halign">end</property>
