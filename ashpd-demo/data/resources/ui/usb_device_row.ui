@@ -19,6 +19,7 @@
           <object class="GtkButton" id="acquire">
             <signal name="clicked" handler="handle_acquire_clicked" swapped="true" />
             <property name="icon-name">preferences-system-sharing-symbolic</property>
+            <property name="tooltip-text" translatable="yes">Acquire</property>
             <style>
               <class name="flat"/>
             </style>
@@ -28,6 +29,7 @@
           <object class="GtkButton" id="release">
             <signal name="clicked" handler="handle_release_clicked" swapped="true"/>
             <property name="icon-name">process-stop-symbolic</property>
+            <property name="tooltip-text" translatable="yes">Release</property>
             <style>
               <class name="flat"/>
             </style>
