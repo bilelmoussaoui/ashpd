@@ -14,10 +14,13 @@
                 <property name="description" translatable="yes">Calls AcquireDevices or ReleaseDevices on org.freedesktop.portal.Usb.</property>
                 <property name="header-suffix">
                   <object class="GtkButton">
-                    <property name="label" translatable="yes">Refresh</property>
+                    <property name="tooltip-text" translatable="yes">Refresh</property>
                     <property name="icon-name">view-refresh-symbolic</property>
                     <property name="action-name">usb.refresh</property>
                     <property name="valign">center</property>
+                    <style>
+                      <class name="flat"/>
+                    </style>
                   </object>
                 </property>
               </object>
