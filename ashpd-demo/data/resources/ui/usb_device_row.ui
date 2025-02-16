@@ -13,19 +13,24 @@
       <object class="GtkBox" id="box1">
         <property name="margin-top">6</property>
         <property name="margin-bottom">6</property>
-        <style>
-          <class name="linked" />
-        </style>
+        <property name="spacing">6</property>
+        <property name="valign">center</property>
         <child>
           <object class="GtkButton" id="acquire">
             <signal name="clicked" handler="handle_acquire_clicked" swapped="true" />
             <property name="icon-name">preferences-system-sharing-symbolic</property>
+            <style>
+              <class name="flat"/>
+            </style>
           </object>
         </child>
         <child type="suffix">
           <object class="GtkButton" id="release">
             <signal name="clicked" handler="handle_release_clicked" swapped="true"/>
             <property name="icon-name">process-stop-symbolic</property>
+            <style>
+              <class name="flat"/>
+            </style>
           </object>
         </child>
       </object>
