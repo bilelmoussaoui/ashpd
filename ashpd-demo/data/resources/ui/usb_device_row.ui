@@ -4,6 +4,9 @@
     <child type="prefix">
       <object class="GtkCheckButton" id="checkbox">
         <property name="sensitive">false</property>
+        <style>
+          <class name="selection-mode"/>
+        </style>
       </object>
     </child>
     <child type="suffix">
