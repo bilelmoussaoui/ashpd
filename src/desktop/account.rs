@@ -25,7 +25,7 @@
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::HandleToken;
-use crate::{desktop::request::Request, proxy::Proxy, Error, WindowIdentifier};
+use crate::{Error, WindowIdentifier, desktop::request::Request, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]

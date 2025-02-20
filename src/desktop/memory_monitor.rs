@@ -19,7 +19,7 @@
 
 use futures_util::Stream;
 
-use crate::{proxy::Proxy, Error};
+use crate::{Error, proxy::Proxy};
 
 /// The interface provides information about low system memory to sandboxed
 /// applications.

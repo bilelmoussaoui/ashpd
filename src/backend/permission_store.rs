@@ -3,10 +3,10 @@ use std::{collections::HashMap, sync::Arc};
 use async_trait::async_trait;
 
 use crate::{
+    AppID, PortalError,
     documents::{DocumentID, Permission},
     zbus::object_server::SignalEmitter,
     zvariant::{OwnedValue, Value},
-    AppID, PortalError,
 };
 
 #[async_trait]

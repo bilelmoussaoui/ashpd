@@ -37,9 +37,9 @@ use zbus::zvariant::{
 };
 
 use crate::{
+    Error, WindowIdentifier,
     desktop::{HandleToken, Session, SessionPortal},
     proxy::Proxy,
-    Error, WindowIdentifier,
 };
 
 #[derive(Debug, SerializeDict, Type, Default)]

@@ -30,7 +30,7 @@ use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.

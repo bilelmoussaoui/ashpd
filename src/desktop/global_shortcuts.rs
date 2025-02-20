@@ -2,16 +2,14 @@
 
 use std::{collections::HashMap, fmt::Debug, time::Duration};
 
-use futures_util::{Stream, TryFutureExt};
+use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,
 };
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{
-    desktop::session::CreateSessionResponse, proxy::Proxy, ActivationToken, Error, WindowIdentifier,
-};
+use super::{HandleToken, Request, Session, session::SessionPortal};
+use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -114,12 +112,6 @@ impl BindShortcuts {
     pub fn shortcuts(&self) -> &[Shortcut] {
         &self.shortcuts
     }
-}
-
-#[derive(SerializeDict, Type, Debug)]
-#[zvariant(signature = "dict")]
-struct ConfigureShortcutsOptions {
-    activation_token: Option<ActivationToken>,
 }
 
 /// Specified options for a [`GlobalShortcuts::list_shortcuts`] request.
@@ -280,29 +272,6 @@ impl<'a> GlobalShortcuts<'a> {
         let options = ListShortcutsOptions::default();
         self.0
             .request(&options.handle_token, "ListShortcuts", &(session, &options))
-            .await
-    }
-
-    /// Request showing a configuration UI so the user is able to conigure all
-    /// shortcuts of this session.
-    ///
-    /// # Specifications
-    ///
-    /// See also [`ConfigureShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-configureshortcuts).
-    #[doc(alias = "ConfigureShortcuts")]
-    pub async fn configure_shortcuts(
-        &self,
-        session: &Session<'_, Self>,
-        identifier: Option<&WindowIdentifier>,
-        activation_token: impl Into<Option<ActivationToken>>,
-    ) -> Result<(), Error> {
-        let options = ConfigureShortcutsOptions {
-            activation_token: activation_token.into(),
-        };
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
-
-        self.0
-            .call_versioned::<()>("ConfigureShortcuts", &(session, identifier, options), 2)
             .await
     }
 

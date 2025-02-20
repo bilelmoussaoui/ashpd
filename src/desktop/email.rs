@@ -30,7 +30,7 @@ use serde::Serialize;
 use zbus::zvariant::{self, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
+use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]

@@ -38,7 +38,7 @@ use pipewire::{context::Context, main_loop::MainLoop};
 use zbus::zvariant::{self, SerializeDict, Type, Value};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error};
+use crate::{Error, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]

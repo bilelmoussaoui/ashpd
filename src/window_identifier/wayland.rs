@@ -2,8 +2,8 @@ use std::fmt;
 
 use wayland_backend::sys::client::Backend;
 use wayland_client::{
-    protocol::{wl_registry, wl_surface::WlSurface},
     Proxy, QueueHandle,
+    protocol::{wl_registry, wl_surface::WlSurface},
 };
 use wayland_protocols::xdg::foreign::{
     zv1::client::{

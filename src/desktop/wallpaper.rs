@@ -45,7 +45,7 @@ use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::Request;
-use crate::{desktop::HandleToken, proxy::Proxy, Error, WindowIdentifier};
+use crate::{Error, WindowIdentifier, desktop::HandleToken, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdSetOn"))]

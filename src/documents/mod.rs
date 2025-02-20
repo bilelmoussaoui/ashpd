@@ -4,8 +4,8 @@
 //! use std::str::FromStr;
 //!
 //! use ashpd::{
-//!     documents::{Documents, Permission},
 //!     AppID,
+//!     documents::{Documents, Permission},
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -35,13 +35,13 @@
 
 use std::{collections::HashMap, fmt, os::fd::AsFd, path::Path, str::FromStr};
 
-use enumflags2::{bitflags, BitFlags};
+use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
 pub use crate::app_id::DocumentID;
-use crate::{proxy::Proxy, AppID, Error, FilePath};
+use crate::{AppID, Error, FilePath, proxy::Proxy};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -520,7 +520,7 @@ mod tests {
 
     use zbus::zvariant::Type;
 
-    use crate::{app_id::DocumentID, documents::Permission, FilePath};
+    use crate::{FilePath, app_id::DocumentID, documents::Permission};
 
     #[test]
     fn serialize_deserialize() {
