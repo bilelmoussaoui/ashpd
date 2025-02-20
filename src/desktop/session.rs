@@ -4,7 +4,7 @@ use futures_util::Stream;
 use serde::{Deserialize, Serialize, Serializer};
 use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type};
 
-use crate::{desktop::HandleToken, proxy::Proxy, Error};
+use crate::{Error, desktop::HandleToken, proxy::Proxy};
 
 /// Shared by all portal interfaces that involve long lived sessions.
 ///

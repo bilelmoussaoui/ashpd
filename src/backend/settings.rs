@@ -3,16 +3,16 @@ use std::{collections::HashMap, sync::Arc};
 use async_trait::async_trait;
 
 use crate::{
+    PortalError,
     desktop::{
-        settings::{
-            ColorScheme, Contrast, Namespace, ACCENT_COLOR_SCHEME_KEY, APPEARANCE_NAMESPACE,
-            COLOR_SCHEME_KEY, CONTRAST_KEY,
-        },
         Color,
+        settings::{
+            ACCENT_COLOR_SCHEME_KEY, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY, CONTRAST_KEY,
+            ColorScheme, Contrast, Namespace,
+        },
     },
     zbus::object_server::SignalEmitter,
     zvariant::{OwnedValue, Value},
-    PortalError,
 };
 
 #[async_trait]

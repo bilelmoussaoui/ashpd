@@ -6,7 +6,7 @@ use raw_window_handle::{
 };
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
-use serde::{ser::Serializer, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
 ///
