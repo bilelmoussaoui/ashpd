@@ -21,7 +21,7 @@
 use std::os::fd::AsFd;
 
 #[cfg(feature = "async-std")]
-use async_net::{unix::UnixStream, Shutdown};
+use async_net::{Shutdown, unix::UnixStream};
 #[cfg(feature = "async-std")]
 use futures_util::AsyncReadExt;
 #[cfg(feature = "tokio")]
@@ -29,7 +29,7 @@ use tokio::{io::AsyncReadExt, io::AsyncWriteExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error};
+use crate::{Error, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.

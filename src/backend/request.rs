@@ -1,7 +1,7 @@
 use std::{boxed::Box, future::Future, sync::Arc};
 
 use async_trait::async_trait;
-use futures_util::future::{abortable, AbortHandle};
+use futures_util::future::{AbortHandle, abortable};
 use tokio::sync::Mutex;
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 

@@ -23,7 +23,7 @@ use futures_util::Stream;
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{DeserializeDict, Type};
 
-use crate::{proxy::Proxy, Error};
+use crate::{Error, proxy::Proxy};
 
 #[derive(DeserializeDict, Type, Debug)]
 /// The network status, composed of the availability, metered & connectivity

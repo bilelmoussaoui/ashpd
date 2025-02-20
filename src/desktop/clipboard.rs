@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use futures_util::{Stream, StreamExt};
 use zbus::zvariant::{DeserializeDict, OwnedFd, OwnedObjectPath, SerializeDict, Type, Value};
 
-use super::{remote_desktop::RemoteDesktop, Session};
-use crate::{proxy::Proxy, Result};
+use super::{Session, remote_desktop::RemoteDesktop};
+use crate::{Result, proxy::Proxy};
 
 #[derive(Debug, Type, SerializeDict)]
 #[zvariant(signature = "dict")]

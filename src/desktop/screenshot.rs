@@ -38,7 +38,7 @@ use std::fmt::Debug;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{desktop::Color, proxy::Proxy, Error, WindowIdentifier};
+use crate::{Error, WindowIdentifier, desktop::Color, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
