@@ -89,7 +89,7 @@ impl<'a> Camera<'a> {
     #[doc(alias = "xdp_portal_open_pipewire_remote_for_camera")]
     pub async fn open_pipe_wire_remote(&self) -> Result<OwnedFd, Error> {
         // `options` parameter doesn't seems to be used yet
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/camera.c#L178
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/camera.c#L273
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
