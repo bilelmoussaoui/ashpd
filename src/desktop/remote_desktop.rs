@@ -333,7 +333,7 @@ impl<'a> RemoteDesktop<'a> {
         state: KeyState,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyKeyboardKeycode", &(session, options, keycode, state))
@@ -363,7 +363,7 @@ impl<'a> RemoteDesktop<'a> {
         state: KeyState,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyKeyboardKeysym", &(session, options, keysym, state))
@@ -391,7 +391,7 @@ impl<'a> RemoteDesktop<'a> {
         slot: u32,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyTouchUp", &(session, options, slot))
@@ -427,7 +427,7 @@ impl<'a> RemoteDesktop<'a> {
         y: f64,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyTouchDown", &(session, options, stream, slot, x, y))
@@ -463,7 +463,7 @@ impl<'a> RemoteDesktop<'a> {
         y: f64,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyTouchMotion", &(session, options, stream, slot, x, y))
@@ -494,7 +494,7 @@ impl<'a> RemoteDesktop<'a> {
         y: f64,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call(
@@ -526,7 +526,7 @@ impl<'a> RemoteDesktop<'a> {
         dy: f64,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyPointerMotion", &(session, options, dx, dy))
@@ -558,7 +558,7 @@ impl<'a> RemoteDesktop<'a> {
         state: KeyState,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyPointerButton", &(session, options, button, state))
@@ -587,7 +587,7 @@ impl<'a> RemoteDesktop<'a> {
         steps: i32,
     ) -> Result<(), Error> {
         // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L723
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call(
@@ -625,7 +625,7 @@ impl<'a> RemoteDesktop<'a> {
         dy: f64,
         finish: bool,
     ) -> Result<(), Error> {
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L911
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L1025-L1027
         let mut options: HashMap<&str, Value<'_>> = HashMap::new();
         options.insert("finish", Value::Bool(finish));
         self.0
@@ -655,7 +655,7 @@ impl<'a> RemoteDesktop<'a> {
     #[doc(alias = "ConnectToEIS")]
     pub async fn connect_to_eis(&self, session: &Session<'_, Self>) -> Result<OwnedFd, Error> {
         // `ConnectToEIS` doesn't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/remote-desktop.c#L1464
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L1457-L1458
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
