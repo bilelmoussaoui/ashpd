@@ -4,7 +4,7 @@ use crate::desktop::{dynamic_launcher::UnexpectedIconError, request::ResponseErr
 
 /// An error type that describes the various DBus errors.
 ///
-/// See <https://github.com/flatpak/xdg-desktop-portal/blob/master/src/xdp-utils.h#L119-L127>.
+/// See <https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/xdp-utils.h#L88-L96>.
 #[allow(missing_docs)]
 #[derive(DBusError, Debug)]
 #[zbus(prefix = "org.freedesktop.portal.Error")]

@@ -126,7 +126,7 @@ impl<'a> FileTransfer<'a> {
     #[doc(alias = "RetrieveFiles")]
     pub async fn retrieve_files(&self, key: &str) -> Result<Vec<String>, Error> {
         // `options` parameter doesn't seems to be used yet
-        // see https://github.com/GNOME/gtk/blob/master/gdk/filetransferportal.c#L284
+        // see https://github.com/GNOME/gtk/blob/4.16.12/gdk/filetransferportal.c#L288
         let options: HashMap<&str, Value<'_>> = HashMap::new();
 
         self.0.call("RetrieveFiles", &(key, options)).await
