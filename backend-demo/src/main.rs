@@ -11,9 +11,7 @@ use secret::Secret;
 use settings::Settings;
 use wallpaper::Wallpaper;
 
-// NOTE Uncomment if you have ashpd-backend-demo.portal installed.
-// const NAME: &str = "org.freedesktop.impl.portal.desktop.ashpd-backend-demo";
-const NAME: &str = "org.freedesktop.impl.portal.desktop.gnome";
+const NAME: &str = "org.freedesktop.impl.portal.desktop.ashpd-backend-demo";
 // Run with
 // RUST_LOG=ashpd_backend_demo=debug,ashpd=debug cargo run --manifest-path
 // ./backend-demo/Cargo.toml
