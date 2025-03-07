@@ -61,3 +61,7 @@ The library comes with a [demo](./ashpd-demo) built using the [GTK 4 Rust bindin
 <a href="https://flathub.org/apps/details/com.belmoussaoui.ashpd.demo">
 <img src="https://flathub.org/assets/badges/flathub-badge-i-en.png" width="190px" />
 </a>
+
+## Backend demo
+
+The library also comes with a [backend demo](./backend-demo/README.md) that exemplifies how to implement [a portal backend](https://docs.flatpak.org/en/latest/portal-api-reference.html#idm45771421251808).
