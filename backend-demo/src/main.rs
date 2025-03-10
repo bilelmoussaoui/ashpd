@@ -1,10 +1,12 @@
 use futures_util::future::pending;
+mod access;
 mod account;
 mod screenshot;
 mod secret;
 mod settings;
 mod wallpaper;
 
+use access::Access;
 use account::Account;
 use screenshot::Screenshot;
 use secret::Secret;
@@ -22,6 +24,7 @@ async fn main() -> ashpd::Result<()> {
     tracing_subscriber::fmt::init();
 
     ashpd::backend::Builder::new(NAME)?
+        .access(Access)
         .account(Account)
         .screenshot(Screenshot)
         .secret(Secret)
