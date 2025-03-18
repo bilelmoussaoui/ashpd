@@ -262,7 +262,7 @@ pub enum WindowIdentifierType {
 impl fmt::Display for WindowIdentifierType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::X11(xid) => f.write_str(&format!("x11:0x{xid:x}")),
+            Self::X11(xid) => f.write_str(&format!("x11:{xid:x}")),
             Self::Wayland(handle) => f.write_str(&format!("wayland:{handle}")),
         }
     }
@@ -333,11 +333,18 @@ mod tests {
     #[test]
     fn test_serialize() {
         let x11 = WindowIdentifier::from_xid(1024);
-        assert_eq!(x11.to_string(), "x11:0x400");
+        assert_eq!(x11.to_string(), "x11:400");
 
         assert_eq!(
-            WindowIdentifierType::from_str("x11:0x11432").unwrap(),
+            WindowIdentifierType::from_str("x11:11432").unwrap(),
             WindowIdentifierType::X11(70706)
+        );
+
+        // A valid x11 window identifier shouldn't be prefixed with 0x, this is kept for backwards compatibility
+        // and compatibility with backends which implicitly strip the prefix with e.g. `strtol`
+        assert_eq!(
+            WindowIdentifierType::from_str("x11:0x502a").unwrap(),
+            WindowIdentifierType::X11(20522)
         );
 
         assert_eq!(
