@@ -64,4 +64,4 @@ The library comes with a [demo](./ashpd-demo) built using the [GTK 4 Rust bindin
 
 ## Backend demo
 
-The library also comes with a [backend demo](./backend-demo/README.md) that exemplifies how to implement [a portal backend](https://docs.flatpak.org/en/latest/portal-api-reference.html#idm45771421251808).
+The library also comes with a [backend demo](./backend-demo/README.md) that exemplifies how to implement [a portal backend](https://flatpak.github.io/xdg-desktop-portal/docs/impl-dbus-interfaces.html).
