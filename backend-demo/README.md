@@ -1,6 +1,6 @@
 # Portal backend demo
 
-ASHPD enables [writing portal backends](https://flatpak.github.io/xdg-desktop-portal/docs/writing-a-new-backend.html) that implement a subset of [backend interfaces](https://docs.flatpak.org/en/latest/portal-api-reference.html#idm45771421251808).
+ASHPD enables [writing portal backends](https://flatpak.github.io/xdg-desktop-portal/docs/writing-a-new-backend.html) that implement a subset of [backend interfaces](https://flatpak.github.io/xdg-desktop-portal/docs/impl-dbus-interfaces.html).
 
 This demo provides a backend that registers the `org.freedesktop.impl.portal.desktop.ashpd-backend-demo` name and implements a handful of interfaces for demo purposes.
 
