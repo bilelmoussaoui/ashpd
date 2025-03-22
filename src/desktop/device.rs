@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::{SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, Pid};
+use crate::{Error, Pid, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`DeviceProxy::access_device`] request.

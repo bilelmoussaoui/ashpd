@@ -27,7 +27,7 @@ use std::{collections::HashMap, os::fd::AsFd};
 use futures_util::Stream;
 use zbus::zvariant::{Fd, SerializeDict, Type, Value};
 
-use crate::{proxy::Proxy, Error};
+use crate::{Error, proxy::Proxy};
 
 #[derive(SerializeDict, Debug, Type, Default)]
 /// Specified options for a [`FileTransfer::start_transfer`] request.

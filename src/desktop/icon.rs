@@ -1,9 +1,8 @@
 use std::os::fd::AsFd;
 
 use serde::{
-    de,
+    Deserialize, de,
     ser::{Serialize, SerializeTuple},
-    Deserialize,
 };
 use zbus::zvariant::{self, OwnedValue, Type, Value};
 
@@ -215,7 +214,7 @@ impl TryFrom<&Value<'_>> for Icon {
 
 #[cfg(test)]
 mod test {
-    use zbus::zvariant::{serialized::Context, to_bytes, Endian};
+    use zbus::zvariant::{Endian, serialized::Context, to_bytes};
 
     use super::*;
 

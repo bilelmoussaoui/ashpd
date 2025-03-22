@@ -3,14 +3,14 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
+    ActivationToken, AppID, PortalError, WindowIdentifierType,
     backend::{
-        request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier,
+        request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Response},
     zbus::object_server::{InterfaceRef, ObjectServer},
     zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
-    ActivationToken, AppID, PortalError, WindowIdentifierType,
 };
 
 #[derive(Debug, DeserializeDict, Type)]
