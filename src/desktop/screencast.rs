@@ -305,7 +305,7 @@ impl<'a> Screencast<'a> {
         session: &Session<'_, impl HasScreencastSession>,
     ) -> Result<OwnedFd, Error> {
         // `options` parameter doesn't seems to be used yet
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/master/src/screen-cast.c#L812
+        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/screen-cast.c#L940
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
