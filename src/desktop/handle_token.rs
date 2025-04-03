@@ -96,7 +96,7 @@ impl TryFrom<&OwnedObjectPath> for HandleToken {
         let base_segment = value
             .as_str()
             .split('/')
-            .last()
+            .next_back()
             .expect("A valid request ObjectPath");
         HandleToken::try_from(base_segment)
     }
