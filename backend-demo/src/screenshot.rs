@@ -29,7 +29,7 @@ impl ScreenshotImpl for Screenshot {
         _options: ScreenshotOptions,
     ) -> Result<ScreenshotResponse> {
         Ok(ScreenshotResponse::new(
-            url::Url::parse("file:///some/sreenshot").unwrap(),
+            url::Url::parse("file:///some/screenshot").unwrap(),
         ))
     }
 
