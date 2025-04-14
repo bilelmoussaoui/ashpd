@@ -54,16 +54,18 @@ impl Request {
         );
         server.at(&path, request).await?;
 
-        let response = match fut.await {
-            Err(_) => Response::cancelled(),
-            Ok(response) => Response::ok(response?),
-        };
+        let response = fut.await;
+
         #[cfg(feature = "tracing")]
         tracing::debug!("{_method} returned {:#?}", response);
         #[cfg(feature = "tracing")]
         tracing::debug!("Releasing request {:?}", path.as_str());
         server.remove::<Self, _>(&path).await?;
-        Ok(response)
+
+        Ok(match response {
+            Err(_) => Response::cancelled(),
+            Ok(response) => Response::ok(response?),
+        })
     }
 
     pub(crate) fn new(
