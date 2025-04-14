@@ -1,6 +1,7 @@
 use futures_util::future::pending;
 mod access;
 mod account;
+mod screencast;
 mod screenshot;
 mod secret;
 mod settings;
@@ -8,6 +9,7 @@ mod wallpaper;
 
 use access::Access;
 use account::Account;
+use screencast::Screencast;
 use screenshot::Screenshot;
 use secret::Secret;
 use settings::Settings;
@@ -26,6 +28,7 @@ async fn main() -> ashpd::Result<()> {
     ashpd::backend::Builder::new(NAME)?
         .access(Access)
         .account(Account)
+        .screencast(Screencast::default())
         .screenshot(Screenshot)
         .secret(Secret)
         .settings(Settings::default())
