@@ -40,7 +40,7 @@ use std::{collections::HashMap, fmt::Debug, os::fd::OwnedFd};
 
 use enumflags2::{bitflags, BitFlags};
 use futures_util::TryFutureExt;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
@@ -154,7 +154,7 @@ struct StartCastOptions {
     handle_token: HandleToken,
 }
 
-#[derive(DeserializeDict, Type)]
+#[derive(Default, SerializeDict, DeserializeDict, Type)]
 /// A response to a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 pub struct Streams {
@@ -183,7 +183,38 @@ impl Debug for Streams {
     }
 }
 
-#[derive(Clone, Deserialize, Type)]
+/// A [builder-pattern] type to construct a response to a [`Screencast::start`]
+/// request.
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
+pub struct StreamsBuilder {
+    streams: Streams,
+}
+
+impl StreamsBuilder {
+    /// Create a new instance of a streams builder.
+    pub fn new(streams: Vec<Stream>) -> Self {
+        Self {
+            streams: Streams {
+                streams,
+                restore_token: None,
+            },
+        }
+    }
+
+    /// Set the streams' optional restore token.
+    pub fn restore_token(mut self, restore_token: impl Into<Option<String>>) -> Self {
+        self.streams.restore_token = restore_token.into();
+        self
+    }
+
+    /// Build the [`Streams`].
+    pub fn build(self) -> Streams {
+        self.streams
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, Type)]
 /// A PipeWire stream.
 pub struct Stream(u32, StreamProperties);
 
@@ -240,7 +271,7 @@ impl Debug for Stream {
             .finish()
     }
 }
-#[derive(Clone, DeserializeDict, Type, Debug)]
+#[derive(Clone, SerializeDict, DeserializeDict, Type, Debug)]
 /// The stream properties.
 #[zvariant(signature = "dict")]
 struct StreamProperties {
@@ -249,6 +280,68 @@ struct StreamProperties {
     size: Option<(i32, i32)>,
     source_type: Option<SourceType>,
     mapping_id: Option<String>,
+}
+
+/// A [builder-pattern] type to construct a PipeWire stream [`Stream`].
+///
+/// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
+pub struct StreamBuilder {
+    stream: Stream,
+}
+
+impl StreamBuilder {
+    /// Create a new instance of a stream builder.
+    pub fn new(pipe_wire_node_id: u32) -> Self {
+        Self {
+            stream: Stream(
+                pipe_wire_node_id,
+                StreamProperties {
+                    id: None,
+                    position: None,
+                    size: None,
+                    source_type: None,
+                    mapping_id: None,
+                },
+            ),
+        }
+    }
+
+    /// Set the stream's optional id (opaque identifier, local to a given
+    /// session, persisted across restored sessions).
+    pub fn id(mut self, id: impl Into<Option<String>>) -> Self {
+        self.stream.1.id = id.into();
+        self
+    }
+
+    /// Set the stream's optional position (in the compositor coordinate space).
+    pub fn position(mut self, position: impl Into<Option<(i32, i32)>>) -> Self {
+        self.stream.1.position = position.into();
+        self
+    }
+
+    /// Set the stream's optional size (in the compositor coordinate space).
+    pub fn size(mut self, size: impl Into<Option<(i32, i32)>>) -> Self {
+        self.stream.1.size = size.into();
+        self
+    }
+
+    /// Set the stream's optional source type.
+    pub fn source_type(mut self, source_type: impl Into<Option<SourceType>>) -> Self {
+        self.stream.1.source_type = source_type.into();
+        self
+    }
+
+    /// Set the stream's optional mapping id (identifier used to map different
+    /// aspects of the resource this stream corresponds to).
+    pub fn mapping_id(mut self, mapping_id: impl Into<Option<String>>) -> Self {
+        self.stream.1.mapping_id = mapping_id.into();
+        self
+    }
+
+    /// Build the [`Stream`].
+    pub fn build(self) -> Stream {
+        self.stream
+    }
 }
 
 /// The interface lets sandboxed applications create screen cast sessions.

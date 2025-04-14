@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use enumflags2::BitFlags;
 use zbus::names::{OwnedWellKnownName, WellKnownName};
@@ -13,8 +13,10 @@ use crate::backend::{
     lockdown::{LockdownImpl, LockdownInterface},
     permission_store::{PermissionStoreImpl, PermissionStoreInterface},
     print::{PrintImpl, PrintInterface},
+    screencast::{ScreencastImpl, ScreencastInterface},
     screenshot::{ScreenshotImpl, ScreenshotInterface},
     secret::{SecretImpl, SecretInterface},
+    session::SessionManager,
     settings::{SettingsImpl, SettingsInterface},
     wallpaper::{WallpaperImpl, WallpaperInterface},
     Result,
@@ -32,10 +34,12 @@ pub struct Builder {
     lockdown_impl: Option<Arc<dyn LockdownImpl>>,
     permission_store_impl: Option<Arc<dyn PermissionStoreImpl>>,
     print_impl: Option<Arc<dyn PrintImpl>>,
+    screencast_impl: Option<Arc<dyn ScreencastImpl>>,
     screenshot_impl: Option<Arc<dyn ScreenshotImpl>>,
     secret_impl: Option<Arc<dyn SecretImpl>>,
     settings_impl: Option<Arc<dyn SettingsImpl>>,
     wallpaper_impl: Option<Arc<dyn WallpaperImpl>>,
+    sessions: Arc<Mutex<SessionManager>>,
 }
 
 impl Builder {
@@ -59,10 +63,12 @@ impl Builder {
             lockdown_impl: None,
             permission_store_impl: None,
             print_impl: None,
+            screencast_impl: None,
             screenshot_impl: None,
             secret_impl: None,
             settings_impl: None,
             wallpaper_impl: None,
+            sessions: Arc::new(Mutex::new(SessionManager::default())),
         })
     }
 
@@ -113,6 +119,11 @@ impl Builder {
 
     pub fn print(mut self, imp: impl PrintImpl + 'static) -> Self {
         self.print_impl = Some(Arc::new(imp));
+        self
+    }
+
+    pub fn screencast(mut self, imp: impl ScreencastImpl + 'static) -> Self {
+        self.screencast_impl = Some(Arc::new(imp));
         self
     }
 
@@ -216,6 +227,15 @@ impl Builder {
             let portal = PrintInterface::new(imp, cnx.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Print`");
+            object_server
+                .at("/org/freedesktop/portal/desktop", portal)
+                .await?;
+        }
+
+        if let Some(imp) = self.screencast_impl {
+            let portal = ScreencastInterface::new(imp, cnx.clone(), Arc::clone(&self.sessions));
+            #[cfg(feature = "tracing")]
+            tracing::debug!("Serving interface `org.freedesktop.impl.portal.ScreenCast`");
             object_server
                 .at("/org/freedesktop/portal/desktop", portal)
                 .await?;
