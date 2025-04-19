@@ -26,6 +26,10 @@
   <url type="homepage">https://github.com/bilelmoussaoui/ashpd</url>
   <url type="bugtracker">https://github.com/bilelmoussaoui/ashpd/issues</url>
   <content_rating type="oars-1.0" />
+  <branding>
+    <color type="primary" scheme_preference="light">#dc8add</color>
+    <color type="primary" scheme_preference="dark">#1a5fb4</color>
+  </branding>
   <releases>
     <release version="0.5.0" date="2025-04-19">
       <description>
