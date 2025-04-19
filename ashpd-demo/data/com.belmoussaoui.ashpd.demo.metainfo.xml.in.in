@@ -31,6 +31,11 @@
     <color type="primary" scheme_preference="light">#dc8add</color>
     <color type="primary" scheme_preference="dark">#1a5fb4</color>
   </branding>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </recommends>
   <releases>
     <release version="0.4.1" date="2023-10-13" />
     <release version="0.4.0" date="2023-08-11" />
