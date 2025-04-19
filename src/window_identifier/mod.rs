@@ -6,7 +6,7 @@ use raw_window_handle::{
 };
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
-use serde::{ser::Serializer, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
 ///
@@ -193,9 +193,11 @@ impl WindowIdentifier {
         surface_ptr: *mut std::ffi::c_void,
         display_ptr: *mut std::ffi::c_void,
     ) -> Option<Self> {
-        WaylandWindowIdentifier::from_raw(surface_ptr, display_ptr)
-            .await
-            .map(Self::Wayland)
+        unsafe {
+            WaylandWindowIdentifier::from_raw(surface_ptr, display_ptr)
+                .await
+                .map(Self::Wayland)
+        }
     }
 
     #[cfg(feature = "wayland")]

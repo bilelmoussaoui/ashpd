@@ -3,13 +3,13 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    backend::{
-        request::{Request, RequestImpl},
-        MaybeAppID, MaybeWindowIdentifier, Result,
-    },
-    desktop::{request::ResponseType, wallpaper::SetOn, HandleToken},
-    zvariant::{DeserializeDict, OwnedObjectPath, Type},
     AppID, WindowIdentifierType,
+    backend::{
+        MaybeAppID, MaybeWindowIdentifier, Result,
+        request::{Request, RequestImpl},
+    },
+    desktop::{HandleToken, request::ResponseType, wallpaper::SetOn},
+    zvariant::{DeserializeDict, OwnedObjectPath, Type},
 };
 
 #[derive(DeserializeDict, Type, Debug)]
