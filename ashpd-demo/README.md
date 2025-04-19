@@ -1,5 +1,5 @@
 <a href="https://flathub.org/apps/details/com.belmoussaoui.ashpd.demo">
-<img src="https://flathub.org/assets/badges/flathub-badge-i-en.png" width="190px" />
+<img src="https://flathub.org/api/badge?svg&locale=en&light" width="190px" />
 </a>
 
 # ASHPD Demo
