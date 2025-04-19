@@ -16,11 +16,10 @@ dependency('gtk4', version: '>= 4.16.0')
 dependency('libadwaita-1', version: '>= 1.7.alpha')
 dependency('shumate-1.0')
 
-glib_compile_resources = find_program('glib-compile-resources', required: true)
-glib_compile_schemas = find_program('glib-compile-schemas', required: true)
+glib_compile_schemas = find_program('glib-compile-schemas')
 desktop_file_validate = find_program('desktop-file-validate', required: false)
 appstreamcli = find_program('appstreamcli', required: false)
-cargo = find_program('cargo', required: true)
+cargo = find_program('cargo')
 
 version = meson.project_version()
 
