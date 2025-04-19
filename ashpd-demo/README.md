@@ -4,12 +4,12 @@
 
 # ASHPD Demo
 
-<img src="https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/ashpd-demo/data/icons/com.belmoussaoui.ashpd.demo.svg" width="128" height="128" />
+<img src="data/icons/com.belmoussaoui.ashpd.demo.svg" width="128" height="128" />
 <p>Play with the portals</p>
 
 ## Screenshots
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/ashpd-demo/data/resources/screenshots/screenshot1.png" />
+<img src="data/resources/screenshots/screenshot1.png" />
 </div>
 
