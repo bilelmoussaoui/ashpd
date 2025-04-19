@@ -25,6 +25,7 @@
   </screenshots>
   <url type="homepage">https://github.com/bilelmoussaoui/ashpd</url>
   <url type="bugtracker">https://github.com/bilelmoussaoui/ashpd/issues</url>
+  <url type="vcs-browser">https://github.com/bilelmoussaoui/ashpd</url>
   <content_rating type="oars-1.0" />
   <branding>
     <color type="primary" scheme_preference="light">#dc8add</color>
