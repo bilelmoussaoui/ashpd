@@ -18,6 +18,7 @@ use crate::backend::{
     secret::{SecretImpl, SecretInterface},
     session::SessionManager,
     settings::{SettingsImpl, SettingsInterface},
+    usb::{UsbImpl, UsbInterface},
     wallpaper::{WallpaperImpl, WallpaperInterface},
     Result,
 };
@@ -39,6 +40,7 @@ pub struct Builder {
     secret_impl: Option<Arc<dyn SecretImpl>>,
     settings_impl: Option<Arc<dyn SettingsImpl>>,
     wallpaper_impl: Option<Arc<dyn WallpaperImpl>>,
+    usb_impl: Option<Arc<dyn UsbImpl>>,
     sessions: Arc<Mutex<SessionManager>>,
 }
 
@@ -68,6 +70,7 @@ impl Builder {
             secret_impl: None,
             settings_impl: None,
             wallpaper_impl: None,
+            usb_impl: None,
             sessions: Arc::new(Mutex::new(SessionManager::default())),
         })
     }
@@ -144,6 +147,11 @@ impl Builder {
 
     pub fn wallpaper(mut self, imp: impl WallpaperImpl + 'static) -> Self {
         self.wallpaper_impl = Some(Arc::new(imp));
+        self
+    }
+
+    pub fn usb(mut self, imp: impl UsbImpl + 'static) -> Self {
+        self.usb_impl = Some(Arc::new(imp));
         self
     }
 
@@ -272,6 +280,15 @@ impl Builder {
             let portal = WallpaperInterface::new(imp, cnx.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Wallpaper`");
+            object_server
+                .at("/org/freedesktop/portal/desktop", portal)
+                .await?;
+        }
+
+        if let Some(imp) = self.usb_impl {
+            let portal = UsbInterface::new(imp, cnx.clone());
+            #[cfg(feature = "tracing")]
+            tracing::debug!("Serving interface `org.freedesktop.impl.portal.Usb`");
             object_server
                 .at("/org/freedesktop/portal/desktop", portal)
                 .await?;
