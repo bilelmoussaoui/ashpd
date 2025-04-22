@@ -456,8 +456,9 @@ mod tests {
             WindowIdentifierType::X11(70706)
         );
 
-        // A valid x11 window identifier shouldn't be prefixed with 0x, this is kept for backwards compatibility
-        // and compatibility with backends which implicitly strip the prefix with e.g. `strtol`
+        // A valid x11 window identifier shouldn't be prefixed with 0x, this is kept for
+        // backwards compatibility and compatibility with backends which
+        // implicitly strip the prefix with e.g. `strtol`
         assert_eq!(
             WindowIdentifierType::from_str("x11:0x502a").unwrap(),
             WindowIdentifierType::X11(20522)
