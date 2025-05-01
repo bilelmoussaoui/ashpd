@@ -1,3 +1,8 @@
+#[cfg(all(
+    any(feature = "gtk4_wayland", feature = "gtk4_x11"),
+    feature = "backend"
+))]
+use ::gtk4 as gtk;
 use std::{fmt, str::FromStr};
 
 #[cfg(all(feature = "raw_handle", feature = "gtk4"))]
@@ -307,6 +312,117 @@ impl Serialize for WindowIdentifierType {
         S: Serializer,
     {
         self.to_string().serialize(serializer)
+    }
+}
+
+impl WindowIdentifierType {
+    /// Sets the given window as a modal child of the window represented by
+    /// self.
+    ///
+    /// The different combinations of window types and their support is as per
+    /// follows.
+    /// - Wayland child window, Wayland parent window - supported.
+    /// - Wayland child window, X11 parent window - unsupported.
+    /// - X11 child window, Wayland parent window - unsupported.
+    /// - X11 child window, X11 parent window - supported.
+    ///
+    /// This is useful in backend implementations as the portal dialogs have to
+    /// be modal and grouped together with the application that launched the
+    /// request.
+    ///
+    /// Realizes the window if it is not realized yet.
+    ///
+    /// Returns `true` on success.
+    #[cfg(all(
+        any(feature = "gtk4_wayland", feature = "gtk4_x11"),
+        feature = "backend"
+    ))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(
+            any(feature = "gtk4_wayland", feature = "gtk4_x11"),
+            feature = "backend"
+        )))
+    )]
+    pub fn set_parent_of(&self, window: &impl gtk::prelude::IsA<gtk::Window>) -> bool {
+        use gtk::prelude::*;
+
+        let window = window.as_ref();
+
+        let surface = match window.surface() {
+            Some(surface) => surface,
+            None => {
+                WidgetExt::realize(window);
+                window.surface().unwrap()
+            }
+        };
+
+        window.set_modal(true);
+
+        match self {
+            #[cfg(feature = "gtk4_x11")]
+            WindowIdentifierType::X11(xid) => {
+                use gdk4x11::x11::xlib;
+                use gdk4x11::{X11Display, X11Surface};
+
+                let display = match WidgetExt::display(window).dynamic_cast::<X11Display>() {
+                    Ok(display) => display,
+                    Err(_) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!("Failed to get X11 display");
+                        return false;
+                    }
+                };
+                let surface = match surface.dynamic_cast::<X11Surface>() {
+                    Ok(surface) => surface,
+                    Err(_) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!("Failed to get X11 surface");
+                        return false;
+                    }
+                };
+                unsafe {
+                    // Based on GNOME's libgxdp -
+                    // https://gitlab.gnome.org/GNOME/libgxdp/-/blob/e6c11f2812cad0a43e847ec97bfc1c67bf50be52/src/gxdp-external-window-x11.c#L90-105
+                    let xdisplay = display.xdisplay();
+                    xlib::XSetTransientForHint(xdisplay, surface.xid(), *xid);
+                    let net_wm_window_type_atom =
+                        gdk4x11::x11_get_xatom_by_name_for_display(&display, "_NET_WM_WINDOW_TYPE");
+                    let net_wm_window_type_dialog_atom = gdk4x11::x11_get_xatom_by_name_for_display(
+                        &display,
+                        "_NET_WM_WINDOW_DIALOG_TYPE",
+                    );
+                    let data: *const u8 = &(net_wm_window_type_dialog_atom as u8);
+                    xlib::XChangeProperty(
+                        xdisplay,
+                        surface.xid(),
+                        net_wm_window_type_atom,
+                        xlib::XA_ATOM,
+                        32,
+                        xlib::PropModeReplace,
+                        data,
+                        1,
+                    );
+                    true
+                }
+            }
+            #[cfg(feature = "gtk4_wayland")]
+            WindowIdentifierType::Wayland(handle) => {
+                use gdk4wayland::WaylandToplevel;
+
+                let toplevel = match surface.dynamic_cast::<WaylandToplevel>() {
+                    Ok(toplevel) => toplevel,
+                    Err(_) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!("Failed to get toplevel from surface");
+                        return false;
+                    }
+                };
+                toplevel.set_transient_for_exported(handle)
+            }
+            #[cfg(not(all(feature = "gtk4_x11", feature = "gtk4_wayland")))]
+            _ => false,
+        }
     }
 }
 
