@@ -23,8 +23,10 @@ pub struct AccessOptions {
 }
 
 impl AccessOptions {
-    pub fn set_is_writable(&mut self, is_writable: bool) {
-        self.writable = Some(is_writable);
+    pub fn new(is_wirtable: bool) -> Self {
+        Self {
+            writable: Some(is_wirtable),
+        }
     }
 
     pub fn is_writable(&self) -> Option<bool> {
