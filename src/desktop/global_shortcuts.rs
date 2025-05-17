@@ -116,7 +116,7 @@ impl BindShortcuts {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, Type, Debug)]
 #[zvariant(signature = "dict")]
 struct ConfigureShortcutsOptions {
     activation_token: Option<ActivationToken>,
@@ -296,12 +296,13 @@ impl<'a> GlobalShortcuts<'a> {
         identifier: Option<&WindowIdentifier>,
         activation_token: impl Into<Option<ActivationToken>>,
     ) -> Result<(), Error> {
-        let mut options = ConfigureShortcutsOptions::default();
-        options.activation_token = activation_token.into();
+        let options = ConfigureShortcutsOptions {
+            activation_token: activation_token.into(),
+        };
         let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
 
         self.0
-            .call_versioned::<()>("ConfigureShortcuts", &(session, identifier), 2)
+            .call_versioned::<()>("ConfigureShortcuts", &(session, identifier, options), 2)
             .await
     }
 
