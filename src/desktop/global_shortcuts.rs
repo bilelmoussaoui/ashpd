@@ -9,7 +9,9 @@ use zbus::zvariant::{
 };
 
 use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
+use crate::{
+    desktop::session::CreateSessionResponse, proxy::Proxy, ActivationToken, Error, WindowIdentifier,
+};
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -112,6 +114,12 @@ impl BindShortcuts {
     pub fn shortcuts(&self) -> &[Shortcut] {
         &self.shortcuts
     }
+}
+
+#[derive(SerializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+struct ConfigureShortcutsOptions {
+    activation_token: Option<ActivationToken>,
 }
 
 /// Specified options for a [`GlobalShortcuts::list_shortcuts`] request.
@@ -272,6 +280,28 @@ impl<'a> GlobalShortcuts<'a> {
         let options = ListShortcutsOptions::default();
         self.0
             .request(&options.handle_token, "ListShortcuts", &(session, &options))
+            .await
+    }
+
+    /// Request showing a configuration UI so the user is able to conigure all
+    /// shortcuts of this session.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`ConfigureShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-configureshortcuts).
+    #[doc(alias = "ConfigureShortcuts")]
+    pub async fn configure_shortcuts(
+        &self,
+        session: &Session<'_, Self>,
+        identifier: Option<&WindowIdentifier>,
+        activation_token: impl Into<Option<ActivationToken>>,
+    ) -> Result<(), Error> {
+        let mut options = ConfigureShortcutsOptions::default();
+        options.activation_token = activation_token.into();
+        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+
+        self.0
+            .call_versioned::<()>("ConfigureShortcuts", &(session, identifier), 2)
             .await
     }
 
