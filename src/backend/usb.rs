@@ -23,9 +23,9 @@ pub struct AccessOptions {
 }
 
 impl AccessOptions {
-    pub fn new(is_wirtable: bool) -> Self {
+    pub fn new(is_writable: bool) -> Self {
         Self {
-            writable: Some(is_wirtable),
+            writable: Some(is_writable),
         }
     }
 
