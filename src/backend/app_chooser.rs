@@ -8,7 +8,6 @@ use crate::{
         MaybeAppID, MaybeWindowIdentifier,
     },
     desktop::{HandleToken, Response},
-    zbus::object_server::{InterfaceRef, ObjectServer},
     zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
     ActivationToken, AppID, PortalError, WindowIdentifierType,
 };
@@ -88,7 +87,7 @@ pub trait AppChooserImpl: RequestImpl {
 
     async fn update_choices(
         &self,
-        request: InterfaceRef<Request>,
+        token: HandleToken,
         choices: Vec<AppID>,
     ) -> Result<(), PortalError>;
 }
@@ -143,15 +142,14 @@ impl AppChooserInterface {
 
     async fn update_choices(
         &self,
-        #[zbus(object_server)] server: &ObjectServer,
         handle: OwnedObjectPath,
         choices: Vec<AppID>,
     ) -> Result<(), PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("AppChooser::UpdateChoices");
 
-        let iface_ref = server.interface::<_, Request>(handle).await?;
-        let response = self.imp.update_choices(iface_ref, choices).await;
+        let token = HandleToken::try_from(&handle).unwrap();
+        let response = self.imp.update_choices(token, choices).await;
 
         #[cfg(feature = "tracing")]
         tracing::debug!("AppChooser::UpdateChoices returned {:#?}", response);
