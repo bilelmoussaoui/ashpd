@@ -45,11 +45,14 @@ impl Request {
         let (fut, abort_handle) = abortable(callback);
         let token = HandleToken::try_from(&path).unwrap();
         let close_cb = move || {
-            // TODO: Should we log an error here with tracing, or just hard error? Tokio can't
-            // error while spawning a future, but a custom executor might
-            let _ = spawn.spawn(async move {
+            if let Err(err) = spawn.spawn(async move {
                 RequestImpl::close(&*imp, token).await;
-            });
+            }) {
+                let _ = err;
+
+                #[cfg(feature = "tracing")]
+                tracing::error!("Failed to spawn request closer");
+            }
         };
         let request = Request::new(close_cb, path.clone(), abort_handle, cnx.clone());
         let server = cnx.object_server();
