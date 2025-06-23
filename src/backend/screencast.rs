@@ -106,7 +106,12 @@ impl ScreencastInterface {
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
         sessions: Arc<Mutex<SessionManager>>,
     ) -> Self {
-        Self { imp, cnx, spawn, sessions }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            sessions,
+        }
     }
 }
 
