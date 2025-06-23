@@ -78,12 +78,17 @@ pub trait AccessImpl: RequestImpl {
 
 pub(crate) struct AccessInterface {
     imp: Arc<dyn AccessImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl AccessInterface {
-    pub fn new(imp: Arc<dyn AccessImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn AccessImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -113,6 +118,7 @@ impl AccessInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.access_dialog(
                     HandleToken::try_from(&handle).unwrap(),

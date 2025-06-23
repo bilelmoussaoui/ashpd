@@ -77,12 +77,17 @@ pub trait BackgroundImpl: RequestImpl {
 
 pub(crate) struct BackgroundInterface {
     imp: Arc<dyn BackgroundImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl BackgroundInterface {
-    pub fn new(imp: Arc<dyn BackgroundImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn BackgroundImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 
     pub async fn changed(&self) -> zbus::Result<()> {
@@ -134,6 +139,7 @@ impl BackgroundInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.notify_background(HandleToken::try_from(&handle).unwrap(), app_id, &name)
                     .await

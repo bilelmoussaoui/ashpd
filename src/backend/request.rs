@@ -1,8 +1,11 @@
 use std::{boxed::Box, future::Future, sync::Arc};
 
 use async_trait::async_trait;
-use futures_util::future::{abortable, AbortHandle};
-use tokio::sync::Mutex;
+use futures_util::lock::Mutex;
+use futures_util::{
+    future::{abortable, AbortHandle},
+    task::SpawnExt,
+};
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
 use crate::desktop::{HandleToken, Response};
@@ -30,6 +33,7 @@ impl Request {
         cnx: &zbus::Connection,
         path: OwnedObjectPath,
         imp: Arc<R>,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
         callback: impl Future<Output = crate::backend::Result<T>>,
     ) -> crate::backend::Result<Response<T>>
     where
@@ -40,8 +44,12 @@ impl Request {
         tracing::debug!("{_method}");
         let (fut, abort_handle) = abortable(callback);
         let token = HandleToken::try_from(&path).unwrap();
-        let close_cb = || {
-            tokio::spawn(async move {
+        let close_cb = move || {
+            let spawn = spawn.clone();
+
+            // TODO: Should we log an error here with tracing, or just hard error? Tokio can't
+            // error while spawning a future, but a custom executor might
+            let _ = spawn.spawn(async move {
                 RequestImpl::close(&*imp, token).await;
             });
         };

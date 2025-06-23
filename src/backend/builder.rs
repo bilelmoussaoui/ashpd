@@ -41,6 +41,7 @@ pub struct Builder {
     settings_impl: Option<Arc<dyn SettingsImpl>>,
     wallpaper_impl: Option<Arc<dyn WallpaperImpl>>,
     usb_impl: Option<Arc<dyn UsbImpl>>,
+    spawn: Option<Arc<dyn futures_util::task::Spawn + Send + Sync + 'static>>,
     sessions: Arc<Mutex<SessionManager>>,
 }
 
@@ -71,12 +72,22 @@ impl Builder {
             settings_impl: None,
             wallpaper_impl: None,
             usb_impl: None,
+            spawn: None,
             sessions: Arc::new(Mutex::new(SessionManager::default())),
         })
     }
 
     pub fn with_flags(mut self, flags: BitFlags<zbus::fdo::RequestNameFlags>) -> Self {
         self.flags = flags;
+        self
+    }
+
+    #[cfg(not(any(feature = "tokio")))]
+    pub fn with_spawn(
+        mut self,
+        imp: impl futures_util::task::Spawn + Send + Sync + 'static,
+    ) -> Self {
+        self.spawn = Some(Arc::new(imp));
         self
     }
 
@@ -158,9 +169,22 @@ impl Builder {
     pub async fn build(self) -> Result<()> {
         let cnx = zbus::Connection::session().await?;
         cnx.request_name_with_flags(self.name, self.flags).await?;
+
+        #[cfg(feature = "tokio")]
+        let spawn = {
+            println!("using tokio spawner");
+            self.spawn.unwrap_or(Arc::new(super::spawn::TokioSpawner))
+        };
+
+        #[cfg(not(feature = "tokio"))]
+        let spawn = Arc::new(
+            self.spawn
+                .expect("Must provide a spawner when not using tokio"),
+        );
+
         let object_server = cnx.object_server();
         if let Some(imp) = self.account_impl {
-            let portal = AccountInterface::new(imp, cnx.clone());
+            let portal = AccountInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Account`");
             object_server
@@ -169,7 +193,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.access_impl {
-            let portal = AccessInterface::new(imp, cnx.clone());
+            let portal = AccessInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Access`");
             object_server
@@ -178,7 +202,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.app_chooser_impl {
-            let portal = AppChooserInterface::new(imp, cnx.clone());
+            let portal = AppChooserInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.AppChooser`");
             object_server
@@ -187,7 +211,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.background_impl {
-            let portal = BackgroundInterface::new(imp, cnx.clone());
+            let portal = BackgroundInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Background`");
             object_server
@@ -196,7 +220,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.email_impl {
-            let portal = EmailInterface::new(imp, cnx.clone());
+            let portal = EmailInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Email`");
             object_server
@@ -205,7 +229,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.file_chooser_impl {
-            let portal = FileChooserInterface::new(imp, cnx.clone());
+            let portal = FileChooserInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.FileChooser`");
             object_server
@@ -214,7 +238,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.lockdown_impl {
-            let portal = LockdownInterface::new(imp, cnx.clone());
+            let portal = LockdownInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Lockdown`");
             object_server
@@ -223,7 +247,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.permission_store_impl {
-            let portal = PermissionStoreInterface::new(imp, cnx.clone());
+            let portal = PermissionStoreInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.PermissionStore`");
             object_server
@@ -232,7 +256,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.print_impl {
-            let portal = PrintInterface::new(imp, cnx.clone());
+            let portal = PrintInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Print`");
             object_server
@@ -241,7 +265,12 @@ impl Builder {
         }
 
         if let Some(imp) = self.screencast_impl {
-            let portal = ScreencastInterface::new(imp, cnx.clone(), Arc::clone(&self.sessions));
+            let portal = ScreencastInterface::new(
+                imp,
+                cnx.clone(),
+                spawn.clone(),
+                Arc::clone(&self.sessions),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.ScreenCast`");
             object_server
@@ -250,7 +279,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.screenshot_impl {
-            let portal = ScreenshotInterface::new(imp, cnx.clone());
+            let portal = ScreenshotInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Screenshot`");
             object_server
@@ -259,7 +288,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.secret_impl {
-            let portal = SecretInterface::new(imp, cnx.clone());
+            let portal = SecretInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Secret`");
             object_server
@@ -268,7 +297,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.settings_impl {
-            let portal = SettingsInterface::new(imp, cnx.clone());
+            let portal = SettingsInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Settings`");
             object_server
@@ -277,7 +306,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.wallpaper_impl {
-            let portal = WallpaperInterface::new(imp, cnx.clone());
+            let portal = WallpaperInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Wallpaper`");
             object_server
@@ -286,7 +315,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.usb_impl {
-            let portal = UsbInterface::new(imp, cnx.clone());
+            let portal = UsbInterface::new(imp, cnx.clone(), spawn.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Usb`");
             object_server

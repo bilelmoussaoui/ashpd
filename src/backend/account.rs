@@ -37,12 +37,17 @@ pub trait AccountImpl: RequestImpl {
 
 pub(crate) struct AccountInterface {
     imp: Arc<dyn AccountImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl AccountInterface {
-    pub fn new(imp: Arc<dyn AccountImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn AccountImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -69,6 +74,7 @@ impl AccountInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.get_user_information(
                     HandleToken::try_from(&handle).unwrap(),

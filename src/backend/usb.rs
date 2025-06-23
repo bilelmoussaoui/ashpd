@@ -48,12 +48,17 @@ pub trait UsbImpl: RequestImpl {
 
 pub(crate) struct UsbInterface {
     imp: Arc<dyn UsbImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl UsbInterface {
-    pub fn new(imp: Arc<dyn UsbImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn UsbImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -81,6 +86,7 @@ impl UsbInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.acquire_devices(
                     HandleToken::try_from(&handle).unwrap(),

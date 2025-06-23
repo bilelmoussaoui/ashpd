@@ -70,5 +70,6 @@ pub mod screenshot;
 pub mod secret;
 pub mod session;
 pub mod settings;
+mod spawn;
 pub mod usb;
 pub mod wallpaper;
