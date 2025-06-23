@@ -39,11 +39,17 @@ pub trait SettingsImpl: Send + Sync {
 pub(crate) struct SettingsInterface {
     imp: Arc<dyn SettingsImpl>,
     cnx: zbus::Connection,
+    #[allow(dead_code)]
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
 }
 
 impl SettingsInterface {
-    pub fn new(imp: Arc<dyn SettingsImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn SettingsImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 
     pub async fn changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {

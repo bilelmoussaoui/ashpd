@@ -81,11 +81,17 @@ pub(crate) struct PermissionStoreInterface {
     imp: Arc<dyn PermissionStoreImpl>,
     #[allow(dead_code)]
     cnx: zbus::Connection,
+    #[allow(dead_code)]
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
 }
 
 impl PermissionStoreInterface {
-    pub fn new(imp: Arc<dyn PermissionStoreImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn PermissionStoreImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 
     pub async fn document_changed(

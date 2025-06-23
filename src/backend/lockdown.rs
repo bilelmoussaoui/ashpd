@@ -33,11 +33,17 @@ pub(crate) struct LockdownInterface {
     imp: Arc<dyn LockdownImpl>,
     #[allow(dead_code)]
     cnx: zbus::Connection,
+    #[allow(dead_code)]
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
 }
 
 impl LockdownInterface {
-    pub fn new(imp: Arc<dyn LockdownImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn LockdownImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 

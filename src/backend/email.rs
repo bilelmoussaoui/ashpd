@@ -72,12 +72,17 @@ pub trait EmailImpl: RequestImpl {
 
 pub(crate) struct EmailInterface {
     imp: Arc<dyn EmailImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl EmailInterface {
-    pub fn new(imp: Arc<dyn EmailImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn EmailImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -103,6 +108,7 @@ impl EmailInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.compose(
                     HandleToken::try_from(&handle).unwrap(),

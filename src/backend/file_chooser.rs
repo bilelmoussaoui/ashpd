@@ -217,12 +217,17 @@ pub trait FileChooserImpl: RequestImpl {
 
 pub(crate) struct FileChooserInterface {
     imp: Arc<dyn FileChooserImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl FileChooserInterface {
-    pub fn new(imp: Arc<dyn FileChooserImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn FileChooserImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -249,6 +254,7 @@ impl FileChooserInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.open_file(
                     HandleToken::try_from(&handle).unwrap(),
@@ -279,6 +285,7 @@ impl FileChooserInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.save_file(
                     HandleToken::try_from(&handle).unwrap(),
@@ -309,6 +316,7 @@ impl FileChooserInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.save_files(
                     HandleToken::try_from(&handle).unwrap(),

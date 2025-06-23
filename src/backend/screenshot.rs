@@ -61,12 +61,17 @@ pub trait ScreenshotImpl: RequestImpl {
 
 pub(crate) struct ScreenshotInterface {
     imp: Arc<dyn ScreenshotImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl ScreenshotInterface {
-    pub fn new(imp: Arc<dyn ScreenshotImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn ScreenshotImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -93,6 +98,7 @@ impl ScreenshotInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.screenshot(
                     HandleToken::try_from(&handle).unwrap(),
@@ -122,6 +128,7 @@ impl ScreenshotInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.pick_color(
                     HandleToken::try_from(&handle).unwrap(),

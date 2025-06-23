@@ -15,7 +15,7 @@ rust-version = "1.75"
 async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net", "futures-util/io"]
 default = ["tokio"]
 
-backend = ["async-trait", "tokio"]
+backend = ["async-trait"]
 
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
 gtk4_wayland = ["gdk4wayland", "glib", "dep:gtk4"]

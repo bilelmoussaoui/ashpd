@@ -15,5 +15,5 @@ zbus = "5.0"
 
 [dependencies.ashpd]
 path = "../"
-features = ["backend", "tracing"]
+features = ["backend", "tracing", "tokio"]
 default-features = false

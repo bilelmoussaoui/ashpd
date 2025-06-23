@@ -77,12 +77,17 @@ pub trait PrintImpl: RequestImpl {
 
 pub(crate) struct PrintInterface {
     imp: Arc<dyn PrintImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl PrintInterface {
-    pub fn new(imp: Arc<dyn PrintImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn PrintImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -112,6 +117,7 @@ impl PrintInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.prepare_print(
                     HandleToken::try_from(&handle).unwrap(),
@@ -146,6 +152,7 @@ impl PrintInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.print(
                     HandleToken::try_from(&handle).unwrap(),

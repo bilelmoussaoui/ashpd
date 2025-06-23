@@ -24,12 +24,17 @@ pub trait SecretImpl: RequestImpl {
 
 pub(crate) struct SecretInterface {
     imp: Arc<dyn SecretImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl SecretInterface {
-    pub fn new(imp: Arc<dyn SecretImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn SecretImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -55,6 +60,7 @@ impl SecretInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.retrieve(
                     HandleToken::try_from(&handle).unwrap(),

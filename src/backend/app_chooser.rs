@@ -129,12 +129,17 @@ pub trait AppChooserImpl: RequestImpl {
 
 pub(crate) struct AppChooserInterface {
     imp: Arc<dyn AppChooserImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
 }
 
 impl AppChooserInterface {
-    pub fn new(imp: Arc<dyn AppChooserImpl>, cnx: zbus::Connection) -> Self {
-        Self { imp, cnx }
+    pub fn new(
+        imp: Arc<dyn AppChooserImpl>,
+        cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    ) -> Self {
+        Self { imp, cnx, spawn }
     }
 }
 
@@ -161,6 +166,7 @@ impl AppChooserInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.choose_application(
                     HandleToken::try_from(&handle).unwrap(),

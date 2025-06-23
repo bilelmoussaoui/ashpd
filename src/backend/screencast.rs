@@ -94,6 +94,7 @@ pub trait ScreencastImpl: RequestImpl + SessionImpl {
 
 pub(crate) struct ScreencastInterface {
     imp: Arc<dyn ScreencastImpl>,
+    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
     sessions: Arc<Mutex<SessionManager>>,
 }
@@ -102,9 +103,15 @@ impl ScreencastInterface {
     pub fn new(
         imp: Arc<dyn ScreencastImpl>,
         cnx: zbus::Connection,
+        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
         sessions: Arc<Mutex<SessionManager>>,
     ) -> Self {
-        Self { imp, cnx, sessions }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            sessions,
+        }
     }
 }
 
@@ -160,6 +167,7 @@ impl ScreencastInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.create_session(
                     HandleToken::try_from(&handle).unwrap(),
@@ -215,6 +223,7 @@ impl ScreencastInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.select_sources(session_token, app_id.inner(), options)
                     .await
@@ -245,6 +254,7 @@ impl ScreencastInterface {
             &self.cnx,
             handle.clone(),
             Arc::clone(&self.imp),
+            Arc::clone(&self.spawn),
             async move {
                 imp.start_cast(
                     session_token,
