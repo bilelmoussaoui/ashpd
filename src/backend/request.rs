@@ -45,8 +45,6 @@ impl Request {
         let (fut, abort_handle) = abortable(callback);
         let token = HandleToken::try_from(&path).unwrap();
         let close_cb = move || {
-            let spawn = spawn.clone();
-
             // TODO: Should we log an error here with tracing, or just hard error? Tokio can't
             // error while spawning a future, but a custom executor might
             let _ = spawn.spawn(async move {
