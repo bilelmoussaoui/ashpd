@@ -171,10 +171,7 @@ impl Builder {
         cnx.request_name_with_flags(self.name, self.flags).await?;
 
         #[cfg(feature = "tokio")]
-        let spawn = {
-            println!("using tokio spawner");
-            self.spawn.unwrap_or(Arc::new(super::spawn::TokioSpawner))
-        };
+        let spawn = self.spawn.unwrap_or(Arc::new(super::spawn::TokioSpawner));
 
         #[cfg(not(feature = "tokio"))]
         let spawn = Arc::new(
