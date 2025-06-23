@@ -48,10 +48,9 @@ impl Request {
             if let Err(err) = spawn.spawn(async move {
                 RequestImpl::close(&*imp, token).await;
             }) {
-                let _ = err;
-
                 #[cfg(feature = "tracing")]
-                tracing::error!("Failed to spawn request closer");
+                tracing::error!("Failed to spawn request closer: {}", err);
+                let _ = err;
             }
         };
         let request = Request::new(close_cb, path.clone(), abort_handle, cnx.clone());
