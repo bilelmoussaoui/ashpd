@@ -85,7 +85,6 @@
 use std::{collections::HashMap, os::fd::OwnedFd};
 
 use enumflags2::{BitFlags, bitflags};
-use futures_util::TryFutureExt;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 

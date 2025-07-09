@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, fmt::Debug, time::Duration};
 
-use futures_util::{Stream, TryFutureExt};
+use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,

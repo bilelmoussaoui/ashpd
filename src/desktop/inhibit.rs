@@ -35,7 +35,7 @@
 //! ```
 
 use enumflags2::{BitFlags, bitflags};
-use futures_util::{Stream, TryFutureExt};
+use futures_util::Stream;
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};

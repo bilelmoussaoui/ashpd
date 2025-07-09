@@ -26,7 +26,7 @@
 
 use std::fmt::Debug;
 
-use futures_util::{Stream, TryFutureExt};
+use futures_util::Stream;
 use serde::Deserialize;
 use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};

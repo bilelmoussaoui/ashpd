@@ -39,7 +39,6 @@
 use std::{collections::HashMap, fmt::Debug, os::fd::OwnedFd};
 
 use enumflags2::{BitFlags, bitflags};
-use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};

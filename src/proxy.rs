@@ -234,7 +234,7 @@ impl<'a> Proxy<'a> {
         &self,
         name: &'static str,
         args: &[(u8, &str)],
-    ) -> Result<impl Stream<Item = I>, Error>
+    ) -> Result<impl Stream<Item = I> + use<I>, Error>
     where
         I: for<'de> Deserialize<'de> + Type + Debug,
     {

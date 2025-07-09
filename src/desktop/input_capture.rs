@@ -270,7 +270,7 @@
 use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
 use enumflags2::{BitFlags, bitflags};
-use futures_util::{Stream, TryFutureExt};
+use futures_util::Stream;
 use serde::{Deserialize, de::Visitor};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
