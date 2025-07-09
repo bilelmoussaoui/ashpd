@@ -61,7 +61,7 @@ async fn start_streaming(node_id: u32, fd: OwnedFd) -> Result<(), pw::Error> {
     let _listener = stream
         .add_local_listener_with_user_data(data)
         .state_changed(|_, _, old, new| {
-            println!("State changed: {:?} -> {:?}", old, new);
+            println!("State changed: {old:?} -> {new:?}");
         })
         .param_changed(|_, user_data, id, param| {
             let Some(param) = param else {
@@ -124,7 +124,7 @@ async fn start_streaming(node_id: u32, fd: OwnedFd) -> Result<(), pw::Error> {
         })
         .register()?;
 
-    println!("Created stream {:#?}", stream);
+    println!("Created stream {stream:#?}");
 
     let obj = pw::spa::pod::object!(
         pw::spa::utils::SpaTypes::ObjectParamFormat,
@@ -219,6 +219,6 @@ async fn main() {
     );
 
     if let Err(e) = start_streaming(pipewire_node_id, fd).await {
-        eprintln!("Error: {}", e);
+        eprintln!("Error: {e}");
     };
 }
