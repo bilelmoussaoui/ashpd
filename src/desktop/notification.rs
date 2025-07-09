@@ -4,8 +4,8 @@
 //! use std::{thread, time};
 //!
 //! use ashpd::desktop::{
-//!     notification::{Action, Button, Notification, NotificationProxy, Priority},
 //!     Icon,
+//!     notification::{Action, Button, Notification, NotificationProxy, Priority},
 //! };
 //! use futures_util::StreamExt;
 //! use zbus::zvariant::Value;
@@ -57,7 +57,7 @@ use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Type, Value};
 
 use super::Icon;
-use crate::{proxy::Proxy, Error};
+use crate::{Error, proxy::Proxy};
 
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
 #[zvariant(signature = "s")]

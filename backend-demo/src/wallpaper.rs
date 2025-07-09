@@ -1,11 +1,11 @@
 use ashpd::{
+    AppID, WindowIdentifierType,
     backend::{
+        Result,
         request::RequestImpl,
         wallpaper::{WallpaperImpl, WallpaperOptions},
-        Result,
     },
     desktop::HandleToken,
-    AppID, WindowIdentifierType,
 };
 use async_trait::async_trait;
 

@@ -14,7 +14,7 @@
 //! }
 //! ```
 
-use crate::{proxy::Proxy, Error};
+use crate::{Error, proxy::Proxy};
 
 /// The interface provides network proxy information to sandboxed applications.
 ///

@@ -52,8 +52,9 @@ impl<'de> Deserialize<'de> for FilePath {
 #[cfg(test)]
 mod tests {
     use zbus::zvariant::{
+        Endian,
         serialized::{Context, Data},
-        to_bytes, Endian,
+        to_bytes,
     };
 
     use super::*;

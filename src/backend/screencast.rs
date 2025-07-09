@@ -4,18 +4,18 @@ use async_trait::async_trait;
 use enumflags2::BitFlags;
 
 use crate::{
+    AppID, PortalError, WindowIdentifierType,
     backend::{
+        MaybeAppID, MaybeWindowIdentifier, Result,
         request::{Request, RequestImpl},
         session::{CreateSessionResponse, Session, SessionImpl, SessionManager},
-        MaybeAppID, MaybeWindowIdentifier, Result,
     },
     desktop::{
+        HandleToken, PersistMode,
         request::Response,
         screencast::{CursorMode, SourceType, Streams as StartCastResponse},
-        HandleToken, PersistMode,
     },
     zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
-    AppID, PortalError, WindowIdentifierType,
 };
 
 #[derive(DeserializeDict, Type, Debug)]

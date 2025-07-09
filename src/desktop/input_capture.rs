@@ -269,16 +269,16 @@
 
 use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
-use enumflags2::{bitflags, BitFlags};
+use enumflags2::{BitFlags, bitflags};
 use futures_util::{Stream, TryFutureExt};
-use serde::{de::Visitor, Deserialize};
+use serde::{Deserialize, de::Visitor};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
     self, DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
 };
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use super::{HandleToken, Request, Session, session::SessionPortal};
+use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[bitflags]

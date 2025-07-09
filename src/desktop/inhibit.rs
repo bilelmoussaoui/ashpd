@@ -34,14 +34,14 @@
 //! }
 //! ```
 
-use enumflags2::{bitflags, BitFlags};
+use enumflags2::{BitFlags, bitflags};
 use futures_util::{Stream, TryFutureExt};
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
+use super::{HandleToken, Request, Session, session::SessionPortal};
+use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.

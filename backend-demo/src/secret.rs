@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 use ashpd::{
-    backend::{request::RequestImpl, secret::SecretImpl, Result},
+    AppID,
+    backend::{Result, request::RequestImpl, secret::SecretImpl},
     desktop::HandleToken,
     zbus::zvariant::OwnedValue,
-    AppID,
 };
 use async_trait::async_trait;
 

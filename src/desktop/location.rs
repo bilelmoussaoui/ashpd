@@ -31,8 +31,8 @@ use serde::Deserialize;
 use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use super::{HandleToken, Request, Session, session::SessionPortal};
+use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdLocationAccuracy"))]
