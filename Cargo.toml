@@ -2,14 +2,14 @@
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
 categories = ["gui", "os::linux-apis", "api-bindings"]
 description = "XDG portals wrapper in Rust using zbus"
-edition = "2021"
+edition = "2024"
 exclude = ["interfaces/*.xml", "ashpd-demo/"]
 keywords = ["portal", "flatpak", "xdg", "desktop", "dbus"]
 license = "MIT"
 name = "ashpd"
 repository = "https://github.com/bilelmoussaoui/ashpd"
 version = "0.11.0"
-rust-version = "1.75"
+rust-version = "1.85"
 
 [features]
 async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net", "futures-util/io"]

@@ -1,16 +1,16 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ashpd::{
+    PortalError,
     backend::{
         request::RequestImpl,
         settings::{SettingsImpl, SettingsSignalEmitter},
     },
     desktop::{
-        settings::{ColorScheme, Namespace, APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY},
         HandleToken,
+        settings::{APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY, ColorScheme, Namespace},
     },
     zbus::zvariant::OwnedValue,
-    PortalError,
 };
 use async_trait::async_trait;
 

@@ -2,15 +2,15 @@
 
 use std::{collections::HashMap, fmt::Debug, time::Duration};
 
-use futures_util::{Stream, TryFutureExt};
+use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,
 };
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
+use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{
-    desktop::session::CreateSessionResponse, proxy::Proxy, ActivationToken, Error, WindowIdentifier,
+    ActivationToken, Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
 };
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]

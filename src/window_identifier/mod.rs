@@ -11,7 +11,7 @@ use raw_window_handle::{
 };
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
-use serde::{ser::Serializer, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use zbus::zvariant::Type;
 /// Most portals interact with the user by showing dialogs.
 ///
@@ -362,7 +362,7 @@ impl WindowIdentifierType {
         match self {
             #[cfg(feature = "gtk4_x11")]
             WindowIdentifierType::X11(xid) => {
-                use gdk4x11::{x11::xlib, X11Display, X11Surface};
+                use gdk4x11::{X11Display, X11Surface, x11::xlib};
 
                 let display = match WidgetExt::display(window).dynamic_cast::<X11Display>() {
                     Ok(display) => display,

@@ -2,7 +2,7 @@
 //!
 //! Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Realtime.html).
 
-use crate::{proxy::Proxy, Error, Pid};
+use crate::{Error, Pid, proxy::Proxy};
 
 /// Interface for setting a thread to realtime from within the sandbox.
 ///
