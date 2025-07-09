@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
