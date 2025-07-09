@@ -24,12 +24,13 @@ multiple-versions = "deny"
 wildcards = "deny"
 highlight = "all"
 skip = [
-    # ppv-lite86 uses an old version
-    { name = "zerocopy", version = "0.7.35" },
     # pipewire -> libspa uses an old version
     { name = "nix", version = "0.27.1" },
     # pipewire -> libspa uses an old version
     { name = "system-deps", version = "6.2.2" },
     # pipewire -> libspa -> system-deps uses an old version
     { name = "cfg-expr", version = "0.15.8" },
+    { name = "linux-raw-sys", version = "0.4.15" },
+    { name = "rustix", version = "0.38.44" },
+    { name = "target-lexicon", version = "0.12.16" },
 ]
