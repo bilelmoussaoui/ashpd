@@ -56,7 +56,7 @@ mod imp {
 glib::wrapper! {
     pub struct PortalPage(ObjectSubclass<imp::PortalPage>)
         @extends gtk::Widget, adw::Bin,
-        @implements gtk::Buildable;
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 pub trait PortalPageExt {

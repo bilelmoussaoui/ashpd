@@ -45,7 +45,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct SecretPage(ObjectSubclass<imp::SecretPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl SecretPage {

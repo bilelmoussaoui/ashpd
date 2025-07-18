@@ -54,7 +54,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct DevicePage(ObjectSubclass<imp::DevicePage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl DevicePage {

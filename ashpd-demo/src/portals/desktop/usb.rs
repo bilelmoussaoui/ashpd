@@ -219,7 +219,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct UsbPage(ObjectSubclass<imp::UsbPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl UsbPage {
@@ -358,7 +359,8 @@ mod row {
 
     glib::wrapper! {
         pub struct UsbDeviceRow(ObjectSubclass<imp::UsbDeviceRow>)
-            @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow;
+            @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow,
+            @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible, gtk::Actionable;
     }
 
     impl UsbDeviceRow {

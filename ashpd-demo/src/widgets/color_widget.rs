@@ -58,5 +58,6 @@ mod imp {
 
 glib::wrapper! {
     pub struct ColorWidget(ObjectSubclass<imp::ColorWidget>)
-        @extends gtk::Widget;
+        @extends gtk::Widget,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }

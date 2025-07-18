@@ -135,7 +135,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct LocationPage(ObjectSubclass<imp::LocationPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl LocationPage {

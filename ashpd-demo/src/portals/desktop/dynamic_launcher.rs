@@ -111,7 +111,8 @@ mod desktop_file_row {
 
     glib::wrapper! {
         pub struct DesktopFileRow(ObjectSubclass<imp::DesktopFileRow>)
-            @extends gtk::Widget, gtk::ListBoxRow;
+            @extends gtk::Widget, gtk::ListBoxRow,
+            @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible, gtk::Actionable;
     }
 
     impl DesktopFileRow {
@@ -280,7 +281,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct DynamicLauncherPage(ObjectSubclass<imp::DynamicLauncherPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl DynamicLauncherPage {

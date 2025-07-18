@@ -51,7 +51,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct DocumentsPage(ObjectSubclass<imp::DocumentsPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl DocumentsPage {
