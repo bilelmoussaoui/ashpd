@@ -48,7 +48,7 @@ impl AccountImpl for Account {
         // `org.freedesktop.Accounts` interfaces.
         let cnx = zbus::Connection::system().await?;
         let uid = nix::unistd::Uid::current().as_raw();
-        let path = format!("/org/freedesktop/Accounts/User{}", uid);
+        let path = format!("/org/freedesktop/Accounts/User{uid}");
         let proxy = fdo_account::AccountsProxy::builder(&cnx)
             .path(path)?
             .build()
