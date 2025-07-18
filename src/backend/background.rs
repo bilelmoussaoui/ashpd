@@ -1,15 +1,15 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use enumflags2::{bitflags, BitFlags};
+use enumflags2::{BitFlags, bitflags};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
+    AppID, PortalError,
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
     zbus::object_server::SignalEmitter,
     zvariant::{OwnedObjectPath, SerializeDict, Type},
-    AppID, PortalError,
 };
 
 #[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Eq, Debug, Type)]

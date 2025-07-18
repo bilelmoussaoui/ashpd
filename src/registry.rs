@@ -1,6 +1,6 @@
 use zbus::zvariant;
 
-use crate::{proxy::Proxy, AppID, Error};
+use crate::{AppID, Error, proxy::Proxy};
 
 #[derive(Debug, zvariant::SerializeDict, zvariant::Type)]
 #[zvariant(signature = "dict")]
