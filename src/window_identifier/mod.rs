@@ -198,9 +198,11 @@ impl WindowIdentifier {
         surface_ptr: *mut std::ffi::c_void,
         display_ptr: *mut std::ffi::c_void,
     ) -> Option<Self> {
-        WaylandWindowIdentifier::from_raw(surface_ptr, display_ptr)
-            .await
-            .map(Self::Wayland)
+        unsafe {
+            WaylandWindowIdentifier::from_raw(surface_ptr, display_ptr)
+                .await
+                .map(Self::Wayland)
+        }
     }
 
     #[cfg(feature = "wayland")]
