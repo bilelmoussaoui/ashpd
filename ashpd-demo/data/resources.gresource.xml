@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/com/belmoussaoui/ashpd/demo/">
-        <file compressed="true" preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">resources/ui/shortcuts.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">resources/ui/shortcuts.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="window.ui">resources/ui/window.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="sidebar_row.ui">resources/ui/sidebar_row.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="portal_page.ui">resources/ui/portal_page.ui</file>
