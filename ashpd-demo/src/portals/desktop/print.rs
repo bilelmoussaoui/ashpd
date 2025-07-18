@@ -49,7 +49,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct PrintPage(ObjectSubclass<imp::PrintPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl PrintPage {
