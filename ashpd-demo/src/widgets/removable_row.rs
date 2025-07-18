@@ -53,7 +53,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct RemovableRow(ObjectSubclass<imp::RemovableRow>)
-        @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow;
+        @extends gtk::Widget, gtk::ListBoxRow, adw::PreferencesRow, adw::ActionRow,
+        @implements gtk::Actionable, gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl RemovableRow {

@@ -121,7 +121,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct EmailPage(ObjectSubclass<imp::EmailPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl EmailPage {

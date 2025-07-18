@@ -44,7 +44,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct ProxyResolverPage(ObjectSubclass<imp::ProxyResolverPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl ProxyResolverPage {

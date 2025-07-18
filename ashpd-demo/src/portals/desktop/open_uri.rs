@@ -46,7 +46,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct OpenUriPage(ObjectSubclass<imp::OpenUriPage>)
-        @extends gtk::Widget, adw::Bin, PortalPage;
+        @extends gtk::Widget, adw::Bin, PortalPage,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl OpenUriPage {

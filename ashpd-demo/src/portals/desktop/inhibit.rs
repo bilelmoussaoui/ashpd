@@ -71,7 +71,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct InhibitPage(ObjectSubclass<imp::InhibitPage>)
-        @extends gtk::Widget, adw::Bin;
+        @extends gtk::Widget, adw::Bin,
+        @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
 impl InhibitPage {
