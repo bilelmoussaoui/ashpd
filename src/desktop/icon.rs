@@ -37,7 +37,7 @@ impl Icon {
         matches!(self, Self::Bytes(_))
     }
 
-    pub(crate) fn inner_bytes(&self) -> Value {
+    pub(crate) fn inner_bytes(&self) -> Value<'_> {
         match self {
             Self::Bytes(bytes) => {
                 let mut array = zvariant::Array::new(u8::SIGNATURE);
@@ -51,7 +51,7 @@ impl Icon {
         }
     }
 
-    pub(crate) fn as_value(&self) -> Value {
+    pub(crate) fn as_value(&self) -> Value<'_> {
         let tuple = match self {
             Self::Uri(uri) => ("file", Value::from(uri.as_str())),
             Self::Names(names) => {

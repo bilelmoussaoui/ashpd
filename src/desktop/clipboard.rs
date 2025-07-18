@@ -132,7 +132,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionOwnerChanged")]
     pub async fn receive_selection_owner_changed(
         &self,
-    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, SelectionOwnerChanged)>> {
+    ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop<'_>>, SelectionOwnerChanged)>> {
         Ok(self
             .0
             .signal::<(OwnedObjectPath, SelectionOwnerChanged)>("SelectionOwnerChanged")
@@ -146,7 +146,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionTransfer")]
     pub async fn receive_selection_transfer(
         &self,
-    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, String, u32)>> {
+    ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop<'_>>, String, u32)>> {
         Ok(self
             .0
             .signal::<(OwnedObjectPath, String, u32)>("SelectionTransfer")
