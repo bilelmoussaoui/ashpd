@@ -1,11 +1,8 @@
 use std::{boxed::Box, future::Future, sync::Arc};
 
 use async_trait::async_trait;
-use futures_util::lock::Mutex;
-use futures_util::{
-    future::{abortable, AbortHandle},
-    task::SpawnExt,
-};
+use futures_util::future::{AbortHandle, abortable};
+use tokio::sync::Mutex;
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
 use crate::desktop::{HandleToken, Response};
@@ -33,7 +30,6 @@ impl Request {
         cnx: &zbus::Connection,
         path: OwnedObjectPath,
         imp: Arc<R>,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
         callback: impl Future<Output = crate::backend::Result<T>>,
     ) -> crate::backend::Result<Response<T>>
     where
@@ -44,14 +40,10 @@ impl Request {
         tracing::debug!("{_method}");
         let (fut, abort_handle) = abortable(callback);
         let token = HandleToken::try_from(&path).unwrap();
-        let close_cb = move || {
-            if let Err(err) = spawn.spawn(async move {
+        let close_cb = || {
+            tokio::spawn(async move {
                 RequestImpl::close(&*imp, token).await;
-            }) {
-                #[cfg(feature = "tracing")]
-                tracing::error!("Failed to spawn request closer: {}", err);
-                let _ = err;
-            }
+            });
         };
         let request = Request::new(close_cb, path.clone(), abort_handle, cnx.clone());
         let server = cnx.object_server();
@@ -62,18 +54,16 @@ impl Request {
         );
         server.at(&path, request).await?;
 
-        let response = fut.await;
-
+        let response = match fut.await {
+            Err(_) => Response::cancelled(),
+            Ok(response) => Response::ok(response?),
+        };
         #[cfg(feature = "tracing")]
         tracing::debug!("{_method} returned {:#?}", response);
         #[cfg(feature = "tracing")]
         tracing::debug!("Releasing request {:?}", path.as_str());
         server.remove::<Self, _>(&path).await?;
-
-        Ok(match response {
-            Err(_) => Response::cancelled(),
-            Ok(response) => Response::ok(response?),
-        })
+        Ok(response)
     }
 
     pub(crate) fn new(

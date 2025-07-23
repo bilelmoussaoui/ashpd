@@ -35,7 +35,7 @@ use std::os::fd::AsFd;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
-use crate::{error::PortalError, proxy::Proxy, Error};
+use crate::{Error, error::PortalError, proxy::Proxy};
 
 #[derive(Debug, Deserialize_repr, Serialize_repr, PartialEq, Type)]
 #[repr(u32)]

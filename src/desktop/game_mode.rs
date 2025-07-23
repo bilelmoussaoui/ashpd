@@ -20,7 +20,7 @@ use std::{fmt::Debug, os::fd::AsFd};
 use serde_repr::Deserialize_repr;
 use zbus::zvariant::{Fd, Type};
 
-use crate::{error::PortalError, proxy::Proxy, Error, Pid};
+use crate::{Error, Pid, error::PortalError, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdGameModeStatus"))]

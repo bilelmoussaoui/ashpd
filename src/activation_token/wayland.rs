@@ -1,7 +1,7 @@
 use wayland_backend::sys::client::Backend;
 use wayland_client::{
-    protocol::{wl_registry, wl_surface::WlSurface},
     Proxy, QueueHandle,
+    protocol::{wl_registry, wl_surface::WlSurface},
 };
 use wayland_protocols::xdg::activation::v1::client::{
     xdg_activation_token_v1::{Event, XdgActivationTokenV1},
@@ -54,13 +54,15 @@ impl ActivationToken {
             return None;
         }
 
-        let backend = Backend::from_foreign_display(display_ptr as *mut _);
+        let backend = unsafe { Backend::from_foreign_display(display_ptr.cast()) };
         let conn = wayland_client::Connection::from_backend(backend);
-        let obj_id = wayland_backend::sys::client::ObjectId::from_ptr(
-            WlSurface::interface(),
-            surface_ptr as *mut _,
-        )
-        .ok()?;
+        let obj_id = unsafe {
+            wayland_backend::sys::client::ObjectId::from_ptr(
+                WlSurface::interface(),
+                surface_ptr.cast(),
+            )
+            .ok()?
+        };
 
         let surface = WlSurface::from_id(&conn, obj_id).ok()?;
 

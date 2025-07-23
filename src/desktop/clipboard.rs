@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use futures_util::{Stream, StreamExt};
 use zbus::zvariant::{DeserializeDict, OwnedFd, OwnedObjectPath, SerializeDict, Type, Value};
 
-use super::{remote_desktop::RemoteDesktop, Session};
-use crate::{proxy::Proxy, Result};
+use super::{Session, remote_desktop::RemoteDesktop};
+use crate::{Result, proxy::Proxy};
 
 #[derive(Debug, Type, SerializeDict)]
 #[zvariant(signature = "dict")]
@@ -132,7 +132,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionOwnerChanged")]
     pub async fn receive_selection_owner_changed(
         &self,
-    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, SelectionOwnerChanged)>> {
+    ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop<'_>>, SelectionOwnerChanged)>> {
         Ok(self
             .0
             .signal::<(OwnedObjectPath, SelectionOwnerChanged)>("SelectionOwnerChanged")
@@ -146,7 +146,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SelectionTransfer")]
     pub async fn receive_selection_transfer(
         &self,
-    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, String, u32)>> {
+    ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop<'_>>, String, u32)>> {
         Ok(self
             .0
             .signal::<(OwnedObjectPath, String, u32)>("SelectionTransfer")

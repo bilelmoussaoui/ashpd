@@ -1,9 +1,8 @@
 use std::os::fd::AsFd;
 
 use serde::{
-    de,
+    Deserialize, de,
     ser::{Serialize, SerializeTuple},
-    Deserialize,
 };
 use zbus::zvariant::{self, OwnedValue, Type, Value};
 
@@ -38,7 +37,7 @@ impl Icon {
         matches!(self, Self::Bytes(_))
     }
 
-    pub(crate) fn inner_bytes(&self) -> Value {
+    pub(crate) fn inner_bytes(&self) -> Value<'_> {
         match self {
             Self::Bytes(bytes) => {
                 let mut array = zvariant::Array::new(u8::SIGNATURE);
@@ -52,7 +51,7 @@ impl Icon {
         }
     }
 
-    pub(crate) fn as_value(&self) -> Value {
+    pub(crate) fn as_value(&self) -> Value<'_> {
         let tuple = match self {
             Self::Uri(uri) => ("file", Value::from(uri.as_str())),
             Self::Names(names) => {
@@ -215,7 +214,7 @@ impl TryFrom<&Value<'_>> for Icon {
 
 #[cfg(test)]
 mod test {
-    use zbus::zvariant::{serialized::Context, to_bytes, Endian};
+    use zbus::zvariant::{Endian, serialized::Context, to_bytes};
 
     use super::*;
 

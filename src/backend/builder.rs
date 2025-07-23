@@ -4,6 +4,7 @@ use enumflags2::BitFlags;
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
 use crate::backend::{
+    Result,
     access::{AccessImpl, AccessInterface},
     account::{AccountImpl, AccountInterface},
     app_chooser::{AppChooserImpl, AppChooserInterface},
@@ -20,7 +21,6 @@ use crate::backend::{
     settings::{SettingsImpl, SettingsInterface},
     usb::{UsbImpl, UsbInterface},
     wallpaper::{WallpaperImpl, WallpaperInterface},
-    Result,
 };
 
 pub struct Builder {

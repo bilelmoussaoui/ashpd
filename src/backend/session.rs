@@ -9,7 +9,7 @@ use zbus::{
     zvariant::{OwnedObjectPath, SerializeDict, Type},
 };
 
-use crate::{desktop::HandleToken, PortalError};
+use crate::{PortalError, desktop::HandleToken};
 
 pub(crate) struct Session {
     path: OwnedObjectPath,

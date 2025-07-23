@@ -1,8 +1,8 @@
 use std::os::fd::{IntoRawFd, OwnedFd};
 
 use ashpd::desktop::{
-    screencast::{CursorMode, Screencast, SourceType, Stream as ScreencastStream},
     PersistMode,
+    screencast::{CursorMode, Screencast, SourceType, Stream as ScreencastStream},
 };
 use pipewire as pw;
 use pw::{properties::properties, spa};
