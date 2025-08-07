@@ -1,0 +1,98 @@
+name: ashpd-demo
+base: core24
+adopt-info: ashpd-demo
+
+grade: stable
+confinement: strict
+
+slots:
+  ashpd-demo:
+    interface: dbus
+    bus: session
+    name: com.belmoussaoui.ashpd.demo
+
+apps:
+  ashpd-demo:
+    command: usr/bin/ashpd-demo
+    extensions: [gnome]
+    plugs:
+      - desktop
+      - desktop-file
+      - network
+    desktop: usr/share/applications/com.belmoussaoui.ashpd.demo.desktop
+    common-id: com.belmoussaoui.ashpd.demo
+
+parts:
+  libadwaita:
+    plugin: meson
+    source: https://gitlab.gnome.org/GNOME/libadwaita.git
+    source-depth: 1
+    source-tag: 1.8.alpha
+    build-packages: [sassc]
+    override-pull: |
+      set -eu
+      craftctl default
+      # Ignore gcc warnings as they are still happening on 24.04 base
+      sed -i "s/'-Werror=format=2'//" meson.build
+    meson-parameters:
+      - --prefix=/usr
+      - --buildtype=release
+      - -Dintrospection=disabled
+      - -Dgtk_doc=false
+      - -Dtests=false
+      - -Dexamples=false
+      - -Dvapi=false
+    prime:
+      - -usr/include
+
+  libshumate:
+    plugin: meson
+    source: https://gitlab.gnome.org/GNOME/libshumate.git
+    source-depth: 1
+    build-packages:
+      - gperf
+      - libprotobuf-c-dev
+    stage-packages:
+      - libprotobuf-c1
+    meson-parameters:
+      - --prefix=/usr
+      - --buildtype=release
+      - -Dgir=false
+      - -Dvapi=false
+      - -Dgtk_doc=false
+    prime:
+      - -usr/include
+
+  ashpd-demo:
+    plugin: rust
+    source: .
+    build-packages:
+      - meson
+      - libclang-dev
+      - libpipewire-0.3-dev
+      - libelf-dev
+      - libpciaccess-dev
+    after:
+      - libadwaita
+      - libshumate
+    override-build: |
+      set -eu
+
+      export PKG_CONFIG_PATH=$CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET/pkgconfig:$PKG_CONFIG_PATH
+      export LD_LIBRARY_PATH=$CRAFT_STAGE/usr/lib/$CRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH
+      meson setup "${CRAFT_PART_BUILD}/snap_build" "${CRAFT_PART_SRC}" \
+        --prefix=/usr \
+        --buildtype=release
+
+      DESTDIR="${CRAFT_PART_INSTALL}" ninja -C "${CRAFT_PART_BUILD}/snap_build" install
+
+      APP_ID=com.belmoussaoui.ashpd.demo
+      mkdir -p ${CRAFT_PART_INSTALL}/meta/gui/
+      sed -i "s|Icon=.*|Icon=\${SNAP}/meta/gui/${APP_ID}.svg|g" \
+        ${CRAFT_PART_INSTALL}/usr/share/applications/${APP_ID}.desktop
+
+    parse-info: [usr/share/metainfo/com.belmoussaoui.ashpd.demo.metainfo.xml]
+
+layout:
+  /usr/share/ashpd-demo:
+    bind: $SNAP/usr/share/ashpd-demo
