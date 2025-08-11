@@ -1,9 +1,9 @@
 use std::{boxed::Box, future::Future, sync::Arc};
 
 use async_trait::async_trait;
-use futures_util::lock::Mutex;
 use futures_util::{
     future::{abortable, AbortHandle},
+    lock::Mutex,
     task::SpawnExt,
 };
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
