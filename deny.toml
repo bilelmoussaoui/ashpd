@@ -24,12 +24,4 @@ multiple-versions = "deny"
 wildcards = "deny"
 highlight = "all"
 skip = [
-    # ppv-lite86 uses an old version
-    { name = "zerocopy", version = "0.7.35" },
-    # pipewire -> libspa uses an old version
-    { name = "nix", version = "0.27.1" },
-    # pipewire -> libspa uses an old version
-    { name = "system-deps", version = "6.2.2" },
-    # pipewire -> libspa -> system-deps uses an old version
-    { name = "cfg-expr", version = "0.15.8" },
 ]
