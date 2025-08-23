@@ -24,4 +24,5 @@ multiple-versions = "deny"
 wildcards = "deny"
 highlight = "all"
 skip = [
+    "cfg-expr 0.15.8", # pipewire
 ]
