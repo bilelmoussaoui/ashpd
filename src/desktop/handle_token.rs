@@ -3,7 +3,6 @@ use std::{
     fmt::{self, Debug, Display},
 };
 
-use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "backend")]
 use zbus::zvariant::OwnedObjectPath;
@@ -38,11 +37,8 @@ impl Debug for HandleToken {
 
 impl Default for HandleToken {
     fn default() -> Self {
-        let mut rng = rand::rng();
-        let token: String = (&mut rng)
-            .sample_iter(rand::distr::Alphanumeric)
+        let token: String = std::iter::repeat_with(fastrand::alphanumeric)
             .take(10)
-            .map(char::from)
             .collect();
         format!("ashpd_{token}").parse().unwrap()
     }
