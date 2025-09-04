@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # fetch full history so branches work
+          persist-credentials: false  # we'll use our own token
 
       - name: Install deps
         run: |
@@ -72,6 +75,7 @@ jobs:
       - name: Commit and create PR if changed
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update portal DBus XMLs"
           branch: update-dbus-xmls
           title: "Update portal DBus XMLs"
