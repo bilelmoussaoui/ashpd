@@ -1,0 +1,57 @@
+name: Update DBus interfaces
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 0"  # every Sunday at 03:00 UTC
+
+jobs:
+  update-dbus-xml:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          dnf -y upgrade
+          dnf -y install git flatpak xdg-desktop-portal dbus-daemon dbus-tools
+
+      - name: Start dbus session
+        run: |
+          mkdir -p /tmp/dbus
+          dbus-daemon --session --address=unix:path=/tmp/dbus/session --fork
+          echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session" >> $GITHUB_ENV
+
+      - name: Ensure interfaces/ dir
+        run: mkdir -p interfaces
+
+      - name: Dump Flatpak portal XML
+        run: |
+          busctl --address "$DBUS_SESSION_BUS_ADDRESS" \
+            introspect --xml --only-interface org.freedesktop.portal.Flatpak \
+            org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop \
+            > interfaces/org.freedesktop.portal.Flatpak.xml
+
+      - name: Dump Documents portal XML
+        run: |
+          busctl --address "$DBUS_SESSION_BUS_ADDRESS" \
+            introspect --xml --only-interface org.freedesktop.portal.Documents \
+            org.freedesktop.portal.Documents /org/freedesktop/portal/documents \
+            > interfaces/org.freedesktop.portal.Documents.xml
+
+      - name: Dump Desktop portal XML
+        run: |
+          busctl --address "$DBUS_SESSION_BUS_ADDRESS" \
+            introspect --xml --only-interface org.freedesktop.portal.Desktop \
+            org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop \
+            > interfaces/org.freedesktop.portal.Desktop.xml
+
+      - name: Commit and create PR if changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Update portal DBus XMLs"
+          branch: update-dbus-xmls
+          title: "Update portal DBus XMLs"
+          body: "Automated update of exported portal interfaces."
