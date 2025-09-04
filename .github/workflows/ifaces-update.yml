@@ -11,15 +11,17 @@ jobs:
     container: fedora:latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # fetch full history so branches work
-          persist-credentials: false  # we'll use our own token
+        uses: actions/checkout@v5
 
       - name: Install deps
         run: |
           dnf -y upgrade
           dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Start dbus session
         run: |
@@ -28,7 +30,6 @@ jobs:
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session" >> $GITHUB_ENV
 
       - name: Dump Flatpak portal XML
-        working-directory: ashpd
         run: |
           gdbus introspect \
             --session \
@@ -43,7 +44,6 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Flatpak.xml
 
       - name: Dump Documents portal XML
-        working-directory: ashpd
         run: |
           gdbus introspect \
             --session \
@@ -58,7 +58,6 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Documents.xml
 
       - name: Dump Desktop portal XML
-        working-directory: ashpd
         run: |
           gdbus introspect \
             --session \
@@ -72,13 +71,19 @@ jobs:
               { if (keep) print }
             ' > interfaces/org.freedesktop.portal.Desktop.xml
 
+      - name: Commit changes
+        run: |
+          git add .
+          git diff --cached --exit-code || git commit -m "interfaces: Update to latest"
+          git push origin "update-dbus-xmls" || echo "Branch already exists"
+
       - name: Commit and create PR if changed
         uses: peter-evans/create-pull-request@v7
-        working-directory: ashpd
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update portal DBus XMLs"
           branch: update-dbus-xmls
           title: "Update portal DBus XMLs"
           body: "Automated update of exported portal interfaces."
+          author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
           delete-branch: true
