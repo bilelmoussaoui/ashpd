@@ -27,10 +27,8 @@ jobs:
           dbus-daemon --session --address=unix:path=/tmp/dbus/session --fork
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session" >> $GITHUB_ENV
 
-      - name: Ensure interfaces/ dir
-        run: mkdir -p interfaces
-
       - name: Dump Flatpak portal XML
+        working-directory: ashpd
         run: |
           gdbus introspect \
             --session \
@@ -45,6 +43,7 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Flatpak.xml
 
       - name: Dump Documents portal XML
+        working-directory: ashpd
         run: |
           gdbus introspect \
             --session \
@@ -59,6 +58,7 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Documents.xml
 
       - name: Dump Desktop portal XML
+        working-directory: ashpd
         run: |
           gdbus introspect \
             --session \
@@ -74,6 +74,7 @@ jobs:
 
       - name: Commit and create PR if changed
         uses: peter-evans/create-pull-request@v7
+        working-directory: ashpd
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update portal DBus XMLs"
