@@ -21,7 +21,7 @@ jobs:
           dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2
 
       - name: Configure Git
-        working-directory: ashpd
+        working-directory: $GITHUB_WORKSPACE/ashpd
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -33,7 +33,7 @@ jobs:
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session" >> $GITHUB_ENV
 
       - name: Dump Flatpak portal XML
-        working-directory: ashpd
+        working-directory: $GITHUB_WORKSPACE/ashpd
         run: |
           gdbus introspect \
             --session \
@@ -48,7 +48,7 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Flatpak.xml
 
       - name: Dump Documents portal XML
-        working-directory: ashpd
+        working-directory: $GITHUB_WORKSPACE/ashpd
         run: |
           gdbus introspect \
             --session \
@@ -63,7 +63,7 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Documents.xml
 
       - name: Dump Desktop portal XML
-        working-directory: ashpd
+        working-directory: $GITHUB_WORKSPACE/ashpd
         run: |
           gdbus introspect \
             --session \
@@ -78,7 +78,7 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Desktop.xml
 
       - name: Commit changes
-        working-directory: ashpd
+        working-directory: $GITHUB_WORKSPACE/ashpd
         run: |
           git add .
           git diff --cached --exit-code || git commit -m "interfaces: Update to latest"
