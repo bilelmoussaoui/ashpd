@@ -73,10 +73,11 @@ jobs:
             ' > interfaces/org.freedesktop.portal.Desktop.xml
 
       - name: Commit and create PR if changed
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update portal DBus XMLs"
           branch: update-dbus-xmls
           title: "Update portal DBus XMLs"
           body: "Automated update of exported portal interfaces."
+          delete-branch: true
