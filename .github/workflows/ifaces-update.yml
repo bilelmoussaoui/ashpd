@@ -15,11 +15,14 @@ jobs:
           dnf -y upgrade
           dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2
 
-      - name: Clone repository
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Fix git ownership
         run: |
-          git clone https://github.com/${{ github.repository }}.git .
-          git checkout ${{ github.ref_name }}
-        
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+          git config --global --add safe.directory '*'
+          
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
@@ -79,7 +82,7 @@ jobs:
               { if (keep) print }
             ' > interfaces/org.freedesktop.portal.Desktop.xml
 
-      - name: Commit and create PR if changed
+      - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
