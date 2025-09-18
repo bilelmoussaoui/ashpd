@@ -15,8 +15,10 @@ jobs:
           dnf -y upgrade
           dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2
 
-      - name: Checkout repo
-        uses: actions/checkout@v5
+      - name: Clone repository
+        run: |
+          git clone https://github.com/${{ github.repository }}.git .
+          git checkout ${{ github.ref_name }}
         
       - name: Configure Git
         run: |
