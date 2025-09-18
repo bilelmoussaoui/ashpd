@@ -45,8 +45,8 @@ jobs:
         run: |
           gdbus introspect \
             --session \
-            --dest org.freedesktop.portal.Desktop \
-            --object-path /org/freedesktop/portal/desktop \
+            --dest org.freedesktop.portal.Flatpak \
+            --object-path /org/freedesktop/portal/Flatpak \
             --xml \
             | awk '
               BEGIN { keep=1 }
