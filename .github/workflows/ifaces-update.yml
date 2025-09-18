@@ -13,7 +13,7 @@ jobs:
       - name: Install deps
         run: |
           dnf -y upgrade
-          dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2
+          dnf -y install git flatpak xdg-desktop-portal xdg-desktop-portal-gnome dbus-daemon glib2
 
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -38,6 +38,7 @@ jobs:
         run: |
           # Start the portals in the background
           /usr/libexec/xdg-desktop-portal &
+          /usr/libexec/xdg-desktop-portal-gnome &
           sleep 2
 
       - name: Dump Flatpak portal XML
@@ -52,7 +53,7 @@ jobs:
               /<interface name="org.freedesktop.DBus/ { keep=0 }
               /<\/interface>/ { if (keep==0) { keep=1; next } }
               { if (keep) print }
-            ' > interfaces/org.freedesktop.portal.Flatpak.xml
+            ' | sed 's|/>| />|g' > interfaces/org.freedesktop.portal.Flatpak.xml
 
       - name: Dump Documents portal XML
         run: |
@@ -66,7 +67,7 @@ jobs:
               /<interface name="org.freedesktop.DBus/ { keep=0 }
               /<\/interface>/ { if (keep==0) { keep=1; next } }
               { if (keep) print }
-            ' > interfaces/org.freedesktop.portal.Documents.xml
+            ' | sed 's|/>| />|g' > interfaces/org.freedesktop.portal.Documents.xml
 
       - name: Dump Desktop portal XML
         run: |
@@ -80,7 +81,7 @@ jobs:
               /<interface name="org.freedesktop.DBus/ { keep=0 }
               /<\/interface>/ { if (keep==0) { keep=1; next } }
               { if (keep) print }
-            ' > interfaces/org.freedesktop.portal.Desktop.xml
+            ' | sed 's|/>| />|g' > interfaces/org.freedesktop.portal.Desktop.xml
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
