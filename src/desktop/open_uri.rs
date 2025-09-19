@@ -61,7 +61,7 @@ use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-/// Options passed to [`OpenURIProxy::open_dir`].
+/// Options passed to [`OpenURIProxy::open_directory`].
 pub struct OpenDirOptions {
     handle_token: HandleToken,
     /// The activation token.
