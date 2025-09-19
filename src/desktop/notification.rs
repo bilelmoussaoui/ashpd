@@ -649,6 +649,7 @@ impl<'a> NotificationProxy<'a> {
     /// # Specifications
     ///
     /// See also [`SupportedOptions`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html#org-freedesktop-portal-notification-supportedoptions).
+    #[doc(alias = "SupportedOptions")]
     pub async fn supported_options(&self) -> Result<(Vec<Category>, Vec<ButtonPurpose>), Error> {
         let options = self
             .0

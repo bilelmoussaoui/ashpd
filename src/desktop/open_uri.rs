@@ -75,6 +75,10 @@ struct OpenFileOptions {
     activation_token: Option<ActivationToken>,
 }
 
+#[derive(Debug, SerializeDict, Type)]
+#[zvariant(signature = "dict")]
+struct SchemeSupportedOptions {}
+
 #[derive(Debug)]
 struct OpenURIProxy<'a>(Proxy<'a>);
 
@@ -84,6 +88,7 @@ impl<'a> OpenURIProxy<'a> {
         Ok(Self(proxy))
     }
 
+    #[doc(alias = "OpenDirectory")]
     pub async fn open_directory(
         &self,
         identifier: Option<&WindowIdentifier>,
@@ -100,6 +105,7 @@ impl<'a> OpenURIProxy<'a> {
             .await
     }
 
+    #[doc(alias = "OpenFile")]
     pub async fn open_file(
         &self,
         identifier: Option<&WindowIdentifier>,
@@ -116,6 +122,7 @@ impl<'a> OpenURIProxy<'a> {
             .await
     }
 
+    #[doc(alias = "OpenURI")]
     pub async fn open_uri(
         &self,
         identifier: Option<&WindowIdentifier>,
@@ -130,6 +137,12 @@ impl<'a> OpenURIProxy<'a> {
                 &(&identifier, uri, &options),
             )
             .await
+    }
+
+    #[doc(alias = "SchemeSupported")]
+    pub async fn scheme_supported(&self, schema: &str) -> Result<bool, Error> {
+        let options = SchemeSupportedOptions {};
+        self.0.call("SchemeSupported", &(schema, &options)).await
     }
 }
 

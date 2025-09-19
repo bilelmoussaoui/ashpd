@@ -250,6 +250,7 @@ where
     /// # Specifications
     ///
     /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Request.html#org-freedesktop-portal-request-response).
+    #[doc(alias = "Response")]
     pub fn response(&self) -> Result<T, Error> {
         // It should be safe to unwrap here as we are sure we have received a response
         // by the time the user calls response

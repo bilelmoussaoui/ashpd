@@ -87,6 +87,7 @@ impl<'a> AccountProxy<'a> {
         Ok(Self(proxy))
     }
 
+    #[doc(alias = "GetUserInformation")]
     pub async fn user_information(
         &self,
         identifier: Option<&WindowIdentifier>,

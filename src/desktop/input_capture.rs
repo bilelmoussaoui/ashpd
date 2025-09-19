@@ -574,6 +574,7 @@ impl<'a> InputCapture<'a> {
     /// # Specifications
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-createsession).
+    #[doc(alias = "CreateSession")]
     pub async fn create_session(
         &self,
         identifier: Option<&WindowIdentifier>,
@@ -640,6 +641,7 @@ impl<'a> InputCapture<'a> {
     /// # Specifications
     ///
     /// See also [`Enable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-enable).
+    #[doc(alias = "Enable")]
     pub async fn enable(&self, session: &Session<'_, Self>) -> Result<(), Error> {
         let options = EnableOptions::default();
         self.0.call("Enable", &(session, &options)).await
@@ -650,6 +652,7 @@ impl<'a> InputCapture<'a> {
     /// # Specifications
     ///
     /// See also [`Disable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-disable).
+    #[doc(alias = "Disable")]
     pub async fn disable(&self, session: &Session<'_, Self>) -> Result<(), Error> {
         let options = DisableOptions::default();
         self.0.call("Disable", &(session, &options)).await
@@ -660,6 +663,7 @@ impl<'a> InputCapture<'a> {
     /// # Specifications
     ///
     /// See also [`Release`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-release).
+    #[doc(alias = "Release")]
     pub async fn release(
         &self,
         session: &Session<'_, Self>,

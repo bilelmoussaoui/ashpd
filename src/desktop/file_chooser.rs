@@ -308,6 +308,7 @@ impl<'a> FileChooserProxy<'a> {
         Ok(Self(proxy))
     }
 
+    #[doc(alias = "OpenFile")]
     pub async fn open_file(
         &self,
         identifier: Option<&WindowIdentifier>,
@@ -324,6 +325,7 @@ impl<'a> FileChooserProxy<'a> {
             .await
     }
 
+    #[doc(alias = "SaveFile")]
     pub async fn save_file(
         &self,
         identifier: Option<&WindowIdentifier>,
@@ -340,6 +342,7 @@ impl<'a> FileChooserProxy<'a> {
             .await
     }
 
+    #[doc(alias = "SaveFiles")]
     pub async fn save_files(
         &self,
         identifier: Option<&WindowIdentifier>,

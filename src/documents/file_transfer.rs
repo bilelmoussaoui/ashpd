@@ -152,6 +152,7 @@ impl<'a> FileTransfer<'a> {
     /// # Specifications
     ///
     /// See also [`StartTransfer`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html#org-freedesktop-portal-filetransfer-starttransfer).
+    #[doc(alias = "StartTransfer")]
     pub async fn start_transfer(&self, writeable: bool, auto_stop: bool) -> Result<String, Error> {
         let options = TransferOptions::default()
             .writeable(writeable)

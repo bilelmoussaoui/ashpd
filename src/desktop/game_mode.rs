@@ -301,6 +301,17 @@ impl<'a> GameMode<'a> {
             )))),
         }
     }
+
+    /// Whether any pid on the system has enabled Game Mode.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`Active`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html#org-freedesktop-portal-gamemode-active).
+    #[doc(alias = "Active")]
+    pub async fn is_active(&self) -> Result<bool, Error> {
+        let is_active = self.0.property("Active").await?;
+        Ok(is_active)
+    }
 }
 
 impl<'a> std::ops::Deref for GameMode<'a> {

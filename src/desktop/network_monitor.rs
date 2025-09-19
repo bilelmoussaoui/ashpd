@@ -195,6 +195,7 @@ impl<'a> NetworkMonitor<'a> {
     /// # Specifications
     ///
     /// See also [`changed`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.NetworkMonitor.html#org-freedesktop-portal-networkmonitor-changed).
+    #[doc(alias = "changed")]
     pub async fn receive_changed(&self) -> Result<impl Stream<Item = ()>, Error> {
         self.0.signal("changed").await
     }

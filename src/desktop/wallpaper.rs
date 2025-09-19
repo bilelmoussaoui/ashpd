@@ -123,6 +123,7 @@ impl<'a> WallpaperProxy<'a> {
         Ok(Self(proxy))
     }
 
+    #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file(
         &self,
         identifier: Option<&WindowIdentifier>,
@@ -139,6 +140,7 @@ impl<'a> WallpaperProxy<'a> {
             .await
     }
 
+    #[doc(alias = "SetWallpaperURI")]
     pub async fn set_wallpaper_uri(
         &self,
         identifier: Option<&WindowIdentifier>,
