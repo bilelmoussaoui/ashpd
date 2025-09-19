@@ -64,6 +64,7 @@ reis = { version = "0.4", features = ["tokio"] }
 pipewire = "0.8.0"
 tokio = { version = "1.41", features = [ "rt-multi-thread", "macros" ] }
 gst = { package = "gstreamer", version = "0.24" }
+quick-xml = "0.38"
 
 [package.metadata.docs.rs]
 features = ["backend", "gtk4", "raw_handle"]
