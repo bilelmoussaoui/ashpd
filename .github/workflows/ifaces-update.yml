@@ -14,7 +14,10 @@ jobs:
         run: |
           dnf -y upgrade
           # Core portal packages
-          dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2 systemd
+          dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2
+          
+          # Virtual display for portals that need it
+          dnf -y install xorg-x11-server-Xvfb
           
           # Portal backends (these provide most interfaces)
           dnf -y install xdg-desktop-portal-gtk xdg-desktop-portal-gnome || true
@@ -67,6 +70,17 @@ jobs:
           export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session
           export XDG_RUNTIME_DIR=/tmp/runtime-root
           
+          # Set up additional environment variables needed by portals
+          export XDG_CURRENT_DESKTOP=GNOME
+          export XDG_SESSION_TYPE=x11
+          export DESKTOP_SESSION=gnome
+          export GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+          
+          # Set up fake display (some portals need this)
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 2
+          
           # Start services that provide portal interfaces
           echo "Starting portal-providing services..."
           
@@ -81,24 +95,39 @@ jobs:
           sleep 2
           wireplumber &
           
-          # Start portal backends
+          # Try to start portal backends individually with debugging
           echo "Starting portal backends..."
-          /usr/libexec/xdg-desktop-portal &
-          sleep 2
+          
+          echo "Starting xdg-desktop-portal-gtk..."
           /usr/libexec/xdg-desktop-portal-gtk &
+          GTK_PID=$!
+          sleep 3
+          
+          if ! kill -0 $GTK_PID 2>/dev/null; then
+            echo "xdg-desktop-portal-gtk failed to start"
+          fi
+          
+          echo "Starting xdg-desktop-portal-gnome..."
           /usr/libexec/xdg-desktop-portal-gnome &
+          GNOME_PID=$!
+          sleep 3
+          
+          if ! kill -0 $GNOME_PID 2>/dev/null; then
+            echo "xdg-desktop-portal-gnome failed to start"
+          fi
+          
+          # Now start the main portal service
+          echo "Starting main xdg-desktop-portal..."
+          /usr/libexec/xdg-desktop-portal &
+          sleep 5
           
           # Start GNOME services for desktop integration
           gnome-settings-daemon &
           
           # Give all services time to start and register their interfaces
           echo "Waiting for services to start..."
-          sleep 15
+          sleep 10
           
-          # Debug output
-          echo "=== Available portal services ==="
-          gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.ListNames | grep -E "(portal|secret|location|keyring)" || true
-
       - name: Debug available interfaces
         run: |
           echo "=== Available services ==="
