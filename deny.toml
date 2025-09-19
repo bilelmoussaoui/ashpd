@@ -13,10 +13,7 @@ ignore = []
 allow = [
   "MIT",
   "Unicode-3.0",
-  "BSD-3-Clause", # pipewire -> libspa -> bindgen
   "Apache-2.0", # pipewire -> libspa -> bindgen -> clang-sys
-  "ISC", # pipewire -> libspa -> bindgen -> clang-sys -> libloading
-  "Apache-2.0 WITH LLVM-exception", # cfg-expr
 ]
 
 [bans]
@@ -24,5 +21,4 @@ multiple-versions = "deny"
 wildcards = "deny"
 highlight = "all"
 skip = [
-    "cfg-expr 0.15.8", # pipewire
 ]

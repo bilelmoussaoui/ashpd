@@ -37,7 +37,7 @@ gdk4wayland = { package = "gdk4-wayland", version = "0.10", optional = true }
 gdk4x11 = { package = "gdk4-x11", version = "0.10", optional = true, features = [ "xlib" ] }
 glib = { version = "0.21", optional = true }
 gtk4 = { version = "0.10", optional = true }
-pipewire = { version = "0.8", optional = true }
+pipewire = { version = "0.9", optional = true }
 raw-window-handle = { version = "0.6", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_repr = "0.1"
@@ -60,8 +60,8 @@ zbus = { version = "5.0", default-features = false, features = ["url"] }
 
 [dev-dependencies]
 serde_json = "1.0"
-reis = { version = "0.4", features = ["tokio"] }
-pipewire = "0.8.0"
+reis = { version = "0.5", features = ["tokio"] }
+pipewire = "0.9.0"
 tokio = { version = "1.41", features = [ "rt-multi-thread", "macros" ] }
 gst = { package = "gstreamer", version = "0.24" }
 quick-xml = "0.38"

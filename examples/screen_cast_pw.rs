@@ -40,15 +40,15 @@ async fn open_portal() -> ashpd::Result<(ScreencastStream, OwnedFd)> {
 async fn start_streaming(node_id: u32, fd: OwnedFd) -> Result<(), pw::Error> {
     pw::init();
 
-    let mainloop = pw::main_loop::MainLoop::new(None)?;
-    let context = pw::context::Context::new(&mainloop)?;
+    let mainloop = pw::main_loop::MainLoopBox::new(None)?;
+    let context = pw::context::ContextBox::new(mainloop.loop_(), None)?;
     let core = context.connect_fd(fd, None)?;
 
     let data = UserData {
         format: Default::default(),
     };
 
-    let stream = pw::stream::Stream::new(
+    let stream = pw::stream::StreamBox::new(
         &core,
         "video-test",
         properties! {

@@ -33,8 +33,6 @@
 
 use std::{collections::HashMap, os::fd::OwnedFd};
 
-#[cfg(feature = "pipewire")]
-use pipewire::{context::Context, main_loop::MainLoop};
 use zbus::zvariant::{self, SerializeDict, Type, Value};
 
 use super::{HandleToken, Request};
@@ -145,8 +143,8 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
     callback: F,
     done_callback: G,
 ) -> Result<(), pipewire::Error> {
-    let mainloop = MainLoop::new(None)?;
-    let context = Context::new(&mainloop)?;
+    let mainloop = pipewire::main_loop::MainLoopRc::new(None)?;
+    let context = pipewire::context::ContextRc::new(&mainloop, None)?;
     let core = context.connect_fd(fd, None)?;
     let registry = core.get_registry()?;
 
