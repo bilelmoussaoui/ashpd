@@ -1,89 +1,67 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
-                      "https://specifications.freedesktop.org/dbus/introspect-latest.dtd">
+                    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<?xml version="1.0"?>
 <node>
-  <interface name="org.freedesktop.portal.FileTransfer">
-    <method name="StartTransfer">
-      <arg type="a{sv}" name="options" direction="in" />
-      <arg type="s" name="key" direction="out" />
-    </method>
-    <method name="AddFiles">
-      <arg type="s" name="key" direction="in" />
-      <arg type="ah" name="fds" direction="in" />
-      <arg type="a{sv}" name="options" direction="in" />
-    </method>
-    <method name="RetrieveFiles">
-      <arg type="s" name="key" direction="in" />
-      <arg type="a{sv}" name="options" direction="in" />
-      <arg type="as" name="files" direction="out" />
-    </method>
-    <method name="StopTransfer">
-      <arg type="s" name="key" direction="in" />
-    </method>
-    <signal name="TransferClosed">
-      <arg type="s" name="key" />
-    </signal>
-    <property type="u" name="version" access="read" />
-  </interface>
   <interface name="org.freedesktop.portal.Documents">
+    <property name="version" type="u" access="read"/>
     <method name="GetMountPoint">
-      <arg type="ay" name="path" direction="out" />
+      <arg type="ay" name="path" direction="out"/>
     </method>
     <method name="Add">
-      <arg type="h" name="o_path_fd" direction="in" />
-      <arg type="b" name="reuse_existing" direction="in" />
-      <arg type="b" name="persistent" direction="in" />
-      <arg type="s" name="doc_id" direction="out" />
+      <arg type="h" name="o_path_fd" direction="in"/>
+      <arg type="b" name="reuse_existing" direction="in"/>
+      <arg type="b" name="persistent" direction="in"/>
+      <arg type="s" name="doc_id" direction="out"/>
     </method>
     <method name="AddNamed">
-      <arg type="h" name="o_path_parent_fd" direction="in" />
-      <arg type="ay" name="filename" direction="in" />
-      <arg type="b" name="reuse_existing" direction="in" />
-      <arg type="b" name="persistent" direction="in" />
-      <arg type="s" name="doc_id" direction="out" />
+      <arg type="h" name="o_path_parent_fd" direction="in"/>
+      <arg type="ay" name="filename" direction="in"/>
+      <arg type="b" name="reuse_existing" direction="in"/>
+      <arg type="b" name="persistent" direction="in"/>
+      <arg type="s" name="doc_id" direction="out"/>
     </method>
     <method name="AddFull">
-      <arg type="ah" name="o_path_fds" direction="in" />
-      <arg type="u" name="flags" direction="in" />
-      <arg type="s" name="app_id" direction="in" />
-      <arg type="as" name="permissions" direction="in" />
-      <arg type="as" name="doc_ids" direction="out" />
-      <arg type="a{sv}" name="extra_out" direction="out" />
+      <arg type="ah" name="o_path_fds" direction="in"/>
+      <arg type="u" name="flags" direction="in"/>
+      <arg type="s" name="app_id" direction="in"/>
+      <arg type="as" name="permissions" direction="in"/>
+      <arg type="as" name="doc_ids" direction="out"/>
+      <arg type="a{sv}" name="extra_out" direction="out"/>
     </method>
     <method name="AddNamedFull">
-      <arg type="h" name="o_path_fd" direction="in" />
-      <arg type="ay" name="filename" direction="in" />
-      <arg type="u" name="flags" direction="in" />
-      <arg type="s" name="app_id" direction="in" />
-      <arg type="as" name="permissions" direction="in" />
-      <arg type="s" name="doc_id" direction="out" />
-      <arg type="a{sv}" name="extra_out" direction="out" />
+      <arg type="h" name="o_path_fd" direction="in"/>
+      <arg type="ay" name="filename" direction="in"/>
+      <arg type="u" name="flags" direction="in"/>
+      <arg type="s" name="app_id" direction="in"/>
+      <arg type="as" name="permissions" direction="in"/>
+      <arg type="s" name="doc_id" direction="out"/>
+      <arg type="a{sv}" name="extra_out" direction="out"/>
     </method>
     <method name="GrantPermissions">
-      <arg type="s" name="doc_id" direction="in" />
-      <arg type="s" name="app_id" direction="in" />
-      <arg type="as" name="permissions" direction="in" />
+      <arg type="s" name="doc_id" direction="in"/>
+      <arg type="s" name="app_id" direction="in"/>
+      <arg type="as" name="permissions" direction="in"/>
     </method>
     <method name="RevokePermissions">
-      <arg type="s" name="doc_id" direction="in" />
-      <arg type="s" name="app_id" direction="in" />
-      <arg type="as" name="permissions" direction="in" />
+      <arg type="s" name="doc_id" direction="in"/>
+      <arg type="s" name="app_id" direction="in"/>
+      <arg type="as" name="permissions" direction="in"/>
     </method>
     <method name="Delete">
-      <arg type="s" name="doc_id" direction="in" />
+      <arg type="s" name="doc_id" direction="in"/>
     </method>
     <method name="Lookup">
-      <arg type="ay" name="filename" direction="in" />
-      <arg type="s" name="doc_id" direction="out" />
+      <arg type="ay" name="filename" direction="in"/>
+      <arg type="s" name="doc_id" direction="out"/>
     </method>
     <method name="Info">
-      <arg type="s" name="doc_id" direction="in" />
-      <arg type="ay" name="path" direction="out" />
-      <arg type="a{sas}" name="apps" direction="out" />
+      <arg type="s" name="doc_id" direction="in"/>
+      <arg type="ay" name="path" direction="out"/>
+      <arg type="a{sas}" name="apps" direction="out"/>
     </method>
     <method name="List">
-      <arg type="s" name="app_id" direction="in" />
-      <arg type="a{say}" name="docs" direction="out" />
+      <arg type="s" name="app_id" direction="in"/>
+      <arg type="a{say}" name="docs" direction="out"/>
     </method>
-    <property type="u" name="version" access="read" />
   </interface>
 </node>

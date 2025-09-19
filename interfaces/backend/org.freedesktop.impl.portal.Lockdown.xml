@@ -1,0 +1,14 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<?xml version="1.0"?>
+<node>
+  <interface name="org.freedesktop.impl.portal.Lockdown">
+    <property name="disable-printing" type="b" access="readwrite"/>
+    <property name="disable-save-to-disk" type="b" access="readwrite"/>
+    <property name="disable-application-handlers" type="b" access="readwrite"/>
+    <property name="disable-location" type="b" access="readwrite"/>
+    <property name="disable-camera" type="b" access="readwrite"/>
+    <property name="disable-microphone" type="b" access="readwrite"/>
+    <property name="disable-sound-output" type="b" access="readwrite"/>
+  </interface>
+</node>

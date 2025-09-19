@@ -1,34 +1,49 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
-                      "https://specifications.freedesktop.org/dbus/introspect-latest.dtd">
+                    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<?xml version="1.0"?>
 <node>
   <interface name="org.freedesktop.portal.Flatpak">
+    <property name="version" type="u" access="read"/>
+    <property name="supports" type="u" access="read"/>
     <method name="Spawn">
-      <arg type="ay" name="cwd_path" direction="in" />
-      <arg type="aay" name="argv" direction="in" />
-      <arg type="a{uh}" name="fds" direction="in" />
-      <arg type="a{ss}" name="envs" direction="in" />
-      <arg type="u" name="flags" direction="in" />
-      <arg type="a{sv}" name="options" direction="in" />
-      <arg type="u" name="pid" direction="out" />
+      <arg type="ay" name="cwd_path" direction="in"/>
+      <arg type="aay" name="argv" direction="in"/>
+      <arg type="a{uh}" name="fds" direction="in"/>
+      <arg type="a{ss}" name="envs" direction="in"/>
+      <arg type="u" name="flags" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="u" name="pid" direction="out"/>
     </method>
     <method name="SpawnSignal">
-      <arg type="u" name="pid" direction="in" />
-      <arg type="u" name="signal" direction="in" />
-      <arg type="b" name="to_process_group" direction="in" />
-    </method>
-    <method name="CreateUpdateMonitor">
-      <arg type="a{sv}" name="options" direction="in" />
-      <arg type="o" name="handle" direction="out" />
+      <arg type="u" name="pid" direction="in"/>
+      <arg type="u" name="signal" direction="in"/>
+      <arg type="b" name="to_process_group" direction="in"/>
     </method>
     <signal name="SpawnStarted">
-      <arg type="u" name="pid" />
-      <arg type="u" name="relpid" />
+      <arg type="u" name="pid" direction="out"/>
+      <arg type="u" name="relpid" direction="out"/>
     </signal>
     <signal name="SpawnExited">
-      <arg type="u" name="pid" />
-      <arg type="u" name="exit_status" />
+      <arg type="u" name="pid" direction="out"/>
+      <arg type="u" name="exit_status" direction="out"/>
     </signal>
-    <property type="u" name="version" access="read" />
-    <property type="u" name="supports" access="read" />
+    <method name="CreateUpdateMonitor">
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="o" name="handle" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.portal.Flatpak.UpdateMonitor">
+    <method name="Close">
+    </method>
+    <signal name="UpdateAvailable">
+      <arg type="a{sv}" name="update_info" direction="out"/>
+    </signal>
+    <method name="Update">
+      <arg type="s" name="parent_window" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+    </method>
+    <signal name="Progress">
+      <arg type="a{sv}" name="info" direction="out"/>
+    </signal>
   </interface>
 </node>
