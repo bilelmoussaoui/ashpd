@@ -13,7 +13,27 @@ jobs:
       - name: Install deps
         run: |
           dnf -y upgrade
-          dnf -y install git flatpak xdg-desktop-portal xdg-desktop-portal-gnome dbus-daemon glib2
+          # Core portal packages
+          dnf -y install git flatpak xdg-desktop-portal dbus-daemon glib2 systemd
+          
+          # Portal backends (these provide most interfaces)
+          dnf -y install xdg-desktop-portal-gtk xdg-desktop-portal-gnome || true
+          
+          # Services that provide specific portal interfaces
+          dnf -y install \
+            gnome-keyring \
+            geoclue2 \
+            pipewire \
+            wireplumber \
+            || true
+          
+          # For file chooser and other desktop integration
+          dnf -y install \
+            nautilus \
+            gnome-shell \
+            gnome-settings-daemon \
+            gtk4 \
+            || true
 
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -28,19 +48,48 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Start dbus session
+      - name: Start dbus and systemd services
         run: |
+          # Start systemd user session
+          systemctl --user daemon-reexec || true
+          
+          # Start dbus session
           mkdir -p /tmp/dbus
           dbus-daemon --session --address=unix:path=/tmp/dbus/session --fork --nopidfile
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session" >> $GITHUB_ENV
+          export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session
+          
+          # Enable and start essential services
+          systemctl --user enable --now dbus || true
+          systemctl --user start xdg-desktop-portal || true
+          systemctl --user start xdg-desktop-portal-gnome || true
+          systemctl --user start pipewire || true
+          systemctl --user start wireplumber || true
+          systemctl --user start gnome-keyring-daemon || true
+          
+          # Start system services
+          systemctl start geoclue || true
+          systemctl start NetworkManager || true
+          systemctl start power-profiles-daemon || true
+          
+          # Give services time to start
+          sleep 10
 
       - name: Start portals
         run: |
           # Start the portals in the background
-          /usr/libexec/xdg-desktop-portal &
-          /usr/libexec/xdg-desktop-portal-gnome &
+          systemctl --user start xdg-desktop-portal-gtk || true
+          systemctl --user start xdg-desktop-portal-gnome || true
           sleep 2
 
+      - name: Debug available interfaces
+        run: |
+          echo "=== Available services ==="
+          gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.ListNames | grep portal || true
+          
+          echo "=== Desktop portal interfaces ==="
+          gdbus introspect --session --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop | grep "interface name=" || true
+          
       - name: Dump Flatpak portal XML
         run: |
           gdbus introspect \
