@@ -224,6 +224,104 @@ jobs:
           sort_interfaces interfaces/org.freedesktop.portal.Flatpak.xml
           sort_interfaces interfaces/org.freedesktop.portal.Documents.xml  
           sort_interfaces interfaces/org.freedesktop.portal.Desktop.xml
+          
+      - name: Commit portal interface updates
+        run: |
+          git add interfaces/*.xml
+          if ! git diff --cached --exit-code; then
+            git commit -m "interfaces: Update portal interface XMLs"
+          fi
+
+      - name: Fetch and merge backend portal interfaces
+        run: |
+          # Create backend directory
+          mkdir -p interfaces/backend
+          
+          # Clone the xdg-desktop-portal repository
+          git clone https://github.com/flatpak/xdg-desktop-portal.git /tmp/xdg-desktop-portal
+          
+          # Find all org.freedesktop.impl.portal files in the data directory
+          backend_files=$(find /tmp/xdg-desktop-portal/data -name "org.freedesktop.impl.portal*" -type f)
+          
+          if [ -z "$backend_files" ]; then
+            echo "No backend portal interface files found"
+            exit 0
+          fi
+          
+          echo "Found backend interface files:"
+          echo "$backend_files"
+          
+          # Start merged XML file
+          cat > interfaces/backend/org.freedesktop.impl.portal.xml << 'EOF'
+          <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                                "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+          <node>
+          EOF
+          
+          # Extract and merge all interfaces from backend files
+          temp_interfaces=""
+          for file in $backend_files; do
+            echo "Processing: $file"
+            
+            # Extract interfaces from each file
+            interfaces_content=$(awk '
+              /<interface name=/ { in_interface = 1 }
+              in_interface == 1 { print }
+              /<\/interface>/ { in_interface = 0 }
+            ' "$file")
+            
+            if [ -n "$interfaces_content" ]; then
+              temp_interfaces="$temp_interfaces$interfaces_content"$'\n'
+            fi
+          done
+          
+          # Sort the collected interfaces and add to merged file
+          if [ -n "$temp_interfaces" ]; then
+            echo "$temp_interfaces" | awk '
+              BEGIN { interface_count = 0 }
+              /<interface name=/ { 
+                interface_name = $0
+                gsub(/.*name="/, "", interface_name)
+                gsub(/".*/, "", interface_name)
+                interfaces[interface_name] = ""
+                current_interface = interface_name
+                in_interface = 1
+                interface_count++
+              }
+              in_interface == 1 { 
+                interfaces[current_interface] = interfaces[current_interface] $0 "\n"
+              }
+              /<\/interface>/ { 
+                in_interface = 0
+              }
+              END {
+                # Sort and print interfaces
+                n = asorti(interfaces, sorted_names)
+                for (i = 1; i <= n; i++) {
+                  printf "%s", interfaces[sorted_names[i]]
+                }
+              }
+            ' >> interfaces/backend/org.freedesktop.impl.portal.xml
+          fi
+          
+          # Close the XML node
+          echo "</node>" >> interfaces/backend/org.freedesktop.impl.portal.xml
+          
+          # Apply the same spacing fix as other XML files
+          sed -i 's|/>| />|g' interfaces/backend/org.freedesktop.impl.portal.xml
+          
+          echo "Merged backend portal interfaces into interfaces/backend/org.freedesktop.impl.portal.xml"
+          
+          # Clean up temporary repository
+          rm -rf /tmp/xdg-desktop-portal
+
+      - name: Commit backend interface updates
+        run: |
+          git add interfaces/backend/
+          if ! git diff --cached --exit-code; then
+            git commit -m "interfaces: Update backend interface XMLs"
+          fi
+
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
