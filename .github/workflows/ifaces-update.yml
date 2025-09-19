@@ -178,6 +178,52 @@ jobs:
               { if (keep) print }
             ' | sed 's|/>| />|g' > interfaces/org.freedesktop.portal.Desktop.xml
 
+      - name: Sort interfaces to maintain consistent order
+        run: |
+          # Simple awk script to sort interfaces while preserving formatting
+          sort_interfaces() {
+            local file="$1"
+            if [ -f "$file" ]; then
+              awk '
+              BEGIN { 
+                in_interface = 0
+                interface_count = 0 
+              }
+              /^<!DOCTYPE/ || /^<!-- / || /^<node/ { 
+                if (interface_count == 0) print 
+                next
+              }
+              /<interface name=/ { 
+                interface_name = $0
+                gsub(/.*name="/, "", interface_name)
+                gsub(/".*/, "", interface_name)
+                interfaces[interface_name] = ""
+                current_interface = interface_name
+                in_interface = 1
+                interface_count++
+              }
+              in_interface == 1 { 
+                interfaces[current_interface] = interfaces[current_interface] $0 "\n"
+              }
+              /<\/interface>/ { 
+                in_interface = 0
+              }
+              /^<\/node>/ { 
+                # Sort and print interfaces
+                n = asorti(interfaces, sorted_names)
+                for (i = 1; i <= n; i++) {
+                  printf "%s", interfaces[sorted_names[i]]
+                }
+                print $0
+              }
+              ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+            fi
+          }
+          
+          # Sort all portal XML files
+          sort_interfaces interfaces/org.freedesktop.portal.Flatpak.xml
+          sort_interfaces interfaces/org.freedesktop.portal.Documents.xml  
+          sort_interfaces interfaces/org.freedesktop.portal.Desktop.xml
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
