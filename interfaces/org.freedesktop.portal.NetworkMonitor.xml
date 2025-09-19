@@ -1,0 +1,26 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<?xml version="1.0"?>
+<node>
+  <interface name="org.freedesktop.portal.NetworkMonitor">
+    <signal name="changed"/>
+    <method name="GetAvailable">
+      <arg type="b" name="available" direction="out"/>
+    </method>
+    <method name="GetMetered">
+      <arg type="b" name="metered" direction="out"/>
+    </method>
+    <method name="GetConnectivity">
+      <arg type="u" name="connectivity" direction="out"/>
+    </method>
+    <method name="GetStatus">
+      <arg type="a{sv}" name="status" direction="out"/>
+    </method>
+    <method name="CanReach">
+      <arg type="s" name="hostname" direction="in"/>
+      <arg type="u" name="port" direction="in"/>
+      <arg type="b" name="reachable" direction="out"/>
+    </method>
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>

@@ -1,0 +1,25 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<?xml version="1.0"?>
+<node>
+  <interface name="org.freedesktop.impl.portal.Notification">
+    <method name="AddNotification">
+      <arg type="s" name="app_id" direction="in"/>
+      <arg type="s" name="id" direction="in"/>
+      <arg type="a{sv}" name="notification" direction="in"/>
+    </method>
+    <method name="RemoveNotification">
+      <arg type="s" name="app_id" direction="in"/>
+      <arg type="s" name="id" direction="in"/>
+    </method>
+    <property name="SupportedOptions" type="a{sv}" access="read">
+      </property>
+    <signal name="ActionInvoked">
+      <arg type="s" name="app_id"/>
+      <arg type="s" name="id"/>
+      <arg type="s" name="action"/>
+      <arg type="av" name="parameter"/>
+    </signal>
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>

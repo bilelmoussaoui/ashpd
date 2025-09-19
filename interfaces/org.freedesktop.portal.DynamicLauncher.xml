@@ -1,0 +1,46 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<?xml version="1.0"?>
+<node>
+  <interface name="org.freedesktop.portal.DynamicLauncher">
+    <method name="Install">
+      <arg type="s" name="token" direction="in"/>
+      <arg type="s" name="desktop_file_id" direction="in"/>
+      <arg type="s" name="desktop_entry" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+    </method>
+    <method name="PrepareInstall">
+      <arg type="s" name="parent_window" direction="in"/>
+      <arg type="s" name="name" direction="in"/>
+      <arg type="v" name="icon_v" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="o" name="handle" direction="out"/>
+    </method>
+    <method name="RequestInstallToken">
+      <arg type="s" name="name" direction="in"/>
+      <arg type="v" name="icon_v" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="s" name="token" direction="out"/>
+    </method>
+    <method name="Uninstall">
+      <arg type="s" name="desktop_file_id" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+    </method>
+    <method name="GetDesktopEntry">
+      <arg type="s" name="desktop_file_id" direction="in"/>
+      <arg type="s" name="contents" direction="out"/>
+    </method>
+    <method name="GetIcon">
+      <arg type="s" name="desktop_file_id" direction="in"/>
+      <arg type="v" name="icon_v" direction="out"/>
+      <arg type="s" name="icon_format" direction="out"/>
+      <arg type="u" name="icon_size" direction="out"/>
+    </method>
+    <method name="Launch">
+      <arg type="s" name="desktop_file_id" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+    </method>
+    <property name="SupportedLauncherTypes" type="u" access="read"/>
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>

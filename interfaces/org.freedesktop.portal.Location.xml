@@ -1,0 +1,22 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<?xml version="1.0"?>
+<node>
+  <interface name="org.freedesktop.portal.Location">
+    <method name="CreateSession">
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="o" name="handle" direction="out"/>
+    </method>
+    <method name="Start">
+      <arg type="o" name="session_handle" direction="in"/>
+      <arg type="s" name="parent_window" direction="in"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="o" name="handle" direction="out"/>
+    </method>
+    <signal name="LocationUpdated">
+      <arg type="o" name="session_handle" direction="out"/>
+      <arg type="a{sv}" name="location" direction="out"/>
+    </signal>
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>
