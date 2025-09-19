@@ -61,33 +61,57 @@ use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct OpenDirOptions {
+/// Options passed to [`OpenURIProxy::open_dir`].
+pub struct OpenDirOptions {
     handle_token: HandleToken,
-    activation_token: Option<ActivationToken>,
+    /// The activation token.
+    pub activation_token: Option<ActivationToken>,
 }
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct OpenFileOptions {
+/// Options passed to [`OpenURIProxy::open_file`].
+pub struct OpenFileOptions {
     handle_token: HandleToken,
-    writeable: Option<bool>,
-    ask: Option<bool>,
-    activation_token: Option<ActivationToken>,
+    /// Whether the file should be writable.
+    pub writeable: Option<bool>,
+    /// Whether to ask the user.
+    pub ask: Option<bool>,
+    /// The activation token.
+    pub activation_token: Option<ActivationToken>,
 }
 
-#[derive(Debug, SerializeDict, Type)]
+#[derive(Debug, SerializeDict, Type, Default)]
 #[zvariant(signature = "dict")]
-struct SchemeSupportedOptions {}
+/// Options passed to [`OpenURIProxy::scheme_supported`].
+pub struct SchemeSupportedOptions {}
 
+/// The interface lets sandboxed applications open URIs
+/// (e.g. a http: link to the applications homepage) under the control of the
+/// user.
+///
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.OpenURI.html).
 #[derive(Debug)]
-struct OpenURIProxy<'a>(Proxy<'a>);
+pub struct OpenURIProxy<'a>(Proxy<'a>);
 
 impl<'a> OpenURIProxy<'a> {
+    /// Create a new instance of [`OpenURIProxy`].
     pub async fn new() -> Result<OpenURIProxy<'a>, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.OpenURI").await?;
         Ok(Self(proxy))
     }
 
+    /// Asks to open the directory containing a local file in the file browser.
+    ///
+    /// # Arguments
+    ///
+    /// * `identifier` - Identifier for the application window.
+    /// * `directory` - File descriptor for a file.
+    /// * `options` - The options to pass to the request.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`OpenDirectory`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.OpenURI.html#org-freedesktop-portal-openuri-opendirectory).
     #[doc(alias = "OpenDirectory")]
     pub async fn open_directory(
         &self,
@@ -105,6 +129,17 @@ impl<'a> OpenURIProxy<'a> {
             .await
     }
 
+    /// Asks to open a local file.
+    ///
+    /// # Arguments
+    ///
+    /// * `identifier` - Identifier for the application window.
+    /// * `file` - File descriptor for the file to open.
+    /// * `options` - The options to pass to the request.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`OpenFile`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.OpenURI.html#org-freedesktop-portal-openuri-openfile).
     #[doc(alias = "OpenFile")]
     pub async fn open_file(
         &self,
@@ -122,6 +157,20 @@ impl<'a> OpenURIProxy<'a> {
             .await
     }
 
+    /// Asks to open a local file.
+    ///
+    /// # Arguments
+    ///
+    /// * `identifier` - Identifier for the application window.
+    /// * `uri` - The uri to open.
+    /// * `options` - The options to pass to the request.
+    ///
+    /// *Note* that `file` uris are explicitly not supported by this method.
+    /// Use [`Self::open_file`] or [`Self::open_directory`] instead.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`OpenURI`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.OpenURI.html#org-freedesktop-portal-openuri-openuri).
     #[doc(alias = "OpenURI")]
     pub async fn open_uri(
         &self,
@@ -139,9 +188,22 @@ impl<'a> OpenURIProxy<'a> {
             .await
     }
 
+    /// Whether a scheme is supported or not.
+    ///
+    /// # Arguments
+    ///
+    /// * `scheme` - URI protocol scheme to check.
+    /// * `options` - The options to pass to the request.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`SchemeSupported`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.OpenURI.html#org-freedesktop-portal-openuri-schemesupported).
     #[doc(alias = "SchemeSupported")]
-    pub async fn scheme_supported(&self, schema: &str) -> Result<bool, Error> {
-        let options = SchemeSupportedOptions {};
+    pub async fn scheme_supported(
+        &self,
+        schema: &str,
+        options: SchemeSupportedOptions,
+    ) -> Result<bool, Error> {
         self.0.call("SchemeSupported", &(schema, &options)).await
     }
 }
