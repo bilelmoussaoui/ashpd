@@ -48,39 +48,56 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Start dbus and systemd services
+      - name: Start dbus
         run: |
-          # Start systemd user session
-          systemctl --user daemon-reexec || true
-          
           # Start dbus session
           mkdir -p /tmp/dbus
           dbus-daemon --session --address=unix:path=/tmp/dbus/session --fork --nopidfile
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session" >> $GITHUB_ENV
           export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session
           
-          # Enable and start essential services
-          systemctl --user enable --now dbus || true
-          systemctl --user start xdg-desktop-portal || true
-          systemctl --user start xdg-desktop-portal-gnome || true
-          systemctl --user start pipewire || true
-          systemctl --user start wireplumber || true
-          systemctl --user start gnome-keyring-daemon || true
-          
-          # Start system services
-          systemctl start geoclue || true
-          systemctl start NetworkManager || true
-          systemctl start power-profiles-daemon || true
-          
-          # Give services time to start
-          sleep 10
+          # Set up runtime directory
+          export XDG_RUNTIME_DIR=/tmp/runtime-root
+          mkdir -p $XDG_RUNTIME_DIR
+          chmod 700 $XDG_RUNTIME_DIR
+          echo "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" >> $GITHUB_ENV
 
-      - name: Start portals
+      - name: Start portal services
         run: |
-          # Start the portals in the background
-          systemctl --user start xdg-desktop-portal-gtk || true
-          systemctl --user start xdg-desktop-portal-gnome || true
+          export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus/session
+          export XDG_RUNTIME_DIR=/tmp/runtime-root
+          
+          # Start services that provide portal interfaces
+          echo "Starting portal-providing services..."
+          
+          # Start gnome-keyring (for Secret portal)
+          gnome-keyring-daemon --start --daemonize --components=secrets,ssh,pkcs11 &
+          
+          # Start geoclue (for Location portal)
+          /usr/libexec/geoclue &
+          
+          # Start pipewire services (for ScreenCast portal)
+          pipewire &
           sleep 2
+          wireplumber &
+          
+          # Start portal backends
+          echo "Starting portal backends..."
+          /usr/libexec/xdg-desktop-portal &
+          sleep 2
+          /usr/libexec/xdg-desktop-portal-gtk &
+          /usr/libexec/xdg-desktop-portal-gnome &
+          
+          # Start GNOME services for desktop integration
+          gnome-settings-daemon &
+          
+          # Give all services time to start and register their interfaces
+          echo "Waiting for services to start..."
+          sleep 15
+          
+          # Debug output
+          echo "=== Available portal services ==="
+          gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.ListNames | grep -E "(portal|secret|location|keyring)" || true
 
       - name: Debug available interfaces
         run: |
