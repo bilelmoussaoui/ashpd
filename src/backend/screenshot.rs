@@ -42,6 +42,7 @@ pub struct ColorOptions;
 
 #[async_trait]
 pub trait ScreenshotImpl: RequestImpl {
+    #[doc(alias = "Screenshot")]
     async fn screenshot(
         &self,
         token: HandleToken,
@@ -50,6 +51,7 @@ pub trait ScreenshotImpl: RequestImpl {
         options: ScreenshotOptions,
     ) -> Result<ScreenshotResponse>;
 
+    #[doc(alias = "PickColor")]
     async fn pick_color(
         &self,
         token: HandleToken,

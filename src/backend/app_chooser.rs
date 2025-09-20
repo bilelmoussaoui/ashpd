@@ -111,6 +111,7 @@ impl Choice {
 
 #[async_trait]
 pub trait AppChooserImpl: RequestImpl {
+    #[doc(alias = "ChooseApplication")]
     async fn choose_application(
         &self,
         token: HandleToken,
@@ -120,6 +121,7 @@ pub trait AppChooserImpl: RequestImpl {
         options: ChooserOptions,
     ) -> Result<Choice, PortalError>;
 
+    #[doc(alias = "UpdateChoices")]
     async fn update_choices(
         &self,
         token: HandleToken,

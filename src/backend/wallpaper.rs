@@ -33,6 +33,7 @@ impl WallpaperOptions {
 
 #[async_trait]
 pub trait WallpaperImpl: RequestImpl {
+    #[doc(alias = "SetWallpaperURI")]
     async fn with_uri(
         &self,
         token: HandleToken,

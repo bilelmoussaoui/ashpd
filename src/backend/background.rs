@@ -49,13 +49,16 @@ pub enum AutoStartFlags {
 
 #[async_trait]
 pub trait BackgroundSignalEmitter: Send + Sync {
+    #[doc(alias = "RunningApplicationsChanged")]
     async fn emit_changed(&self) -> zbus::Result<()>;
 }
 
 #[async_trait]
 pub trait BackgroundImpl: RequestImpl {
+    #[doc(alias = "GetAppState")]
     async fn get_app_state(&self) -> Result<HashMap<AppID, AppState>, PortalError>;
 
+    #[doc(alias = "NotifyBackground")]
     async fn notify_background(
         &self,
         token: HandleToken,
@@ -63,6 +66,7 @@ pub trait BackgroundImpl: RequestImpl {
         name: &str,
     ) -> Result<Background, PortalError>;
 
+    #[doc(alias = "EnableAutostart")]
     async fn enable_autostart(
         &self,
         app_id: AppID,

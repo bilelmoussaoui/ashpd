@@ -187,6 +187,7 @@ impl SaveFilesOptions {
 
 #[async_trait]
 pub trait FileChooserImpl: RequestImpl {
+    #[doc(alias = "OpenFile")]
     async fn open_file(
         &self,
         token: HandleToken,
@@ -196,6 +197,7 @@ pub trait FileChooserImpl: RequestImpl {
         options: OpenFileOptions,
     ) -> Result<SelectedFiles>;
 
+    #[doc(alias = "SaveFile")]
     async fn save_file(
         &self,
         token: HandleToken,
@@ -205,6 +207,7 @@ pub trait FileChooserImpl: RequestImpl {
         options: SaveFileOptions,
     ) -> Result<SelectedFiles>;
 
+    #[doc(alias = "SaveFiles")]
     async fn save_files(
         &self,
         token: HandleToken,

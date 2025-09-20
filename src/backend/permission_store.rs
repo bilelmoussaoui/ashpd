@@ -23,12 +23,14 @@ pub trait PermissionStoreEmitter: Send + Sync {
 
 #[async_trait]
 pub trait PermissionStoreImpl: Send + Sync {
+    #[doc(alias = "Lookup")]
     async fn lookup(
         &self,
         table: &str,
         id: DocumentID,
     ) -> Result<(HashMap<AppID, Vec<Permission>>, OwnedValue), PortalError>;
 
+    #[doc(alias = "Set")]
     async fn set(
         &self,
         table: &str,
@@ -38,8 +40,10 @@ pub trait PermissionStoreImpl: Send + Sync {
         data: Value<'_>,
     ) -> Result<(), PortalError>;
 
+    #[doc(alias = "Delete")]
     async fn delete(&self, table: &str, id: DocumentID) -> Result<(), PortalError>;
 
+    #[doc(alias = "SetValue")]
     async fn set_value(
         &self,
         table: &str,
@@ -48,8 +52,10 @@ pub trait PermissionStoreImpl: Send + Sync {
         data: Value<'_>,
     ) -> Result<(), PortalError>;
 
+    #[doc(alias = "List")]
     async fn list(&self, table: &str) -> Result<Vec<DocumentID>, PortalError>;
 
+    #[doc(alias = "GetPermission")]
     async fn get_permission(
         &self,
         table: &str,
@@ -57,6 +63,7 @@ pub trait PermissionStoreImpl: Send + Sync {
         app: AppID,
     ) -> Result<Vec<Permission>, PortalError>;
 
+    #[doc(alias = "SetPermission")]
     async fn set_permission(
         &self,
         table: &str,
@@ -66,6 +73,7 @@ pub trait PermissionStoreImpl: Send + Sync {
         permissions: Vec<Permission>,
     ) -> Result<(), PortalError>;
 
+    #[doc(alias = "DeletePermission")]
     async fn delete_permission(
         &self,
         table: &str,
@@ -120,6 +128,7 @@ impl PermissionStoreInterface {
 
 #[async_trait]
 impl PermissionStoreEmitter for PermissionStoreInterface {
+    #[doc(alias = "Changed")]
     async fn emit_document_changed(
         &self,
         table: &str,

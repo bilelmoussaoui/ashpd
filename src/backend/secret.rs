@@ -14,6 +14,7 @@ use crate::{
 
 #[async_trait]
 pub trait SecretImpl: RequestImpl {
+    #[doc(alias = "RetrieveSecret")]
     async fn retrieve(
         &self,
         token: HandleToken,

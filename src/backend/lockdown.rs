@@ -4,28 +4,42 @@ use async_trait::async_trait;
 
 #[async_trait]
 pub trait LockdownImpl: Send + Sync {
+    #[doc(alias = "disable-printing")]
     async fn disable_printing(&self) -> bool;
+    #[doc(alias = "disable-printing")]
     async fn set_disable_printing(&self, disable_printing: bool) -> zbus::Result<()>;
 
+    #[doc(alias = "disable-save-to-disk")]
     async fn disable_save_to_disk(&self) -> bool;
+    #[doc(alias = "disable-save-to-disk")]
     async fn set_disable_save_to_disk(&self, disable_save_to_disk: bool) -> zbus::Result<()>;
 
+    #[doc(alias = "disable-application-handlers")]
     async fn disable_application_handlers(&self) -> bool;
+    #[doc(alias = "disable-application-handlers")]
     async fn set_disable_application_handlers(
         &self,
         disable_application_handlers: bool,
     ) -> zbus::Result<()>;
 
+    #[doc(alias = "disable-location")]
     async fn disable_location(&self) -> bool;
+    #[doc(alias = "disable-location")]
     async fn set_disable_location(&self, disable_location: bool) -> zbus::Result<()>;
 
+    #[doc(alias = "disable-camera")]
     async fn disable_camera(&self) -> bool;
+    #[doc(alias = "disable-camera")]
     async fn set_disable_camera(&self, disable_camera: bool) -> zbus::Result<()>;
 
+    #[doc(alias = "disable-microphone")]
     async fn disable_microphone(&self) -> bool;
+    #[doc(alias = "disable-microphone")]
     async fn set_disable_microphone(&self, disable_microphone: bool) -> zbus::Result<()>;
 
+    #[doc(alias = "disable-sound-output")]
     async fn disable_sound_output(&self) -> bool;
+    #[doc(alias = "disable-sound-output")]
     async fn set_disable_sound_output(&self, disable_sound_output: bool) -> zbus::Result<()>;
 }
 

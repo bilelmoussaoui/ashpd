@@ -36,6 +36,7 @@ impl AccessOptions {
 
 #[async_trait]
 pub trait UsbImpl: RequestImpl {
+    #[doc(alias = "AcquireDevices")]
     async fn acquire_devices(
         &self,
         token: HandleToken,

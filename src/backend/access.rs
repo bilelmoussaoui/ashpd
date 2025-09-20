@@ -64,6 +64,7 @@ impl AccessResponse {
 #[async_trait]
 pub trait AccessImpl: RequestImpl {
     #[allow(clippy::too_many_arguments)]
+    #[doc(alias = "AccessDialog")]
     async fn access_dialog(
         &self,
         token: HandleToken,

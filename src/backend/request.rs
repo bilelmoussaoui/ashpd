@@ -12,6 +12,7 @@ use crate::desktop::{HandleToken, Response};
 
 #[async_trait]
 pub trait RequestImpl: Send + Sync {
+    #[doc(alias = "Close")]
     async fn close(&self, token: HandleToken);
 }
 

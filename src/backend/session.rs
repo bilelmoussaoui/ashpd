@@ -83,6 +83,7 @@ impl SessionInterface {
         1
     }
 
+    #[doc(alias = "Close")]
     async fn close(
         &self,
         #[zbus(object_server)] server: &zbus::ObjectServer,
@@ -114,6 +115,7 @@ impl SessionInterface {
 /// A trait that backends that create long-lived sessions should implement
 /// to be notified when a session has been closed.
 pub trait SessionImpl: Send + Sync {
+    #[doc(alias = "Closed")]
     async fn session_closed(&self, session_token: HandleToken) -> crate::backend::Result<()>;
 }
 

@@ -17,6 +17,7 @@ use crate::{
 
 #[async_trait]
 pub trait SettingsSignalEmitter: Send + Sync {
+    #[doc(alias = "SettingChanged")]
     async fn emit_changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()>;
     async fn emit_contrast_changed(&self, contrast: Contrast) -> zbus::Result<()>;
     async fn emit_accent_color_changed(&self, color: Color) -> zbus::Result<()>;
@@ -25,11 +26,13 @@ pub trait SettingsSignalEmitter: Send + Sync {
 
 #[async_trait]
 pub trait SettingsImpl: Send + Sync {
+    #[doc(alias = "ReadAll")]
     async fn read_all(
         &self,
         namespaces: Vec<String>,
     ) -> Result<HashMap<String, Namespace>, PortalError>;
 
+    #[doc(alias = "Read")]
     async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError>;
 
     // Set the signal emitter, allowing to notify of changes.

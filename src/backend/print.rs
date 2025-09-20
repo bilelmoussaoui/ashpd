@@ -53,6 +53,7 @@ impl PrintOptions {
 #[async_trait]
 pub trait PrintImpl: RequestImpl {
     #[allow(clippy::too_many_arguments)]
+    #[doc(alias = "PreparePrint")]
     async fn prepare_print(
         &self,
         token: HandleToken,
@@ -64,6 +65,7 @@ pub trait PrintImpl: RequestImpl {
         options: PreparePrintOptions,
     ) -> Result<PreparePrint>;
 
+    #[doc(alias = "Print")]
     async fn print(
         &self,
         token: HandleToken,

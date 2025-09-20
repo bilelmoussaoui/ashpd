@@ -61,6 +61,7 @@ impl Options {
 
 #[async_trait]
 pub trait EmailImpl: RequestImpl {
+    #[doc(alias = "ComposeEmail")]
     async fn compose(
         &self,
         token: HandleToken,

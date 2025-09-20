@@ -64,10 +64,13 @@ pub struct StartCastOptions {}
 
 #[async_trait]
 pub trait ScreencastImpl: RequestImpl + SessionImpl {
+    #[doc(alias = "AvailableSourceTypes")]
     fn available_source_types(&self) -> BitFlags<SourceType>;
 
+    #[doc(alias = "AvailableCursorModes")]
     fn available_cursor_mode(&self) -> BitFlags<CursorMode>;
 
+    #[doc(alias = "CreateSession")]
     async fn create_session(
         &self,
         token: HandleToken,
@@ -76,6 +79,7 @@ pub trait ScreencastImpl: RequestImpl + SessionImpl {
         options: CreateSessionOptions,
     ) -> Result<CreateSessionResponse>;
 
+    #[doc(alias = "SelectSources")]
     async fn select_sources(
         &self,
         session_token: HandleToken,
@@ -83,6 +87,7 @@ pub trait ScreencastImpl: RequestImpl + SessionImpl {
         options: SelectSourcesOptions,
     ) -> Result<SelectSourcesResponse>;
 
+    #[doc(alias = "Start")]
     async fn start_cast(
         &self,
         session_token: HandleToken,

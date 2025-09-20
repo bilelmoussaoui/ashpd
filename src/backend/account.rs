@@ -26,6 +26,7 @@ impl UserInformationOptions {
 
 #[async_trait]
 pub trait AccountImpl: RequestImpl {
+    #[doc(alias = "GetUserInformation")]
     async fn get_user_information(
         &self,
         token: HandleToken,
