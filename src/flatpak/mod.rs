@@ -372,7 +372,8 @@ impl<'a> Flatpak<'a> {
     /// # Specifications
     ///
     /// See also [`supports`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-property-org-freedesktop-portal-Flatpak.supports).
-    pub async fn supports(&self) -> Result<BitFlags<SupportsFlags>, Error> {
+    #[doc(alias = "supports")]
+    pub async fn supported_features(&self) -> Result<BitFlags<SupportsFlags>, Error> {
         self.0
             .property_versioned::<BitFlags<SupportsFlags>>("supports", 3)
             .await

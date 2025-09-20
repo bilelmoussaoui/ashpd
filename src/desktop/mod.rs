@@ -157,7 +157,7 @@ mod tests {
                     match reader.read_event_into(&mut buf) {
                         Err(e) => panic!("Error at position {}: {:?}", reader.buffer_position(), e),
                         Ok(Event::Eof) => break,
-                        Ok(Event::Start(e)) => match e.name().as_ref() {
+                        Ok(Event::Start(e) | Event::Empty(e)) => match e.name().as_ref() {
                             b"interface" => {
                                 if let Some(name_attr) = e.attributes().find_map(|a| {
                                     a.ok().filter(|attr| attr.key.as_ref() == b"name")
