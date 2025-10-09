@@ -74,13 +74,13 @@ impl std::error::Error for Error {}
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Response(e) => f.write_str(&format!("Portal request didn't succeed: {e}")),
-            Self::Zbus(e) => f.write_str(&format!("ZBus Error: {e}")),
-            Self::Portal(e) => f.write_str(&format!("Portal request failed: {e}")),
+            Self::Response(e) => write!(f, "Portal request didn't succeed: {e}"),
+            Self::Zbus(e) => write!(f, "ZBus Error: {e}"),
+            Self::Portal(e) => write!(f, "Portal request failed: {e}"),
             Self::NoResponse => f.write_str("Portal error: no response"),
-            Self::IO(e) => f.write_str(&format!("IO: {e}")),
+            Self::IO(e) => write!(f, "IO: {e}"),
             #[cfg(feature = "pipewire")]
-            Self::Pipewire(e) => f.write_str(&format!("Pipewire: {e}")),
+            Self::Pipewire(e) => write!(f, "Pipewire: {e}"),
             Self::ParseError(e) => f.write_str(e),
             Self::InvalidAppID => f.write_str("Invalid app id"),
             Self::NulTerminated(u) => write!(f, "Nul byte found in provided data at position {u}"),
@@ -96,7 +96,7 @@ impl std::fmt::Display for Error {
                 "Expected icon of type Icon::Bytes but a different type was used."
             ),
             #[cfg(feature = "backend")]
-            Self::Url(e) => f.write_str(&format!("Parse error: {e}")),
+            Self::Url(e) => write!(f, "Parse error: {e}"),
         }
     }
 }
