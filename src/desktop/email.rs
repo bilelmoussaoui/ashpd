@@ -30,7 +30,10 @@ use serde::Serialize;
 use zbus::zvariant::{self, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
+use crate::{
+    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, ActivationToken, Error,
+    WindowIdentifier,
+};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -76,7 +79,7 @@ impl<'a> EmailProxy<'a> {
         identifier: Option<&WindowIdentifier>,
         options: EmailOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,

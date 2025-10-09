@@ -41,7 +41,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
 use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
+use crate::{
+    desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier,
+};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
@@ -164,7 +167,7 @@ impl<'a> InhibitProxy<'a> {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Session<'a, Self>, Error> {
         let options = CreateMonitorOptions::default();
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         let body = &(&identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
             self.0
@@ -199,7 +202,7 @@ impl<'a> InhibitProxy<'a> {
             reason: Some(reason.to_owned()),
             handle_token: Default::default(),
         };
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,

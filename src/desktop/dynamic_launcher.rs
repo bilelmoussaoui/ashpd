@@ -58,7 +58,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, OwnedValue, SerializeDict, Type, Value};
 
 use super::{HandleToken, Icon, Request};
-use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
+use crate::{
+    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, ActivationToken, Error,
+    WindowIdentifier,
+};
 
 #[bitflags]
 #[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
@@ -257,7 +260,7 @@ impl<'a> DynamicLauncherProxy<'a> {
         if !icon.is_bytes() {
             return Err(UnexpectedIconError {}.into());
         }
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,

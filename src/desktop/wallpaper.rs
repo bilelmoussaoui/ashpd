@@ -45,7 +45,10 @@ use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::Request;
-use crate::{desktop::HandleToken, proxy::Proxy, Error, WindowIdentifier};
+use crate::{
+    desktop::HandleToken, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error,
+    WindowIdentifier,
+};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdSetOn"))]
@@ -130,7 +133,7 @@ impl<'a> WallpaperProxy<'a> {
         file: &impl AsFd,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -147,7 +150,7 @@ impl<'a> WallpaperProxy<'a> {
         uri: &url::Url,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,

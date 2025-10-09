@@ -25,7 +25,10 @@
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::HandleToken;
-use crate::{desktop::request::Request, proxy::Proxy, Error, WindowIdentifier};
+use crate::{
+    desktop::request::Request, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error,
+    WindowIdentifier,
+};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -93,7 +96,7 @@ impl<'a> AccountProxy<'a> {
         identifier: Option<&WindowIdentifier>,
         options: UserInformationOptions,
     ) -> Result<Request<UserInformation>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,

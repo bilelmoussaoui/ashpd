@@ -136,6 +136,25 @@ impl std::fmt::Debug for WindowIdentifier {
     }
 }
 
+/// Extension trait for `Option<WindowIdentifier>` to provide efficient string
+/// conversion.
+pub trait MaybeWindowIdentifierExt {
+    /// Converts to a string, avoiding allocation when None.
+    /// More efficient than `identifier.map(|i|
+    /// i.to_string()).unwrap_or_default()` because it uses a static empty
+    /// string for the None case.
+    fn to_string_or_empty(&self) -> std::borrow::Cow<'static, str>;
+}
+
+impl MaybeWindowIdentifierExt for Option<&WindowIdentifier> {
+    fn to_string_or_empty(&self) -> std::borrow::Cow<'static, str> {
+        match self {
+            Some(id) => std::borrow::Cow::Owned(id.to_string()),
+            None => std::borrow::Cow::Borrowed(""), // No allocation
+        }
+    }
+}
+
 impl WindowIdentifier {
     #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))))]

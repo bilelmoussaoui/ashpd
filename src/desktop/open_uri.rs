@@ -57,7 +57,10 @@ use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, ActivationToken, Error, WindowIdentifier};
+use crate::{
+    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, ActivationToken, Error,
+    WindowIdentifier,
+};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -119,7 +122,7 @@ impl<'a> OpenURIProxy<'a> {
         directory: &impl AsFd,
         options: OpenDirOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -147,7 +150,7 @@ impl<'a> OpenURIProxy<'a> {
         file: &impl AsFd,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,
@@ -178,7 +181,7 @@ impl<'a> OpenURIProxy<'a> {
         uri: &url::Url,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,

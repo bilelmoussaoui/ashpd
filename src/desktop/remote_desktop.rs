@@ -92,7 +92,10 @@ use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 use super::{
     screencast::Stream, session::SessionPortal, HandleToken, PersistMode, Request, Session,
 };
-use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
+use crate::{
+    desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier,
+};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdKeyState"))]
@@ -300,7 +303,7 @@ impl<'a> RemoteDesktop<'a> {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<SelectedDevices>, Error> {
         let options = StartRemoteOptions::default();
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,

@@ -34,7 +34,7 @@ use serde::Serialize;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -131,7 +131,7 @@ impl<'a> BackgroundProxy<'a> {
         identifier: Option<&WindowIdentifier>,
         options: BackgroundOptions,
     ) -> Result<Request<Background>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,

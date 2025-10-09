@@ -86,7 +86,9 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, FilePath, WindowIdentifier};
+use crate::{
+    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, FilePath, WindowIdentifier,
+};
 
 #[derive(Clone, Serialize, Deserialize, Type, Debug, PartialEq)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -315,7 +317,7 @@ impl<'a> FileChooserProxy<'a> {
         title: &str,
         options: OpenFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,
@@ -332,7 +334,7 @@ impl<'a> FileChooserProxy<'a> {
         title: &str,
         options: SaveFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,
@@ -349,7 +351,7 @@ impl<'a> FileChooserProxy<'a> {
         title: &str,
         options: SaveFilesOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,

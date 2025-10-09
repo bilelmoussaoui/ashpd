@@ -30,7 +30,7 @@ use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.
@@ -162,7 +162,7 @@ impl<'a> UpdateMonitor<'a> {
     #[doc(alias = "xdp_portal_update_install")]
     pub async fn update(&self, identifier: Option<&WindowIdentifier>) -> Result<(), Error> {
         let options = UpdateOptions::default();
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
 
         self.0.call("Update", &(&identifier, options)).await
     }

@@ -37,7 +37,7 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]
@@ -689,7 +689,7 @@ impl<'a> PrintProxy<'a> {
         let options = PreparePrintOptions::default()
             .modal(modal)
             .accept_label(accept_label);
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,
@@ -729,7 +729,7 @@ impl<'a> PrintProxy<'a> {
         let options = PrintOptions::default()
             .token(token.unwrap_or(0))
             .modal(modal);
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
 
         self.0
             .empty_request(

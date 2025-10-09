@@ -32,7 +32,7 @@ use serde_repr::Serialize_repr;
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
 use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{proxy::Proxy, Error, WindowIdentifier};
+use crate::{proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdLocationAccuracy"))]
@@ -271,7 +271,7 @@ impl<'a> LocationProxy<'a> {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<()>, Error> {
         let options = SessionStartOptions::default();
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .empty_request(
                 &options.handle_token,

@@ -10,7 +10,8 @@ use zbus::zvariant::{
 
 use super::{session::SessionPortal, HandleToken, Request, Session};
 use crate::{
-    desktop::session::CreateSessionResponse, proxy::Proxy, ActivationToken, Error, WindowIdentifier,
+    desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt, ActivationToken, Error, WindowIdentifier,
 };
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
@@ -257,7 +258,7 @@ impl<'a> GlobalShortcuts<'a> {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<BindShortcuts>, Error> {
         let options = BindShortcutsOptions::default();
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,
@@ -299,7 +300,7 @@ impl<'a> GlobalShortcuts<'a> {
         let options = ConfigureShortcutsOptions {
             activation_token: activation_token.into(),
         };
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
 
         self.0
             .call_versioned::<()>("ConfigureShortcuts", &(session, identifier, options), 2)

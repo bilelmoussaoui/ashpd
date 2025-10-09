@@ -48,7 +48,10 @@ use super::{
     remote_desktop::RemoteDesktop, session::SessionPortal, HandleToken, PersistMode, Request,
     Session,
 };
-use crate::{desktop::session::CreateSessionResponse, proxy::Proxy, Error, WindowIdentifier};
+use crate::{
+    desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier,
+};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -482,7 +485,7 @@ impl<'a> Screencast<'a> {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<Streams>, Error> {
         let options = StartCastOptions::default();
-        let identifier = identifier.map(|i| i.to_string()).unwrap_or_default();
+        let identifier = identifier.to_string_or_empty();
         self.0
             .request(
                 &options.handle_token,
