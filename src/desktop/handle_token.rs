@@ -37,10 +37,12 @@ impl Debug for HandleToken {
 
 impl Default for HandleToken {
     fn default() -> Self {
-        let token: String = std::iter::repeat_with(fastrand::alphanumeric)
-            .take(10)
-            .collect();
-        format!("ashpd_{token}").parse().unwrap()
+        let mut token = String::with_capacity(16); // "ashpd_" + 10 chars
+        token.push_str("ashpd_");
+        for _ in 0..10 {
+            token.push(fastrand::alphanumeric());
+        }
+        Self(OwnedMemberName::try_from(token).unwrap())
     }
 }
 
