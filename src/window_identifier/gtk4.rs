@@ -160,7 +160,7 @@ impl Gtk4WindowIdentifier {
 
 impl std::fmt::Display for Gtk4WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&format!("{}", self.type_))
+        self.type_.fmt(f)
     }
 }
 

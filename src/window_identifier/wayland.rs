@@ -99,7 +99,7 @@ impl WaylandWindowIdentifier {
 
 impl fmt::Display for WaylandWindowIdentifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&format!("{}", self.type_))
+        self.type_.fmt(f)
     }
 }
 

@@ -120,10 +120,10 @@ impl std::fmt::Display for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
-            Self::Gtk4(identifier) => f.write_str(&format!("{identifier}")),
+            Self::Gtk4(identifier) => identifier.fmt(f),
             #[cfg(feature = "wayland")]
-            Self::Wayland(identifier) => f.write_str(&format!("{identifier}")),
-            Self::X11(identifier) => f.write_str(&format!("{identifier}")),
+            Self::Wayland(identifier) => identifier.fmt(f),
+            Self::X11(identifier) => identifier.fmt(f),
         }
     }
 }
@@ -131,7 +131,7 @@ impl std::fmt::Display for WindowIdentifier {
 impl std::fmt::Debug for WindowIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("WindowIdentifier")
-            .field(&format!("{self}"))
+            .field(&format_args!("{self}"))
             .finish()
     }
 }
@@ -267,8 +267,14 @@ pub enum WindowIdentifierType {
 impl fmt::Display for WindowIdentifierType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::X11(xid) => f.write_str(&format!("x11:{xid:x}")),
-            Self::Wayland(handle) => f.write_str(&format!("wayland:{handle}")),
+            Self::X11(xid) => {
+                f.write_str("x11:")?;
+                write!(f, "{xid:x}")
+            }
+            Self::Wayland(handle) => {
+                f.write_str("wayland:")?;
+                f.write_str(handle)
+            }
         }
     }
 }
