@@ -26,6 +26,17 @@ pub(crate) const FLATPAK_DEVELOPMENT_PATH: &str = "/org/freedesktop/Flatpak/Deve
 
 static SESSION: OnceLock<zbus::Connection> = OnceLock::new();
 
+/// Set a custom zbus connection to be used for all desktop portal operations.
+/// 
+/// This must be called before any other desktop portal functions are used.
+/// If not called, a default session bus connection will be created automatically.
+/// 
+/// Returns `Ok(())` if the connection was set successfully, or `Err(connection)` 
+/// if a connection was already set.
+pub fn set_session_connection(connection: zbus::Connection) -> Result<(), zbus::Connection> {
+    SESSION.set(connection)
+}
+
 #[derive(Debug)]
 pub struct Proxy<'a> {
     inner: zbus::Proxy<'a>,

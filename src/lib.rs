@@ -33,6 +33,7 @@ mod file_path;
 pub use self::file_path::FilePath;
 
 mod proxy;
+pub use proxy::set_session_connection;
 
 #[cfg(feature = "backend")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
