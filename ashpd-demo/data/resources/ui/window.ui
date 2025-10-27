@@ -58,128 +58,11 @@
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="vexpand">True</property>
-                    <property name="min-content-width">200</property>
-                    <child>
-                      <object class="GtkListBox" id="sidebar">
-                        <property name="selection-mode">browse</property>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Account</property>
-                            <property name="page-name">account</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Camera</property>
-                            <property name="page-name">camera</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Documents</property>
-                            <property name="page-name">documents</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Dynamic Launcher</property>
-                            <property name="page-name">dynamic_launcher</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Email</property>
-                            <property name="page-name">email</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">File Chooser</property>
-                            <property name="page-name">file_chooser</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Global Shortcuts</property>
-                            <property name="page-name">global_shortcuts</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Inhibit</property>
-                            <property name="page-name">inhibit</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Location</property>
-                            <property name="page-name">location</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Notification</property>
-                            <property name="page-name">notification</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Open URI</property>
-                            <property name="page-name">open_uri</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Print</property>
-                            <property name="page-name">print</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Remote Desktop</property>
-                            <property name="page-name">remote_desktop</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Screen Cast</property>
-                            <property name="page-name">screencast</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Screenshot</property>
-                            <property name="page-name">screenshot</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Secret</property>
-                            <property name="page-name">secret</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">USB</property>
-                            <property name="page-name">usb</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="SidebarRow">
-                            <property name="title" translatable="yes">Wallpaper</property>
-                            <property name="page-name">wallpaper</property>
-                          </object>
-                        </child>
-                        <style>
-                          <class name="navigation-sidebar" />
-                        </style>
-                      </object>
-                    </child>
+                <property name="content">
+                  <object class="AdwViewSwitcherSidebar">
+                    <property name="stack">stack</property>
                   </object>
-                </child>
+                </property>
               </object>
             </property>
           </object>
@@ -213,157 +96,177 @@
                     <property name="min-content-height">250</property>
                     <property name="vexpand">True</property>
                     <child>
-                      <object class="GtkStack" id="stack">
+                      <object class="AdwViewStack" id="stack">
                         <property name="hexpand">True</property>
                         <property name="vhomogeneous">False</property>
                         <property name="hhomogeneous">False</property>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">account</property>
+                            <property name="title" translatable="yes">Account</property>
                             <property name="child">
                               <object class="AccountPage" id="account" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">camera</property>
+                            <property name="title" translatable="yes">Camera</property>
                             <property name="child">
                               <object class="CameraPage" id="camera" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">documents</property>
+                            <property name="title" translatable="yes">Documents</property>
                             <property name="child">
                               <object class="DocumentsPage" id="documents" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">dynamic_launcher</property>
+                            <property name="title" translatable="yes">Dynamic Launcher</property>
                             <property name="child">
                               <object class="DynamicLauncherPage" id="dynamic_launcher" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">email</property>
+                            <property name="title" translatable="yes">Email</property>
                             <property name="child">
                               <object class="EmailPage" id="email" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">file_chooser</property>
+                            <property name="title" translatable="yes">File Chooser</property>
                             <property name="child">
                               <object class="FileChooserPage" id="file_chooser" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">inhibit</property>
+                            <property name="title" translatable="yes">Inhibit</property>
                             <property name="child">
                               <object class="InhibitPage" id="inhibit" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">global_shortcuts</property>
+                            <property name="title" translatable="yes">Global Shortcuts</property>
                             <property name="child">
                               <object class="GlobalShortcutsPage" id="global_shortcuts" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">location</property>
+                            <property name="title" translatable="yes">Location</property>
                             <property name="child">
                               <object class="LocationPage" id="location" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">notification</property>
+                            <property name="title" translatable="yes">Notification</property>
                             <property name="child">
                               <object class="NotificationPage" id="notification" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">open_uri</property>
+                            <property name="title" translatable="yes">Open URI</property>
                             <property name="child">
                               <object class="OpenUriPage" id="open_uri" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">print</property>
+                            <property name="title" translatable="yes">Print</property>
                             <property name="child">
                               <object class="PrintPage" id="print" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">remote_desktop</property>
+                            <property name="title" translatable="yes">Remote Desktop</property>
                             <property name="child">
                               <object class="RemoteDesktopPage" id="remote_desktop" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">screenshot</property>
+                            <property name="title" translatable="yes">Screenshot</property>
                             <property name="child">
                               <object class="ScreenshotPage" id="screenshot" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">screencast</property>
+                            <property name="title" translatable="yes">Screen Cast</property>
                             <property name="child">
                               <object class="ScreenCastPage" id="screencast" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">secret</property>
+                            <property name="title" translatable="yes">Secret</property>
                             <property name="child">
                               <object class="SecretPage" id="secret" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">usb</property>
+                            <property name="title" translatable="yes">USB</property>
                             <property name="child">
                               <object class="UsbPage" id="usb" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">wallpaper</property>
+                            <property name="title" translatable="yes">Wallpaper</property>
                             <property name="child">
                               <object class="WallpaperPage" id="wallpaper" />
                             </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStackPage">
+                          <object class="AdwViewStackPage">
                             <property name="name">welcome</property>
+                            <property name="title" translatable="yes">Welcome</property>
+                            <property name="visible">False</property>
                             <property name="child">
                               <object class="AdwStatusPage">
                                 <property name="title" translatable="yes">Welcome to ASHPD Demo</property>
