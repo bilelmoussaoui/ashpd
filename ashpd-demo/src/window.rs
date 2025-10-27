@@ -18,7 +18,6 @@ use crate::{
         },
         DocumentsPage,
     },
-    widgets::SidebarRow,
 };
 
 mod imp {
@@ -111,7 +110,6 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            SidebarRow::static_type();
         }
 
         // You must call `Widget`'s `init_template()` within `instance_init()`.
@@ -214,21 +212,6 @@ impl ApplicationWindow {
         settings.set_boolean("is-maximized", self.is_maximized())?;
 
         Ok(())
-    }
-
-    fn sidebar_row_selected(&self, row: &gtk::ListBoxRow) {
-        let imp = self.imp();
-
-        let sidebar_row = row.downcast_ref::<SidebarRow>().unwrap();
-        imp.split_view.set_show_content(true);
-        let page_name = sidebar_row.page_name();
-        if imp.stack.child_by_name(&page_name).is_some() {
-            imp.stack.set_visible_child_name(&page_name);
-            imp.window_title.set_title(&sidebar_row.title());
-        } else {
-            imp.window_title.set_title("");
-            imp.stack.set_visible_child_name("welcome");
-        }
     }
 
     fn load_window_state(&self) {
