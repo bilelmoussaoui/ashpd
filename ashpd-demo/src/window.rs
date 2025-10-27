@@ -29,9 +29,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/window.ui")]
     pub struct ApplicationWindow {
         #[template_child]
-        pub stack: TemplateChild<gtk::Stack>,
-        #[template_child]
-        pub sidebar: TemplateChild<gtk::ListBox>,
+        pub stack: TemplateChild<adw::ViewStack>,
         #[template_child]
         pub window_title: TemplateChild<adw::WindowTitle>,
         #[template_child]
@@ -87,7 +85,6 @@ mod imp {
             Self {
                 screenshot: TemplateChild::default(),
                 stack: TemplateChild::default(),
-                sidebar: TemplateChild::default(),
                 window_title: TemplateChild::default(),
                 split_view: TemplateChild::default(),
                 camera: TemplateChild::default(),
@@ -134,40 +131,28 @@ mod imp {
                 glib::MainContext::default().block_on(async { ashpd::is_sandboxed().await });
             // Add pages based on whether the app is sandboxed
             if is_sandboxed {
-                self.sidebar
-                    .insert(&SidebarRow::new(&gettext("Background"), "background"), 1);
-                self.stack
-                    .add_named(&BackgroundPage::default(), Some("background"));
+                self.stack.add_titled(
+                    &BackgroundPage::default(),
+                    Some("background"),
+                    &gettext("Background"),
+                );
             } else {
-                self.sidebar
-                    .insert(&SidebarRow::new(&gettext("Device"), "device"), 2);
-                self.stack.add_named(&DevicePage::default(), Some("device"));
-
-                self.sidebar.insert(
-                    &SidebarRow::new(&gettext("Network Monitor"), "network_monitor"),
-                    7,
-                );
                 self.stack
-                    .add_named(&NetworkMonitorPage::default(), Some("network_monitor"));
+                    .add_titled(&DevicePage::default(), Some("device"), &gettext("Device"));
 
-                self.sidebar.insert(
-                    &SidebarRow::new(&gettext("Proxy Resolver"), "proxy_resolver"),
-                    11,
+                self.stack.add_titled(
+                    &NetworkMonitorPage::default(),
+                    Some("network_monitor"),
+                    &gettext("Network Monitor"),
                 );
 
-                self.stack
-                    .add_named(&ProxyResolverPage::default(), Some("proxy_resolver"));
+                self.stack.add_titled(
+                    &ProxyResolverPage::default(),
+                    Some("proxy_resolver"),
+                    &gettext("Proxy Resolver"),
+                );
             }
 
-            let row = self.sidebar.row_at_index(0).unwrap();
-            self.sidebar.unselect_row(&row);
-            self.sidebar.connect_row_activated(clone!(
-                #[weak(rename_to = win)]
-                obj,
-                move |_, row| {
-                    win.sidebar_row_selected(row);
-                }
-            ));
             self.stack.set_visible_child_name("welcome");
             // load latest window state
             let button = self.color_scheme_btn.get();
