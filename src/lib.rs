@@ -66,10 +66,7 @@ pub async fn is_sandboxed() -> bool {
         return *cached_value;
     }
     let new_value = crate::helpers::is_flatpak().await
-        || crate::helpers::is_snap().await
-        || std::env::var("GTK_USE_PORTAL")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+        || crate::helpers::is_snap().await;
 
     *IS_SANDBOXED.get_or_init(|| new_value)
 }
