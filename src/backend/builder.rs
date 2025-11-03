@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use enumflags2::BitFlags;
+use futures_util::{task::SpawnExt, StreamExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
 use crate::backend::{
@@ -42,6 +43,7 @@ pub struct Builder {
     wallpaper_impl: Option<Arc<dyn WallpaperImpl>>,
     usb_impl: Option<Arc<dyn UsbImpl>>,
     spawn: Option<Arc<dyn futures_util::task::Spawn + Send + Sync + 'static>>,
+    name_lost: Option<Arc<dyn Fn() + Send + Sync + 'static>>,
     sessions: Arc<Mutex<SessionManager>>,
 }
 
@@ -73,6 +75,7 @@ impl Builder {
             wallpaper_impl: None,
             usb_impl: None,
             spawn: None,
+            name_lost: None,
             sessions: Arc::new(Mutex::new(SessionManager::default())),
         })
     }
@@ -88,6 +91,11 @@ impl Builder {
         spawn: impl futures_util::task::Spawn + Send + Sync + 'static,
     ) -> Self {
         self.spawn = Some(Arc::new(spawn));
+        self
+    }
+
+    pub fn with_name_lost(mut self, name_lost: impl Fn() + Send + Sync + 'static) -> Self {
+        self.name_lost = Some(Arc::new(name_lost));
         self
     }
 
@@ -177,6 +185,18 @@ impl Builder {
         let spawn = self
             .spawn
             .expect("Must provide a spawner when not using tokio");
+
+        if let Some(name_lost) = self.name_lost {
+            let proxy = zbus::fdo::DBusProxy::new(&cnx).await?;
+            let mut name_lost_stream = proxy.receive_name_lost().await?;
+            if let Err(error) = spawn.spawn(async move {
+                while (name_lost_stream.next().await).is_some() {
+                    name_lost();
+                }
+            }) {
+                return Err(crate::PortalError::Failed(error.to_string()));
+            }
+        }
 
         let object_server = cnx.object_server();
         if let Some(imp) = self.account_impl {
