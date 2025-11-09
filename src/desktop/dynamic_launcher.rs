@@ -233,11 +233,11 @@ impl std::fmt::Display for UnexpectedIconError {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.DynamicLauncher`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.DynamicLauncher")]
-pub struct DynamicLauncherProxy<'a>(Proxy<'a>);
+pub struct DynamicLauncherProxy(Proxy<'static>);
 
-impl<'a> DynamicLauncherProxy<'a> {
+impl DynamicLauncherProxy {
     /// Create a new instance of [`DynamicLauncherProxy`].
-    pub async fn new() -> Result<DynamicLauncherProxy<'a>, Error> {
+    pub async fn new() -> Result<DynamicLauncherProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.DynamicLauncher").await?;
         Ok(Self(proxy))
     }
@@ -358,8 +358,8 @@ impl<'a> DynamicLauncherProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for DynamicLauncherProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for DynamicLauncherProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

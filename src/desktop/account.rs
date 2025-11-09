@@ -82,10 +82,10 @@ impl UserInformation {
     }
 }
 
-struct AccountProxy<'a>(Proxy<'a>);
+struct AccountProxy(Proxy<'static>);
 
-impl<'a> AccountProxy<'a> {
-    pub async fn new() -> Result<AccountProxy<'a>, Error> {
+impl AccountProxy {
+    pub async fn new() -> Result<AccountProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Account").await?;
         Ok(Self(proxy))
     }
@@ -107,8 +107,8 @@ impl<'a> AccountProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for AccountProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for AccountProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

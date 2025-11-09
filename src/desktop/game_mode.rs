@@ -74,11 +74,11 @@ enum RegisterStatus {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.GameMode`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GameMode.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.GameMode")]
-pub struct GameMode<'a>(Proxy<'a>);
+pub struct GameMode(Proxy<'static>);
 
-impl<'a> GameMode<'a> {
+impl GameMode {
     /// Create a new instance of [`GameMode`].
-    pub async fn new() -> Result<GameMode<'a>, Error> {
+    pub async fn new() -> Result<GameMode, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.GameMode").await?;
         Ok(Self(proxy))
     }
@@ -314,8 +314,8 @@ impl<'a> GameMode<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for GameMode<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for GameMode {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

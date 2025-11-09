@@ -94,11 +94,11 @@ struct ColorOptions {
 
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
-struct ScreenshotProxy<'a>(Proxy<'a>);
+struct ScreenshotProxy(Proxy<'static>);
 
-impl<'a> ScreenshotProxy<'a> {
+impl ScreenshotProxy {
     /// Create a new instance of [`ScreenshotProxy`].
-    pub async fn new() -> Result<ScreenshotProxy<'a>, Error> {
+    pub async fn new() -> Result<ScreenshotProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Screenshot").await?;
         Ok(Self(proxy))
     }
@@ -159,8 +159,8 @@ impl<'a> ScreenshotProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for ScreenshotProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for ScreenshotProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

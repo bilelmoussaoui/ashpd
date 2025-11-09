@@ -95,11 +95,11 @@ pub struct SchemeSupportedOptions {}
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.OpenURI`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.OpenURI.html).
 #[derive(Debug)]
-pub struct OpenURIProxy<'a>(Proxy<'a>);
+pub struct OpenURIProxy(Proxy<'static>);
 
-impl<'a> OpenURIProxy<'a> {
+impl OpenURIProxy {
     /// Create a new instance of [`OpenURIProxy`].
-    pub async fn new() -> Result<OpenURIProxy<'a>, Error> {
+    pub async fn new() -> Result<OpenURIProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.OpenURI").await?;
         Ok(Self(proxy))
     }
@@ -211,8 +211,8 @@ impl<'a> OpenURIProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for OpenURIProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for OpenURIProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

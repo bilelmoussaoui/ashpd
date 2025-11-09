@@ -49,11 +49,11 @@ struct RetrieveOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Secret`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Secret.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Secret")]
-pub struct Secret<'a>(Proxy<'a>);
+pub struct Secret(Proxy<'static>);
 
-impl<'a> Secret<'a> {
+impl Secret {
     /// Create a new instance of [`Secret`].
-    pub async fn new() -> Result<Secret<'a>, Error> {
+    pub async fn new() -> Result<Secret, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Secret").await?;
         Ok(Self(proxy))
     }
@@ -80,8 +80,8 @@ impl<'a> Secret<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for Secret<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for Secret {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

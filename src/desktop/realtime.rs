@@ -9,11 +9,11 @@ use crate::{proxy::Proxy, Error, Pid};
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Realtime`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Realtime.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Realtime")]
-pub struct Realtime<'a>(Proxy<'a>);
+pub struct Realtime(Proxy<'static>);
 
-impl<'a> Realtime<'a> {
+impl Realtime {
     /// Create a new instance of [`Realtime`].
-    pub async fn new() -> Result<Realtime<'a>, Error> {
+    pub async fn new() -> Result<Realtime, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Realtime").await?;
         Ok(Self(proxy))
     }
@@ -69,8 +69,8 @@ impl<'a> Realtime<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for Realtime<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for Realtime {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

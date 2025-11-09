@@ -51,11 +51,11 @@ struct EmailOptions {
 
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Email")]
-struct EmailProxy<'a>(Proxy<'a>);
+struct EmailProxy(Proxy<'static>);
 
-impl<'a> EmailProxy<'a> {
+impl EmailProxy {
     /// Create a new instance of [`EmailProxy`].
-    pub async fn new() -> Result<EmailProxy<'a>, Error> {
+    pub async fn new() -> Result<EmailProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Email").await?;
         Ok(Self(proxy))
     }
@@ -90,8 +90,8 @@ impl<'a> EmailProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for EmailProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for EmailProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

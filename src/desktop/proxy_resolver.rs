@@ -25,11 +25,11 @@ use crate::{proxy::Proxy, Error};
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ProxyResolver`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ProxyResolver.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ProxyResolver")]
-pub struct ProxyResolver<'a>(Proxy<'a>);
+pub struct ProxyResolver(Proxy<'static>);
 
-impl<'a> ProxyResolver<'a> {
+impl ProxyResolver {
     /// Create a new instance of [`ProxyResolver`].
-    pub async fn new() -> Result<ProxyResolver<'a>, Error> {
+    pub async fn new() -> Result<ProxyResolver, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.ProxyResolver").await?;
         Ok(Self(proxy))
     }
@@ -51,8 +51,8 @@ impl<'a> ProxyResolver<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for ProxyResolver<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for ProxyResolver {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

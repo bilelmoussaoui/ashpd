@@ -100,11 +100,11 @@ impl FromStr for Device {
 /// [`org.freedesktop.portal.Device`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Device.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Device")]
-pub struct DeviceProxy<'a>(Proxy<'a>);
+pub struct DeviceProxy(Proxy<'static>);
 
-impl<'a> DeviceProxy<'a> {
+impl DeviceProxy {
     /// Create a new instance of [`DeviceProxy`].
-    pub async fn new() -> Result<DeviceProxy<'a>, Error> {
+    pub async fn new() -> Result<DeviceProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Device").await?;
         Ok(Self(proxy))
     }
@@ -136,8 +136,8 @@ impl<'a> DeviceProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for DeviceProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for DeviceProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

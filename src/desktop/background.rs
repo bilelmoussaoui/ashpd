@@ -88,11 +88,11 @@ struct SetStatusOptions {
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Background`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html).
 #[doc(alias = "org.freedesktop.portal.Background")]
-pub struct BackgroundProxy<'a>(Proxy<'a>);
+pub struct BackgroundProxy(Proxy<'static>);
 
-impl<'a> BackgroundProxy<'a> {
+impl BackgroundProxy {
     /// Create a new instance of [`BackgroundProxy`].
-    pub async fn new() -> Result<BackgroundProxy<'a>, Error> {
+    pub async fn new() -> Result<BackgroundProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Background").await?;
         Ok(Self(proxy))
     }
@@ -142,8 +142,8 @@ impl<'a> BackgroundProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for BackgroundProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for BackgroundProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
