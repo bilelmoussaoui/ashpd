@@ -12,11 +12,11 @@ use crate::{proxy::Proxy, Error};
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.PowerProfileMonitor`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.PowerProfileMonitor.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.PowerProfileMonitor")]
-pub struct PowerProfileMonitor<'a>(Proxy<'a>);
+pub struct PowerProfileMonitor(Proxy<'static>);
 
-impl<'a> PowerProfileMonitor<'a> {
+impl PowerProfileMonitor {
     /// Create a new instance of [`PowerProfileMonitor`].
-    pub async fn new() -> Result<PowerProfileMonitor<'a>, Error> {
+    pub async fn new() -> Result<PowerProfileMonitor, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.PowerProfileMonitor").await?;
         Ok(Self(proxy))
     }
@@ -32,8 +32,8 @@ impl<'a> PowerProfileMonitor<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for PowerProfileMonitor<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for PowerProfileMonitor {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

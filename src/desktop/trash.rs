@@ -49,11 +49,11 @@ enum TrashStatus {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Trash`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Trash.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Trash")]
-pub struct TrashProxy<'a>(Proxy<'a>);
+pub struct TrashProxy(Proxy<'static>);
 
-impl<'a> TrashProxy<'a> {
+impl TrashProxy {
     /// Create a new instance of [`TrashProxy`].
-    pub async fn new() -> Result<TrashProxy<'a>, Error> {
+    pub async fn new() -> Result<TrashProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Trash").await?;
         Ok(Self(proxy))
     }
@@ -82,8 +82,8 @@ impl<'a> TrashProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for TrashProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for TrashProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

@@ -171,11 +171,11 @@ pub const CONTRAST_KEY: &str = "contrast";
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Settings`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Settings")]
-pub struct Settings<'a>(Proxy<'a>);
+pub struct Settings(Proxy<'static>);
 
-impl<'a> Settings<'a> {
+impl Settings {
     /// Create a new instance of [`Settings`].
-    pub async fn new() -> Result<Settings<'a>, Error> {
+    pub async fn new() -> Result<Settings, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Settings").await?;
         Ok(Self(proxy))
     }
@@ -333,8 +333,8 @@ impl<'a> Settings<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for Settings<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for Settings {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

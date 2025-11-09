@@ -30,11 +30,11 @@ use crate::{proxy::Proxy, Error};
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.MemoryMonitor`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.MemoryMonitor.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.MemoryMonitor")]
-pub struct MemoryMonitor<'a>(Proxy<'a>);
+pub struct MemoryMonitor(Proxy<'static>);
 
-impl<'a> MemoryMonitor<'a> {
+impl MemoryMonitor {
     /// Create a new instance of [`MemoryMonitor`].
-    pub async fn new() -> Result<MemoryMonitor<'a>, Error> {
+    pub async fn new() -> Result<MemoryMonitor, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.MemoryMonitor").await?;
         Ok(Self(proxy))
     }
@@ -52,8 +52,8 @@ impl<'a> MemoryMonitor<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for MemoryMonitor<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for MemoryMonitor {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

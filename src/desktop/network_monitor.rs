@@ -91,11 +91,11 @@ impl fmt::Display for Connectivity {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.NetworkMonitor`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.NetworkMonitor.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.NetworkMonitor")]
-pub struct NetworkMonitor<'a>(Proxy<'a>);
+pub struct NetworkMonitor(Proxy<'static>);
 
-impl<'a> NetworkMonitor<'a> {
+impl NetworkMonitor {
     /// Create a new instance of [`NetworkMonitor`].
-    pub async fn new() -> Result<NetworkMonitor<'a>, Error> {
+    pub async fn new() -> Result<NetworkMonitor, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.NetworkMonitor").await?;
         Ok(Self(proxy))
     }
@@ -201,8 +201,8 @@ impl<'a> NetworkMonitor<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for NetworkMonitor<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for NetworkMonitor {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

@@ -560,11 +560,11 @@ impl SetPointerBarriersResponse {
 
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.InputCapture`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html).
 #[doc(alias = "org.freedesktop.portal.InputCapture")]
-pub struct InputCapture<'a>(Proxy<'a>);
+pub struct InputCapture(Proxy<'static>);
 
-impl<'a> InputCapture<'a> {
+impl InputCapture {
     /// Create a new instance of [`InputCapture`].
-    pub async fn new() -> Result<InputCapture<'a>, Error> {
+    pub async fn new() -> Result<InputCapture, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.InputCapture").await?;
         Ok(Self(proxy))
     }
@@ -579,7 +579,7 @@ impl<'a> InputCapture<'a> {
         &self,
         identifier: Option<&WindowIdentifier>,
         capabilities: BitFlags<Capabilities>,
-    ) -> Result<(Session<'_, Self>, BitFlags<Capabilities>), Error> {
+    ) -> Result<(Session<'static, Self>, BitFlags<Capabilities>), Error> {
         let options = CreateSessionOptions {
             handle_token: Default::default(),
             session_handle_token: Default::default(),
@@ -747,13 +747,13 @@ impl<'a> InputCapture<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for InputCapture<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for InputCapture {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl crate::Sealed for InputCapture<'_> {}
-impl SessionPortal for InputCapture<'_> {}
+impl crate::Sealed for InputCapture {}
+impl SessionPortal for InputCapture {}

@@ -140,11 +140,11 @@ pub enum SessionState {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Inhibit`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Inhibit.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Inhibit")]
-pub struct InhibitProxy<'a>(Proxy<'a>);
+pub struct InhibitProxy(Proxy<'static>);
 
-impl<'a> InhibitProxy<'a> {
+impl InhibitProxy {
     /// Create a new instance of [`InhibitProxy`].
-    pub async fn new() -> Result<InhibitProxy<'a>, Error> {
+    pub async fn new() -> Result<InhibitProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Inhibit").await?;
         Ok(Self(proxy))
     }
@@ -165,7 +165,7 @@ impl<'a> InhibitProxy<'a> {
     pub async fn create_monitor(
         &self,
         identifier: Option<&WindowIdentifier>,
-    ) -> Result<Session<'a, Self>, Error> {
+    ) -> Result<Session<'static, Self>, Error> {
         let options = CreateMonitorOptions::default();
         let identifier = identifier.to_string_or_empty();
         let body = &(&identifier, &options);
@@ -243,13 +243,13 @@ impl<'a> InhibitProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for InhibitProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for InhibitProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl crate::Sealed for InhibitProxy<'_> {}
-impl SessionPortal for InhibitProxy<'_> {}
+impl crate::Sealed for InhibitProxy {}
+impl SessionPortal for InhibitProxy {}

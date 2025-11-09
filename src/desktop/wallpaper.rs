@@ -118,10 +118,10 @@ struct WallpaperOptions {
     set_on: Option<SetOn>,
 }
 
-struct WallpaperProxy<'a>(Proxy<'a>);
+struct WallpaperProxy(Proxy<'static>);
 
-impl<'a> WallpaperProxy<'a> {
-    pub async fn new() -> Result<WallpaperProxy<'a>, Error> {
+impl WallpaperProxy {
+    pub async fn new() -> Result<WallpaperProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Wallpaper").await?;
         Ok(Self(proxy))
     }
@@ -161,8 +161,8 @@ impl<'a> WallpaperProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for WallpaperProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for WallpaperProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

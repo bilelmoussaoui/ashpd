@@ -229,11 +229,11 @@ impl UsbDeviceEvent {
 /// This interface provides access to USB devices.
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Usb")]
-pub struct UsbProxy<'a>(Proxy<'a>);
+pub struct UsbProxy(Proxy<'static>);
 
-impl<'a> UsbProxy<'a> {
+impl UsbProxy {
     /// Create a new instance of [`UsbProxy`].
-    pub async fn new() -> Result<UsbProxy<'a>, Error> {
+    pub async fn new() -> Result<UsbProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Usb").await?;
         Ok(Self(proxy))
     }
@@ -247,7 +247,7 @@ impl<'a> UsbProxy<'a> {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-createsession).
     #[doc(alias = "CreateSession")]
-    pub async fn create_session(&self) -> Result<Session<'a, Self>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
         let options = CreateSessionOptions::default();
         let session: OwnedObjectPath = self.0.call("CreateSession", &(&options)).await?;
         Session::new(session).await
@@ -367,5 +367,5 @@ impl<'a> UsbProxy<'a> {
     }
 }
 
-impl crate::Sealed for UsbProxy<'_> {}
-impl SessionPortal for UsbProxy<'_> {}
+impl crate::Sealed for UsbProxy {}
+impl SessionPortal for UsbProxy {}

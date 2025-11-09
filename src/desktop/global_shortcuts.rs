@@ -218,11 +218,11 @@ impl ShortcutsChanged {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.GlobalShortcuts`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.GlobalShortcuts")]
-pub struct GlobalShortcuts<'a>(Proxy<'a>);
+pub struct GlobalShortcuts(Proxy<'static>);
 
-impl<'a> GlobalShortcuts<'a> {
+impl GlobalShortcuts {
     /// Create a new instance of [`GlobalShortcuts`].
-    pub async fn new() -> Result<GlobalShortcuts<'a>, Error> {
+    pub async fn new() -> Result<GlobalShortcuts, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.GlobalShortcuts").await?;
         Ok(Self(proxy))
     }
@@ -233,7 +233,7 @@ impl<'a> GlobalShortcuts<'a> {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-createsession).
     #[doc(alias = "CreateSession")]
-    pub async fn create_session(&self) -> Result<Session<'a, Self>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
@@ -341,13 +341,13 @@ impl<'a> GlobalShortcuts<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for GlobalShortcuts<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for GlobalShortcuts {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl crate::Sealed for GlobalShortcuts<'_> {}
-impl SessionPortal for GlobalShortcuts<'_> {}
+impl crate::Sealed for GlobalShortcuts {}
+impl SessionPortal for GlobalShortcuts {}

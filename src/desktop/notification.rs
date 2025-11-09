@@ -580,11 +580,11 @@ struct SupportedOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Notification`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Notification")]
-pub struct NotificationProxy<'a>(Proxy<'a>);
+pub struct NotificationProxy(Proxy<'static>);
 
-impl<'a> NotificationProxy<'a> {
+impl NotificationProxy {
     /// Create a new instance of [`NotificationProxy`].
-    pub async fn new() -> Result<NotificationProxy<'a>, Error> {
+    pub async fn new() -> Result<NotificationProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Notification").await?;
         Ok(Self(proxy))
     }
@@ -669,8 +669,8 @@ impl<'a> NotificationProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for NotificationProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for NotificationProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

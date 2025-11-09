@@ -649,11 +649,11 @@ pub struct PreparePrint {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Print`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Print.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Print")]
-pub struct PrintProxy<'a>(Proxy<'a>);
+pub struct PrintProxy(Proxy<'static>);
 
-impl<'a> PrintProxy<'a> {
+impl PrintProxy {
     /// Create a new instance of [`PrintProxy`].
-    pub async fn new() -> Result<PrintProxy<'a>, Error> {
+    pub async fn new() -> Result<PrintProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Print").await?;
         Ok(Self(proxy))
     }
@@ -677,7 +677,7 @@ impl<'a> PrintProxy<'a> {
     /// See also [`PreparePrint`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Print.html#org-freedesktop-portal-print-prepareprint).
     #[doc(alias = "PreparePrint")]
     #[doc(alias = "xdp_portal_prepare_print")]
-    pub async fn prepare_print(
+    pub async fn prepare_print<'a>(
         &self,
         identifier: Option<&WindowIdentifier>,
         title: &str,
@@ -741,8 +741,8 @@ impl<'a> PrintProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for PrintProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for PrintProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

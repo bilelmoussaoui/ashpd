@@ -360,11 +360,11 @@ impl StreamBuilder {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.ScreenCast`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.ScreenCast")]
-pub struct Screencast<'a>(Proxy<'a>);
+pub struct Screencast(Proxy<'static>);
 
-impl<'a> Screencast<'a> {
+impl Screencast {
     /// Create a new instance of [`Screencast`].
-    pub async fn new() -> Result<Screencast<'a>, Error> {
+    pub async fn new() -> Result<Screencast, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.ScreenCast").await?;
         Ok(Self(proxy))
     }
@@ -376,7 +376,7 @@ impl<'a> Screencast<'a> {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-createsession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_screencast_session")]
-    pub async fn create_session(&self) -> Result<Session<'a, Self>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
@@ -516,18 +516,18 @@ impl<'a> Screencast<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for Screencast<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for Screencast {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl crate::Sealed for Screencast<'_> {}
-impl SessionPortal for Screencast<'_> {}
+impl crate::Sealed for Screencast {}
+impl SessionPortal for Screencast {}
 
 /// Defines which portals session can be used in a screen-cast.
 pub trait HasScreencastSession: SessionPortal {}
-impl HasScreencastSession for Screencast<'_> {}
-impl HasScreencastSession for RemoteDesktop<'_> {}
+impl HasScreencastSession for Screencast {}
+impl HasScreencastSession for RemoteDesktop {}

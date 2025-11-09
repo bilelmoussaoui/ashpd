@@ -301,11 +301,11 @@ impl SelectedFiles {
 }
 
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
-struct FileChooserProxy<'a>(Proxy<'a>);
+struct FileChooserProxy(Proxy<'static>);
 
-impl<'a> FileChooserProxy<'a> {
+impl FileChooserProxy {
     /// Create a new instance of [`FileChooserProxy`].
-    pub async fn new() -> Result<FileChooserProxy<'a>, Error> {
+    pub async fn new() -> Result<FileChooserProxy, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.FileChooser").await?;
         Ok(Self(proxy))
     }
@@ -362,8 +362,8 @@ impl<'a> FileChooserProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for FileChooserProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for FileChooserProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

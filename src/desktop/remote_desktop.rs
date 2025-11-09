@@ -223,11 +223,11 @@ impl SelectedDevices {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.RemoteDesktop")]
-pub struct RemoteDesktop<'a>(Proxy<'a>);
+pub struct RemoteDesktop(Proxy<'static>);
 
-impl<'a> RemoteDesktop<'a> {
+impl RemoteDesktop {
     /// Create a new instance of [`RemoteDesktop`].
-    pub async fn new() -> Result<RemoteDesktop<'a>, Error> {
+    pub async fn new() -> Result<RemoteDesktop, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.RemoteDesktop").await?;
         Ok(Self(proxy))
     }
@@ -241,7 +241,7 @@ impl<'a> RemoteDesktop<'a> {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html#org-freedesktop-portal-remotedesktop-createsession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_remote_desktop_session")]
-    pub async fn create_session(&self) -> Result<Session<'a, Self>, Error> {
+    pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
         let options = CreateRemoteOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
@@ -678,13 +678,13 @@ impl<'a> RemoteDesktop<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for RemoteDesktop<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for RemoteDesktop {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl crate::Sealed for RemoteDesktop<'_> {}
-impl SessionPortal for RemoteDesktop<'_> {}
+impl crate::Sealed for RemoteDesktop {}
+impl SessionPortal for RemoteDesktop {}
