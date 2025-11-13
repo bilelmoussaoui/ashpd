@@ -65,8 +65,7 @@ pub async fn is_sandboxed() -> bool {
     if let Some(cached_value) = IS_SANDBOXED.get() {
         return *cached_value;
     }
-    let new_value = crate::helpers::is_flatpak().await
-        || crate::helpers::is_snap().await;
+    let new_value = crate::helpers::is_flatpak().await || crate::helpers::is_snap().await;
 
     *IS_SANDBOXED.get_or_init(|| new_value)
 }
