@@ -284,7 +284,7 @@ impl GlobalShortcuts {
             .await
     }
 
-    /// Request showing a configuration UI so the user is able to conigure all
+    /// Request showing a configuration UI so the user is able to configure all
     /// shortcuts of this session.
     ///
     /// # Specifications
