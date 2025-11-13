@@ -176,7 +176,6 @@ impl Builder {
 
     pub async fn build(self) -> Result<()> {
         let cnx = zbus::Connection::session().await?;
-        cnx.request_name_with_flags(self.name, self.flags).await?;
 
         #[cfg(feature = "tokio")]
         let spawn = self.spawn.unwrap_or(Arc::new(super::spawn::TokioSpawner));
@@ -338,6 +337,8 @@ impl Builder {
                 .at("/org/freedesktop/portal/desktop", portal)
                 .await?;
         }
+
+        cnx.request_name_with_flags(self.name, self.flags).await?;
 
         Ok(())
     }
