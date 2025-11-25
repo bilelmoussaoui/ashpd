@@ -1,9 +1,7 @@
-use adw::subclass::prelude::*;
-use gettextrs::gettext;
+use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
     gio,
     glib::{self, clone},
-    prelude::*,
 };
 
 use crate::{
@@ -27,6 +25,14 @@ mod imp {
     #[derive(Debug, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/window.ui")]
     pub struct ApplicationWindow {
+        #[template_child]
+        pub background_page: TemplateChild<adw::ViewStackPage>,
+        #[template_child]
+        pub device_page: TemplateChild<adw::ViewStackPage>,
+        #[template_child]
+        pub network_monitor_page: TemplateChild<adw::ViewStackPage>,
+        #[template_child]
+        pub proxy_resolver_page: TemplateChild<adw::ViewStackPage>,
         #[template_child]
         pub stack: TemplateChild<adw::ViewStack>,
         #[template_child]
@@ -82,6 +88,10 @@ mod imp {
 
         fn new() -> Self {
             Self {
+                background_page: TemplateChild::default(),
+                device_page: TemplateChild::default(),
+                network_monitor_page: TemplateChild::default(),
+                proxy_resolver_page: TemplateChild::default(),
                 screenshot: TemplateChild::default(),
                 stack: TemplateChild::default(),
                 window_title: TemplateChild::default(),
@@ -109,6 +119,10 @@ mod imp {
         }
 
         fn class_init(klass: &mut Self::Class) {
+            BackgroundPage::static_type();
+            DevicePage::static_type();
+            NetworkMonitorPage::static_type();
+            ProxyResolverPage::static_type();
             klass.bind_template();
         }
 
@@ -128,28 +142,10 @@ mod imp {
             let is_sandboxed: bool =
                 glib::MainContext::default().block_on(async { ashpd::is_sandboxed().await });
             // Add pages based on whether the app is sandboxed
-            if is_sandboxed {
-                self.stack.add_titled(
-                    &BackgroundPage::default(),
-                    Some("background"),
-                    &gettext("Background"),
-                );
-            } else {
-                self.stack
-                    .add_titled(&DevicePage::default(), Some("device"), &gettext("Device"));
-
-                self.stack.add_titled(
-                    &NetworkMonitorPage::default(),
-                    Some("network_monitor"),
-                    &gettext("Network Monitor"),
-                );
-
-                self.stack.add_titled(
-                    &ProxyResolverPage::default(),
-                    Some("proxy_resolver"),
-                    &gettext("Proxy Resolver"),
-                );
-            }
+            self.background_page.set_visible(is_sandboxed);
+            self.device_page.set_visible(!is_sandboxed);
+            self.network_monitor_page.set_visible(!is_sandboxed);
+            self.proxy_resolver_page.set_visible(!is_sandboxed);
 
             self.stack.set_visible_child_name("welcome");
             // load latest window state

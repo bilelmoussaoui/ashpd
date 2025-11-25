@@ -110,11 +110,31 @@
                           </object>
                         </child>
                         <child>
+                          <object class="AdwViewStackPage" id="background_page">
+                            <property name="name">background</property>
+                            <property name="title" translatable="yes">Background</property>
+                            <property name="visible">False</property>
+                            <property name="child">
+                              <object class="BackgroundPage" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
                           <object class="AdwViewStackPage">
                             <property name="name">camera</property>
                             <property name="title" translatable="yes">Camera</property>
                             <property name="child">
                               <object class="CameraPage" id="camera" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwViewStackPage" id="device_page">
+                            <property name="name">device</property>
+                            <property name="title" translatable="yes">Device</property>
+                            <property name="visible">False</property>
+                            <property name="child">
+                              <object class="DevicePage" />
                             </property>
                           </object>
                         </child>
@@ -182,6 +202,16 @@
                           </object>
                         </child>
                         <child>
+                          <object class="AdwViewStackPage" id="network_monitor_page">
+                            <property name="name">network_monitor</property>
+                            <property name="title" translatable="yes">Network Monitor</property>
+                            <property name="visible">False</property>
+                            <property name="child">
+                              <object class="NetworkMonitorPage" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
                           <object class="AdwViewStackPage">
                             <property name="name">notification</property>
                             <property name="title" translatable="yes">Notification</property>
@@ -205,6 +235,16 @@
                             <property name="title" translatable="yes">Print</property>
                             <property name="child">
                               <object class="PrintPage" id="print" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwViewStackPage" id="proxy_resolver_page">
+                            <property name="name">proxy_resolver</property>
+                            <property name="title" translatable="yes">Proxy Resolver</property>
+                            <property name="visible">False</property>
+                            <property name="child">
+                              <object class="ProxyResolverPage" />
                             </property>
                           </object>
                         </child>
