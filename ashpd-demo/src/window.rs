@@ -124,11 +124,20 @@ mod imp {
             NetworkMonitorPage::static_type();
             ProxyResolverPage::static_type();
             klass.bind_template();
+            klass.bind_template_callbacks();
         }
 
         // You must call `Widget`'s `init_template()` within `instance_init()`.
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
             obj.init_template();
+        }
+    }
+
+    #[gtk::template_callbacks]
+    impl ApplicationWindow {
+        #[template_callback]
+        fn view_switcher_sidebar_activated(&self) {
+            self.split_view.set_show_content(true);
         }
     }
 

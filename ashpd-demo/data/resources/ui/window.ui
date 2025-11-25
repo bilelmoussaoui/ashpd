@@ -59,8 +59,9 @@
                   </object>
                 </child>
                 <property name="content">
-                  <object class="AdwViewSwitcherSidebar">
+                  <object class="AdwViewSwitcherSidebar" id="view_switcher_sidebar">
                     <property name="stack">stack</property>
+                    <signal name="activated" handler="view_switcher_sidebar_activated" swapped="true" />
                   </object>
                 </property>
               </object>
