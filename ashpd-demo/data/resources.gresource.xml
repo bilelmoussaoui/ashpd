@@ -38,5 +38,25 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="map-marker-symbolic.svg">resources/map-marker-symbolic.svg</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="light-mode-symbolic.svg">resources/light-mode-symbolic.svg</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="dark-mode-symbolic.svg">resources/dark-mode-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="background-app-ghost-symbolic.svg">resources/background-app-ghost-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="bell-outline-symbolic.svg">resources/bell-outline-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="brush-monitor-symbolic.svg">resources/brush-monitor-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="display-with-window-symbolic.svg">resources/display-with-window-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="folder-open-symbolic.svg">resources/folder-open-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="globe-symbolic.svg">resources/globe-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="grid-large-symbolic.svg">resources/grid-large-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="horizontal-arrows-none-symbolic.svg">resources/horizontal-arrows-none-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="key5-symbolic.svg">resources/key5-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="keyboard3-symbolic.svg">resources/keyboard3-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="mail-unread-symbolic.svg">resources/mail-unread-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="network-proxy-symbolic.svg">resources/network-proxy-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="org.gnome.Settings-printers-symbolic.svg">resources/org.gnome.Settings-printers-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="paper-symbolic.svg">resources/paper-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="person-symbolic.svg">resources/person-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="screencast-recorded-symbolic.svg">resources/screencast-recorded-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="screenshot-recorded-symbolic.svg">resources/screenshot-recorded-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="speaker-symbolic.svg">resources/speaker-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="turn-off-symbolic.svg">resources/turn-off-symbolic.svg</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="video-camera-symbolic.svg">resources/video-camera-symbolic.svg</file>
     </gresource>
 </gresources>

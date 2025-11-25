@@ -106,6 +106,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">account</property>
                             <property name="title" translatable="yes">Account</property>
+                            <property name="icon-name">person-symbolic</property>
                             <property name="child">
                               <object class="AccountPage" id="account" />
                             </property>
@@ -115,6 +116,7 @@
                           <object class="AdwViewStackPage" id="background_page">
                             <property name="name">background</property>
                             <property name="title" translatable="yes">Background</property>
+                            <property name="icon-name">background-app-ghost-symbolic</property>
                             <property name="visible">False</property>
                             <property name="child">
                               <object class="BackgroundPage" />
@@ -125,6 +127,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">camera</property>
                             <property name="title" translatable="yes">Camera</property>
+                            <property name="icon-name">video-camera-symbolic</property>
                             <property name="child">
                               <object class="CameraPage" id="camera" />
                             </property>
@@ -135,6 +138,7 @@
                             <property name="name">device</property>
                             <property name="title" translatable="yes">Device</property>
                             <property name="visible">False</property>
+                            <property name="icon-name">speaker-symbolic</property>
                             <property name="child">
                               <object class="DevicePage" />
                             </property>
@@ -144,6 +148,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">documents</property>
                             <property name="title" translatable="yes">Documents</property>
+                            <property name="icon-name">paper-symbolic</property>
                             <property name="child">
                               <object class="DocumentsPage" id="documents" />
                             </property>
@@ -153,6 +158,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">dynamic_launcher</property>
                             <property name="title" translatable="yes">Dynamic Launcher</property>
+                            <property name="icon-name">grid-large-symbolic</property>
                             <property name="child">
                               <object class="DynamicLauncherPage" id="dynamic_launcher" />
                             </property>
@@ -162,6 +168,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">email</property>
                             <property name="title" translatable="yes">Email</property>
+                            <property name="icon-name">mail-unread-symbolic</property>
                             <property name="child">
                               <object class="EmailPage" id="email" />
                             </property>
@@ -171,6 +178,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">file_chooser</property>
                             <property name="title" translatable="yes">File Chooser</property>
+                            <property name="icon-name">folder-open-symbolic</property>
                             <property name="child">
                               <object class="FileChooserPage" id="file_chooser" />
                             </property>
@@ -180,6 +188,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">inhibit</property>
                             <property name="title" translatable="yes">Inhibit</property>
+                            <property name="icon-name">turn-off-symbolic</property>
                             <property name="child">
                               <object class="InhibitPage" id="inhibit" />
                             </property>
@@ -189,6 +198,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">global_shortcuts</property>
                             <property name="title" translatable="yes">Global Shortcuts</property>
+                            <property name="icon-name">keyboard3-symbolic</property>
                             <property name="child">
                               <object class="GlobalShortcutsPage" id="global_shortcuts" />
                             </property>
@@ -198,6 +208,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">location</property>
                             <property name="title" translatable="yes">Location</property>
+                            <property name="icon-name">map-marker-symbolic</property>
                             <property name="child">
                               <object class="LocationPage" id="location" />
                             </property>
@@ -208,6 +219,7 @@
                             <property name="name">network_monitor</property>
                             <property name="title" translatable="yes">Network Monitor</property>
                             <property name="visible">False</property>
+                            <property name="icon-name">horizontal-arrows-none-symbolic</property>
                             <property name="child">
                               <object class="NetworkMonitorPage" />
                             </property>
@@ -217,6 +229,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">notification</property>
                             <property name="title" translatable="yes">Notification</property>
+                            <property name="icon-name">bell-outline-symbolic</property>
                             <property name="child">
                               <object class="NotificationPage" id="notification" />
                             </property>
@@ -226,6 +239,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">open_uri</property>
                             <property name="title" translatable="yes">Open URI</property>
+                            <property name="icon-name">globe-symbolic</property>
                             <property name="child">
                               <object class="OpenUriPage" id="open_uri" />
                             </property>
@@ -235,6 +249,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">print</property>
                             <property name="title" translatable="yes">Print</property>
+                            <property name="icon-name">org.gnome.Settings-printers-symbolic</property>
                             <property name="child">
                               <object class="PrintPage" id="print" />
                             </property>
@@ -245,6 +260,7 @@
                             <property name="name">proxy_resolver</property>
                             <property name="title" translatable="yes">Proxy Resolver</property>
                             <property name="visible">False</property>
+                            <property name="icon-name">network-proxy-symbolic</property>
                             <property name="child">
                               <object class="ProxyResolverPage" />
                             </property>
@@ -254,6 +270,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">remote_desktop</property>
                             <property name="title" translatable="yes">Remote Desktop</property>
+                            <property name="icon-name">display-with-window-symbolic</property>
                             <property name="child">
                               <object class="RemoteDesktopPage" id="remote_desktop" />
                             </property>
@@ -263,6 +280,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">screenshot</property>
                             <property name="title" translatable="yes">Screenshot</property>
+                            <property name="icon-name">screenshot-recorded-symbolic</property>
                             <property name="child">
                               <object class="ScreenshotPage" id="screenshot" />
                             </property>
@@ -272,6 +290,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">screencast</property>
                             <property name="title" translatable="yes">Screen Cast</property>
+                            <property name="icon-name">screencast-recorded-symbolic</property>
                             <property name="child">
                               <object class="ScreenCastPage" id="screencast" />
                             </property>
@@ -281,6 +300,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">secret</property>
                             <property name="title" translatable="yes">Secret</property>
+                            <property name="icon-name">key5-symbolic</property>
                             <property name="child">
                               <object class="SecretPage" id="secret" />
                             </property>
@@ -290,6 +310,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">usb</property>
                             <property name="title" translatable="yes">USB</property>
+                            <property name="icon-name">drive-harddisk-usb-symbolic</property>
                             <property name="child">
                               <object class="UsbPage" id="usb" />
                             </property>
@@ -299,6 +320,7 @@
                           <object class="AdwViewStackPage">
                             <property name="name">wallpaper</property>
                             <property name="title" translatable="yes">Wallpaper</property>
+                            <property name="icon-name">brush-monitor-symbolic</property>
                             <property name="child">
                               <object class="WallpaperPage" id="wallpaper" />
                             </property>
