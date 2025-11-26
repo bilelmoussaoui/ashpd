@@ -4,7 +4,7 @@ edition = "2021"
 name = "ashpd-demo"
 
 [dependencies]
-adw = {version = "0.8", package = "libadwaita", features = ["v1_8"]}
+adw = {version = "0.8.1", package = "libadwaita", features = ["v1_9"]}
 anyhow = "1.0"
 ashpd = {git = "https://github.com/bilelmoussaoui/ashpd", default-features = false, features = ["async-std", "gtk4", "tracing", "pipewire"]}
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
