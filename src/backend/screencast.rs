@@ -1,4 +1,7 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    borrow::Borrow,
+    sync::{Arc, Mutex},
+};
 
 use async_trait::async_trait;
 use enumflags2::BitFlags;
@@ -14,7 +17,7 @@ use crate::{
         screencast::{CursorMode, SourceType, Streams as StartCastResponse},
         HandleToken, PersistMode,
     },
-    zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
+    zvariant::{DeserializeDict, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value},
     AppID, PortalError, WindowIdentifierType,
 };
 
@@ -28,7 +31,7 @@ pub struct SelectSourcesOptions {
     types: Option<BitFlags<SourceType>>,
     multiple: Option<bool>,
     cursor_mode: Option<CursorMode>,
-    restore_token: Option<String>,
+    restore_data: Option<(String, u32, OwnedValue)>,
     persist_mode: Option<PersistMode>,
 }
 
@@ -45,8 +48,11 @@ impl SelectSourcesOptions {
         self.cursor_mode
     }
 
-    pub fn restore_token(&self) -> Option<&str> {
-        self.restore_token.as_deref()
+    pub fn restore_data<'a>(&'a self) -> Option<(&'a str, u32, &'a Value<'a>)> {
+        match &self.restore_data {
+            Some((key, version, data)) => Some((key.as_str(), *version, data.borrow())),
+            None => None,
+        }
     }
 
     pub fn persist_mode(&self) -> Option<PersistMode> {
