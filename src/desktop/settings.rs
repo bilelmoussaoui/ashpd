@@ -181,7 +181,7 @@ impl Settings {
     }
 
     /// Create a new instance of [`Settings`].
-    pub async fn with_connectin(connection: zbus::Connection) -> Result<Settings, Error> {
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Settings, Error> {
         let proxy =
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Settings")
                 .await?;
