@@ -227,8 +227,16 @@ pub struct RemoteDesktop(Proxy<'static>);
 
 impl RemoteDesktop {
     /// Create a new instance of [`RemoteDesktop`].
-    pub async fn new() -> Result<RemoteDesktop, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.RemoteDesktop").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`RemoteDesktop`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.RemoteDesktop")
+                .await?;
         Ok(Self(proxy))
     }
 
@@ -247,7 +255,8 @@ impl RemoteDesktop {
             self.0
                 .request::<CreateSessionResponse>(&options.handle_token, "CreateSession", &options)
                 .into_future(),
-            Session::from_unique_name(&options.session_handle_token).into_future()
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
+                .into_future()
         )?;
         assert_eq!(proxy.path(), &request.response()?.session_handle.as_ref());
         Ok(proxy)

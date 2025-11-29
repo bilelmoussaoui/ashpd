@@ -29,8 +29,16 @@ pub struct ProxyResolver(Proxy<'static>);
 
 impl ProxyResolver {
     /// Create a new instance of [`ProxyResolver`].
-    pub async fn new() -> Result<ProxyResolver, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.ProxyResolver").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`ProxyResolver`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.ProxyResolver")
+                .await?;
         Ok(Self(proxy))
     }
 

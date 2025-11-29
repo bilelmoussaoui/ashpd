@@ -13,8 +13,16 @@ pub struct Realtime(Proxy<'static>);
 
 impl Realtime {
     /// Create a new instance of [`Realtime`].
-    pub async fn new() -> Result<Realtime, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Realtime").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`Realtime`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Realtime")
+                .await?;
         Ok(Self(proxy))
     }
 

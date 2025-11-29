@@ -211,23 +211,35 @@ impl<T> Request<T>
 where
     T: for<'de> Deserialize<'de> + Type + Debug,
 {
-    pub(crate) async fn new<P>(path: P) -> Result<Request<T>, Error>
+    pub(crate) async fn with_connection<P>(
+        connection: zbus::Connection,
+        path: P,
+    ) -> Result<Request<T>, Error>
     where
         P: TryInto<ObjectPath<'static>>,
         P::Error: Into<zbus::Error>,
     {
-        let proxy = Proxy::new_desktop_with_path("org.freedesktop.portal.Request", path).await?;
+        let proxy =
+            Proxy::new_desktop_with_path(connection, "org.freedesktop.portal.Request", path)
+                .await?;
         // Start listening for a response signal the moment request is created
         let stream = proxy.receive_signal("Response").await?;
         Ok(Self(proxy, stream, Default::default(), PhantomData))
     }
 
-    pub(crate) async fn from_unique_name(handle_token: &HandleToken) -> Result<Request<T>, Error> {
-        let path =
-            Proxy::unique_name("/org/freedesktop/portal/desktop/request", handle_token).await?;
+    pub(crate) async fn from_unique_name(
+        connection: zbus::Connection,
+        handle_token: &HandleToken,
+    ) -> Result<Request<T>, Error> {
+        let path = Proxy::unique_name(
+            &connection,
+            "/org/freedesktop/portal/desktop/request",
+            handle_token,
+        )
+        .await?;
         #[cfg(feature = "tracing")]
         tracing::info!("Creating a org.freedesktop.portal.Request {}", path);
-        Self::new(path).await
+        Self::with_connection(connection, path).await
     }
 
     pub(crate) async fn prepare_response(&mut self) -> Result<(), Error> {

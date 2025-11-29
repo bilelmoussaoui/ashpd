@@ -95,8 +95,16 @@ pub struct NetworkMonitor(Proxy<'static>);
 
 impl NetworkMonitor {
     /// Create a new instance of [`NetworkMonitor`].
-    pub async fn new() -> Result<NetworkMonitor, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.NetworkMonitor").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`NetworkMonitor`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.NetworkMonitor")
+                .await?;
         Ok(Self(proxy))
     }
 

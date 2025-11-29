@@ -53,8 +53,15 @@ pub struct TrashProxy(Proxy<'static>);
 
 impl TrashProxy {
     /// Create a new instance of [`TrashProxy`].
-    pub async fn new() -> Result<TrashProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Trash").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`TrashProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Trash").await?;
         Ok(Self(proxy))
     }
 

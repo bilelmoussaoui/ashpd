@@ -16,8 +16,18 @@ pub struct PowerProfileMonitor(Proxy<'static>);
 
 impl PowerProfileMonitor {
     /// Create a new instance of [`PowerProfileMonitor`].
-    pub async fn new() -> Result<PowerProfileMonitor, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.PowerProfileMonitor").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`PowerProfileMonitor`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy = Proxy::new_desktop_with_connection(
+            connection,
+            "org.freedesktop.portal.PowerProfileMonitor",
+        )
+        .await?;
         Ok(Self(proxy))
     }
 

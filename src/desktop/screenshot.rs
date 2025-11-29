@@ -98,8 +98,16 @@ struct ScreenshotProxy(Proxy<'static>);
 
 impl ScreenshotProxy {
     /// Create a new instance of [`ScreenshotProxy`].
-    pub async fn new() -> Result<ScreenshotProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Screenshot").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`ScreenshotProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Screenshot")
+                .await?;
         Ok(Self(proxy))
     }
 
@@ -175,6 +183,7 @@ impl std::ops::Deref for ScreenshotProxy {
 pub struct ColorRequest {
     identifier: Option<WindowIdentifier>,
     options: ColorOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl ColorRequest {
@@ -185,9 +194,20 @@ impl ColorRequest {
         self
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Build the [`Color`].
     pub async fn send(self) -> Result<Request<Color>, Error> {
-        let proxy = ScreenshotProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            ScreenshotProxy::with_connection(connection).await?
+        } else {
+            ScreenshotProxy::new().await?
+        };
         proxy
             .pick_color(self.identifier.as_ref(), self.options)
             .await
@@ -212,6 +232,7 @@ impl Color {
 pub struct ScreenshotRequest {
     options: ScreenshotOptions,
     identifier: Option<WindowIdentifier>,
+    connection: Option<zbus::Connection>,
 }
 
 impl ScreenshotRequest {
@@ -237,9 +258,20 @@ impl ScreenshotRequest {
         self
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Build the [`Screenshot`].
     pub async fn send(self) -> Result<Request<Screenshot>, Error> {
-        let proxy = ScreenshotProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            ScreenshotProxy::with_connection(connection).await?
+        } else {
+            ScreenshotProxy::new().await?
+        };
         proxy
             .screenshot(self.identifier.as_ref(), self.options)
             .await

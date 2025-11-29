@@ -569,6 +569,14 @@ impl InputCapture {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`InputCapture`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<InputCapture, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.InputCapture")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     /// Create an input capture session.
     ///
     /// # Specifications
@@ -594,7 +602,8 @@ impl InputCapture {
                     (identifier, &options)
                 )
                 .into_future(),
-            Session::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
+                .into_future(),
         )?;
         let response = request.response()?;
         assert_eq!(proxy.path(), &response.session_handle.as_ref());

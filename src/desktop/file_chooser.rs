@@ -305,8 +305,15 @@ struct FileChooserProxy(Proxy<'static>);
 
 impl FileChooserProxy {
     /// Create a new instance of [`FileChooserProxy`].
-    pub async fn new() -> Result<FileChooserProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.FileChooser").await?;
+        Ok(Self(proxy))
+    }
+
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.FileChooser")
+                .await?;
         Ok(Self(proxy))
     }
 
@@ -379,6 +386,7 @@ pub struct OpenFileRequest {
     identifier: Option<WindowIdentifier>,
     title: String,
     options: OpenFileOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl OpenFileRequest {
@@ -474,9 +482,20 @@ impl OpenFileRequest {
         Ok(self)
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Send the request.
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
-        let proxy = FileChooserProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            FileChooserProxy::with_connection(connection).await?
+        } else {
+            FileChooserProxy::new().await?
+        };
         proxy
             .open_file(self.identifier.as_ref(), &self.title, self.options)
             .await
@@ -492,6 +511,7 @@ pub struct SaveFilesRequest {
     identifier: Option<WindowIdentifier>,
     title: String,
     options: SaveFilesOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl SaveFilesRequest {
@@ -564,9 +584,20 @@ impl SaveFilesRequest {
         Ok(self)
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Send the request.
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
-        let proxy = FileChooserProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            FileChooserProxy::with_connection(connection).await?
+        } else {
+            FileChooserProxy::new().await?
+        };
         proxy
             .save_files(self.identifier.as_ref(), &self.title, self.options)
             .await
@@ -582,6 +613,7 @@ pub struct SaveFileRequest {
     identifier: Option<WindowIdentifier>,
     title: String,
     options: SaveFileOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl SaveFileRequest {
@@ -679,9 +711,20 @@ impl SaveFileRequest {
         self
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Send the request.
     pub async fn send(self) -> Result<Request<SelectedFiles>, Error> {
-        let proxy = FileChooserProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            FileChooserProxy::with_connection(connection).await?
+        } else {
+            FileChooserProxy::new().await?
+        };
         proxy
             .save_file(self.identifier.as_ref(), &self.title, self.options)
             .await

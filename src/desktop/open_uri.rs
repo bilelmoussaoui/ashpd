@@ -104,6 +104,14 @@ impl OpenURIProxy {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`OpenURIProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.OpenURI")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     /// Asks to open the directory containing a local file in the file browser.
     ///
     /// # Arguments
@@ -228,6 +236,7 @@ impl std::ops::Deref for OpenURIProxy {
 pub struct OpenFileRequest {
     identifier: Option<WindowIdentifier>,
     options: OpenFileOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl OpenFileRequest {
@@ -262,9 +271,20 @@ impl OpenFileRequest {
         self
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Send the request for a file.
     pub async fn send_file(self, file: &impl AsFd) -> Result<Request<()>, Error> {
-        let proxy = OpenURIProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            OpenURIProxy::with_connection(connection).await?
+        } else {
+            OpenURIProxy::new().await?
+        };
         proxy
             .open_file(self.identifier.as_ref(), file, self.options)
             .await
@@ -272,7 +292,11 @@ impl OpenFileRequest {
 
     /// Send the request for a URI.
     pub async fn send_uri(self, uri: &Url) -> Result<Request<()>, Error> {
-        let proxy = OpenURIProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            OpenURIProxy::with_connection(connection).await?
+        } else {
+            OpenURIProxy::new().await?
+        };
         proxy
             .open_uri(self.identifier.as_ref(), uri, self.options)
             .await
@@ -288,6 +312,7 @@ impl OpenFileRequest {
 pub struct OpenDirectoryRequest {
     identifier: Option<WindowIdentifier>,
     options: OpenDirOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl OpenDirectoryRequest {
@@ -308,9 +333,20 @@ impl OpenDirectoryRequest {
         self
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Send the request.
     pub async fn send(self, directory: &impl AsFd) -> Result<Request<()>, Error> {
-        let proxy = OpenURIProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            OpenURIProxy::with_connection(connection).await?
+        } else {
+            OpenURIProxy::new().await?
+        };
         proxy
             .open_directory(self.identifier.as_ref(), directory, self.options)
             .await

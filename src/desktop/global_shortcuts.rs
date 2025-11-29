@@ -227,6 +227,16 @@ impl GlobalShortcuts {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`GlobalShortcuts`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<GlobalShortcuts, Error> {
+        let proxy = Proxy::new_desktop_with_connection(
+            connection,
+            "org.freedesktop.portal.GlobalShortcuts",
+        )
+        .await?;
+        Ok(Self(proxy))
+    }
+
     /// Create a global shortcuts session.
     ///
     /// # Specifications
@@ -239,7 +249,8 @@ impl GlobalShortcuts {
             self.0
                 .request::<CreateSessionResponse>(&options.handle_token, "CreateSession", &options)
                 .into_future(),
-            Session::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
+                .into_future(),
         )?;
         assert_eq!(proxy.path(), &request.response()?.session_handle.as_ref());
         Ok(proxy)

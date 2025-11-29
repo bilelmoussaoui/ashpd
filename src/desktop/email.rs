@@ -55,8 +55,15 @@ struct EmailProxy(Proxy<'static>);
 
 impl EmailProxy {
     /// Create a new instance of [`EmailProxy`].
-    pub async fn new() -> Result<EmailProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Email").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`EmailProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Email").await?;
         Ok(Self(proxy))
     }
 
@@ -106,6 +113,7 @@ impl std::ops::Deref for EmailProxy {
 pub struct EmailRequest {
     identifier: Option<WindowIdentifier>,
     options: EmailOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl EmailRequest {
@@ -202,9 +210,20 @@ impl EmailRequest {
         };
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Send the request.
     pub async fn send(self) -> Result<Request<()>, Error> {
-        let proxy = EmailProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            EmailProxy::with_connection(connection).await?
+        } else {
+            EmailProxy::new().await?
+        };
         proxy.compose(self.identifier.as_ref(), self.options).await
     }
 }

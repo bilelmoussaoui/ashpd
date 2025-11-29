@@ -121,8 +121,15 @@ struct WallpaperOptions {
 struct WallpaperProxy(Proxy<'static>);
 
 impl WallpaperProxy {
-    pub async fn new() -> Result<WallpaperProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Wallpaper").await?;
+        Ok(Self(proxy))
+    }
+
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Wallpaper")
+                .await?;
         Ok(Self(proxy))
     }
 
@@ -178,6 +185,7 @@ impl std::ops::Deref for WallpaperProxy {
 pub struct WallpaperRequest {
     identifier: Option<WindowIdentifier>,
     options: WallpaperOptions,
+    connection: Option<zbus::Connection>,
 }
 
 impl WallpaperRequest {
@@ -204,9 +212,20 @@ impl WallpaperRequest {
         self
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Build using a URI.
     pub async fn build_uri(self, uri: &url::Url) -> Result<Request<()>, Error> {
-        let proxy = WallpaperProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            WallpaperProxy::with_connection(connection).await?
+        } else {
+            WallpaperProxy::new().await?
+        };
         proxy
             .set_wallpaper_uri(self.identifier.as_ref(), uri, self.options)
             .await
@@ -214,7 +233,11 @@ impl WallpaperRequest {
 
     /// Build using a file.
     pub async fn build_file(self, file: &impl AsFd) -> Result<Request<()>, Error> {
-        let proxy = WallpaperProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            WallpaperProxy::with_connection(connection).await?
+        } else {
+            WallpaperProxy::new().await?
+        };
         proxy
             .set_wallpaper_file(self.identifier.as_ref(), file, self.options)
             .await

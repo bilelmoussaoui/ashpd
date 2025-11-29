@@ -237,8 +237,18 @@ pub struct DynamicLauncherProxy(Proxy<'static>);
 
 impl DynamicLauncherProxy {
     /// Create a new instance of [`DynamicLauncherProxy`].
-    pub async fn new() -> Result<DynamicLauncherProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.DynamicLauncher").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`DynamicLauncherProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy = Proxy::new_desktop_with_connection(
+            connection,
+            "org.freedesktop.portal.DynamicLauncher",
+        )
+        .await?;
         Ok(Self(proxy))
     }
 

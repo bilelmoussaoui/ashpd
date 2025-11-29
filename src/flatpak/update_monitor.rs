@@ -121,10 +121,16 @@ impl<'a> UpdateMonitor<'a> {
     ///
     /// **Note** A [`UpdateMonitor`] is not supposed to be created
     /// manually.
-    pub(crate) async fn new(path: ObjectPath<'a>) -> Result<UpdateMonitor<'a>, Error> {
-        let proxy =
-            Proxy::new_flatpak_with_path("org.freedesktop.portal.Flatpak.UpdateMonitor", path)
-                .await?;
+    pub(crate) async fn with_connection(
+        connection: zbus::Connection,
+        path: ObjectPath<'a>,
+    ) -> Result<UpdateMonitor<'a>, Error> {
+        let proxy = Proxy::new_flatpak_with_path(
+            connection,
+            "org.freedesktop.portal.Flatpak.UpdateMonitor",
+            path,
+        )
+        .await?;
         Ok(Self(proxy))
     }
 

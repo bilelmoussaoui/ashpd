@@ -97,6 +97,14 @@ impl BackgroundProxy {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`BackgroundProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<BackgroundProxy, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Background")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     ///  Sets the status of the application running in background.
     ///
     /// # Arguments

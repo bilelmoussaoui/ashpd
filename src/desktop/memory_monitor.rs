@@ -34,8 +34,16 @@ pub struct MemoryMonitor(Proxy<'static>);
 
 impl MemoryMonitor {
     /// Create a new instance of [`MemoryMonitor`].
-    pub async fn new() -> Result<MemoryMonitor, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.MemoryMonitor").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`MemoryMonitor`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.MemoryMonitor")
+                .await?;
         Ok(Self(proxy))
     }
 

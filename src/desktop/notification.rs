@@ -584,8 +584,16 @@ pub struct NotificationProxy(Proxy<'static>);
 
 impl NotificationProxy {
     /// Create a new instance of [`NotificationProxy`].
-    pub async fn new() -> Result<NotificationProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Notification").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`NotificationProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Notification")
+                .await?;
         Ok(Self(proxy))
     }
 

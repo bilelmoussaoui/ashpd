@@ -233,8 +233,15 @@ pub struct UsbProxy(Proxy<'static>);
 
 impl UsbProxy {
     /// Create a new instance of [`UsbProxy`].
-    pub async fn new() -> Result<UsbProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Usb").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`UsbProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Usb").await?;
         Ok(Self(proxy))
     }
 
@@ -250,7 +257,7 @@ impl UsbProxy {
     pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
         let options = CreateSessionOptions::default();
         let session: OwnedObjectPath = self.0.call("CreateSession", &(&options)).await?;
-        Session::new(session).await
+        Session::with_connection(self.0.connection().clone(), session).await
     }
 
     /// Enumerate USB devices.

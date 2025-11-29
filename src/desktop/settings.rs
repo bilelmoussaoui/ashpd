@@ -180,6 +180,14 @@ impl Settings {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`Settings`].
+    pub async fn with_connectin(connection: zbus::Connection) -> Result<Settings, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Settings")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     /// Reads a single value. Returns an error on any unknown namespace or key.
     ///
     /// # Arguments

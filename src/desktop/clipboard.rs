@@ -43,9 +43,17 @@ pub struct Clipboard(Proxy<'static>);
 
 impl Clipboard {
     /// Create a new instance of [`Clipboard`].
-    pub async fn new() -> Result<Clipboard> {
+    pub async fn new() -> Result<Self> {
         Ok(Self(
             Proxy::new_desktop("org.freedesktop.portal.Clipboard").await?,
+        ))
+    }
+
+    /// Create a new instance of [`Clipboard`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self> {
+        Ok(Self(
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Clipboard")
+                .await?,
         ))
     }
 
@@ -133,11 +141,20 @@ impl Clipboard {
     pub async fn receive_selection_owner_changed(
         &self,
     ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop>, SelectionOwnerChanged)>> {
+        let connection = self.connection().clone();
         Ok(self
             .0
             .signal::<(OwnedObjectPath, SelectionOwnerChanged)>("SelectionOwnerChanged")
             .await?
-            .filter_map(|(p, o)| async move { Session::new(p).await.map(|s| (s, o)).ok() }))
+            .filter_map(move |(p, o)| {
+                let connection = connection.clone();
+                async move {
+                    Session::with_connection(connection, p)
+                        .await
+                        .map(|s| (s, o))
+                        .ok()
+                }
+            }))
     }
 
     /// # Specifications
@@ -147,15 +164,19 @@ impl Clipboard {
     pub async fn receive_selection_transfer(
         &self,
     ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop>, String, u32)>> {
+        let connection = self.connection().clone();
         Ok(self
             .0
             .signal::<(OwnedObjectPath, String, u32)>("SelectionTransfer")
             .await?
-            .filter_map(|(p, mime_type, serial)| async move {
-                Session::new(p)
-                    .await
-                    .map(|session| (session, mime_type, serial))
-                    .ok()
+            .filter_map(move |(p, mime_type, serial)| {
+                let connection = connection.clone();
+                async move {
+                    Session::with_connection(connection, p)
+                        .await
+                        .map(|session| (session, mime_type, serial))
+                        .ok()
+                }
             }))
     }
 }

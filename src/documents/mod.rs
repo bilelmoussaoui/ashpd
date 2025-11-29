@@ -156,6 +156,14 @@ impl<'a> Documents<'a> {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`Documents`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Documents<'a>, Error> {
+        let proxy =
+            Proxy::new_documents_with_connection(connection, "org.freedesktop.portal.Documents")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     /// Adds a file to the document store.
     /// The file is passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.

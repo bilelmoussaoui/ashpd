@@ -253,6 +253,14 @@ impl<'a> Flatpak<'a> {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`Flatpak`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Flatpak<'a>, Error> {
+        let proxy =
+            Proxy::new_flatpak_with_connection(connection, "org.freedesktop.portal.Flatpak")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     /// Creates an update monitor object that will emit signals
     /// when an update for the caller becomes available, and can be used to
     /// install it.
@@ -274,7 +282,7 @@ impl<'a> Flatpak<'a> {
             .call_versioned::<OwnedObjectPath>("CreateUpdateMonitor", &(options), 2)
             .await?;
 
-        UpdateMonitor::new(path.into_inner()).await
+        UpdateMonitor::with_connection(self.connection().clone(), path.into_inner()).await
     }
 
     /// Emitted when a process starts by [`spawn()`][`Flatpak::spawn`].

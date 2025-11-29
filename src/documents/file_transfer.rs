@@ -84,6 +84,14 @@ impl<'a> FileTransfer<'a> {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`FileTransfer`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<FileTransfer<'a>, Error> {
+        let proxy =
+            Proxy::new_documents_with_connection(connection, "org.freedesktop.portal.FileTransfer")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     /// Adds files to a session. This method can be called multiple times on a
     /// given session. **Note** only regular files (not directories) can be
     /// added.

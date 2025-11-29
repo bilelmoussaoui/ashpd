@@ -104,8 +104,15 @@ pub struct DeviceProxy(Proxy<'static>);
 
 impl DeviceProxy {
     /// Create a new instance of [`DeviceProxy`].
-    pub async fn new() -> Result<DeviceProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Device").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`DeviceProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Device").await?;
         Ok(Self(proxy))
     }
 

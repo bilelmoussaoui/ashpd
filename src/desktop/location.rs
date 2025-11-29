@@ -204,6 +204,14 @@ impl<'a> LocationProxy<'a> {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`LocationProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<LocationProxy<'a>, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Location")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     /// Signal emitted when the user location is updated.
     ///
     /// # Specifications
@@ -245,7 +253,8 @@ impl<'a> LocationProxy<'a> {
             self.0
                 .call::<OwnedObjectPath>("CreateSession", &(options))
                 .into_future(),
-            Session::from_unique_name(&options.session_handle_token).into_future(),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
+                .into_future(),
         )?;
         assert_eq!(proxy.path(), &path.into_inner());
         Ok(proxy)

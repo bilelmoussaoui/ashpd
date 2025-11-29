@@ -78,8 +78,16 @@ pub struct GameMode(Proxy<'static>);
 
 impl GameMode {
     /// Create a new instance of [`GameMode`].
-    pub async fn new() -> Result<GameMode, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.GameMode").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`GameMode`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.GameMode")
+                .await?;
         Ok(Self(proxy))
     }
 

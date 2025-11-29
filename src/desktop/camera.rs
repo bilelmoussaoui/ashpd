@@ -59,6 +59,13 @@ impl Camera {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`Camera`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Camera, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Camera").await?;
+        Ok(Self(proxy))
+    }
+
     /// Requests an access to the camera.
     ///
     /// # Specifications

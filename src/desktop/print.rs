@@ -653,8 +653,15 @@ pub struct PrintProxy(Proxy<'static>);
 
 impl PrintProxy {
     /// Create a new instance of [`PrintProxy`].
-    pub async fn new() -> Result<PrintProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Print").await?;
+        Ok(Self(proxy))
+    }
+
+    /// Create a new instance of [`PrintProxy`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Print").await?;
         Ok(Self(proxy))
     }
 

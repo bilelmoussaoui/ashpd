@@ -85,8 +85,15 @@ impl UserInformation {
 struct AccountProxy(Proxy<'static>);
 
 impl AccountProxy {
-    pub async fn new() -> Result<AccountProxy, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Account").await?;
+        Ok(Self(proxy))
+    }
+
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Account")
+                .await?;
         Ok(Self(proxy))
     }
 
@@ -124,6 +131,7 @@ impl std::ops::Deref for AccountProxy {
 pub struct UserInformationRequest {
     options: UserInformationOptions,
     identifier: Option<WindowIdentifier>,
+    connection: Option<zbus::Connection>,
 }
 
 impl UserInformationRequest {
@@ -141,9 +149,20 @@ impl UserInformationRequest {
         self
     }
 
+    #[must_use]
+    /// Sets a connection to use other than the internal one.
+    pub fn connection(mut self, connection: Option<zbus::Connection>) -> Self {
+        self.connection = connection;
+        self
+    }
+
     /// Build the [`UserInformation`].
     pub async fn send(self) -> Result<Request<UserInformation>, Error> {
-        let proxy = AccountProxy::new().await?;
+        let proxy = if let Some(connection) = self.connection {
+            AccountProxy::with_connection(connection).await?
+        } else {
+            AccountProxy::new().await?
+        };
         proxy
             .user_information(self.identifier.as_ref(), self.options)
             .await

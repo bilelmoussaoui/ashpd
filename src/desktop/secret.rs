@@ -58,6 +58,13 @@ impl Secret {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`Secret`].
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Secret, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Secret").await?;
+        Ok(Self(proxy))
+    }
+
     /// Retrieves a master secret for a sandboxed application.
     ///
     /// # Arguments

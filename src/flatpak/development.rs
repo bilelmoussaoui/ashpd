@@ -40,6 +40,16 @@ impl<'a> Development<'a> {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`Development`]
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Development<'a>, Error> {
+        let proxy = Proxy::new_flatpak_development_with_connection(
+            connection,
+            "org.freedesktop.Flatpak.Development",
+        )
+        .await?;
+        Ok(Self(proxy))
+    }
+
     /// Emitted when a process started by
     /// [`host_command()`][`Development::host_command`] exits.
     ///

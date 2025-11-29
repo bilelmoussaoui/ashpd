@@ -44,10 +44,10 @@ impl<'a> Proxy<'a> {
     }
 
     pub async fn unique_name(
+        connection: &zbus::Connection,
         prefix: &str,
         handle_token: &HandleToken,
     ) -> Result<ObjectPath<'static>, Error> {
-        let connection = Self::connection().await?;
         let unique_name = connection.unique_name().unwrap();
         let unique_identifier = unique_name.trim_start_matches(':').replace('.', "_");
         ObjectPath::try_from(format!("{prefix}/{unique_identifier}/{handle_token}"))
@@ -64,6 +64,19 @@ impl<'a> Proxy<'a> {
         P::Error: Into<zbus::Error>,
     {
         let connection = Self::connection().await?;
+        Self::with_connection(connection, interface, path, destination).await
+    }
+
+    pub async fn with_connection<P>(
+        connection: zbus::Connection,
+        interface: &'a str,
+        path: P,
+        destination: &'a str,
+    ) -> Result<Proxy<'a>, Error>
+    where
+        P: TryInto<ObjectPath<'a>>,
+        P::Error: Into<zbus::Error>,
+    {
         let inner: zbus::Proxy = zbus::proxy::Builder::new(&connection)
             .interface(interface)?
             .path(path)?
@@ -93,32 +106,61 @@ impl<'a> Proxy<'a> {
         Ok(Self { inner, version })
     }
 
-    pub async fn new_desktop_with_path<P>(interface: &'a str, path: P) -> Result<Proxy<'a>, Error>
+    pub async fn new_desktop_with_path<P>(
+        connection: zbus::Connection,
+        interface: &'a str,
+        path: P,
+    ) -> Result<Proxy<'a>, Error>
     where
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
-        Self::new(interface, path, DESKTOP_DESTINATION).await
+        Self::with_connection(connection, interface, path, DESKTOP_DESTINATION).await
     }
 
     pub async fn new_desktop(interface: &'a str) -> Result<Proxy<'a>, Error> {
         Self::new(interface, DESKTOP_PATH, DESKTOP_DESTINATION).await
     }
 
+    pub async fn new_desktop_with_connection(
+        connection: zbus::Connection,
+        interface: &'a str,
+    ) -> Result<Proxy<'a>, Error> {
+        Self::with_connection(connection, interface, DESKTOP_PATH, DESKTOP_DESTINATION).await
+    }
+
     pub async fn new_documents(interface: &'a str) -> Result<Proxy<'a>, Error> {
         Self::new(interface, DOCUMENTS_PATH, DOCUMENTS_DESTINATION).await
+    }
+
+    pub async fn new_documents_with_connection(
+        connection: zbus::Connection,
+        interface: &'a str,
+    ) -> Result<Proxy<'a>, Error> {
+        Self::with_connection(connection, interface, DOCUMENTS_PATH, DOCUMENTS_DESTINATION).await
     }
 
     pub async fn new_flatpak(interface: &'a str) -> Result<Proxy<'a>, Error> {
         Self::new(interface, FLATPAK_PATH, FLATPAK_DESTINATION).await
     }
 
-    pub async fn new_flatpak_with_path<P>(interface: &'a str, path: P) -> Result<Proxy<'a>, Error>
+    pub async fn new_flatpak_with_connection(
+        connection: zbus::Connection,
+        interface: &'a str,
+    ) -> Result<Proxy<'a>, Error> {
+        Self::with_connection(connection, interface, FLATPAK_PATH, FLATPAK_DESTINATION).await
+    }
+
+    pub async fn new_flatpak_with_path<P>(
+        connection: zbus::Connection,
+        interface: &'a str,
+        path: P,
+    ) -> Result<Proxy<'a>, Error>
     where
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
-        Self::new(interface, path, FLATPAK_DESTINATION).await
+        Self::with_connection(connection, interface, path, FLATPAK_DESTINATION).await
     }
 
     pub async fn new_flatpak_development(interface: &'a str) -> Result<Proxy<'a>, Error> {
@@ -130,6 +172,18 @@ impl<'a> Proxy<'a> {
         .await
     }
 
+    pub async fn new_flatpak_development_with_connection(
+        connection: zbus::Connection,
+        interface: &'a str,
+    ) -> Result<Proxy<'a>, Error> {
+        Self::with_connection(
+            connection,
+            interface,
+            FLATPAK_DEVELOPMENT_PATH,
+            FLATPAK_DEVELOPMENT_DESTINATION,
+        )
+        .await
+    }
     pub async fn request<T>(
         &self,
         handle_token: &HandleToken,
@@ -139,7 +193,8 @@ impl<'a> Proxy<'a> {
     where
         T: for<'de> Deserialize<'de> + Type + Debug,
     {
-        let mut request = Request::from_unique_name(handle_token).await?;
+        let connection = self.inner.connection();
+        let mut request = Request::from_unique_name(connection.clone(), handle_token).await?;
         futures_util::try_join!(request.prepare_response(), async {
             self.call_method(method_name, &body)
                 .await

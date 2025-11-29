@@ -32,23 +32,33 @@ where
     /// Create a new instance of [`Session`].
     ///
     /// **Note** A [`Session`] is not supposed to be created manually.
-    pub(crate) async fn new<P>(path: P) -> Result<Session<'a, T>, Error>
+    pub(crate) async fn with_connection<P>(
+        connection: zbus::Connection,
+        path: P,
+    ) -> Result<Session<'a, T>, Error>
     where
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
-        let proxy = Proxy::new_desktop_with_path("org.freedesktop.portal.Session", path).await?;
+        let proxy =
+            Proxy::new_desktop_with_path(connection, "org.freedesktop.portal.Session", path)
+                .await?;
         Ok(Self(proxy, PhantomData))
     }
 
     pub(crate) async fn from_unique_name(
+        connection: zbus::Connection,
         handle_token: &HandleToken,
     ) -> Result<Session<'a, T>, crate::Error> {
-        let path =
-            Proxy::unique_name("/org/freedesktop/portal/desktop/session", handle_token).await?;
+        let path = Proxy::unique_name(
+            &connection,
+            "/org/freedesktop/portal/desktop/session",
+            handle_token,
+        )
+        .await?;
         #[cfg(feature = "tracing")]
         tracing::info!("Creating a org.freedesktop.portal.Session {}", path);
-        Self::new(path).await
+        Self::with_connection(connection, path).await
     }
 
     /// Emitted when a session is closed.
