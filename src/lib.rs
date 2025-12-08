@@ -58,14 +58,18 @@ pub use zbus::{self, zvariant};
 /// Check whether the application is running inside a sandbox.
 ///
 /// The function checks whether the file `/.flatpak-info` exists, or if the app
-/// is running as a snap, or if the environment variable `GTK_USE_PORTAL` is set
-/// to `1`. As the return value of this function will not change during the
-/// runtime of a program; it is cached for future calls.
+/// is running as a snap. The environment variable `ASHPD_IS_SANDBOXED` can be
+/// set to `true` or `false` to override the return value. As the return value
+/// of this function will not change during the runtime of a program; it is
+/// cached for future calls.
 pub async fn is_sandboxed() -> bool {
     if let Some(cached_value) = IS_SANDBOXED.get() {
         return *cached_value;
     }
-    let new_value = crate::helpers::is_flatpak().await || crate::helpers::is_snap().await;
+    let new_value = match std::env::var_os("ASHPD_IS_SANDBOXED") {
+        Some(val) => val != "false",
+        None => crate::helpers::is_flatpak().await || crate::helpers::is_snap().await,
+    };
 
     *IS_SANDBOXED.get_or_init(|| new_value)
 }
