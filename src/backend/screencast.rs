@@ -14,7 +14,7 @@ use crate::{
     },
     desktop::{
         request::Response,
-        screencast::{CursorMode, SourceType, Streams as StartCastResponse},
+        screencast::{CursorMode, SourceType, Stream},
         HandleToken, PersistMode,
     },
     zvariant::{DeserializeDict, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value},
@@ -67,6 +67,49 @@ pub struct SelectSourcesResponse {}
 #[derive(DeserializeDict, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct StartCastOptions {}
+
+#[derive(SerializeDict, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+pub struct StartCastResponse {
+    streams: Vec<Stream>,
+    restore_data: Option<(String, u32, OwnedValue)>,
+}
+
+impl StartCastResponse {
+    /// The session restore token.
+    pub fn restore_data(&self) -> Option<&(String, u32, OwnedValue)> {
+        self.restore_data.as_ref()
+    }
+
+    /// The list of streams.
+    pub fn streams(&self) -> &[Stream] {
+        &self.streams
+    }
+}
+
+pub struct StartCastResponseBuilder {
+    response: StartCastResponse,
+}
+
+impl StartCastResponseBuilder {
+    pub fn new(streams: Vec<Stream>) -> Self {
+        Self {
+            response: StartCastResponse {
+                streams,
+                restore_data: None,
+            },
+        }
+    }
+
+    pub fn restore_data(mut self, data: Option<(String, u32, impl Into<OwnedValue>)>) -> Self {
+        self.response.restore_data = data.map(|(s, u, d)| (s, u, d.into()));
+        self
+    }
+
+    pub fn build(self) -> StartCastResponse {
+        self.response
+    }
+}
 
 #[async_trait]
 pub trait ScreencastImpl: RequestImpl + SessionImpl {
