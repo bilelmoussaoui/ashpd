@@ -14,6 +14,13 @@ impl<'a> RegistryProxy<'a> {
         Ok(Self(proxy))
     }
 
+    pub async fn with_connection(connection: zbus::Connection) -> Result<RegistryProxy<'a>, Error> {
+        let proxy =
+            Proxy::new_desktop_with_connection(connection, "org.freedesktop.host.portal.Registry")
+                .await?;
+        Ok(Self(proxy))
+    }
+
     pub async fn register(&self, app_id: AppID) -> Result<(), Error> {
         let options = RegisterOptions {};
         self.0.call_method("Register", &(&app_id, &options)).await?;
@@ -43,6 +50,19 @@ pub async fn register_host_app(app_id: AppID) -> crate::Result<()> {
         return Ok(());
     }
     let proxy = RegistryProxy::new().await?;
+    proxy.register(app_id).await?;
+    Ok(())
+}
+
+/// Similar to [`register_host_app`] that takes a connection paramterer.
+pub async fn register_host_app_with_connection(
+    connection: zbus::Connection,
+    app_id: AppID,
+) -> crate::Result<()> {
+    if crate::is_sandboxed().await {
+        return Ok(());
+    }
+    let proxy = RegistryProxy::with_connection(connection).await?;
     proxy.register(app_id).await?;
     Ok(())
 }
