@@ -1,7 +1,7 @@
 [package]
 name = "ashpd-backend-demo"
 version = "0.1.0"
-edition = "2021"
+edition.workspace = true
 
 [dependencies]
 async-trait = "0.1.60"
@@ -14,6 +14,6 @@ url = "2.3.1"
 zbus = "5.0"
 
 [dependencies.ashpd]
-path = "../"
+path = "../../client"
 features = ["backend", "tracing", "tokio"]
 default-features = false

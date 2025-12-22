@@ -250,7 +250,7 @@ mod tests {
         ];
 
         let config = TestConfig {
-            interfaces_dir: PathBuf::from("./interfaces/backend"),
+            interfaces_dir: PathBuf::from("./../interfaces/backend"),
             rust_src_prefix: "src/backend/",
             rust_file_mappings,
             ignored_interfaces: IGNORED_BACKEND_PORTALS,
@@ -283,7 +283,7 @@ mod tests {
         const NO_IGNORED_INTERFACES: &[&str; 0] = &[];
 
         let config = TestConfig {
-            interfaces_dir: PathBuf::from("./interfaces"),
+            interfaces_dir: PathBuf::from("./../interfaces"),
             rust_src_prefix: "src/desktop/",
             rust_file_mappings,
             ignored_interfaces: NO_IGNORED_INTERFACES,
