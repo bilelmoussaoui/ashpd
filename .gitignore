@@ -11,7 +11,7 @@ ashpd-demo/_build/
 ashpd-demo/builddir/
 ashpd-demo/src/config.rs
 ashpd-demo/target/
-backend-demo/target
+**/target
 backend-demo/Cargo.lock
 
 .flatpak
