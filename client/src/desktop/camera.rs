@@ -161,23 +161,23 @@ fn pipewire_streams_inner<F: Fn(Stream) + Clone + 'static, G: FnOnce() + Clone +
     let _listener_reg = registry
         .add_listener_local()
         .global(move |global| {
-            if let Some(props) = &global.props {
-                if props.get("media.role") == Some("Camera") {
-                    #[cfg(feature = "tracing")]
-                    tracing::info!("found camera: {:#?}", props);
+            if let Some(props) = &global.props
+                && props.get("media.role") == Some("Camera")
+            {
+                #[cfg(feature = "tracing")]
+                tracing::info!("found camera: {:#?}", props);
 
-                    let mut properties = HashMap::new();
-                    for (key, value) in props.iter() {
-                        properties.insert(key.to_string(), value.to_string());
-                    }
-                    let node_id = global.id;
-
-                    let stream = Stream {
-                        node_id,
-                        properties,
-                    };
-                    callback.clone()(stream);
+                let mut properties = HashMap::new();
+                for (key, value) in props.iter() {
+                    properties.insert(key.to_string(), value.to_string());
                 }
+                let node_id = global.id;
+
+                let stream = Stream {
+                    node_id,
+                    properties,
+                };
+                callback.clone()(stream);
             }
         })
         .register();
@@ -229,10 +229,10 @@ pub async fn pipewire_streams(fd: OwnedFd) -> Result<Vec<Stream>, pipewire::Erro
                 };
             },
             move || {
-                if let Ok(mut guard) = inner_sender.lock() {
-                    if let Some(inner_sender) = guard.take() {
-                        let _result = inner_sender.send(Ok(()));
-                    }
+                if let Ok(mut guard) = inner_sender.lock()
+                    && let Some(inner_sender) = guard.take()
+                {
+                    let _result = inner_sender.send(Ok(()));
                 }
             },
         ) {

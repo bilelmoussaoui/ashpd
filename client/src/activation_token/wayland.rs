@@ -54,12 +54,14 @@ impl ActivationToken {
             return None;
         }
 
-        let backend = Backend::from_foreign_display(display_ptr as *mut _);
+        let backend = unsafe { Backend::from_foreign_display(display_ptr as *mut _) };
         let conn = wayland_client::Connection::from_backend(backend);
-        let obj_id = wayland_backend::sys::client::ObjectId::from_ptr(
-            WlSurface::interface(),
-            surface_ptr as *mut _,
-        )
+        let obj_id = unsafe {
+            wayland_backend::sys::client::ObjectId::from_ptr(
+                WlSurface::interface(),
+                surface_ptr as *mut _,
+            )
+        }
         .ok()?;
 
         let surface = WlSurface::from_id(&conn, obj_id).ok()?;
@@ -118,20 +120,19 @@ impl wayland_client::Dispatch<wl_registry::WlRegistry, ()> for WaylandHandle {
             interface,
             version,
         } = event
+            && &interface == "xdg_activation_v1"
         {
-            if &interface == "xdg_activation_v1" {
-                #[cfg(feature = "tracing")]
-                tracing::info!("Found wayland interface {interface} v{version}");
-                let wl_activation = registry.bind::<XdgActivationV1, (), Self>(
-                    name,
-                    version.min(XDG_ACTIVATION_V1_VERSION),
-                    qhandle,
-                    (),
-                );
-                let wl_token = wl_activation.get_activation_token(qhandle, ());
-                state.wl_token = Some(wl_token);
-                wl_activation.destroy();
-            }
+            #[cfg(feature = "tracing")]
+            tracing::info!("Found wayland interface {interface} v{version}");
+            let wl_activation = registry.bind::<XdgActivationV1, (), Self>(
+                name,
+                version.min(XDG_ACTIVATION_V1_VERSION),
+                qhandle,
+                (),
+            );
+            let wl_token = wl_activation.get_activation_token(qhandle, ());
+            state.wl_token = Some(wl_token);
+            wl_activation.destroy();
         }
     }
 }
