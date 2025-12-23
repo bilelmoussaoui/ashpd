@@ -18,7 +18,7 @@ use wallpaper::Wallpaper;
 const NAME: &str = "org.freedesktop.impl.portal.desktop.ashpd-backend-demo";
 // Run with
 // RUST_LOG=ashpd_backend_demo=debug,ashpd=debug cargo run --manifest-path
-// ./backend-demo/Cargo.toml
+// ./demo/backend/Cargo.toml
 
 #[tokio::main]
 async fn main() -> ashpd::Result<()> {

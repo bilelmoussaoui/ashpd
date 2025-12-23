@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -23,7 +23,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --workspace --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
 
   test:
     name: Test Suite
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -42,7 +42,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --workspace --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
 
   fmt:
     name: Rustfmt
@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel
+        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -82,10 +82,12 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features "gtk4,pipewire,wayland,raw_handle,tracing,backend" -- -D warnings
+          args: --workspace --features "gtk4,pipewire,wayland,raw_handle,tracing,backend" -- -D warnings
 
   cargo-deny:
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v4
         - uses: EmbarkStudios/cargo-deny-action@v1
+          with:
+            rust-version: "1.85"

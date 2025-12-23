@@ -7,7 +7,7 @@ This demo provides a backend that registers the `org.freedesktop.impl.portal.des
 For testing purposes, the `$XDG_DESKTOP_PORTAL_DIR` environment variable can be set to instruct the frontend where to look for the portal and configuration files without installing them:
 
 ```shell
-XDG_DESKTOP_PORTAL_DIR=$PWD/backend-demo/data /usr/libexec/xdg-desktop-portal -v -r
+XDG_DESKTOP_PORTAL_DIR=$PWD/demo/backend/data /usr/libexec/xdg-desktop-portal -v -r
 ```
 
 Note that this will temporarily override your system's defaults, so other existing backends (GNOME, KDE, …) won't be used as fallbacks, and as a consequence interfaces not implemented by this demo backend won't be available for applications to use.
