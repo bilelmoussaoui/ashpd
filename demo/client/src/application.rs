@@ -214,7 +214,6 @@ impl Application {
     pub fn run() -> glib::ExitCode {
         tracing::info!("ASHPD Demo ({})", config::APP_ID);
         tracing::info!("Version: {} ({})", config::VERSION, config::PROFILE);
-        tracing::info!("Datadir: {}", config::PKGDATADIR);
 
         Self::default().run()
     }

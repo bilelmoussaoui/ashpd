@@ -1,6 +1,5 @@
 global_conf = configuration_data()
 global_conf.set_quoted('APP_ID', application_id)
-global_conf.set_quoted('PKGDATADIR', pkgdatadir)
 global_conf.set_quoted('PROFILE', profile)
 global_conf.set_quoted('VERSION', version + version_suffix)
 global_conf.set_quoted('GETTEXT_PACKAGE', gettext_package)
