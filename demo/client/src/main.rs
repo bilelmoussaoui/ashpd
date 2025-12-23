@@ -1,6 +1,13 @@
 mod application;
+
+#[cfg(not(cargo_build))]
 #[rustfmt::skip]
 mod config;
+
+#[cfg(cargo_build)]
+#[path = "config_cargo.rs"]
+mod config;
+
 mod portals;
 mod widgets;
 mod window;
@@ -32,6 +39,12 @@ fn main() -> glib::ExitCode {
 
     let res = gio::Resource::from_data(&glib::Bytes::from_static(GRESOURCE_BYTES)).unwrap();
     gio::resources_register(&res);
+
+    spawn_tokio_blocking(async move {
+        if let Err(err) = ashpd::register_host_app(config::APP_ID.try_into().unwrap()).await {
+            tracing::warn!("Failed to register host app: {err}");
+        }
+    });
 
     let mut args = std::env::args();
     if args.any(|x| x == "--replace") {

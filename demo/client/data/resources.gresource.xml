@@ -32,6 +32,10 @@
 
         <file compressed="true" alias="style.css">resources/style.css</file>
     </gresource>
+    <gresource prefix="/com/belmoussaoui/ashpd/demo/icons/scalable/apps/">
+        <file compressed="true" alias="com.belmoussaoui.ashpd.demo.svg">icons/com.belmoussaoui.ashpd.demo.svg</file>
+        <file compressed="true" alias="com.belmoussaoui.ashpd.demo.Devel.svg">icons/com.belmoussaoui.ashpd.demo.Devel.svg</file>
+    </gresource>
     <gresource prefix="/com/belmoussaoui/ashpd/demo/icons/16x16/actions/">
         <file compressed="true" preprocess="xml-stripblanks" alias="cross-symbolic.svg">resources/cross-symbolic.svg</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="portals-symbolic.svg">resources/portals-symbolic.svg</file>
