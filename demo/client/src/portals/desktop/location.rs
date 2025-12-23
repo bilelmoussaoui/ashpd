@@ -9,15 +9,14 @@ use ashpd::{
     WindowIdentifier,
 };
 use chrono::{DateTime, Local, TimeZone};
-use futures_util::{
-    future::{AbortHandle, Abortable},
-    lock::Mutex,
-    stream::StreamExt,
-};
+use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 use shumate::prelude::*;
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::{bridge_stream, spawn_tokio},
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -54,8 +53,8 @@ mod imp {
         #[template_child(id = "license")]
         pub map_license: TemplateChild<shumate::License>,
         pub marker: shumate::Marker,
-        pub session: Arc<Mutex<Option<Session<'static, LocationProxy<'static>>>>>,
-        pub abort_handle: Arc<Mutex<Option<AbortHandle>>>,
+        pub session: Arc<Mutex<Option<Session<LocationProxy>>>>,
+        pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
     }
 
     #[glib::object_subclass]
@@ -158,31 +157,45 @@ impl LocationPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         match locate(identifier, distance_threshold, time_threshold, accuracy).await {
             Ok((session, location_proxy)) => {
-                imp.session.lock().await.replace(session);
+                if let Some(old_session) = imp.session.lock().await.replace(session) {
+                    spawn_tokio(async move {
+                        let _ = old_session.close().await;
+                    })
+                    .await;
+                }
                 self.action_set_enabled("location.stop", true);
                 self.action_set_enabled("location.start", false);
-                loop {
-                    if imp.session.lock().await.is_none() {
-                        break;
+
+                let proxy: LocationProxy = location_proxy.clone();
+                let receiver = bridge_stream(async move { proxy.receive_location_updated().await });
+
+                let (sender, receiver_glib) = async_channel::unbounded();
+
+                let page = self.clone();
+                glib::spawn_future_local(async move {
+                    while let Ok(location) = receiver_glib.recv().await {
+                        page.on_location_updated(location);
                     }
+                });
 
-                    let (abort_handle, abort_registration) = AbortHandle::new_pair();
-                    let future = Abortable::new(
-                        async {
-                            let Ok(mut stream) = location_proxy.receive_location_updated().await
-                            else {
-                                return;
-                            };
-
-                            while let Some(location) = stream.next().await {
-                                self.on_location_updated(location);
+                let task_handle = crate::portals::RUNTIME.spawn(async move {
+                    let mut receiver = receiver;
+                    while let Some(result) = receiver.recv().await {
+                        match result {
+                            Ok(location) => {
+                                if sender.send(location).await.is_err() {
+                                    break;
+                                }
                             }
-                        },
-                        abort_registration,
-                    );
-                    imp.abort_handle.lock().await.replace(abort_handle);
-                    let _ = future.await;
-                }
+                            Err(err) => {
+                                tracing::error!("Location stream error: {err}");
+                                break;
+                            }
+                        }
+                    }
+                });
+
+                imp.task_handle.lock().await.replace(task_handle);
             }
             Err(err) => {
                 tracing::error!("Failed to locate: {err}");
@@ -197,11 +210,14 @@ impl LocationPage {
         let mut session_lock = self.imp().session.lock().await;
         self.action_set_enabled("location.stop", false);
         self.action_set_enabled("location.start", true);
-        if let Some(abort_handle) = self.imp().abort_handle.lock().await.take() {
-            abort_handle.abort();
+        if let Some(handle) = self.imp().task_handle.lock().await.take() {
+            handle.abort();
         }
         if let Some(session) = session_lock.take() {
-            let _ = session.close().await;
+            spawn_tokio(async move {
+                let _ = session.close().await;
+            })
+            .await;
         }
     }
 
@@ -240,20 +256,23 @@ impl LocationPage {
     }
 }
 
-pub async fn locate<'a>(
+pub async fn locate(
     identifier: Option<WindowIdentifier>,
     distance_threshold: u32,
     time_threshold: u32,
     accuracy: Accuracy,
-) -> ashpd::Result<(Session<'a, LocationProxy<'a>>, LocationProxy<'a>)> {
-    let proxy = LocationProxy::new().await?;
-    let session = proxy
-        .create_session(
-            Some(distance_threshold),
-            Some(time_threshold),
-            Some(accuracy),
-        )
-        .await?;
-    proxy.start(&session, identifier.as_ref()).await?;
-    Ok((session, proxy))
+) -> ashpd::Result<(Session<LocationProxy>, LocationProxy)> {
+    spawn_tokio(async move {
+        let proxy = LocationProxy::new().await?;
+        let session = proxy
+            .create_session(
+                Some(distance_threshold),
+                Some(time_threshold),
+                Some(accuracy),
+            )
+            .await?;
+        proxy.start(&session, identifier.as_ref()).await?;
+        ashpd::Result::Ok((session, proxy))
+    })
+    .await
 }

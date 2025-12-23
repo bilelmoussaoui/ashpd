@@ -2,7 +2,10 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{desktop::wallpaper, WindowIdentifier};
 use gtk::{gio, glib};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -89,13 +92,17 @@ impl WallpaperPage {
             _ => unimplemented!(),
         };
         let identifier = WindowIdentifier::from_native(&root).await;
-        match wallpaper::WallpaperRequest::default()
-            .identifier(identifier)
-            .show_preview(show_preview)
-            .set_on(set_on)
-            .build_uri(&uri)
-            .await
-        {
+        let response = spawn_tokio(async move {
+            wallpaper::WallpaperRequest::default()
+                .identifier(identifier)
+                .show_preview(show_preview)
+                .set_on(set_on)
+                .build_uri(&uri)
+                .await?;
+            ashpd::Result::Ok(())
+        })
+        .await;
+        match response {
             Err(err) => {
                 tracing::error!("Failed to set wallpaper: {err}");
                 self.error("Request to set a wallpaper failed");

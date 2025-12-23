@@ -10,21 +10,16 @@ use ashpd::{
     },
     WindowIdentifier,
 };
-use futures_util::{
-    future::{AbortHandle, Abortable},
-    lock::Mutex,
-    stream::{select_all, Stream, StreamExt},
+use futures_util::lock::Mutex;
+use gtk::{
+    glib::{self, clone},
+    prelude::*,
 };
-use gtk::{glib, prelude::*};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
-
-#[derive(Debug)]
-enum Event {
-    Activated(Activated),
-    Deactivated(Deactivated),
-    ShortcutsChanged(ShortcutsChanged),
-}
+use crate::{
+    portals::{bridge_stream, spawn_tokio},
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 #[derive(Debug, Clone)]
 pub struct RegisteredShortcut {
@@ -47,8 +42,8 @@ mod imp {
         #[template_child]
         pub rebind_count_label: TemplateChild<gtk::Label>,
         pub rebind_count: Arc<Mutex<u32>>,
-        pub session: Arc<Mutex<Option<Session<'static, GlobalShortcuts<'static>>>>>,
-        pub abort_handle: Arc<Mutex<Option<AbortHandle>>>,
+        pub session: Arc<Mutex<Option<Session<GlobalShortcuts>>>>,
+        pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
         pub triggers: Arc<Mutex<Vec<RegisteredShortcut>>>,
         pub activations: Arc<Mutex<HashSet<String>>>,
     }
@@ -118,51 +113,99 @@ impl GlobalShortcutsPage {
 
         match shortcuts {
             Some(shortcuts) => {
-                let global_shortcuts = GlobalShortcuts::new().await?;
-                let session = global_shortcuts.create_session().await?;
-                let request = global_shortcuts
-                    .bind_shortcuts(&session, &shortcuts[..], identifier.as_ref())
-                    .await?;
-                let response = request.response();
-                if let Err(e) = &response {
-                    self.error(&match e {
-                        ashpd::Error::Response(ResponseError::Cancelled) => "Cancelled".into(),
-                        ashpd::Error::Response(ResponseError::Other) => {
-                            "Other response error".into()
-                        }
-                        other => format!("{}", other),
-                    })
+                let result = spawn_tokio(async move {
+                    let global_shortcuts = GlobalShortcuts::new().await?;
+                    let session = global_shortcuts.create_session().await?;
+                    let request = global_shortcuts
+                        .bind_shortcuts(&session, &shortcuts[..], identifier.as_ref())
+                        .await?;
+                    let shortcuts_data = request
+                        .response()
+                        .map(|resp| {
+                            resp.shortcuts()
+                                .iter()
+                                .map(|s: &Shortcut| RegisteredShortcut {
+                                    id: s.id().to_owned(),
+                                    activation: s.trigger_description().to_owned(),
+                                })
+                                .collect::<Vec<_>>()
+                        })
+                        .map_err(|e| match e {
+                            ashpd::Error::Response(ResponseError::Cancelled) => "Cancelled",
+                            ashpd::Error::Response(ResponseError::Other) => "Other response error",
+                            _ => "Unknown error",
+                        });
+                    ashpd::Result::Ok((global_shortcuts, session, shortcuts_data))
+                })
+                .await?;
+                let (global_shortcuts, session, shortcuts_data) = result;
+
+                if let Err(e) = &shortcuts_data {
+                    self.error(e);
                 };
-                imp.activations_group.set_visible(response.is_ok());
-                self.action_set_enabled("global_shortcuts.stop", response.is_ok());
-                self.action_set_enabled("global_shortcuts.start_session", !response.is_ok());
-                self.imp().shortcuts.set_editable(!response.is_ok());
-                match response {
-                    Ok(resp) => {
-                        let triggers: Vec<_> = resp
-                            .shortcuts()
-                            .iter()
-                            .map(|s: &Shortcut| RegisteredShortcut {
-                                id: s.id().to_owned(),
-                                activation: s.trigger_description().to_owned(),
-                            })
-                            .collect();
+                imp.activations_group.set_visible(shortcuts_data.is_ok());
+                self.action_set_enabled("global_shortcuts.stop", shortcuts_data.is_ok());
+                self.action_set_enabled("global_shortcuts.start_session", shortcuts_data.is_err());
+                self.imp().shortcuts.set_editable(shortcuts_data.is_err());
+                match shortcuts_data {
+                    Ok(triggers) => {
                         *imp.triggers.lock().await = triggers;
                         self.display_activations().await;
                         self.set_rebind_count(Some(0));
-                        imp.session.lock().await.replace(session);
-                        loop {
-                            if imp.session.lock().await.is_none() {
-                                break;
-                            }
 
-                            let (abort_handle, abort_registration) = AbortHandle::new_pair();
-                            let future = Abortable::new(
-                                self.track_incoming_events(&global_shortcuts),
-                                abort_registration,
-                            );
-                            imp.abort_handle.lock().await.replace(abort_handle);
-                            let _ = future.await;
+                        if let Some(old_session) = imp.session.lock().await.replace(session) {
+                            spawn_tokio(async move {
+                                let _ = old_session.close().await;
+                            })
+                            .await;
+                        }
+
+                        let (activated_sender, activated_rx) = async_channel::unbounded();
+                        let (deactivated_sender, deactivated_rx) = async_channel::unbounded();
+                        let (changed_sender, changed_rx) = async_channel::unbounded();
+
+                        glib::spawn_future_local(clone!(
+                            #[weak(rename_to = page)]
+                            self,
+                            async move {
+                                while let Ok(activation) = activated_rx.recv().await {
+                                    page.on_activated(activation).await;
+                                }
+                            }
+                        ));
+
+                        glib::spawn_future_local(clone!(
+                            #[weak(rename_to = page)]
+                            self,
+                            async move {
+                                while let Ok(deactivation) = deactivated_rx.recv().await {
+                                    page.on_deactivated(deactivation).await;
+                                }
+                            }
+                        ));
+
+                        glib::spawn_future_local(clone!(
+                            #[weak(rename_to = page)]
+                            self,
+                            async move {
+                                while let Ok(change) = changed_rx.recv().await {
+                                    page.on_changed(change).await;
+                                }
+                            }
+                        ));
+
+                        let task_handle = crate::portals::RUNTIME.spawn(async move {
+                            Self::track_incoming_events_task(
+                                global_shortcuts,
+                                activated_sender,
+                                deactivated_sender,
+                                changed_sender,
+                            )
+                            .await;
+                        });
+                        if let Some(old_handle) = imp.task_handle.lock().await.replace(task_handle)
+                        {
+                            old_handle.abort();
                         }
                     }
                     Err(e) => {
@@ -186,37 +229,65 @@ impl GlobalShortcutsPage {
         }
     }
 
-    async fn track_incoming_events(&self, global_shortcuts: &GlobalShortcuts<'_>) {
-        let Ok(activated_stream) = global_shortcuts.receive_activated().await else {
-            return;
-        };
-        let Ok(deactivated_stream) = global_shortcuts.receive_deactivated().await else {
-            return;
-        };
-        let Ok(changed_stream) = global_shortcuts.receive_shortcuts_changed().await else {
-            return;
-        };
+    async fn track_incoming_events_task(
+        global_shortcuts: GlobalShortcuts,
+        activated_sender: async_channel::Sender<Activated>,
+        deactivated_sender: async_channel::Sender<Deactivated>,
+        changed_sender: async_channel::Sender<ShortcutsChanged>,
+    ) {
+        let gs = Arc::new(global_shortcuts);
+        let gs1 = gs.clone();
+        let gs2 = gs.clone();
+        let gs3 = gs;
 
-        let bact: Box<dyn Stream<Item = Event> + Unpin> =
-            Box::new(activated_stream.map(Event::Activated));
-        let bdeact: Box<dyn Stream<Item = Event> + Unpin> =
-            Box::new(deactivated_stream.map(Event::Deactivated));
-        let bchg: Box<dyn Stream<Item = Event> + Unpin> =
-            Box::new(changed_stream.map(Event::ShortcutsChanged));
+        let mut activated_receiver = bridge_stream(async move { gs1.receive_activated().await });
+        let mut deactivated_receiver =
+            bridge_stream(async move { gs2.receive_deactivated().await });
+        let mut changed_receiver =
+            bridge_stream(async move { gs3.receive_shortcuts_changed().await });
 
-        let mut events = select_all([bact, bdeact, bchg]);
-
-        while let Some(event) = events.next().await {
-            match event {
-                Event::Activated(activation) => {
-                    self.on_activated(activation).await;
+        loop {
+            tokio::select! {
+                Some(result) = activated_receiver.recv() => {
+                    match result {
+                        Ok(activation) => {
+                            if activated_sender.send(activation).await.is_err() {
+                                break;
+                            }
+                        }
+                        Err(err) => {
+                            tracing::error!("Activated stream error: {err}");
+                            break;
+                        }
+                    }
                 }
-                Event::Deactivated(deactivation) => {
-                    self.on_deactivated(deactivation).await;
+                Some(result) = deactivated_receiver.recv() => {
+                    match result {
+                        Ok(deactivation) => {
+                            if deactivated_sender.send(deactivation).await.is_err() {
+                                break;
+                            }
+                        }
+                        Err(err) => {
+                            tracing::error!("Deactivated stream error: {err}");
+                            break;
+                        }
+                    }
                 }
-                Event::ShortcutsChanged(change) => {
-                    self.on_changed(change).await;
+                Some(result) = changed_receiver.recv() => {
+                    match result {
+                        Ok(change) => {
+                            if changed_sender.send(change).await.is_err() {
+                                break;
+                            }
+                        }
+                        Err(err) => {
+                            tracing::error!("Changed stream error: {err}");
+                            break;
+                        }
+                    }
                 }
+                else => break,
             }
         }
     }
@@ -227,12 +298,15 @@ impl GlobalShortcutsPage {
         self.action_set_enabled("global_shortcuts.start_session", true);
         self.imp().shortcuts.set_editable(true);
 
-        if let Some(abort_handle) = self.imp().abort_handle.lock().await.take() {
-            abort_handle.abort();
+        if let Some(handle) = self.imp().task_handle.lock().await.take() {
+            handle.abort();
         }
 
         if let Some(session) = imp.session.lock().await.take() {
-            let _ = session.close().await;
+            spawn_tokio(async move {
+                let _ = session.close().await;
+            })
+            .await;
         }
         imp.activations_group.set_visible(false);
         self.set_rebind_count(None);

@@ -1,4 +1,4 @@
-use std::os::fd::{AsFd, BorrowedFd};
+use std::os::fd::AsFd;
 
 use adw::subclass::prelude::*;
 use ashpd::{
@@ -7,7 +7,10 @@ use ashpd::{
 };
 use gtk::{gio, glib, prelude::*};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -81,7 +84,7 @@ impl PrintPage {
         let file = std::fs::File::open(path).unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 
-        match print(identifier, &title, file.as_fd(), modal).await {
+        match print(identifier, &title, file, modal).await {
             Ok(_) => {
                 self.success("Print request was successful");
             }
@@ -97,26 +100,35 @@ impl PrintPage {
 async fn print(
     identifier: Option<WindowIdentifier>,
     title: &str,
-    file: BorrowedFd<'_>,
+    file: std::fs::File,
     modal: bool,
 ) -> ashpd::Result<()> {
-    let proxy = PrintProxy::new().await?;
+    let owned_title = title.to_owned();
+    spawn_tokio(async move {
+        let proxy = PrintProxy::new().await?;
 
-    let out = proxy
-        .prepare_print(
-            identifier.as_ref(),
-            title,
-            Settings::default(),
-            PageSetup::default(),
-            None,
-            modal,
-        )
-        .await?
-        .response()?;
+        let out = proxy
+            .prepare_print(
+                identifier.as_ref(),
+                &owned_title,
+                Settings::default(),
+                PageSetup::default(),
+                None,
+                modal,
+            )
+            .await?
+            .response()?;
 
-    proxy
-        .print(identifier.as_ref(), title, &file, Some(out.token), modal)
-        .await?;
-
+        proxy
+            .print(
+                identifier.as_ref(),
+                &owned_title,
+                &file.as_fd(),
+                Some(out.token),
+                modal,
+            )
+            .await
+    })
+    .await?;
     Ok(())
 }

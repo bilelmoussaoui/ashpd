@@ -9,10 +9,13 @@ use ashpd::{
     enumflags2::BitFlags,
     WindowIdentifier,
 };
-use futures_util::{lock::Mutex, stream::StreamExt};
+use futures_util::lock::Mutex;
 use gtk::{glib, prelude::*};
 
-use crate::widgets::{PortalPage, PortalPageImpl};
+use crate::{
+    portals::{bridge_stream, spawn_tokio},
+    widgets::{PortalPage, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -32,7 +35,8 @@ mod imp {
         pub user_switch_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub suspend_check: TemplateChild<gtk::CheckButton>,
-        pub session: Arc<Mutex<Option<Session<'static, InhibitProxy<'static>>>>>,
+        pub session: Arc<Mutex<Option<Session<InhibitProxy>>>>,
+        pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
     }
 
     #[glib::object_subclass]
@@ -100,35 +104,56 @@ impl InhibitPage {
         let root = self.native().unwrap();
         let imp = self.imp();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let reason = imp.reason.text();
-        let flags = self.inhibit_flags();
 
-        let proxy = InhibitProxy::new().await?;
-        let monitor = proxy.create_monitor(identifier.as_ref()).await?;
+        let monitor = spawn_tokio(async move {
+            let proxy = InhibitProxy::new().await?;
+            let monitor = proxy.create_monitor(identifier.as_ref()).await?;
+            ashpd::Result::Ok(monitor)
+        })
+        .await?;
 
-        imp.session.lock().await.replace(monitor);
+        if let Some(old_session) = imp.session.lock().await.replace(monitor) {
+            spawn_tokio(async move {
+                let _ = old_session.close().await;
+            })
+            .await;
+        }
         self.action_set_enabled("inhibit.stop", true);
         self.action_set_enabled("inhibit.start_session", false);
 
-        let mut state = proxy.receive_state_changed().await?;
-        match state
-            .next()
-            .await
-            .expect("Stream exhausted")
-            .session_state()
-        {
-            SessionState::Running => tracing::info!("Session running"),
-            SessionState::QueryEnd => {
-                tracing::info!("Session: query end");
-                proxy.inhibit(identifier.as_ref(), flags, &reason).await?;
-                if let Some(session) = imp.session.lock().await.as_ref() {
-                    proxy.query_end_response(session).await?;
+        let receiver = bridge_stream(async move {
+            let proxy = InhibitProxy::new().await?;
+            proxy.receive_state_changed().await
+        });
+
+        let (sender, receiver_glib) = async_channel::unbounded();
+
+        let page = self.clone();
+        glib::spawn_future_local(async move {
+            while let Ok(state_event) = receiver_glib.recv().await {
+                page.on_state_changed(state_event).await;
+            }
+        });
+
+        let task_handle = crate::portals::RUNTIME.spawn(async move {
+            let mut receiver = receiver;
+            while let Some(result) = receiver.recv().await {
+                match result {
+                    Ok(state_event) => {
+                        if sender.send(state_event).await.is_err() {
+                            break;
+                        }
+                    }
+                    Err(err) => {
+                        tracing::error!("State change stream error: {err}");
+                        break;
+                    }
                 }
             }
-            SessionState::Ending => {
-                tracing::info!("Ending the session");
-            }
-        }
+        });
+
+        imp.task_handle.lock().await.replace(task_handle);
+
         Ok(())
     }
 
@@ -136,8 +161,50 @@ impl InhibitPage {
         let imp = self.imp();
         self.action_set_enabled("inhibit.stop", false);
         self.action_set_enabled("inhibit.start_session", true);
+        if let Some(handle) = imp.task_handle.lock().await.take() {
+            handle.abort();
+        }
         if let Some(session) = imp.session.lock().await.take() {
-            let _ = session.close().await;
+            spawn_tokio(async move {
+                let _ = session.close().await;
+            })
+            .await;
+        }
+    }
+
+    async fn on_state_changed(&self, state_event: ashpd::desktop::inhibit::InhibitState) {
+        let imp = self.imp();
+        let root = self.native().unwrap();
+        let identifier = WindowIdentifier::from_native(&root).await;
+        let reason = imp.reason.text().to_string();
+        let flags = self.inhibit_flags();
+
+        match state_event.session_state() {
+            SessionState::Running => {
+                tracing::info!("Session running");
+            }
+            SessionState::QueryEnd => {
+                tracing::info!("Session: query end");
+
+                let session = imp.session.clone();
+                let result = spawn_tokio(async move {
+                    let proxy = InhibitProxy::new().await?;
+                    proxy.inhibit(identifier.as_ref(), flags, &reason).await?;
+
+                    if let Some(session) = session.lock().await.as_ref() {
+                        proxy.query_end_response(session).await?;
+                    }
+                    ashpd::Result::Ok(())
+                })
+                .await;
+
+                if let Err(err) = result {
+                    tracing::error!("Failed to handle query end: {err}");
+                }
+            }
+            SessionState::Ending => {
+                tracing::info!("Ending the session");
+            }
         }
     }
 }

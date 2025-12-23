@@ -61,7 +61,7 @@ impl Clipboard {
     ///
     /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-requestclipboard).
     #[doc(alias = "RequestClipboard")]
-    pub async fn request(&self, session: &Session<'_, RemoteDesktop>) -> Result<()> {
+    pub async fn request(&self, session: &Session<RemoteDesktop>) -> Result<()> {
         let options: HashMap<&str, Value<'_>> = HashMap::default();
         self.0
             .call_method("RequestClipboard", &(session, options))
@@ -75,7 +75,7 @@ impl Clipboard {
     #[doc(alias = "SetSelection")]
     pub async fn set_selection(
         &self,
-        session: &Session<'_, RemoteDesktop>,
+        session: &Session<RemoteDesktop>,
         mime_types: &[&str],
     ) -> Result<()> {
         let options = SetSelectionOptions { mime_types };
@@ -92,7 +92,7 @@ impl Clipboard {
     #[doc(alias = "SelectionWrite")]
     pub async fn selection_write(
         &self,
-        session: &Session<'_, RemoteDesktop>,
+        session: &Session<RemoteDesktop>,
         serial: u32,
     ) -> Result<OwnedFd> {
         let fd = self
@@ -108,7 +108,7 @@ impl Clipboard {
     #[doc(alias = "SelectionWriteDone")]
     pub async fn selection_write_done(
         &self,
-        session: &Session<'_, RemoteDesktop>,
+        session: &Session<RemoteDesktop>,
         serial: u32,
         success: bool,
     ) -> Result<()> {
@@ -123,7 +123,7 @@ impl Clipboard {
     #[doc(alias = "SelectionRead")]
     pub async fn selection_read(
         &self,
-        session: &Session<'_, RemoteDesktop>,
+        session: &Session<RemoteDesktop>,
         mime_type: &str,
     ) -> Result<OwnedFd> {
         let fd = self
@@ -140,7 +140,7 @@ impl Clipboard {
     #[doc(alias = "SelectionOwnerChanged")]
     pub async fn receive_selection_owner_changed(
         &self,
-    ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop>, SelectionOwnerChanged)>> {
+    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, SelectionOwnerChanged)>> {
         let connection = self.connection().clone();
         Ok(self
             .0
@@ -163,7 +163,7 @@ impl Clipboard {
     #[doc(alias = "SelectionTransfer")]
     pub async fn receive_selection_transfer(
         &self,
-    ) -> Result<impl Stream<Item = (Session<'_, RemoteDesktop>, String, u32)>> {
+    ) -> Result<impl Stream<Item = (Session<RemoteDesktop>, String, u32)>> {
         let connection = self.connection().clone();
         Ok(self
             .0

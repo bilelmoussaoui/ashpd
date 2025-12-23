@@ -2,7 +2,10 @@ use adw::subclass::prelude::*;
 use ashpd::{desktop::account::UserInformation, WindowIdentifier};
 use gtk::{gdk, glib, prelude::*};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -58,10 +61,14 @@ impl AccountPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         let reason = imp.reason_row.text();
         self.info("Fetching user information...");
-        let request = UserInformation::request()
-            .identifier(identifier)
-            .reason(&*reason);
-        match request.send().await.and_then(|r| r.response()) {
+        let response = spawn_tokio(async move {
+            let request = UserInformation::request()
+                .identifier(identifier)
+                .reason(&*reason);
+            request.send().await.and_then(|r| r.response())
+        })
+        .await;
+        match response {
             Ok(user_info) => {
                 self.success("User information request was successful");
                 imp.id_label.set_text(user_info.id());

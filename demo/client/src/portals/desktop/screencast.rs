@@ -15,7 +15,10 @@ use ashpd::{
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 
-use crate::widgets::{CameraPaintable, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{CameraPaintable, PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -29,7 +32,7 @@ mod imp {
         pub response_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub multiple_switch: TemplateChild<adw::SwitchRow>,
-        pub session: Arc<Mutex<Option<Session<'static, Screencast<'static>>>>>,
+        pub session: Arc<Mutex<Option<Session<Screencast>>>>,
         #[template_child]
         pub monitor_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
@@ -177,7 +180,13 @@ impl ScreenCastPage {
                 });
 
                 imp.response_group.set_visible(true);
-                imp.session.lock().await.replace(session);
+
+                if let Some(old_session) = imp.session.lock().await.replace(session) {
+                    spawn_tokio(async move {
+                        let _ = old_session.close().await;
+                    })
+                    .await;
+                }
             }
             Err(err) => {
                 tracing::error!("Failed to start screen cast session: {err}");
@@ -194,7 +203,10 @@ impl ScreenCastPage {
         self.action_set_enabled("screencast.stop", false);
 
         if let Some(session) = imp.session.lock().await.take() {
-            let _ = session.close().await;
+            spawn_tokio(async move {
+                let _ = session.close().await;
+            })
+            .await;
         }
         if let Some(mut child) = imp.streams_carousel.first_child() {
             loop {
@@ -217,9 +229,7 @@ impl ScreenCastPage {
         imp.response_group.set_visible(false);
     }
 
-    async fn screencast(
-        &self,
-    ) -> ashpd::Result<(Vec<Stream>, OwnedFd, Session<'static, Screencast<'static>>)> {
+    async fn screencast(&self) -> ashpd::Result<(Vec<Stream>, OwnedFd, Session<Screencast>)> {
         let imp = self.imp();
         let sources = self.selected_sources();
         let cursor_mode = self.selected_cursor_mode();
@@ -229,38 +239,56 @@ impl ScreenCastPage {
         let root = self.native().unwrap();
 
         let identifier = WindowIdentifier::from_native(&root).await;
+        let prev_token = imp
+            .session_token
+            .lock()
+            .await
+            .as_deref()
+            .map(ToOwned::to_owned);
 
-        let proxy = Screencast::new().await?;
-        let session = proxy.create_session().await?;
-        let mut token = imp.session_token.lock().await;
-        proxy
-            .select_sources(
-                &session,
-                cursor_mode,
-                sources,
-                multiple,
-                token.as_deref(),
-                persist_mode,
-            )
-            .await?;
         self.info("Starting a screen cast session");
-        let response = proxy
-            .start(&session, identifier.as_ref())
-            .await?
-            .response()?;
-        if let Some(t) = response.restore_token() {
-            token.replace(t.to_owned());
+        let (streams, fd, session, new_token) = spawn_tokio(async move {
+            let proxy = Screencast::new().await?;
+            let session = proxy.create_session().await?;
+            proxy
+                .select_sources(
+                    &session,
+                    cursor_mode,
+                    sources,
+                    multiple,
+                    prev_token.as_deref(),
+                    persist_mode,
+                )
+                .await?;
+            let response = proxy
+                .start(&session, identifier.as_ref())
+                .await?
+                .response()?;
+
+            let fd = proxy.open_pipe_wire_remote(&session).await?;
+            ashpd::Result::Ok((
+                response.streams().to_owned(),
+                fd,
+                session,
+                response.restore_token().map(ToOwned::to_owned),
+            ))
+        })
+        .await?;
+        if let Some(t) = new_token {
+            imp.session_token.lock().await.replace(t.to_owned());
         }
-        let fd = proxy.open_pipe_wire_remote(&session).await?;
-        Ok((response.streams().to_owned(), fd, session))
+        Ok((streams, fd, session))
     }
 }
 
 pub async fn available_types() -> ashpd::Result<(BitFlags<CursorMode>, BitFlags<SourceType>)> {
-    let proxy = Screencast::new().await?;
+    spawn_tokio(async move {
+        let proxy = Screencast::new().await?;
 
-    let cursor_modes = proxy.available_cursor_modes().await?;
-    let source_types = proxy.available_source_types().await?;
+        let cursor_modes = proxy.available_cursor_modes().await?;
+        let source_types = proxy.available_source_types().await?;
 
-    Ok((cursor_modes, source_types))
+        ashpd::Result::Ok((cursor_modes, source_types))
+    })
+    .await
 }

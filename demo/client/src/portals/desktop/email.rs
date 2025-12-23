@@ -8,7 +8,7 @@ use gtk::{
 };
 
 use crate::{
-    portals::{is_empty, split_comma},
+    portals::{is_empty, spawn_tokio, split_comma},
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
@@ -136,22 +136,29 @@ impl EmailPage {
         let cc = is_empty(imp.cc_entry.text()).map(split_comma);
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-
-        let mut request = EmailRequest::default()
-            .identifier(identifier)
-            .subject(subject.as_deref())
-            .addresses::<Vec<_>, String>(addresses)
-            .cc::<Vec<_>, String>(cc)
-            .bcc::<Vec<_>, String>(bcc)
-            .body(body.as_deref());
         let attachments = self.attachments();
-        if !attachments.is_empty() {
-            // TODO: add a request.set_attachments helper method
-            attachments.into_iter().for_each(|attachment| {
-                request.add_attachment(OwnedFd::from(attachment));
-            });
-        }
-        match request.send().await {
+
+        let response = spawn_tokio(async move {
+            let mut request = EmailRequest::default()
+                .identifier(identifier)
+                .subject(subject.as_deref())
+                .addresses::<Vec<_>, String>(addresses)
+                .cc::<Vec<_>, String>(cc)
+                .bcc::<Vec<_>, String>(bcc)
+                .body(body.as_deref());
+            if !attachments.is_empty() {
+                // TODO: add a request.set_attachments helper method
+                attachments.into_iter().for_each(|attachment| {
+                    request.add_attachment(OwnedFd::from(attachment));
+                });
+            }
+            request.send().await?;
+
+            ashpd::Result::Ok(())
+        })
+        .await;
+
+        match response {
             Ok(_) => {
                 self.success("Compose an email request was successful");
             }

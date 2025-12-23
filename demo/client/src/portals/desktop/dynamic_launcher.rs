@@ -17,6 +17,7 @@ use gtk::{
 
 use crate::{
     config,
+    portals::spawn_tokio,
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
@@ -124,9 +125,15 @@ mod desktop_file_row {
 
         async fn load_desktop_file(&self, desktop_id: &str) -> ashpd::Result<()> {
             let imp = self.imp();
-            let proxy = DynamicLauncherProxy::new().await?;
-            let entry = proxy.desktop_entry(desktop_id).await?;
-            let launcher_icon = proxy.icon(desktop_id).await?;
+            let owned_desktop_id = desktop_id.to_owned();
+            let (entry, launcher_icon) = spawn_tokio(async move {
+                let proxy = DynamicLauncherProxy::new().await?;
+                let entry = proxy.desktop_entry(&owned_desktop_id).await?;
+                let launcher_icon = proxy.icon(&owned_desktop_id).await?;
+                ashpd::Result::Ok((entry, launcher_icon))
+            })
+            .await?;
+
             imp.entry.set(entry).unwrap();
             imp.launcher_icon.set(launcher_icon).unwrap();
             Ok(())
@@ -368,7 +375,6 @@ impl DynamicLauncherPage {
 
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let proxy = DynamicLauncherProxy::new().await?;
 
         let launcher_name = imp.name_row.text();
         let modal = imp.modal_switch.is_active();
@@ -399,10 +405,15 @@ impl DynamicLauncherPage {
             .unwrap();
         let icon = Icon::Bytes(data.to_vec());
 
-        let response = proxy
-            .prepare_install(identifier.as_ref(), &launcher_name, icon, options)
-            .await?
-            .response()?;
+        let response = spawn_tokio(async move {
+            let proxy = DynamicLauncherProxy::new().await?;
+
+            proxy
+                .prepare_install(identifier.as_ref(), &launcher_name, icon, options)
+                .await?
+                .response()
+        })
+        .await?;
 
         imp.response_group.set_visible(true);
         imp.token_label.set_text(response.token());
@@ -420,10 +431,15 @@ impl DynamicLauncherPage {
             .buffer()
             .text(&start_iter, &end_iter, true);
 
-        proxy
-            .install(response.token(), &desktop_id, &desktop_entry)
-            .await?;
+        let owned_desktop_id = desktop_id.to_owned();
+        spawn_tokio(async move {
+            let proxy = DynamicLauncherProxy::new().await?;
 
+            proxy
+                .install(response.token(), &owned_desktop_id, &desktop_entry)
+                .await
+        })
+        .await?;
         imp.installed_apps_cache.append(&desktop_id);
         let has_items = imp.installed_apps_cache.n_items() != 0;
         imp.installed_apps.set_visible(has_items);
@@ -433,8 +449,12 @@ impl DynamicLauncherPage {
 
     async fn uninstall(&self, desktop_id: &str) -> ashpd::Result<()> {
         let imp = self.imp();
-        let proxy = DynamicLauncherProxy::new().await?;
-        proxy.uninstall(desktop_id).await?;
+        let owned_desktop_id = desktop_id.to_owned();
+        spawn_tokio(async move {
+            let proxy = DynamicLauncherProxy::new().await?;
+            proxy.uninstall(&owned_desktop_id).await
+        })
+        .await?;
 
         let model = &imp.installed_apps_cache;
         let mut index = 0;

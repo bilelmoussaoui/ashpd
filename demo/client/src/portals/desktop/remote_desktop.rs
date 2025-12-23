@@ -13,7 +13,10 @@ use ashpd::{
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -24,7 +27,7 @@ mod imp {
     pub struct RemoteDesktopPage {
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
-        pub session: Arc<Mutex<Option<Session<'static, RemoteDesktop<'static>>>>>,
+        pub session: Arc<Mutex<Option<Session<RemoteDesktop>>>>,
         #[template_child]
         pub screencast_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
@@ -194,7 +197,13 @@ impl RemoteDesktopPage {
         match self.remote().await {
             Ok((_selected_devices, _streams, session)) => {
                 imp.response_group.set_visible(true);
-                imp.session.lock().await.replace(session);
+
+                if let Some(old_session) = imp.session.lock().await.replace(session) {
+                    spawn_tokio(async move {
+                        let _ = old_session.close().await;
+                    })
+                    .await;
+                }
                 self.action_set_enabled("remote_desktop.start", false);
                 self.action_set_enabled("remote_desktop.stop", true);
                 self.success("Remote desktop session started successfully");
@@ -213,18 +222,17 @@ impl RemoteDesktopPage {
 
         let imp = self.imp();
         if let Some(session) = imp.session.lock().await.take() {
-            let _ = session.close().await;
+            spawn_tokio(async move {
+                let _ = session.close().await;
+            })
+            .await;
         }
         imp.response_group.set_visible(false);
     }
 
     async fn remote(
         &self,
-    ) -> ashpd::Result<(
-        BitFlags<DeviceType>,
-        Vec<Stream>,
-        Session<'static, RemoteDesktop<'static>>,
-    )> {
+    ) -> ashpd::Result<(BitFlags<DeviceType>, Vec<Stream>, Session<RemoteDesktop>)> {
         let imp = self.imp();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -234,45 +242,60 @@ impl RemoteDesktopPage {
         let sources = self.selected_sources();
         let devices = self.selected_devices();
         let persist_mode = self.selected_persist_mode();
-        let mut token = imp.session_token.lock().await;
-
-        let proxy = RemoteDesktop::new().await?;
-        let session = proxy.create_session().await?;
-        if is_screencast {
-            let screencast_proxy = Screencast::new().await?;
-            screencast_proxy
-                .select_sources(
-                    &session,
-                    cursor_mode,
-                    sources,
-                    multiple_sources,
-                    None,
-                    PersistMode::default(),
-                )
-                .await?;
-        }
-        proxy
-            .select_devices(&session, devices, token.as_deref(), persist_mode)
-            .await?;
+        let prev_token = imp
+            .session_token
+            .lock()
+            .await
+            .as_deref()
+            .map(ToOwned::to_owned);
 
         self.info("Starting a remote desktop session");
-        let response = proxy
-            .start(&session, identifier.as_ref())
-            .await?
-            .response()?;
-        if let Some(t) = response.restore_token() {
-            token.replace(t.to_owned());
+        let (response_devices, response_streams, session, new_token) = spawn_tokio(async move {
+            let proxy = RemoteDesktop::new().await?;
+            let session = proxy.create_session().await?;
+            if is_screencast {
+                let screencast_proxy = Screencast::new().await?;
+                screencast_proxy
+                    .select_sources(
+                        &session,
+                        cursor_mode,
+                        sources,
+                        multiple_sources,
+                        None,
+                        PersistMode::default(),
+                    )
+                    .await?;
+            }
+            proxy
+                .select_devices(&session, devices, prev_token.as_deref(), persist_mode)
+                .await?;
+
+            let response = proxy
+                .start(&session, identifier.as_ref())
+                .await?
+                .response()?;
+
+            ashpd::Result::Ok((
+                response.devices(),
+                response.streams().unwrap_or_default().to_owned(),
+                session,
+                response.restore_token().map(ToOwned::to_owned),
+            ))
+        })
+        .await?;
+
+        if let Some(t) = new_token {
+            imp.session_token.lock().await.replace(t.to_owned());
         }
 
-        Ok((
-            response.devices(),
-            response.streams().unwrap_or_default().to_owned(),
-            session,
-        ))
+        Ok((response_devices, response_streams, session))
     }
 }
 
 pub async fn available_devices() -> ashpd::Result<BitFlags<DeviceType>> {
-    let proxy = RemoteDesktop::new().await?;
-    proxy.available_device_types().await
+    spawn_tokio(async {
+        let proxy = RemoteDesktop::new().await?;
+        proxy.available_device_types().await
+    })
+    .await
 }

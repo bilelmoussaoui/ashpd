@@ -193,19 +193,19 @@ struct LocationInner {
 /// location.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Location`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Location.html).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[doc(alias = "org.freedesktop.portal.Location")]
-pub struct LocationProxy<'a>(Proxy<'a>);
+pub struct LocationProxy(Proxy<'static>);
 
-impl<'a> LocationProxy<'a> {
+impl LocationProxy {
     /// Create a new instance of [`LocationProxy`].
-    pub async fn new() -> Result<LocationProxy<'a>, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Location").await?;
         Ok(Self(proxy))
     }
 
     /// Create a new instance of [`LocationProxy`].
-    pub async fn with_connection(connection: zbus::Connection) -> Result<LocationProxy<'a>, Error> {
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Location")
                 .await?;
@@ -242,7 +242,7 @@ impl<'a> LocationProxy<'a> {
         distance_threshold: Option<u32>,
         time_threshold: Option<u32>,
         accuracy: Option<Accuracy>,
-    ) -> Result<Session<'a, Self>, Error> {
+    ) -> Result<Session<Self>, Error> {
         let options = CreateSessionOptions {
             distance_threshold,
             time_threshold,
@@ -276,7 +276,7 @@ impl<'a> LocationProxy<'a> {
     #[doc(alias = "xdp_portal_location_monitor_start")]
     pub async fn start(
         &self,
-        session: &Session<'_, Self>,
+        session: &Session<Self>,
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<()>, Error> {
         let options = SessionStartOptions::default();
@@ -291,11 +291,11 @@ impl<'a> LocationProxy<'a> {
     }
 }
 
-impl crate::Sealed for LocationProxy<'_> {}
-impl SessionPortal for LocationProxy<'_> {}
+impl crate::Sealed for LocationProxy {}
+impl SessionPortal for LocationProxy {}
 
-impl<'a> std::ops::Deref for LocationProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for LocationProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

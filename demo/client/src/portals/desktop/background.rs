@@ -3,7 +3,7 @@ use ashpd::{desktop::background::Background, WindowIdentifier};
 use gtk::{glib, prelude::*};
 
 use crate::{
-    portals::is_empty,
+    portals::{is_empty, spawn_tokio},
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 mod imp {
@@ -71,16 +71,20 @@ impl BackgroundPage {
                 .collect::<Vec<String>>()
         });
 
-        let request = Background::request()
-            .identifier(identifier)
-            .reason(&*reason)
-            .auto_start(auto_start)
-            .dbus_activatable(dbus_activatable)
-            .command::<Vec<_>, String>(command);
-
         self.info("Requesting background access");
 
-        match request.send().await.and_then(|r| r.response()) {
+        let response = spawn_tokio(async move {
+            let request = Background::request()
+                .identifier(identifier)
+                .reason(&*reason)
+                .auto_start(auto_start)
+                .dbus_activatable(dbus_activatable)
+                .command::<Vec<_>, String>(command);
+            request.send().await.and_then(|r| r.response())
+        })
+        .await;
+
+        match response {
             Ok(response) => {
                 imp.response_group.set_visible(true);
                 imp.auto_start_label

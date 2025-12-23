@@ -15,10 +15,13 @@ use ashpd::{
     zbus::zvariant::{Fd, OwnedFd},
     WindowIdentifier,
 };
-use futures_util::{lock::Mutex, StreamExt};
+use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::{bridge_stream, spawn_tokio},
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use std::cell::RefCell;
@@ -33,8 +36,8 @@ mod imp {
         #[template_child]
         pub usb_devices: TemplateChild<adw::PreferencesGroup>,
         rows: RefCell<HashMap<String, super::row::UsbDeviceRow>>,
-        pub session: Arc<Mutex<Option<Session<'static, UsbProxy<'static>>>>>,
-        pub event_source: Arc<Mutex<Option<glib::SourceId>>>,
+        pub session: Arc<Mutex<Option<Session<UsbProxy>>>>,
+        pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
     }
 
     impl UsbPage {
@@ -97,9 +100,12 @@ mod imp {
             let page = self.obj();
 
             self.clear_devices();
-
-            let usb = UsbProxy::new().await?;
-            let devices = usb.enumerate_devices().await?;
+            let devices = spawn_tokio(async move {
+                let usb = UsbProxy::new().await?;
+                let devices = usb.enumerate_devices().await?;
+                ashpd::Result::Ok(devices)
+            })
+            .await?;
             for device in devices {
                 self.add_device_row(&page, &device);
             }
@@ -122,33 +128,74 @@ mod imp {
         }
 
         pub(super) async fn start_session(&self) -> ashpd::Result<()> {
-            let usb = UsbProxy::new().await?;
-            let session = usb.create_session().await?;
-            self.session.lock().await.replace(session);
+            let (proxy, session) = spawn_tokio(async move {
+                let usb = UsbProxy::new().await?;
+                let session = usb.create_session().await?;
+                ashpd::Result::Ok((usb, session))
+            })
+            .await?;
+            if let Some(old_session) = self.session.lock().await.replace(session) {
+                spawn_tokio(async move {
+                    let _ = old_session.close().await;
+                })
+                .await;
+            }
 
-            let session = self.session.clone();
-            loop {
-                if session.lock().await.is_none() {
-                    tracing::debug!("session is gone");
-                    break;
-                }
-                if let Some(response) = usb.receive_device_events().await?.next().await {
-                    let events = response.events();
+            let receiver = bridge_stream(async move { proxy.receive_device_events().await });
+
+            let (sender, receiver_glib) =
+                async_channel::unbounded::<ashpd::desktop::usb::UsbDeviceEvent>();
+
+            let page = self.obj().clone();
+            glib::spawn_future_local(async move {
+                while let Ok(events_response) = receiver_glib.recv().await {
+                    let events = events_response.events();
                     for ev in events {
-                        println!(
+                        tracing::info!(
                             "Received event: {} for device {}",
                             ev.action(),
                             ev.device_id()
                         );
+                        page.info(&format!(
+                            "USB event: {} for device {}",
+                            ev.action(),
+                            ev.device_id()
+                        ));
                     }
                 }
-            }
+            });
+
+            let task_handle = crate::portals::RUNTIME.spawn(async move {
+                let mut receiver = receiver;
+                while let Some(result) = receiver.recv().await {
+                    match result {
+                        Ok(events_response) => {
+                            if sender.send(events_response).await.is_err() {
+                                break;
+                            }
+                        }
+                        Err(err) => {
+                            tracing::error!("USB events stream error: {err}");
+                            break;
+                        }
+                    }
+                }
+            });
+
+            self.task_handle.lock().await.replace(task_handle);
+
             Ok(())
         }
 
         pub(super) async fn stop_session(&self) -> anyhow::Result<()> {
+            if let Some(handle) = self.task_handle.lock().await.take() {
+                handle.abort();
+            }
             if let Some(session) = self.session.lock().await.take() {
-                session.close().await?;
+                spawn_tokio(async move {
+                    let _ = session.close().await;
+                })
+                .await;
             }
             Ok(())
         }
@@ -255,23 +302,29 @@ impl UsbPage {
     async fn share(&self, device_id: &String, device_writable: bool) -> ashpd::Result<()> {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let usb = UsbProxy::new().await?;
-        let devices = usb
-            .acquire_devices(
-                identifier.as_ref(),
-                &[Device::new(device_id.to_string(), device_writable)],
-            )
-            .await?;
+        let device_id_owned = device_id.to_owned();
+        let devices = spawn_tokio(async move {
+            let usb = UsbProxy::new().await?;
+            let devices = usb
+                .acquire_devices(
+                    identifier.as_ref(),
+                    &[Device::new(device_id_owned, device_writable)],
+                )
+                .await?;
+            ashpd::Result::Ok(devices)
+        })
+        .await?;
 
         self.imp().finish_acquire_devices(&devices);
         Ok(())
     }
 
     async fn unshare(&self, device_id: &str) {
-        let result = async {
+        let device_id_owned = device_id.to_owned();
+        let result = spawn_tokio(async move {
             let usb = UsbProxy::new().await?;
-            usb.release_devices(&[device_id]).await
-        }
+            usb.release_devices(&[&device_id_owned]).await
+        })
         .await;
         if let Err(err) = result {
             tracing::error!("Acquire device error: {err}");

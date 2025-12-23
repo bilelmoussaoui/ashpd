@@ -10,7 +10,11 @@ use gtk::{
     glib::{self, clone},
 };
 
-use crate::{config, window::ApplicationWindow};
+use crate::{
+    config,
+    portals::{spawn_tokio, spawn_tokio_blocking},
+    window::ApplicationWindow,
+};
 
 mod imp {
     use std::cell::OnceCell;
@@ -19,19 +23,9 @@ mod imp {
 
     use super::*;
 
-    #[derive(Debug)]
+    #[derive(Debug, Default)]
     pub struct Application {
         pub window: OnceCell<WeakRef<ApplicationWindow>>,
-        pub settings: gio::Settings,
-    }
-
-    impl Default for Application {
-        fn default() -> Self {
-            Self {
-                window: OnceCell::default(),
-                settings: gio::Settings::new(config::APP_ID),
-            }
-        }
     }
 
     #[glib::object_subclass]
@@ -80,21 +74,9 @@ mod imp {
 
         fn startup(&self) {
             self.parent_startup();
-            let app = self.obj();
             tracing::debug!("Application::startup");
             // Set icons for shell
             gtk::Window::set_default_icon_name(config::APP_ID);
-            self.settings.connect_changed(
-                Some("dark-mode"),
-                clone!(
-                    #[weak]
-                    app,
-                    move |_, _| {
-                        app.update_color_scheme();
-                    }
-                ),
-            );
-            app.update_color_scheme();
         }
     }
 
@@ -147,49 +129,47 @@ impl Application {
 
         self.add_action_entries([about_action, quit_action, restart_action]);
 
-        let is_sandboxed =
-            glib::MainContext::default().block_on(async { ashpd::is_sandboxed().await });
+        let is_sandboxed = spawn_tokio_blocking(async { ashpd::is_sandboxed().await });
         // The restart app requires the Flatpak portal
         self.lookup_action("restart")
             .and_downcast_ref::<gio::SimpleAction>()
             .unwrap()
             .set_enabled(is_sandboxed);
-
-        let action = self.imp().settings.create_action("dark-mode");
-        self.add_action(&action);
     }
 
     pub async fn stop_current_instance() -> ashpd::Result<()> {
-        let cnx = zbus::Connection::session().await?;
-        let proxy: zbus::Proxy = zbus::proxy::Builder::new(&cnx)
-            .path(format!(
-                "/{}",
-                config::APP_ID.split('.').collect::<Vec<_>>().join("/")
-            ))?
-            .interface("org.gtk.Actions")?
-            .destination(config::APP_ID)?
-            .build()
-            .await?;
-        #[derive(Debug, serde::Serialize)]
-        pub struct Params(
-            String,
-            Vec<zvariant::OwnedValue>,
-            HashMap<String, zvariant::OwnedValue>,
-        );
+        spawn_tokio(async move {
+            let cnx = zbus::Connection::session().await?;
+            let proxy: zbus::Proxy = zbus::proxy::Builder::new(&cnx)
+                .path(format!(
+                    "/{}",
+                    config::APP_ID.split('.').collect::<Vec<_>>().join("/")
+                ))?
+                .interface("org.gtk.Actions")?
+                .destination(config::APP_ID)?
+                .build()
+                .await?;
+            #[derive(Debug, serde::Serialize)]
+            pub struct Params(
+                String,
+                Vec<zvariant::OwnedValue>,
+                HashMap<String, zvariant::OwnedValue>,
+            );
 
-        impl zvariant::DynamicType for Params {
-            fn signature(&self) -> zvariant::Signature {
-                zvariant::Signature::from_str("(sava{sv})").unwrap()
+            impl zvariant::DynamicType for Params {
+                fn signature(&self) -> zvariant::Signature {
+                    zvariant::Signature::from_str("(sava{sv})").unwrap()
+                }
             }
-        }
 
-        proxy
-            .call_method(
-                "Activate",
-                &Params("quit".to_string(), Vec::new(), HashMap::new()),
-            )
-            .await?;
-
+            proxy
+                .call_method(
+                    "Activate",
+                    &Params("quit".to_string(), Vec::new(), HashMap::new()),
+                )
+                .await
+        })
+        .await?;
         Ok(())
     }
 
@@ -213,31 +193,22 @@ impl Application {
     }
 
     async fn restart(&self) -> ashpd::Result<()> {
-        let proxy = Flatpak::new().await?;
-        let fds: HashMap<u32, std::fs::File> = HashMap::new();
-        proxy
-            .spawn(
-                "/",
-                &["ashpd-demo", "--replace"],
-                fds,
-                HashMap::new(),
-                SpawnFlags::LatestVersion.into(),
-                SpawnOptions::default(),
-            )
-            .await?;
+        spawn_tokio(async move {
+            let proxy = Flatpak::new().await?;
+            let fds: HashMap<u32, std::fs::File> = HashMap::new();
+            proxy
+                .spawn(
+                    "/",
+                    &["ashpd-demo", "--replace"],
+                    fds,
+                    HashMap::new(),
+                    SpawnFlags::LatestVersion.into(),
+                    SpawnOptions::default(),
+                )
+                .await
+        })
+        .await?;
         Ok(())
-    }
-
-    fn update_color_scheme(&self) {
-        let manager = self.style_manager();
-        if !manager.system_supports_color_schemes() {
-            let color_scheme = if self.imp().settings.boolean("dark-mode") {
-                adw::ColorScheme::PreferDark
-            } else {
-                adw::ColorScheme::PreferLight
-            };
-            manager.set_color_scheme(color_scheme);
-        }
     }
 
     pub fn run() -> glib::ExitCode {

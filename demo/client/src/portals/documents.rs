@@ -2,6 +2,7 @@ use adw::subclass::prelude::*;
 use ashpd::documents::Documents;
 use gtk::glib::{self, clone};
 
+use super::spawn_tokio;
 use crate::widgets::{PortalPage, PortalPageImpl};
 
 mod imp {
@@ -57,9 +58,13 @@ glib::wrapper! {
 
 impl DocumentsPage {
     async fn refresh(&self) -> ashpd::Result<()> {
-        let proxy = Documents::new().await?;
+        let mount_point = spawn_tokio(async move {
+            let proxy = Documents::new().await?;
 
-        let mount_point = proxy.mount_point().await?;
+            proxy.mount_point().await
+        })
+        .await?;
+
         self.imp()
             .mount_point
             .set_label(mount_point.as_ref().to_str().unwrap());

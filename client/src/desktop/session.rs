@@ -21,11 +21,11 @@ use crate::{desktop::HandleToken, proxy::Proxy, Error};
 #[derive(Type)]
 #[doc(alias = "org.freedesktop.portal.Session")]
 #[zvariant(signature = "o")]
-pub struct Session<'a, T>(Proxy<'a>, PhantomData<T>)
+pub struct Session<T>(Proxy<'static>, PhantomData<T>)
 where
     T: SessionPortal;
 
-impl<'a, T> Session<'a, T>
+impl<T> Session<T>
 where
     T: SessionPortal,
 {
@@ -35,9 +35,9 @@ where
     pub(crate) async fn with_connection<P>(
         connection: zbus::Connection,
         path: P,
-    ) -> Result<Session<'a, T>, Error>
+    ) -> Result<Self, Error>
     where
-        P: TryInto<ObjectPath<'a>>,
+        P: TryInto<ObjectPath<'static>>,
         P::Error: Into<zbus::Error>,
     {
         let proxy =
@@ -49,7 +49,7 @@ where
     pub(crate) async fn from_unique_name(
         connection: zbus::Connection,
         handle_token: &HandleToken,
-    ) -> Result<Session<'a, T>, crate::Error> {
+    ) -> Result<Self, crate::Error> {
         let path = Proxy::unique_name(
             &connection,
             "/org/freedesktop/portal/desktop/session",
@@ -87,7 +87,7 @@ where
     }
 }
 
-impl<T> Serialize for Session<'_, T>
+impl<T> Serialize for Session<T>
 where
     T: SessionPortal,
 {
@@ -99,7 +99,7 @@ where
     }
 }
 
-impl<T> Debug for Session<'_, T>
+impl<T> Debug for Session<T>
 where
     T: SessionPortal,
 {

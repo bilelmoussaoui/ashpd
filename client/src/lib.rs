@@ -5,7 +5,7 @@
     html_logo_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/ashpd-demo/data/icons/com.belmoussaoui.ashpd.demo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/master/ashpd-demo/data/icons/com.belmoussaoui.ashpd.demo-symbolic.svg"
 )]
-#![doc = include_str!("../README.md")]
+#![doc = include_str!("../../README.md")]
 #[cfg(all(all(feature = "tokio", feature = "async-std"), not(doc)))]
 compile_error!("You can't enable both async-std & tokio features at once");
 #[cfg(all(not(feature = "tokio"), not(feature = "async-std"), not(doc)))]

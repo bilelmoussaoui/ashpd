@@ -243,7 +243,7 @@ impl GlobalShortcuts {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-createsession).
     #[doc(alias = "CreateSession")]
-    pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
+    pub async fn create_session(&self) -> Result<Session<Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
@@ -264,7 +264,7 @@ impl GlobalShortcuts {
     #[doc(alias = "BindShortcuts")]
     pub async fn bind_shortcuts(
         &self,
-        session: &Session<'_, Self>,
+        session: &Session<Self>,
         shortcuts: &[NewShortcut],
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<BindShortcuts>, Error> {
@@ -287,7 +287,7 @@ impl GlobalShortcuts {
     #[doc(alias = "ListShortcuts")]
     pub async fn list_shortcuts(
         &self,
-        session: &Session<'_, Self>,
+        session: &Session<Self>,
     ) -> Result<Request<ListShortcuts>, Error> {
         let options = ListShortcutsOptions::default();
         self.0
@@ -304,7 +304,7 @@ impl GlobalShortcuts {
     #[doc(alias = "ConfigureShortcuts")]
     pub async fn configure_shortcuts(
         &self,
-        session: &Session<'_, Self>,
+        session: &Session<Self>,
         identifier: Option<&WindowIdentifier>,
         activation_token: impl Into<Option<ActivationToken>>,
     ) -> Result<(), Error> {
