@@ -56,7 +56,7 @@ pub async fn run() -> ashpd::Result<()> {
 
 ## Demo
 
-The library comes with a [demo](./ashpd-demo) built using the [GTK 4 Rust bindings](https://gtk-rs.org/gtk4-rs) and previews most of the portals. It is meant as a test case for the portals (from a distributor perspective) and as a way for the developers to see which portals exists and how to integrate them into their application using ASHPD.
+The library comes with a [demo](./demo/client) built using the [GTK 4 Rust bindings](https://gtk-rs.org/gtk4-rs) and previews most of the portals. It is meant as a test case for the portals (from a distributor perspective) and as a way for the developers to see which portals exists and how to integrate them into their application using ASHPD.
 
 <a href="https://flathub.org/apps/details/com.belmoussaoui.ashpd.demo">
 <img src="https://flathub.org/api/badge?svg&locale=en&light" width="190px" />
@@ -64,4 +64,4 @@ The library comes with a [demo](./ashpd-demo) built using the [GTK 4 Rust bindin
 
 ## Backend demo
 
-The library also comes with a [backend demo](./backend-demo/README.md) that exemplifies how to implement [a portal backend](https://flatpak.github.io/xdg-desktop-portal/docs/impl-dbus-interfaces.html).
+The library also comes with a [backend demo](./demo/backend/README.md) that exemplifies how to implement [a portal backend](https://flatpak.github.io/xdg-desktop-portal/docs/impl-dbus-interfaces.html).
