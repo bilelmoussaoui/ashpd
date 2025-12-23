@@ -6,19 +6,47 @@ on:
 name: CI
 
 jobs:
+  build-container:
+    name: Build Container
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            dockerfile:
+              - 'Dockerfile'
+      - name: Log in to GitHub Container Registry
+        if: steps.changes.outputs.dockerfile == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push container image
+        if: steps.changes.outputs.dockerfile == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}/ci:latest
+
   check:
     name: Check
     runs-on: ubuntu-latest
+    needs: build-container
     container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+      image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: 1.85.0
           override: true
       - uses: actions-rs/cargo@v1
         with:
@@ -28,16 +56,15 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    needs: build-container
     container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+      image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: 1.85.0
           override: true
       - uses: actions-rs/cargo@v1
         with:
@@ -47,18 +74,17 @@ jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
+    needs: build-container
     container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+      image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: 1.85.0
           override: true
-      - run: rustup component add rustfmt
+          components: rustfmt
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -67,27 +93,27 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    needs: build-container
     container:
-      image: ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
+      image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo dnf install -y pipewire-devel clang-devel gstreamer1-devel gstreamer1-plugins-base-devel libshumate-devel
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: 1.85.0
           override: true
-      - run: rustup component add clippy
+          components: clippy
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: --workspace --features "gtk4,pipewire,wayland,raw_handle,tracing,backend" -- -D warnings
 
   cargo-deny:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: EmbarkStudios/cargo-deny-action@v1
-          with:
-            rust-version: "1.85"
+    name: Cargo Deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          rust-version: "1.85"
