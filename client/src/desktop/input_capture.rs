@@ -269,16 +269,16 @@
 
 use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
-use enumflags2::{bitflags, BitFlags};
-use futures_util::{Stream, TryFutureExt};
-use serde::{de::Visitor, Deserialize};
+use enumflags2::{BitFlags, bitflags};
+use futures_util::Stream;
+use serde::{Deserialize, de::Visitor};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
     self, DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
 };
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
-use crate::{proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier};
+use super::{HandleToken, Request, Session, session::SessionPortal};
+use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[bitflags]
@@ -595,15 +595,12 @@ impl InputCapture {
         };
         let identifier = identifier.to_string_or_empty();
         let (request, proxy) = futures_util::try_join!(
-            self.0
-                .request::<CreateSessionResponse>(
-                    &options.handle_token,
-                    "CreateSession",
-                    (identifier, &options)
-                )
-                .into_future(),
-            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
-                .into_future(),
+            self.0.request::<CreateSessionResponse>(
+                &options.handle_token,
+                "CreateSession",
+                (identifier, &options)
+            ),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token),
         )?;
         let response = request.response()?;
         assert_eq!(proxy.path(), &response.session_handle.as_ref());

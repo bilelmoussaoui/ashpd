@@ -1,11 +1,11 @@
 use ashpd::{
+    AppID, WindowIdentifierType,
     backend::{
+        Result,
         request::RequestImpl,
         screenshot::{ColorOptions, ScreenshotImpl, ScreenshotOptions},
-        Result,
     },
-    desktop::{screenshot::Screenshot as ScreenshotResponse, Color, HandleToken},
-    AppID, WindowIdentifierType,
+    desktop::{Color, HandleToken, screenshot::Screenshot as ScreenshotResponse},
 };
 use async_trait::async_trait;
 

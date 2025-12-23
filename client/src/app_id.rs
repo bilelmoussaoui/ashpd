@@ -210,7 +210,9 @@ mod tests {
         assert!(is_valid_app_id("com.org_._SomeApp"));
         assert!(is_valid_app_id("com.org._1SomeApp"));
         assert!(is_valid_app_id("com.org._1_SomeApp"));
-        assert!(is_valid_app_id("VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.a111111111111"));
+        assert!(is_valid_app_id(
+            "VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.a111111111111"
+        ));
 
         assert!(!is_valid_app_id("com.org-._SomeApp"));
         assert!(!is_valid_app_id("package"));
@@ -225,7 +227,9 @@ mod tests {
         assert!(!is_valid_app_id("0P.Starts.With.A.Digit"));
         assert!(!is_valid_app_id("com.org.1SomeApp"));
         assert!(!is_valid_app_id("Element.Starts.With.A.1Digit"));
-        assert!(!is_valid_app_id("VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.a1111111111112"));
+        assert!(!is_valid_app_id(
+            "VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.VeryLongApplicationId.a1111111111112"
+        ));
         assert!(!is_valid_app_id(""));
         assert!(!is_valid_app_id("contains.;nvalid.characters"));
         assert!(!is_valid_app_id("con\nins.invalid.characters"));

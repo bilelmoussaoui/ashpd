@@ -1,7 +1,7 @@
 use std::os::fd::AsFd;
 
 use adw::subclass::prelude::*;
-use ashpd::{desktop::open_uri, WindowIdentifier};
+use ashpd::{WindowIdentifier, desktop::open_uri};
 use gtk::{glib, prelude::*};
 
 use crate::{

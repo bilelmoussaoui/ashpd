@@ -1,5 +1,5 @@
 use adw::subclass::prelude::*;
-use ashpd::{desktop::background::Background, WindowIdentifier};
+use ashpd::{WindowIdentifier, desktop::background::Background};
 use gtk::{glib, prelude::*};
 
 use crate::{

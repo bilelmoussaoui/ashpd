@@ -1,7 +1,7 @@
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    desktop::file_chooser::{FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest},
     WindowIdentifier,
+    desktop::file_chooser::{FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest},
 };
 use gtk::glib;
 

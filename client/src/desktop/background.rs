@@ -34,7 +34,7 @@ use serde::Serialize;
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier};
+use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]

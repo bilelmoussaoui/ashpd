@@ -46,8 +46,8 @@ use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::Request;
 use crate::{
-    desktop::HandleToken, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error,
-    WindowIdentifier,
+    Error, WindowIdentifier, desktop::HandleToken, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]

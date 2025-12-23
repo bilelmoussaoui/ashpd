@@ -2,13 +2,13 @@ use std::{path::PathBuf, sync::OnceLock};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
+    WindowIdentifier,
     desktop::{
+        Icon,
         dynamic_launcher::{
             DynamicLauncherProxy, LauncherIcon, LauncherType, PrepareInstallOptions,
         },
-        Icon,
     },
-    WindowIdentifier,
 };
 use gtk::{
     gdk, gio,

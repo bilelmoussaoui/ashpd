@@ -4,12 +4,12 @@
 
 use std::{collections::HashMap, os::fd::AsFd, path::Path};
 
-use enumflags2::{bitflags, BitFlags};
+use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, Type};
 
-use crate::{proxy::Proxy, Error, FilePath, Pid};
+use crate::{Error, FilePath, Pid, proxy::Proxy};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]

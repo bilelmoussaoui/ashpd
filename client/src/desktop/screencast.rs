@@ -7,8 +7,8 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::{
-//!     screencast::{CursorMode, Screencast, SourceType},
 //!     PersistMode,
+//!     screencast::{CursorMode, Screencast, SourceType},
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -38,19 +38,18 @@
 
 use std::{collections::HashMap, fmt::Debug, os::fd::OwnedFd};
 
-use enumflags2::{bitflags, BitFlags};
-use futures_util::TryFutureExt;
+use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
 use super::{
-    remote_desktop::RemoteDesktop, session::SessionPortal, HandleToken, PersistMode, Request,
-    Session,
+    HandleToken, PersistMode, Request, Session, remote_desktop::RemoteDesktop,
+    session::SessionPortal,
 };
 use crate::{
-    desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier,
+    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[bitflags]
@@ -387,11 +386,12 @@ impl Screencast {
     pub async fn create_session(&self) -> Result<Session<Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
-            self.0
-                .request::<CreateSessionResponse>(&options.handle_token, "CreateSession", &options)
-                .into_future(),
-            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
-                .into_future(),
+            self.0.request::<CreateSessionResponse>(
+                &options.handle_token,
+                "CreateSession",
+                &options
+            ),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token),
         )?;
         assert_eq!(proxy.path(), &request.response()?.session_handle.as_ref());
         Ok(proxy)

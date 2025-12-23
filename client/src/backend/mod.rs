@@ -1,4 +1,4 @@
-use serde::{de::Deserializer, Deserialize};
+use serde::{Deserialize, de::Deserializer};
 use zbus::zvariant::Type;
 
 use crate::{AppID, WindowIdentifierType};

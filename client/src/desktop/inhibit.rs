@@ -34,16 +34,16 @@
 //! }
 //! ```
 
-use enumflags2::{bitflags, BitFlags};
-use futures_util::{Stream, TryFutureExt};
+use enumflags2::{BitFlags, bitflags};
+use futures_util::Stream;
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
+use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{
-    desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier,
+    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[derive(SerializeDict, Type, Debug, Default)]
@@ -179,10 +179,8 @@ impl InhibitProxy {
         let body = &(&identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
             self.0
-                .request::<CreateSessionResponse>(&options.handle_token, "CreateMonitor", body)
-                .into_future(),
-            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
-                .into_future(),
+                .request::<CreateSessionResponse>(&options.handle_token, "CreateMonitor", body),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token),
         )?;
         assert_eq!(proxy.path(), &monitor.response()?.session_handle.as_ref());
         Ok(proxy)
@@ -228,7 +226,9 @@ impl InhibitProxy {
     /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Inhibit.html#org-freedesktop-portal-inhibit-statechanged).
     #[doc(alias = "StateChanged")]
     #[doc(alias = "XdpPortal::session-state-changed")]
-    pub async fn receive_state_changed(&self) -> Result<impl Stream<Item = InhibitState>, Error> {
+    pub async fn receive_state_changed(
+        &self,
+    ) -> Result<impl Stream<Item = InhibitState> + use<'_>, Error> {
         self.0.signal("StateChanged").await
     }
 

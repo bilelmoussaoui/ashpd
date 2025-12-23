@@ -10,13 +10,13 @@ members = [
 [workspace.package]
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
 categories = ["gui", "os::linux-apis", "api-bindings"]
-edition = "2021"
+edition = "2024"
 exclude = ["interfaces/*.xml", "ashpd-demo/"]
 keywords = ["portal", "flatpak", "xdg", "desktop", "dbus"]
 license = "MIT"
 repository = "https://github.com/bilelmoussaoui/ashpd"
 version = "0.13.0"
-rust-version = "1.75"
+rust-version = "1.85"
 
 [workspace.dependencies]
 zvariant = { version = "5.8", default-features = false, features = ["gvariant"]}

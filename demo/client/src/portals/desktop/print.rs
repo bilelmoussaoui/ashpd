@@ -2,8 +2,8 @@ use std::os::fd::AsFd;
 
 use adw::subclass::prelude::*;
 use ashpd::{
-    desktop::print::{PageSetup, PrintProxy, Settings},
     WindowIdentifier,
+    desktop::print::{PageSetup, PrintProxy, Settings},
 };
 use gtk::{gio, glib, prelude::*};
 

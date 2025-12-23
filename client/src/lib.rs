@@ -92,7 +92,7 @@ pub type Pid = u32;
 mod tests {
     use std::{collections::HashMap, fs, path::PathBuf};
 
-    use quick_xml::{events::Event, Reader};
+    use quick_xml::{Reader, events::Event};
 
     // Helper to convert PascalCase to snake_case
     fn pascal_to_snake_case(s: &str) -> String {
