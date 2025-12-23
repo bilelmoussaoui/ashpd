@@ -8,18 +8,18 @@ use std::{collections::HashMap, os::fd::AsRawFd, sync::Arc};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
+    WindowIdentifier,
     desktop::{
-        usb::{Device, UsbDevice, UsbError, UsbProxy},
         Session,
+        usb::{Device, UsbDevice, UsbError, UsbProxy},
     },
     zbus::zvariant::{Fd, OwnedFd},
-    WindowIdentifier,
 };
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 
 use crate::{
-    portals::{bridge_stream, spawn_tokio},
+    portals::spawn_tokio,
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
@@ -141,8 +141,6 @@ mod imp {
                 .await;
             }
 
-            let receiver = bridge_stream(async move { proxy.receive_device_events().await });
-
             let (sender, receiver_glib) =
                 async_channel::unbounded::<ashpd::desktop::usb::UsbDeviceEvent>();
 
@@ -166,18 +164,19 @@ mod imp {
             });
 
             let task_handle = crate::portals::RUNTIME.spawn(async move {
-                let mut receiver = receiver;
-                while let Some(result) = receiver.recv().await {
-                    match result {
-                        Ok(events_response) => {
-                            if sender.send(events_response).await.is_err() {
-                                break;
-                            }
-                        }
-                        Err(err) => {
-                            tracing::error!("USB events stream error: {err}");
-                            break;
-                        }
+                use futures_util::StreamExt;
+
+                let mut stream = match proxy.receive_device_events().await {
+                    Ok(s) => s,
+                    Err(e) => {
+                        tracing::error!("Failed to receive USB device events: {e}");
+                        return;
+                    }
+                };
+
+                while let Some(events_response) = stream.next().await {
+                    if sender.send(events_response).await.is_err() {
+                        break;
                     }
                 }
             });

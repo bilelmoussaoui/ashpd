@@ -2,8 +2,8 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::{
-//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop},
 //!     PersistMode,
+//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop},
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -38,9 +38,9 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::{
+//!     PersistMode,
 //!     remote_desktop::{DeviceType, KeyState, RemoteDesktop},
 //!     screencast::{CursorMode, Screencast, SourceType},
-//!     PersistMode,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -84,17 +84,16 @@
 
 use std::{collections::HashMap, os::fd::OwnedFd};
 
-use enumflags2::{bitflags, BitFlags};
-use futures_util::TryFutureExt;
+use enumflags2::{BitFlags, bitflags};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
 use super::{
-    screencast::Stream, session::SessionPortal, HandleToken, PersistMode, Request, Session,
+    HandleToken, PersistMode, Request, Session, screencast::Stream, session::SessionPortal,
 };
 use crate::{
-    desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier,
+    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
@@ -252,11 +251,12 @@ impl RemoteDesktop {
     pub async fn create_session(&self) -> Result<Session<Self>, Error> {
         let options = CreateRemoteOptions::default();
         let (request, proxy) = futures_util::try_join!(
-            self.0
-                .request::<CreateSessionResponse>(&options.handle_token, "CreateSession", &options)
-                .into_future(),
+            self.0.request::<CreateSessionResponse>(
+                &options.handle_token,
+                "CreateSession",
+                &options
+            ),
             Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
-                .into_future()
         )?;
         assert_eq!(proxy.path(), &request.response()?.session_handle.as_ref());
         Ok(proxy)

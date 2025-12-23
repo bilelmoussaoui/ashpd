@@ -2,13 +2,13 @@ use std::{collections::HashSet, sync::Arc};
 
 use adw::subclass::prelude::*;
 use ashpd::{
+    WindowIdentifier,
     desktop::{
+        ResponseError, Session,
         global_shortcuts::{
             Activated, Deactivated, GlobalShortcuts, NewShortcut, Shortcut, ShortcutsChanged,
         },
-        ResponseError, Session,
     },
-    WindowIdentifier,
 };
 use futures_util::lock::Mutex;
 use gtk::{
@@ -17,7 +17,7 @@ use gtk::{
 };
 
 use crate::{
-    portals::{bridge_stream, spawn_tokio},
+    portals::spawn_tokio,
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
@@ -235,16 +235,52 @@ impl GlobalShortcutsPage {
         deactivated_sender: async_channel::Sender<Deactivated>,
         changed_sender: async_channel::Sender<ShortcutsChanged>,
     ) {
+        use futures_util::StreamExt;
+
         let gs = Arc::new(global_shortcuts);
         let gs1 = gs.clone();
         let gs2 = gs.clone();
         let gs3 = gs;
 
-        let mut activated_receiver = bridge_stream(async move { gs1.receive_activated().await });
-        let mut deactivated_receiver =
-            bridge_stream(async move { gs2.receive_deactivated().await });
-        let mut changed_receiver =
-            bridge_stream(async move { gs3.receive_shortcuts_changed().await });
+        let (activated_tx, mut activated_receiver) =
+            tokio::sync::mpsc::unbounded_channel::<Result<Activated, ashpd::Error>>();
+        let (deactivated_tx, mut deactivated_receiver) =
+            tokio::sync::mpsc::unbounded_channel::<Result<Deactivated, ashpd::Error>>();
+        let (changed_tx, mut changed_receiver) =
+            tokio::sync::mpsc::unbounded_channel::<Result<ShortcutsChanged, ashpd::Error>>();
+
+        // Spawn task for activated events
+        crate::portals::RUNTIME.spawn(async move {
+            if let Ok(mut stream) = gs1.receive_activated().await {
+                while let Some(activation) = stream.next().await {
+                    if activated_tx.send(Ok(activation)).is_err() {
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Spawn task for deactivated events
+        crate::portals::RUNTIME.spawn(async move {
+            if let Ok(mut stream) = gs2.receive_deactivated().await {
+                while let Some(deactivation) = stream.next().await {
+                    if deactivated_tx.send(Ok(deactivation)).is_err() {
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Spawn task for shortcuts changed events
+        crate::portals::RUNTIME.spawn(async move {
+            if let Ok(mut stream) = gs3.receive_shortcuts_changed().await {
+                while let Some(changed) = stream.next().await {
+                    if changed_tx.send(Ok(changed)).is_err() {
+                        break;
+                    }
+                }
+            }
+        });
 
         loop {
             tokio::select! {

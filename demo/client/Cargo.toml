@@ -1,6 +1,6 @@
 [package]
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
-edition = "2021"
+edition = "2024"
 name = "ashpd-demo"
 version = "0.1.0"
 

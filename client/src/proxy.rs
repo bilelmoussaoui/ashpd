@@ -3,13 +3,13 @@ use std::{fmt::Debug, future::ready, ops::Deref, sync::OnceLock};
 
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{ObjectPath, OwnedValue, Type};
 #[cfg(feature = "tracing")]
 use zbus::Message;
+use zbus::zvariant::{ObjectPath, OwnedValue, Type};
 
 use crate::{
-    desktop::{HandleToken, Request},
     Error, PortalError,
+    desktop::{HandleToken, Request},
 };
 
 pub(crate) const DESKTOP_DESTINATION: &str = "org.freedesktop.portal.Desktop";
@@ -289,7 +289,7 @@ impl<'a> Proxy<'a> {
         &self,
         name: &'static str,
         args: &[(u8, &str)],
-    ) -> Result<impl Stream<Item = I>, Error>
+    ) -> Result<impl Stream<Item = I> + use<I>, Error>
     where
         I: for<'de> Deserialize<'de> + Type + Debug,
     {

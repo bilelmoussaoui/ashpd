@@ -1,5 +1,5 @@
 use adw::subclass::prelude::*;
-use ashpd::{desktop::screenshot, WindowIdentifier};
+use ashpd::{WindowIdentifier, desktop::screenshot};
 use gtk::{gdk, gio, glib, prelude::*};
 
 use crate::{

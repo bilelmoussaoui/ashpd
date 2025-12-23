@@ -1,7 +1,7 @@
 use std::{fs::File, os::fd::OwnedFd};
 
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::{desktop::email::EmailRequest, WindowIdentifier};
+use ashpd::{WindowIdentifier, desktop::email::EmailRequest};
 use gtk::{
     gio,
     glib::{self, clone},

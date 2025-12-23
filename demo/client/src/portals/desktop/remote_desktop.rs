@@ -2,13 +2,13 @@ use std::sync::Arc;
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
+    WindowIdentifier,
     desktop::{
+        PersistMode, Session,
         remote_desktop::{DeviceType, RemoteDesktop},
         screencast::{CursorMode, Screencast, SourceType, Stream},
-        PersistMode, Session,
     },
     enumflags2::BitFlags,
-    WindowIdentifier,
 };
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};

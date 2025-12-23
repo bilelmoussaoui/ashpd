@@ -4,12 +4,12 @@ use async_trait::async_trait;
 use zbus::zvariant::{self, OwnedValue};
 
 use crate::{
+    AppID,
     backend::{
-        request::{Request, RequestImpl},
         Result,
+        request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Response},
-    AppID,
 };
 
 #[async_trait]

@@ -5,13 +5,14 @@ use crate::{
     application::Application,
     config,
     portals::{
+        DocumentsPage,
         desktop::{
             AccountPage, BackgroundPage, CameraPage, DevicePage, DynamicLauncherPage, EmailPage,
             FileChooserPage, GlobalShortcutsPage, InhibitPage, LocationPage, NetworkMonitorPage,
             NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage,
             ScreenCastPage, ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
         },
-        spawn_tokio_blocking, DocumentsPage,
+        spawn_tokio_blocking,
     },
 };
 

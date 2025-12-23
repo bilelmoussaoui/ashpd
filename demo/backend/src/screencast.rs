@@ -1,19 +1,19 @@
 use ashpd::{
+    AppID, WindowIdentifierType,
     backend::{
+        Result,
         request::RequestImpl,
         screencast::{
             CreateSessionOptions, ScreencastImpl, SelectSourcesOptions, SelectSourcesResponse,
             StartCastOptions, StartCastResponse, StartCastResponseBuilder,
         },
         session::{CreateSessionResponse, SessionImpl},
-        Result,
     },
     desktop::{
-        screencast::{CursorMode, SourceType, StreamBuilder},
         HandleToken,
+        screencast::{CursorMode, SourceType, StreamBuilder},
     },
     enumflags2::BitFlags,
-    AppID, WindowIdentifierType,
 };
 use async_trait::async_trait;
 
@@ -66,9 +66,11 @@ impl ScreencastImpl for Screencast {
         _options: StartCastOptions,
     ) -> Result<StartCastResponse> {
         tracing::debug!("IN Screencast::start_cast(): {session_token}");
-        let streams = vec![StreamBuilder::new(42)
-            .source_type(SourceType::Monitor)
-            .build()];
+        let streams = vec![
+            StreamBuilder::new(42)
+                .source_type(SourceType::Monitor)
+                .build(),
+        ];
         Ok(StartCastResponseBuilder::new(streams).build())
     }
 }

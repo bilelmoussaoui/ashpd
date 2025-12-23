@@ -4,13 +4,13 @@ use async_trait::async_trait;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
+    ActivationToken, AppID, PortalError, WindowIdentifierType,
     backend::{
-        request::{Request, RequestImpl},
         MaybeAppID, MaybeWindowIdentifier,
+        request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Response},
     zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
-    ActivationToken, AppID, PortalError, WindowIdentifierType,
 };
 
 /// The desktop ID of an application.

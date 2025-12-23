@@ -37,7 +37,7 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, WindowIdentifier};
+use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]

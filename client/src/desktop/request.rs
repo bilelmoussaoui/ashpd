@@ -7,16 +7,16 @@ use std::{
 
 use futures_util::StreamExt;
 use serde::{
+    Deserialize, Deserializer, Serialize,
     de::{self, Error as SeError, Visitor},
     ser::SerializeTuple,
-    Deserialize, Deserializer, Serialize,
 };
 use zbus::{
     proxy::SignalStream,
     zvariant::{ObjectPath, Type, Value},
 };
 
-use crate::{desktop::HandleToken, proxy::Proxy, Error};
+use crate::{Error, desktop::HandleToken, proxy::Proxy};
 
 /// A typical response returned by the [`Request::response`].
 /// of a [`Request`].

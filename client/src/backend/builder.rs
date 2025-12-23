@@ -1,10 +1,11 @@
 use std::sync::{Arc, Mutex};
 
 use enumflags2::BitFlags;
-use futures_util::{task::SpawnExt, StreamExt};
+use futures_util::{StreamExt, task::SpawnExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
 use crate::backend::{
+    Result,
     access::{AccessImpl, AccessInterface},
     account::{AccountImpl, AccountInterface},
     app_chooser::{AppChooserImpl, AppChooserInterface},
@@ -21,7 +22,6 @@ use crate::backend::{
     settings::{SettingsImpl, SettingsInterface},
     usb::{UsbImpl, UsbInterface},
     wallpaper::{WallpaperImpl, WallpaperInterface},
-    Result,
 };
 
 pub struct Builder {

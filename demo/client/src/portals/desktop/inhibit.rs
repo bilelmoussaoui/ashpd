@@ -2,18 +2,18 @@ use std::sync::Arc;
 
 use adw::subclass::prelude::*;
 use ashpd::{
+    WindowIdentifier,
     desktop::{
-        inhibit::{InhibitFlags, InhibitProxy, SessionState},
         Session,
+        inhibit::{InhibitFlags, InhibitProxy, SessionState},
     },
     enumflags2::BitFlags,
-    WindowIdentifier,
 };
 use futures_util::lock::Mutex;
 use gtk::{glib, prelude::*};
 
 use crate::{
-    portals::{bridge_stream, spawn_tokio},
+    portals::spawn_tokio,
     widgets::{PortalPage, PortalPageImpl},
 };
 
@@ -121,11 +121,6 @@ impl InhibitPage {
         self.action_set_enabled("inhibit.stop", true);
         self.action_set_enabled("inhibit.start_session", false);
 
-        let receiver = bridge_stream(async move {
-            let proxy = InhibitProxy::new().await?;
-            proxy.receive_state_changed().await
-        });
-
         let (sender, receiver_glib) = async_channel::unbounded();
 
         let page = self.clone();
@@ -136,18 +131,27 @@ impl InhibitPage {
         });
 
         let task_handle = crate::portals::RUNTIME.spawn(async move {
-            let mut receiver = receiver;
-            while let Some(result) = receiver.recv().await {
-                match result {
-                    Ok(state_event) => {
-                        if sender.send(state_event).await.is_err() {
-                            break;
-                        }
-                    }
-                    Err(err) => {
-                        tracing::error!("State change stream error: {err}");
-                        break;
-                    }
+            use futures_util::StreamExt;
+
+            let proxy = match InhibitProxy::new().await {
+                Ok(p) => p,
+                Err(e) => {
+                    tracing::error!("Failed to create InhibitProxy: {e}");
+                    return;
+                }
+            };
+
+            let mut stream = match proxy.receive_state_changed().await {
+                Ok(s) => s,
+                Err(e) => {
+                    tracing::error!("Failed to receive state changed: {e}");
+                    return;
+                }
+            };
+
+            while let Some(state_event) = stream.next().await {
+                if sender.send(state_event).await.is_err() {
+                    break;
                 }
             }
         });

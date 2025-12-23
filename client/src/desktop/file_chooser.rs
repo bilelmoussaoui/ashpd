@@ -87,7 +87,7 @@ use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
 use crate::{
-    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, Error, FilePath, WindowIdentifier,
+    Error, FilePath, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[derive(Clone, Serialize, Deserialize, Type, Debug, PartialEq)]

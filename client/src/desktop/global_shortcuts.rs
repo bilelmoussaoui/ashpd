@@ -2,16 +2,16 @@
 
 use std::{collections::HashMap, fmt::Debug, time::Duration};
 
-use futures_util::{Stream, TryFutureExt};
+use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,
 };
 
-use super::{session::SessionPortal, HandleToken, Request, Session};
+use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{
-    desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt, ActivationToken, Error, WindowIdentifier,
+    ActivationToken, Error, WindowIdentifier, desktop::session::CreateSessionResponse,
+    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
@@ -246,11 +246,12 @@ impl GlobalShortcuts {
     pub async fn create_session(&self) -> Result<Session<Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
-            self.0
-                .request::<CreateSessionResponse>(&options.handle_token, "CreateSession", &options)
-                .into_future(),
-            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
-                .into_future(),
+            self.0.request::<CreateSessionResponse>(
+                &options.handle_token,
+                "CreateSession",
+                &options
+            ),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token),
         )?;
         assert_eq!(proxy.path(), &request.response()?.session_handle.as_ref());
         Ok(proxy)
@@ -324,7 +325,9 @@ impl GlobalShortcuts {
     ///
     /// See also [`Activated`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-activated).
     #[doc(alias = "Activated")]
-    pub async fn receive_activated(&self) -> Result<impl Stream<Item = Activated>, Error> {
+    pub async fn receive_activated(
+        &self,
+    ) -> Result<impl Stream<Item = Activated> + use<'_>, Error> {
         self.0.signal("Activated").await
     }
 
@@ -334,7 +337,9 @@ impl GlobalShortcuts {
     ///
     /// See also [`Deactivated`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-deactivated).
     #[doc(alias = "Deactivated")]
-    pub async fn receive_deactivated(&self) -> Result<impl Stream<Item = Deactivated>, Error> {
+    pub async fn receive_deactivated(
+        &self,
+    ) -> Result<impl Stream<Item = Deactivated> + use<'_>, Error> {
         self.0.signal("Deactivated").await
     }
 
@@ -347,7 +352,7 @@ impl GlobalShortcuts {
     #[doc(alias = "ShortcutsChanged")]
     pub async fn receive_shortcuts_changed(
         &self,
-    ) -> Result<impl Stream<Item = ShortcutsChanged>, Error> {
+    ) -> Result<impl Stream<Item = ShortcutsChanged> + use<'_>, Error> {
         self.0.signal("ShortcutsChanged").await
     }
 }

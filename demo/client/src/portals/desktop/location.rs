@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    desktop::{
-        location::{Accuracy, Location, LocationProxy},
-        Session,
-    },
     WindowIdentifier,
+    desktop::{
+        Session,
+        location::{Accuracy, Location, LocationProxy},
+    },
 };
 use chrono::{DateTime, Local, TimeZone};
 use futures_util::lock::Mutex;
@@ -14,7 +14,7 @@ use gtk::glib::{self, clone};
 use shumate::prelude::*;
 
 use crate::{
-    portals::{bridge_stream, spawn_tokio},
+    portals::spawn_tokio,
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
@@ -167,7 +167,6 @@ impl LocationPage {
                 self.action_set_enabled("location.start", false);
 
                 let proxy: LocationProxy = location_proxy.clone();
-                let receiver = bridge_stream(async move { proxy.receive_location_updated().await });
 
                 let (sender, receiver_glib) = async_channel::unbounded();
 
@@ -179,18 +178,19 @@ impl LocationPage {
                 });
 
                 let task_handle = crate::portals::RUNTIME.spawn(async move {
-                    let mut receiver = receiver;
-                    while let Some(result) = receiver.recv().await {
-                        match result {
-                            Ok(location) => {
-                                if sender.send(location).await.is_err() {
-                                    break;
-                                }
-                            }
-                            Err(err) => {
-                                tracing::error!("Location stream error: {err}");
-                                break;
-                            }
+                    use futures_util::StreamExt;
+
+                    let mut stream = match proxy.receive_location_updated().await {
+                        Ok(s) => s,
+                        Err(e) => {
+                            tracing::error!("Failed to receive location updates: {e}");
+                            return;
+                        }
+                    };
+
+                    while let Some(location) = stream.next().await {
+                        if sender.send(location).await.is_err() {
+                            break;
                         }
                     }
                 });

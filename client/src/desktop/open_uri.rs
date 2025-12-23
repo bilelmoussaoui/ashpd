@@ -58,8 +58,8 @@ use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
 use crate::{
-    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt, ActivationToken, Error,
-    WindowIdentifier,
+    ActivationToken, Error, WindowIdentifier, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[derive(SerializeDict, Type, Debug, Default)]
