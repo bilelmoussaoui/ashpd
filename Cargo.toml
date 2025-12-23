@@ -20,7 +20,7 @@ rust-version = "1.92"
 
 [workspace.dependencies]
 zvariant = { version = "5.8", default-features = false, features = ["gvariant"]}
-ashpd = {version = "0.12", default-features = false}
+ashpd = { path = "client", version = "0.13.0", default-features = false }
 endi = "1.1"
 clap = { version = "4.5", features = [ "cargo", "derive" ] }
 futures-channel = "0.3"
