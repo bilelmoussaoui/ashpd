@@ -31,17 +31,17 @@ pub enum HostCommandFlags {
 /// Wrapper of the DBus interface: [`org.freedesktop.Flatpak.Development`](https://docs.flatpak.org/en/latest/libflatpak-api-reference.html#gdbus-org.freedesktop.Flatpak.Development)
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.Flatpak.Development")]
-pub struct Development<'a>(Proxy<'a>);
+pub struct Development(Proxy<'static>);
 
-impl<'a> Development<'a> {
+impl Development {
     /// Create a new instance of [`Development`]
-    pub async fn new() -> Result<Development<'a>, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_flatpak_development("org.freedesktop.Flatpak.Development").await?;
         Ok(Self(proxy))
     }
 
     /// Create a new instance of [`Development`]
-    pub async fn with_connection(connection: zbus::Connection) -> Result<Development<'a>, Error> {
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy = Proxy::new_flatpak_development_with_connection(
             connection,
             "org.freedesktop.Flatpak.Development",
@@ -126,8 +126,8 @@ impl<'a> Development<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for Development<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for Development {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

@@ -4,7 +4,10 @@ use futures_util::stream::StreamExt;
 use gtk::glib;
 
 use self::button::NotificationButton;
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -130,16 +133,28 @@ impl NotificationPage {
             notification = notification.button(button);
         }
 
-        let proxy = NotificationProxy::new().await?;
-        match proxy.add_notification(&notification_id, notification).await {
-            Ok(_) => {
+        let notification_id_owned = notification_id.to_owned();
+        let response: ashpd::Result<NotificationProxy> = spawn_tokio(async move {
+            let proxy = NotificationProxy::new().await?;
+            proxy
+                .add_notification(&notification_id_owned, notification)
+                .await?;
+            Ok(proxy)
+        })
+        .await;
+        match response {
+            Ok(proxy) => {
                 self.success("Notification sent");
-                let action = proxy
-                    .receive_action_invoked()
-                    .await?
-                    .next()
-                    .await
-                    .expect("Stream exhausted");
+                let action = spawn_tokio(async move {
+                    let action = proxy
+                        .receive_action_invoked()
+                        .await?
+                        .next()
+                        .await
+                        .expect("Stream exhausted");
+                    ashpd::Result::Ok(action)
+                })
+                .await?;
                 self.info(&format!(
                     "User interacted with notification \"{notification_id}\""
                 ));

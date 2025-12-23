@@ -4,7 +4,10 @@ use adw::subclass::prelude::*;
 use ashpd::desktop::device::{Device, DeviceProxy};
 use gtk::glib;
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -60,11 +63,16 @@ glib::wrapper! {
 
 impl DevicePage {
     async fn request(&self) -> ashpd::Result<()> {
-        let proxy = DeviceProxy::new().await?;
+        let selected_devices = self.selected_devices();
+        spawn_tokio(async move {
+            let proxy = DeviceProxy::new().await?;
 
-        proxy
-            .access_device(std::process::id(), self.selected_devices().as_slice())
-            .await?;
+            proxy
+                .access_device(std::process::id(), &selected_devices)
+                .await?;
+            ashpd::Result::Ok(())
+        })
+        .await?;
 
         Ok(())
     }

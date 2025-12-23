@@ -75,17 +75,17 @@ impl TransferOptions {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.FileTransfer`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.FileTransfer")]
-pub struct FileTransfer<'a>(Proxy<'a>);
+pub struct FileTransfer(Proxy<'static>);
 
-impl<'a> FileTransfer<'a> {
+impl FileTransfer {
     /// Create a new instance of [`FileTransfer`].
-    pub async fn new() -> Result<FileTransfer<'a>, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_documents("org.freedesktop.portal.FileTransfer").await?;
         Ok(Self(proxy))
     }
 
     /// Create a new instance of [`FileTransfer`].
-    pub async fn with_connection(connection: zbus::Connection) -> Result<FileTransfer<'a>, Error> {
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_documents_with_connection(connection, "org.freedesktop.portal.FileTransfer")
                 .await?;
@@ -202,8 +202,8 @@ impl<'a> FileTransfer<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for FileTransfer<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for FileTransfer {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

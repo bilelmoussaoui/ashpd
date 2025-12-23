@@ -26,7 +26,7 @@ pub(crate) const FLATPAK_DEVELOPMENT_PATH: &str = "/org/freedesktop/Flatpak/Deve
 
 static SESSION: OnceLock<zbus::Connection> = OnceLock::new();
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Proxy<'a> {
     inner: zbus::Proxy<'a>,
     version: u32,

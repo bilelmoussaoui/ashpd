@@ -6,9 +6,15 @@ mod widgets;
 mod window;
 
 use application::Application;
-use config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
+use config::{GETTEXT_PACKAGE, LOCALEDIR};
 use gettextrs::*;
 use gtk::{gio, glib};
+use gvdb_macros::include_gresource_from_xml;
+
+use crate::portals::spawn_tokio_blocking;
+
+static GRESOURCE_BYTES: &[u8] =
+    include_gresource_from_xml!("demo/client/data/resources.gresource.xml");
 
 fn main() -> glib::ExitCode {
     // Initialize logger, debug is carried out via debug!, info!, and warn!.
@@ -24,12 +30,12 @@ fn main() -> glib::ExitCode {
 
     gst4gtk::plugin_register_static().expect("Failed to register gstgtk4 plugin");
 
-    let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load gresource file");
+    let res = gio::Resource::from_data(&glib::Bytes::from_static(GRESOURCE_BYTES)).unwrap();
     gio::resources_register(&res);
 
     let mut args = std::env::args();
     if args.any(|x| x == "--replace") {
-        glib::spawn_future_local(async move {
+        spawn_tokio_blocking(async move {
             if let Err(err) = Application::stop_current_instance().await {
                 tracing::error!("Failed to replace current instance {}", err);
             };

@@ -4,7 +4,10 @@ use adw::subclass::prelude::*;
 use ashpd::desktop::secret;
 use gtk::{glib, prelude::*};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -53,7 +56,7 @@ impl SecretPage {
     async fn retrieve_secret(&self) {
         let imp = self.imp();
 
-        match secret::retrieve().await {
+        match spawn_tokio(async { secret::retrieve().await }).await {
             Ok(key) => {
                 let key_str = format!("{key:?}")
                     .trim_start_matches('[')

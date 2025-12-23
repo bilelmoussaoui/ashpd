@@ -6,15 +6,15 @@ use crate::{proxy::Proxy, AppID, Error};
 #[zvariant(signature = "dict")]
 struct RegisterOptions {}
 
-struct RegistryProxy<'a>(Proxy<'a>);
+struct RegistryProxy(Proxy<'static>);
 
-impl<'a> RegistryProxy<'a> {
-    pub async fn new() -> Result<RegistryProxy<'a>, Error> {
+impl RegistryProxy {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.host.portal.Registry").await?;
         Ok(Self(proxy))
     }
 
-    pub async fn with_connection(connection: zbus::Connection) -> Result<RegistryProxy<'a>, Error> {
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.host.portal.Registry")
                 .await?;
@@ -28,8 +28,8 @@ impl<'a> RegistryProxy<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for RegistryProxy<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for RegistryProxy {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

@@ -2,7 +2,10 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::network_monitor::NetworkMonitor;
 use gtk::glib::{self, clone};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -78,8 +81,11 @@ glib::wrapper! {
 impl NetworkMonitorPage {
     async fn refresh(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let proxy = NetworkMonitor::new().await?;
-        let status = proxy.status().await?;
+        let status = spawn_tokio(async move {
+            let proxy = NetworkMonitor::new().await?;
+            proxy.status().await
+        })
+        .await?;
 
         imp.connectivity
             .set_label(&status.connectivity().to_string());
@@ -92,11 +98,16 @@ impl NetworkMonitorPage {
 
     async fn can_reach(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let proxy = NetworkMonitor::new().await?;
-
         let hostname = imp.host_entry.text();
         let port = imp.port_entry.text().parse().unwrap_or(80);
-        match proxy.can_reach(&hostname, port).await {
+
+        let response = spawn_tokio(async move {
+            let proxy = NetworkMonitor::new().await?;
+            proxy.can_reach(&hostname, port).await
+        })
+        .await;
+
+        match response {
             Ok(response) => {
                 imp.can_reach_row.set_title(&response.to_string());
                 imp.response_group.set_visible(true);

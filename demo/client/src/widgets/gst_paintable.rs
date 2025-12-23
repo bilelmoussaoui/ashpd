@@ -84,17 +84,17 @@ impl CameraPaintable {
         } else {
             tracing::debug!("Loading PipeWire FD: {}", raw_fd);
         }
-        self.init_pipeline(pipewire_element);
+        if let Err(err) = self.init_pipeline(pipewire_element) {
+            tracing::error!("Failed to initialize pipeline: {err}")
+        }
     }
 
-    fn init_pipeline(&self, pipewire_src: gst::Element) {
+    fn init_pipeline(&self, pipewire_src: gst::Element) -> anyhow::Result<()> {
         tracing::debug!("Init pipeline");
         let imp = self.imp();
         let pipeline = gst::Pipeline::new();
 
-        let sink = gst::ElementFactory::make("gtk4paintablesink")
-            .build()
-            .unwrap();
+        let sink = gst::ElementFactory::make("gtk4paintablesink").build()?;
         let paintable = sink.property::<gdk::Paintable>("paintable");
 
         // create the appropriate sink depending on the environment we are running
@@ -106,23 +106,20 @@ impl CameraPaintable {
         {
             gst::ElementFactory::make("glsinkbin")
                 .property("sink", &sink)
-                .build()
-                .unwrap()
+                .build()?
         } else {
             let bin = gst::Bin::default();
-            let convert = gst::ElementFactory::make("videoconvert").build().unwrap();
+            let convert = gst::ElementFactory::make("videoconvert").build()?;
 
-            bin.add(&convert).unwrap();
-            bin.add(&sink).unwrap();
-            convert.link(&sink).unwrap();
+            bin.add(&convert)?;
+            bin.add(&sink)?;
+            convert.link(&sink)?;
 
             bin.add_pad(
-                &gst::GhostPad::builder_with_target(&convert.static_pad("sink").unwrap())
-                    .unwrap()
+                &gst::GhostPad::builder_with_target(&convert.static_pad("sink").unwrap())?
                     .name("sink")
                     .build(),
-            )
-            .unwrap();
+            )?;
 
             bin.upcast()
         };
@@ -144,11 +141,11 @@ impl CameraPaintable {
         ));
         imp.sink_paintable.replace(Some(paintable));
 
-        let queue1 = gst::ElementFactory::make("queue").build().unwrap();
-        pipeline.add_many([&pipewire_src, &queue1, &sink]).unwrap();
+        let queue1 = gst::ElementFactory::make("queue").build()?;
+        pipeline.add_many([&pipewire_src, &queue1, &sink])?;
 
-        pipewire_src.link(&queue1).unwrap();
-        queue1.link(&sink).unwrap();
+        pipewire_src.link(&queue1)?;
+        queue1.link(&sink)?;
 
         let bus = pipeline.bus().unwrap();
         let guard = bus
@@ -164,9 +161,10 @@ impl CameraPaintable {
                 glib::ControlFlow::Continue
             })
             .expect("Failed to add bus watch");
-        pipeline.set_state(gst::State::Playing).unwrap();
+        pipeline.set_state(gst::State::Playing)?;
         imp.pipeline.replace(Some(pipeline));
         imp.guard.replace(Some(guard));
+        Ok(())
     }
 
     pub fn close_pipeline(&self) {

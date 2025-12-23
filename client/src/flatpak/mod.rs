@@ -244,17 +244,17 @@ struct CreateMonitorOptions {}
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-org.freedesktop.portal.Flatpak).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak")]
-pub struct Flatpak<'a>(Proxy<'a>);
+pub struct Flatpak(Proxy<'static>);
 
-impl<'a> Flatpak<'a> {
+impl Flatpak {
     /// Create a new instance of [`Flatpak`].
-    pub async fn new() -> Result<Flatpak<'a>, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_flatpak("org.freedesktop.portal.Flatpak").await?;
         Ok(Self(proxy))
     }
 
     /// Create a new instance of [`Flatpak`].
-    pub async fn with_connection(connection: zbus::Connection) -> Result<Flatpak<'a>, Error> {
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_flatpak_with_connection(connection, "org.freedesktop.portal.Flatpak")
                 .await?;
@@ -275,7 +275,7 @@ impl<'a> Flatpak<'a> {
     /// See also [`CreateUpdateMonitor`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).
     #[doc(alias = "CreateUpdateMonitor")]
     #[doc(alias = "xdp_portal_update_monitor_start")]
-    pub async fn create_update_monitor(&self) -> Result<UpdateMonitor<'a>, Error> {
+    pub async fn create_update_monitor(&self) -> Result<UpdateMonitor, Error> {
         let options = CreateMonitorOptions::default();
         let path = self
             .0
@@ -388,8 +388,8 @@ impl<'a> Flatpak<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for Flatpak<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for Flatpak {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

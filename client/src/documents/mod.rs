@@ -147,17 +147,17 @@ impl FromStr for Permission {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Documents`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Documents.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Documents")]
-pub struct Documents<'a>(Proxy<'a>);
+pub struct Documents(Proxy<'static>);
 
-impl<'a> Documents<'a> {
+impl Documents {
     /// Create a new instance of [`Documents`].
-    pub async fn new() -> Result<Documents<'a>, Error> {
+    pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_documents("org.freedesktop.portal.Documents").await?;
         Ok(Self(proxy))
     }
 
     /// Create a new instance of [`Documents`].
-    pub async fn with_connection(connection: zbus::Connection) -> Result<Documents<'a>, Error> {
+    pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_documents_with_connection(connection, "org.freedesktop.portal.Documents")
                 .await?;
@@ -509,8 +509,8 @@ impl<'a> Documents<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for Documents<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for Documents {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

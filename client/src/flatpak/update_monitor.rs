@@ -114,17 +114,17 @@ pub struct UpdateProgress {
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Flatpak.UpdateMonitor`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-org.freedesktop.portal.Flatpak.UpdateMonitor).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Flatpak.UpdateMonitor")]
-pub struct UpdateMonitor<'a>(Proxy<'a>);
+pub struct UpdateMonitor(Proxy<'static>);
 
-impl<'a> UpdateMonitor<'a> {
+impl UpdateMonitor {
     /// Create a new instance of [`UpdateMonitor`].
     ///
     /// **Note** A [`UpdateMonitor`] is not supposed to be created
     /// manually.
     pub(crate) async fn with_connection(
         connection: zbus::Connection,
-        path: ObjectPath<'a>,
-    ) -> Result<UpdateMonitor<'a>, Error> {
+        path: ObjectPath<'static>,
+    ) -> Result<Self, Error> {
         let proxy = Proxy::new_flatpak_with_path(
             connection,
             "org.freedesktop.portal.Flatpak.UpdateMonitor",
@@ -184,8 +184,8 @@ impl<'a> UpdateMonitor<'a> {
     }
 }
 
-impl<'a> std::ops::Deref for UpdateMonitor<'a> {
-    type Target = zbus::Proxy<'a>;
+impl std::ops::Deref for UpdateMonitor {
+    type Target = zbus::Proxy<'static>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

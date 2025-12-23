@@ -7,7 +7,10 @@ use gtk::{
     prelude::*,
 };
 
-use crate::widgets::{CameraPaintable, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{CameraPaintable, PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use std::cell::RefCell;
@@ -163,12 +166,18 @@ impl CameraPage {
 }
 
 async fn stream() -> ashpd::Result<std::os::fd::OwnedFd> {
-    let proxy = camera::Camera::new().await?;
-    proxy.request_access().await?;
-    proxy.open_pipe_wire_remote().await
+    spawn_tokio(async move {
+        let proxy = camera::Camera::new().await?;
+        proxy.request_access().await?;
+        proxy.open_pipe_wire_remote().await
+    })
+    .await
 }
 
 async fn camera_available() -> ashpd::Result<bool> {
-    let proxy = camera::Camera::new().await?;
-    proxy.is_present().await
+    spawn_tokio(async move {
+        let proxy = camera::Camera::new().await?;
+        proxy.is_present().await
+    })
+    .await
 }

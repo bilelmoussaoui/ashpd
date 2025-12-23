@@ -173,7 +173,7 @@ impl InhibitProxy {
     pub async fn create_monitor(
         &self,
         identifier: Option<&WindowIdentifier>,
-    ) -> Result<Session<'static, Self>, Error> {
+    ) -> Result<Session<Self>, Error> {
         let options = CreateMonitorOptions::default();
         let identifier = identifier.to_string_or_empty();
         let body = &(&identifier, &options);
@@ -247,7 +247,7 @@ impl InhibitProxy {
     /// See also [`QueryEndResponse`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Inhibit.html#org-freedesktop-portal-inhibit-queryendresponse).
     #[doc(alias = "QueryEndResponse")]
     #[doc(alias = "xdp_portal_session_monitor_query_end_response")]
-    pub async fn query_end_response(&self, session: &Session<'_, Self>) -> Result<(), Error> {
+    pub async fn query_end_response(&self, session: &Session<Self>) -> Result<(), Error> {
         self.0.call("QueryEndResponse", &(session)).await
     }
 }

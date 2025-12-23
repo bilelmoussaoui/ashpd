@@ -2,7 +2,10 @@ use adw::subclass::prelude::*;
 use ashpd::{desktop::screenshot, WindowIdentifier};
 use gtk::{gdk, gio, glib, prelude::*};
 
-use crate::widgets::{ColorWidget, PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{ColorWidget, PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -65,12 +68,15 @@ impl ScreenshotPage {
         // used for retrieving a window identifier
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        match screenshot::ColorRequest::default()
-            .identifier(identifier)
-            .send()
-            .await
-            .and_then(|r| r.response())
-        {
+        let response = spawn_tokio(async move {
+            screenshot::ColorRequest::default()
+                .identifier(identifier)
+                .send()
+                .await
+                .and_then(|r| r.response())
+        })
+        .await;
+        match response {
             Ok(color) => {
                 self.imp().color_widget.set_rgba(gdk::RGBA::from(color));
                 self.success("Color pick request was successful");
@@ -91,14 +97,17 @@ impl ScreenshotPage {
         let interactive = imp.interactive_switch.is_active();
         let modal = imp.modal_switch.is_active();
 
-        match screenshot::ScreenshotRequest::default()
-            .identifier(identifier)
-            .interactive(interactive)
-            .modal(modal)
-            .send()
-            .await
-            .and_then(|r| r.response())
-        {
+        let response = spawn_tokio(async move {
+            screenshot::ScreenshotRequest::default()
+                .identifier(identifier)
+                .interactive(interactive)
+                .modal(modal)
+                .send()
+                .await
+                .and_then(|r| r.response())
+        })
+        .await;
+        match response {
             Ok(response) => {
                 let file = gio::File::for_uri(response.uri().as_str());
                 imp.screenshot_photo.set_file(Some(&file));

@@ -254,7 +254,7 @@ impl UsbProxy {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-createsession).
     #[doc(alias = "CreateSession")]
-    pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
+    pub async fn create_session(&self) -> Result<Session<Self>, Error> {
         let options = CreateSessionOptions::default();
         let session: OwnedObjectPath = self.0.call("CreateSession", &(&options)).await?;
         Session::with_connection(self.0.connection().clone(), session).await

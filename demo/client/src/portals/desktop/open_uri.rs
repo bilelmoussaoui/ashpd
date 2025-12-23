@@ -4,7 +4,10 @@ use adw::subclass::prelude::*;
 use ashpd::{desktop::open_uri, WindowIdentifier};
 use gtk::{glib, prelude::*};
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -59,29 +62,29 @@ impl OpenUriPage {
         let identifier = WindowIdentifier::from_native(&root).await;
         match url::Url::parse(&imp.uri_entry.text()) {
             Ok(uri) => {
-                let request = open_uri::OpenFileRequest::default()
-                    .ask(ask)
-                    .writeable(writeable)
-                    .identifier(identifier);
-                let response = if uri.scheme() == "file" {
-                    let file_path = uri.to_file_path().unwrap();
-                    match std::fs::File::open(&file_path) {
-                        Ok(fd) => request.send_file(&fd.as_fd()).await,
-                        Err(err) => {
-                            tracing::error!("Failed to open file: {err}");
-                            self.error(&format!(
-                                "File or directory '{}' doesn't exists",
-                                file_path.display()
-                            ));
-                            return;
+                let response = spawn_tokio(async move {
+                    let request = open_uri::OpenFileRequest::default()
+                        .ask(ask)
+                        .writeable(writeable)
+                        .identifier(identifier);
+                    if uri.scheme() == "file" {
+                        let file_path = uri.to_file_path().unwrap();
+                        match std::fs::File::open(&file_path) {
+                            Ok(fd) => request.send_file(&fd.as_fd()).await,
+                            Err(err) => {
+                                tracing::error!("Failed to open file: {err}");
+                                return Err(From::from(err));
+                            }
                         }
+                    } else {
+                        request.send_uri(&uri).await
                     }
-                } else {
-                    request.send_uri(&uri).await
-                }
-                .and_then(|r| r.response());
+                    .and_then(|r| r.response())
+                })
+                .await;
+
                 match response {
-                    Ok(_) => {
+                    Ok(()) => {
                         self.success("Open URI request was successful");
                     }
                     Err(err) => {

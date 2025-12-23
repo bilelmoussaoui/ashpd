@@ -384,7 +384,7 @@ impl Screencast {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-createsession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_screencast_session")]
-    pub async fn create_session(&self) -> Result<Session<'static, Self>, Error> {
+    pub async fn create_session(&self) -> Result<Session<Self>, Error> {
         let options = CreateSessionOptions::default();
         let (request, proxy) = futures_util::try_join!(
             self.0
@@ -415,7 +415,7 @@ impl Screencast {
     #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(
         &self,
-        session: &Session<'_, impl HasScreencastSession>,
+        session: &Session<impl HasScreencastSession>,
     ) -> Result<OwnedFd, Error> {
         // `options` parameter doesn't seems to be used yet
         // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/screen-cast.c#L940
@@ -449,7 +449,7 @@ impl Screencast {
     #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
-        session: &Session<'_, impl HasScreencastSession>,
+        session: &Session<impl HasScreencastSession>,
         cursor_mode: CursorMode,
         types: BitFlags<SourceType>,
         multiple: bool,
@@ -490,7 +490,7 @@ impl Screencast {
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
-        session: &Session<'_, impl HasScreencastSession>,
+        session: &Session<impl HasScreencastSession>,
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<Streams>, Error> {
         let options = StartCastOptions::default();

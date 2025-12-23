@@ -2,7 +2,10 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::desktop::proxy_resolver::ProxyResolver;
 use gtk::glib;
 
-use crate::widgets::{PortalPage, PortalPageExt, PortalPageImpl};
+use crate::{
+    portals::spawn_tokio,
+    widgets::{PortalPage, PortalPageExt, PortalPageImpl},
+};
 
 mod imp {
     use super::*;
@@ -51,26 +54,32 @@ glib::wrapper! {
 impl ProxyResolverPage {
     async fn resolve(&self) -> ashpd::Result<()> {
         let imp = self.imp();
-        let proxy = ProxyResolver::new().await?;
 
         match url::Url::parse(&imp.uri.text()) {
-            Ok(uri) => match proxy.lookup(&uri).await {
-                Ok(resolved_uris) => {
-                    resolved_uris.iter().for_each(|uri| {
-                        let row = adw::ActionRow::builder()
-                            .title(uri.as_str())
-                            .selectable(true)
-                            .build();
-                        imp.response_group.add(&row);
-                    });
-                    imp.response_group.set_visible(true);
-                    self.success("Lookup request was successful");
+            Ok(uri) => {
+                let response = spawn_tokio(async move {
+                    let proxy = ProxyResolver::new().await?;
+                    proxy.lookup(&uri).await
+                })
+                .await;
+                match response {
+                    Ok(resolved_uris) => {
+                        resolved_uris.iter().for_each(|uri| {
+                            let row = adw::ActionRow::builder()
+                                .title(uri.as_str())
+                                .selectable(true)
+                                .build();
+                            imp.response_group.add(&row);
+                        });
+                        imp.response_group.set_visible(true);
+                        self.success("Lookup request was successful");
+                    }
+                    Err(err) => {
+                        tracing::error!("Failed to lookup URI: {err}");
+                        self.error("Request to lookup a URI failed");
+                    }
                 }
-                Err(err) => {
-                    tracing::error!("Failed to lookup URI: {err}");
-                    self.error("Request to lookup a URI failed");
-                }
-            },
+            }
             Err(err) => {
                 tracing::error!("Failed to parse URI: {err}");
                 self.error("Request to lookup a URI failed");

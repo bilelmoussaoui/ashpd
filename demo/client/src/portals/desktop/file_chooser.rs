@@ -6,7 +6,7 @@ use ashpd::{
 use gtk::glib;
 
 use crate::{
-    portals::{is_empty, split_comma},
+    portals::{is_empty, spawn_tokio, split_comma},
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
@@ -134,16 +134,20 @@ impl FileChooserPage {
 
         let filters = self.filters(imp.open_filter_combo.selected());
         let current_filter = filters.first().cloned();
-        let request = OpenFileRequest::default()
-            .directory(directory)
-            .identifier(identifier)
-            .modal(modal)
-            .title(&*title)
-            .multiple(multiple)
-            .filters(filters)
-            .current_filter(current_filter)
-            .accept_label(accept_label.as_deref());
-        match request.send().await.and_then(|r| r.response()) {
+        let response = spawn_tokio(async move {
+            let request = OpenFileRequest::default()
+                .directory(directory)
+                .identifier(identifier)
+                .modal(modal)
+                .title(&*title)
+                .multiple(multiple)
+                .filters(filters)
+                .current_filter(current_filter)
+                .accept_label(accept_label.as_deref());
+            request.send().await.and_then(|r| r.response())
+        })
+        .await;
+        match response {
             Ok(files) => {
                 imp.open_response_group.set_visible(true);
 
@@ -176,17 +180,22 @@ impl FileChooserPage {
         let current_file = is_empty(imp.save_file_current_file_entry.text());
         let filters = self.filters(imp.save_file_filter_combo.selected());
         let current_filter = filters.first().cloned();
-        let request = SaveFileRequest::default()
-            .identifier(identifier)
-            .modal(modal)
-            .title(&*title)
-            .filters(filters)
-            .current_filter(current_filter)
-            .accept_label(accept_label.as_deref())
-            .current_name(current_name.as_deref())
-            .current_folder::<String>(current_folder)?
-            .current_file::<String>(current_file)?;
-        match request.send().await.and_then(|r| r.response()) {
+        let response = spawn_tokio(async move {
+            let request = SaveFileRequest::default()
+                .identifier(identifier)
+                .modal(modal)
+                .title(&*title)
+                .filters(filters)
+                .current_filter(current_filter)
+                .accept_label(accept_label.as_deref())
+                .current_name(current_name.as_deref())
+                .current_folder::<String>(current_folder)?
+                .current_file::<String>(current_file)?;
+            request.send().await.and_then(|r| r.response())
+        })
+        .await;
+
+        match response {
             Ok(files) => {
                 imp.save_file_response_group.set_visible(true);
 
@@ -218,15 +227,20 @@ impl FileChooserPage {
         let accept_label = is_empty(imp.save_files_accept_label_entry.text());
         let current_folder = is_empty(imp.save_files_current_folder_entry.text());
         let files = is_empty(imp.save_files_files_entry.text()).map(split_comma);
-        let request = SaveFilesRequest::default()
-            .identifier(identifier)
-            .modal(modal)
-            .title(&*title)
-            .accept_label(accept_label.as_deref())
-            .current_folder::<String>(current_folder)?
-            .files::<Vec<_>>(files)?;
+        let response = spawn_tokio(async move {
+            let request = SaveFilesRequest::default()
+                .identifier(identifier)
+                .modal(modal)
+                .title(&*title)
+                .accept_label(accept_label.as_deref())
+                .current_folder::<String>(current_folder)?
+                .files::<Vec<_>>(files)?;
 
-        match request.send().await.and_then(|r| r.response()) {
+            request.send().await.and_then(|r| r.response())
+        })
+        .await;
+
+        match response {
             Ok(files) => {
                 imp.save_files_response_group.set_visible(true);
 
