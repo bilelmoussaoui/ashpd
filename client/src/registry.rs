@@ -54,7 +54,7 @@ pub async fn register_host_app(app_id: AppID) -> crate::Result<()> {
     Ok(())
 }
 
-/// Similar to [`register_host_app`] that takes a connection paramterer.
+/// Similar to [`register_host_app`] that takes a connection parameter.
 pub async fn register_host_app_with_connection(
     connection: zbus::Connection,
     app_id: AppID,
