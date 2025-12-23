@@ -46,7 +46,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.85.0
+          toolchain: 1.92.0
           override: true
       - uses: actions-rs/cargo@v1
         with:
@@ -64,7 +64,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.85.0
+          toolchain: 1.92.0
           override: true
       - uses: actions-rs/cargo@v1
         with:
@@ -82,7 +82,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.85.0
+          toolchain: 1.92.0
           override: true
           components: rustfmt
       - uses: actions-rs/cargo@v1
@@ -101,7 +101,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.85.0
+          toolchain: 1.92.0
           override: true
           components: clippy
       - uses: actions-rs/cargo@v1
@@ -116,4 +116,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
-          rust-version: "1.85"
+          rust-version: "1.92"

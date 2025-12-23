@@ -239,8 +239,12 @@ impl ScreencastInterface {
             tracing::debug!(
                 "ScreencastInterface::create_session: session with handle `{session_token}` created"
             );
-            let monitor = Arc::clone(&self.imp) as Arc<dyn SessionImpl>;
-            let session = Session::new(session_handle, Arc::clone(&self.sessions), Some(monitor));
+
+            let session = Session::new(
+                session_handle,
+                Arc::clone(&self.sessions),
+                Some(Arc::clone(&self.imp) as Arc<dyn SessionImpl>),
+            );
             session.serve(self.cnx.clone()).await?;
             {
                 let mut sessions = self.sessions.lock().unwrap();
