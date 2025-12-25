@@ -5,6 +5,7 @@ members = [
     "client",
     "demo/client",
     "demo/backend",
+    "handles",
 ]
 
 [workspace.package]
