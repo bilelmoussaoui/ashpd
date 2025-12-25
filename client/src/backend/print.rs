@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
+use ashpd_handles::{AppID, WindowIdentifierType};
 use async_trait::async_trait;
 
 use crate::{
-    AppID, WindowIdentifierType,
     backend::{
         MaybeAppID, MaybeWindowIdentifier, Result,
         request::{Request, RequestImpl},

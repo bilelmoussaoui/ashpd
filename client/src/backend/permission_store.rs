@@ -1,10 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
+use ashpd_handles::{AppID, DocumentID};
 use async_trait::async_trait;
 
 use crate::{
-    AppID, PortalError,
-    documents::{DocumentID, Permission},
+    PortalError,
+    documents::Permission,
     zbus::object_server::SignalEmitter,
     zvariant::{OwnedValue, Value},
 };

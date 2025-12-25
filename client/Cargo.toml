@@ -14,7 +14,7 @@ rust-version.workspace = true
 async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net", "futures-util/io"]
 default = ["tokio"]
 
-backend = ["async-trait"]
+backend = ["async-trait", "ashpd-handles/backend"]
 
 gtk4 = ["dep:gtk4"]
 tokio = ["zbus/tokio", "dep:tokio"]
