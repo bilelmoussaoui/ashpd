@@ -22,9 +22,7 @@ pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;
 mod error;
-mod window_identifier;
 
-pub use self::window_identifier::WindowIdentifier;
 mod registry;
 pub use self::registry::{register_host_app, register_host_app_with_connection};
 mod file_path;
@@ -32,9 +30,6 @@ pub use self::file_path::FilePath;
 
 mod proxy;
 
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
-pub use self::window_identifier::WindowIdentifierType;
 #[cfg(feature = "backend")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 #[allow(missing_docs)]

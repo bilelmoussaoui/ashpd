@@ -38,6 +38,7 @@
 
 use std::{collections::HashMap, fmt::Debug, os::fd::OwnedFd};
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -47,10 +48,7 @@ use super::{
     HandleToken, PersistMode, Request, Session, remote_desktop::RemoteDesktop,
     session::SessionPortal,
 };
-use crate::{
-    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, desktop::session::CreateSessionResponse, proxy::Proxy};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]

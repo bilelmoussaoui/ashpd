@@ -3,10 +3,8 @@
 //! ```rust,no_run
 //! use std::str::FromStr;
 //!
-//! use ashpd::{
-//!     AppID,
-//!     documents::{Documents, Permission},
-//! };
+//! use ashpd_handles::AppID;
+//! use ashpd::documents::{Documents, Permission};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Documents::new().await?;

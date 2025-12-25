@@ -4,12 +4,10 @@
 //!
 //! ```rust,no_run
 //! use std::io::Read;
-//! use ashpd::{
-//!     desktop::{
-//!         dynamic_launcher::{DynamicLauncherProxy, PrepareInstallOptions},
-//!         Icon,
-//!     },
-//!     WindowIdentifier,
+//! use ashpd_handles::WindowIdentifier;
+//! use ashpd::desktop::{
+//!     dynamic_launcher::{DynamicLauncherProxy, PrepareInstallOptions},
+//!     Icon,
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -52,14 +50,14 @@
 
 use std::collections::HashMap;
 
-use ashpd_handles::ActivationToken;
+use ashpd_handles::{ActivationToken, MaybeWindowIdentifierExt, WindowIdentifier};
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, OwnedValue, SerializeDict, Type, Value};
 
 use super::{HandleToken, Icon, Request};
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, proxy::Proxy};
 
 #[bitflags]
 #[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]

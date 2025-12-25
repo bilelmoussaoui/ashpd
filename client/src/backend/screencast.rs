@@ -3,11 +3,12 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use ashpd_handles::{AppID, MaybeWindowIdentifierExt, WindowIdentifier};
 use async_trait::async_trait;
 use enumflags2::BitFlags;
 
 use crate::{
-    AppID, PortalError, WindowIdentifierType,
+    PortalError, WindowIdentifierType,
     backend::{
         MaybeAppID, MaybeWindowIdentifier, Result,
         request::{Request, RequestImpl},
