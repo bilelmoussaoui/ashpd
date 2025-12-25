@@ -25,12 +25,8 @@ mod error;
 mod window_identifier;
 
 pub use self::window_identifier::WindowIdentifier;
-mod app_id;
 mod registry;
-pub use self::{
-    app_id::AppID,
-    registry::{register_host_app, register_host_app_with_connection},
-};
+pub use self::registry::{register_host_app, register_host_app_with_connection};
 mod file_path;
 pub use self::file_path::FilePath;
 
