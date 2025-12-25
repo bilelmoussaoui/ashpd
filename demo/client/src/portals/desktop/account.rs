@@ -1,5 +1,6 @@
 use adw::subclass::prelude::*;
-use ashpd::{WindowIdentifier, desktop::account::UserInformation};
+use ashpd::desktop::account::UserInformation;
+use ashpd_handles::WindowIdentifier;
 use gtk::{gdk, glib, prelude::*};
 
 use crate::{
