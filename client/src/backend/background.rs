@@ -1,11 +1,12 @@
 use std::{collections::HashMap, sync::Arc};
 
+use ashpd_handles::AppID;
 use async_trait::async_trait;
 use enumflags2::{BitFlags, bitflags};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
-    AppID, PortalError,
+    PortalError,
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
     zbus::object_server::SignalEmitter,
