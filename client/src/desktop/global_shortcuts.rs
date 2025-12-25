@@ -2,6 +2,7 @@
 
 use std::{collections::HashMap, fmt::Debug, time::Duration};
 
+use ashpd_handles::ActivationToken;
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
@@ -10,8 +11,8 @@ use zbus::zvariant::{
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{
-    ActivationToken, Error, WindowIdentifier, desktop::session::CreateSessionResponse,
-    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt,
+    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
+    window_identifier::MaybeWindowIdentifierExt,
 };
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]

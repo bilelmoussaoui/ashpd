@@ -52,16 +52,14 @@
 
 use std::collections::HashMap;
 
+use ashpd_handles::ActivationToken;
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, OwnedValue, SerializeDict, Type, Value};
 
 use super::{HandleToken, Icon, Request};
-use crate::{
-    ActivationToken, Error, WindowIdentifier, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
 
 #[bitflags]
 #[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
