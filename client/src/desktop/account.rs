@@ -22,13 +22,11 @@
 //! }
 //! ```
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::HandleToken;
-use crate::{
-    Error, WindowIdentifier, desktop::request::Request, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, desktop::request::Request, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]

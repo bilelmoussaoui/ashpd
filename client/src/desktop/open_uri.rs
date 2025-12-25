@@ -53,12 +53,12 @@
 
 use std::os::fd::AsFd;
 
-use ashpd_handles::ActivationToken;
+use ashpd_handles::{ActivationToken, MaybeWindowIdentifierExt, WindowIdentifier};
 use url::Url;
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
