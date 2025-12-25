@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    WindowIdentifier,
     desktop::{
         PersistMode, Session,
         remote_desktop::{DeviceType, RemoteDesktop},
@@ -10,6 +9,7 @@ use ashpd::{
     },
     enumflags2::BitFlags,
 };
+use ashpd_handles::WindowIdentifier;
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 

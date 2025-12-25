@@ -1,10 +1,8 @@
 use std::os::fd::AsFd;
 
 use adw::subclass::prelude::*;
-use ashpd::{
-    WindowIdentifier,
-    desktop::print::{PageSetup, PrintProxy, Settings},
-};
+use ashpd::desktop::print::{PageSetup, PrintProxy, Settings};
+use ashpd_handles::WindowIdentifier;
 use gtk::{gio, glib, prelude::*};
 
 use crate::{
