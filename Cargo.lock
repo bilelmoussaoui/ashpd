@@ -60,14 +60,11 @@ dependencies = [
  "fastrand",
  "futures-channel",
  "futures-util",
- "gdk4-wayland",
- "gdk4-x11",
  "glib",
  "gstreamer",
  "gtk4",
  "pipewire",
  "quick-xml 0.38.4",
- "raw-window-handle",
  "reis",
  "serde",
  "serde_json",
@@ -75,9 +72,6 @@ dependencies = [
  "tokio",
  "tracing",
  "url",
- "wayland-backend",
- "wayland-client",
- "wayland-protocols",
  "zbus",
 ]
 
@@ -102,6 +96,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "ashpd",
+ "ashpd-handles",
  "async-channel",
  "chrono",
  "futures-util",
