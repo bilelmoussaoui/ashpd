@@ -80,6 +80,7 @@ name = "ashpd-backend-demo"
 version = "0.1.0"
 dependencies = [
  "ashpd",
+ "ashpd-handles",
  "async-trait",
  "futures-util",
  "nix",
