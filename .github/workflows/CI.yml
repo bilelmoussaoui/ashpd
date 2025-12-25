@@ -51,7 +51,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --workspace --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --workspace --features "gtk4,pipewire,tracing,backend"
 
   test:
     name: Test Suite
@@ -69,7 +69,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --features "gtk4,pipewire,wayland,raw_handle,tracing,backend"
+          args: --workspace --features "gtk4,pipewire,tracing,backend"
 
   fmt:
     name: Rustfmt
