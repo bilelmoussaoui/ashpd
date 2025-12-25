@@ -1,5 +1,4 @@
 use ashpd::{
-    AppID, WindowIdentifierType,
     backend::{
         Result,
         request::RequestImpl,
@@ -15,6 +14,7 @@ use ashpd::{
     },
     enumflags2::BitFlags,
 };
+use ashpd_handles::{AppID, WindowIdentifierType};
 use async_trait::async_trait;
 
 #[derive(Default)]
