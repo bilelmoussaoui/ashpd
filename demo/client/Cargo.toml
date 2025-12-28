@@ -11,16 +11,16 @@ anyhow = "1.0"
 ashpd = {path = "../../client", version = "0.13", default-features = false, features = ["tokio", "gtk4", "tracing", "pipewire"]}
 async-channel = "2.3"
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
-futures-util = { workspace = true }
+futures-util = "0.3"
 gettext-rs = {version = "0.7", features = ["gettext-system"]}
 gst = {package = "gstreamer", version = "0.24"}
 gst4gtk = {package = "gst-plugin-gtk4", version = "0.14", features = ["wayland", "x11egl", "x11glx", "gtk_v4_14"]}
 gtk = {package = "gtk4", version = "0.10", features = ["v4_14"]}
 gvdb-macros = "0.1"
 rusb = "0.9.4"
-serde = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
 shumate = {version = "0.7", package = "libshumate"}
-tokio = { workspace = true, features = ["io-util", "net", "time", "rt-multi-thread", "macros"] }
-tracing = { workspace = true }
-tracing-subscriber = { workspace = true, features = ["fmt"] }
+tokio = { version = "1.48", default-features = false, features = ["io-util", "net", "time", "rt-multi-thread", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
 url = {version = "2.3", features = ["serde"]}

@@ -62,14 +62,16 @@
         {
             "name": "ashpd-demo",
             "buildsystem": "meson",
+            "subdir": "demo/client",
             "run-tests": true,
             "config-opts": [
                 "-Dprofile=development"
             ],
             "sources": [
                 {
-                    "type": "dir",
-                    "path": ".."
+                    "type": "git",
+                    "path": "../../..",
+                    "branch": "HEAD"
                 }
             ]
         }

@@ -20,8 +20,12 @@ use gvdb_macros::include_gresource_from_xml;
 
 use crate::portals::spawn_tokio_blocking;
 
+#[cfg(workspace_build)]
 static GRESOURCE_BYTES: &[u8] =
     include_gresource_from_xml!("demo/client/data/resources.gresource.xml");
+
+#[cfg(not(workspace_build))]
+static GRESOURCE_BYTES: &[u8] = include_gresource_from_xml!("data/resources.gresource.xml");
 
 fn main() -> glib::ExitCode {
     // Initialize logger, debug is carried out via debug!, info!, and warn!.
