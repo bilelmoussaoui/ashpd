@@ -73,6 +73,7 @@ dependencies = [
  "tracing",
  "url",
  "zbus",
+ "zbus_macros",
 ]
 
 [[package]]
