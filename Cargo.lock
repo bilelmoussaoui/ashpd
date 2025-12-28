@@ -73,6 +73,7 @@ dependencies = [
  "tracing",
  "url",
  "zbus",
+ "zbus_macros",
 ]
 
 [[package]]
@@ -97,6 +98,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "ashpd",
+ "ashpd-handles",
  "async-channel",
  "chrono",
  "futures-util",
