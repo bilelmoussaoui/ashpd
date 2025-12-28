@@ -2,7 +2,7 @@ on:
   push:
     branches: [master]
   pull_request:
-name: Client Demo FLatpak
+name: Client Demo Flatpak
 jobs:
   flatpak:
     name: "Flatpak"
