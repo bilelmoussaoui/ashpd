@@ -12,7 +12,7 @@ jobs:
       options: --privileged
     steps:
       - uses: actions/checkout@v4
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@main
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@master
         with:
           bundle: "ashpd-demo.flatpak"
           manifest-path: "demo/client/build-aux/com.belmoussaoui.ashpd.demo.Devel.json"
