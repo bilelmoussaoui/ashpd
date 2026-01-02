@@ -10,6 +10,8 @@ jobs:
     container:
       image: bilelmoussaoui/flatpak-github-actions:gnome-nightly
       options: --privileged
+      volumes:
+        - /mnt/flatpak_workflow:/mnt/flatpak_workflow
     steps:
       - uses: actions/checkout@v4
       - uses: flatpak/flatpak-github-actions/flatpak-builder@master
