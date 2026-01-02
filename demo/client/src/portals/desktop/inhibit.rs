@@ -2,13 +2,13 @@ use std::sync::Arc;
 
 use adw::subclass::prelude::*;
 use ashpd::{
-    WindowIdentifier,
     desktop::{
         Session,
         inhibit::{InhibitFlags, InhibitProxy, SessionState},
     },
     enumflags2::BitFlags,
 };
+use ashpd_handles::WindowIdentifier;
 use futures_util::lock::Mutex;
 use gtk::{glib, prelude::*};
 

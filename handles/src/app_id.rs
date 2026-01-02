@@ -1,7 +1,7 @@
 use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::Type;
+use zvariant::Type;
 
 /// The application ID.
 ///

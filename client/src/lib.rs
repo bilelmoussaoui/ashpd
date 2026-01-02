@@ -16,30 +16,20 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 static IS_SANDBOXED: OnceLock<bool> = OnceLock::new();
 
-mod activation_token;
 /// Interact with the user's desktop such as taking a screenshot, setting a
 /// background or querying the user's location.
 pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
 pub mod documents;
 mod error;
-mod window_identifier;
 
-pub use self::{activation_token::ActivationToken, window_identifier::WindowIdentifier};
-mod app_id;
 mod registry;
-pub use self::{
-    app_id::AppID,
-    registry::{register_host_app, register_host_app_with_connection},
-};
+pub use self::registry::{register_host_app, register_host_app_with_connection};
 mod file_path;
 pub use self::file_path::FilePath;
 
 mod proxy;
 
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
-pub use self::window_identifier::WindowIdentifierType;
 #[cfg(feature = "backend")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 #[allow(missing_docs)]

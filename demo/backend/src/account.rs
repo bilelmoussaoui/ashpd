@@ -1,5 +1,4 @@
 use ashpd::{
-    AppID, WindowIdentifierType,
     backend::{
         Result,
         account::{AccountImpl, UserInformationOptions},
@@ -7,6 +6,7 @@ use ashpd::{
     },
     desktop::{HandleToken, account::UserInformation},
 };
+use ashpd_handles::{AppID, WindowIdentifierType};
 use async_trait::async_trait;
 
 #[derive(Default)]

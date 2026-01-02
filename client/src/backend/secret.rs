@@ -1,10 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
+use ashpd_handles::AppID;
 use async_trait::async_trait;
 use zbus::zvariant::{self, OwnedValue};
 
 use crate::{
-    AppID,
     backend::{
         Result,
         request::{Request, RequestImpl},

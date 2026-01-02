@@ -30,6 +30,7 @@
 
 use std::collections::HashMap;
 
+use ashpd_handles::WindowIdentifier;
 use futures_util::Stream;
 use serde::Deserialize;
 use zbus::zvariant::{
@@ -37,7 +38,7 @@ use zbus::zvariant::{
 };
 
 use crate::{
-    Error, WindowIdentifier,
+    Error,
     desktop::{HandleToken, Session, SessionPortal},
     proxy::Proxy,
 };

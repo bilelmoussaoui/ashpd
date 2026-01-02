@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::Type;
+use zvariant::Type;
 
 #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 mod gtk4;

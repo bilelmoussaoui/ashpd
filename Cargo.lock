@@ -52,6 +52,7 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 name = "ashpd"
 version = "0.13.0"
 dependencies = [
+ "ashpd-handles",
  "async-fs",
  "async-net",
  "async-trait",
@@ -59,14 +60,11 @@ dependencies = [
  "fastrand",
  "futures-channel",
  "futures-util",
- "gdk4-wayland",
- "gdk4-x11",
  "glib",
  "gstreamer",
  "gtk4",
  "pipewire",
  "quick-xml 0.38.4",
- "raw-window-handle",
  "reis",
  "serde",
  "serde_json",
@@ -74,10 +72,8 @@ dependencies = [
  "tokio",
  "tracing",
  "url",
- "wayland-backend",
- "wayland-client",
- "wayland-protocols",
  "zbus",
+ "zbus_macros",
 ]
 
 [[package]]
@@ -85,6 +81,7 @@ name = "ashpd-backend-demo"
 version = "0.1.0"
 dependencies = [
  "ashpd",
+ "ashpd-handles",
  "async-trait",
  "futures-util",
  "nix",
@@ -101,6 +98,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "ashpd",
+ "ashpd-handles",
  "async-channel",
  "chrono",
  "futures-util",
@@ -117,6 +115,25 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "url",
+]
+
+[[package]]
+name = "ashpd-handles"
+version = "0.1.0"
+dependencies = [
+ "futures-channel",
+ "futures-util",
+ "gdk4-wayland",
+ "gdk4-x11",
+ "glib",
+ "gtk4",
+ "raw-window-handle",
+ "serde",
+ "tracing",
+ "wayland-backend",
+ "wayland-client",
+ "wayland-protocols",
+ "zvariant",
 ]
 
 [[package]]

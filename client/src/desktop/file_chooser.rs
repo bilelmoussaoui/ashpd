@@ -81,14 +81,13 @@
 
 use std::path::Path;
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{
-    Error, FilePath, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, FilePath, proxy::Proxy};
 
 #[derive(Clone, Serialize, Deserialize, Type, Debug, PartialEq)]
 /// A file filter, to limit the available file choices to a mimetype or a glob

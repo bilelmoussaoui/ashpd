@@ -178,6 +178,6 @@ fn wayland_export_token(
         #[cfg(feature = "tracing")]
         tracing::error!("Failed to get a response from the wayland server");
 
-        Err(Box::new(crate::Error::NoResponse))
+        Err(Box::new(crate::Error::WaylandNoResponse))
     }
 }

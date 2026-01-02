@@ -9,6 +9,7 @@ license = "MIT"
 adw = {version = "0.8.1", package = "libadwaita", features = ["v1_9"]}
 anyhow = "1.0"
 ashpd = {path = "../../client", version = "0.13", default-features = false, features = ["tokio", "gtk4", "tracing", "pipewire"]}
+ashpd-handles = {path = "../../handles", version = "0.1.0", default-features = false, features = ["gtk4", "tracing" ]}
 async-channel = "2.3"
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
 futures-util = "0.3"
