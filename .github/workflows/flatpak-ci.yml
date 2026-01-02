@@ -10,11 +10,16 @@ jobs:
     container:
       image: bilelmoussaoui/flatpak-github-actions:gnome-nightly
       options: --privileged
+      volumes:
+        - /mnt/flatpak_workflow:/mnt/flatpak_workflow
     steps:
       - uses: actions/checkout@v4
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@master
         with:
           bundle: "ashpd-demo.flatpak"
           manifest-path: "demo/client/build-aux/com.belmoussaoui.ashpd.demo.Devel.json"
           run-tests: true
           cache-key: flatpak-builder-${{ github.sha }}
+          build-dir: /mnt/flatpak_workflow/build-dir
+          repo-dir: /mnt/flatpak_workflow/repo
+          state-dir: /mnt/flatpak_workflow/.flatpak-builder
