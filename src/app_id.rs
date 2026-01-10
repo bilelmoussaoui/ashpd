@@ -9,6 +9,11 @@ use zbus::zvariant::Type;
 #[derive(Debug, Serialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct AppID(String);
 
+impl zbus::zvariant::Basic for AppID {
+    const SIGNATURE_CHAR: char = 's';
+    const SIGNATURE_STR: &'static str = "s";
+}
+
 impl AppID {
     #[cfg(all(
         feature = "backend",
@@ -96,6 +101,11 @@ impl<'de> Deserialize<'de> for AppID {
 /// The ID of a file in the document store.
 #[derive(Debug, Serialize, Deserialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct DocumentID(String);
+
+impl zbus::zvariant::Basic for DocumentID {
+    const SIGNATURE_CHAR: char = 's';
+    const SIGNATURE_STR: &'static str = "s";
+}
 
 impl From<&str> for DocumentID {
     fn from(value: &str) -> Self {
