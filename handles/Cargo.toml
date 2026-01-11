@@ -1,0 +1,37 @@
+[package]
+name = "ashpd-handles"
+version = "0.1.0"
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+exclude.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[features]
+default = []
+
+backend = []
+gtk4 = ["gtk4_x11", "gtk4_wayland"]
+gtk4_wayland = ["gdk4wayland", "glib", "dep:gtk4"]
+gtk4_x11 = ["gdk4x11", "glib", "dep:gtk4"]
+raw_handle = ["raw-window-handle"]
+tracing = ["dep:tracing"]
+wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
+
+[dependencies]
+zvariant.workspace = true
+futures-channel.workspace = true
+futures-util.workspace = true
+gdk4wayland = { package = "gdk4-wayland", version = "0.10", optional = true }
+gdk4x11 = { package = "gdk4-x11", version = "0.10", optional = true, features = [ "xlib" ] }
+glib = { version = "0.21", optional = true }
+gtk4 = { version = "0.10", optional = true }
+raw-window-handle = { version = "0.6", optional = true }
+serde.workspace = true
+tracing = { workspace = true, optional = true }
+wayland-backend = { version = "0.3", optional = true, features = ["client_system"] }
+wayland-client = { version = "0.31", optional = true }
+wayland-protocols = { version = "0.32", optional = true, features = ["unstable", "client", "staging"] }

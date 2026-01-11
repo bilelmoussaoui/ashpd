@@ -41,14 +41,12 @@
 
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::Request;
-use crate::{
-    Error, WindowIdentifier, desktop::HandleToken, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, desktop::HandleToken, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdSetOn"))]

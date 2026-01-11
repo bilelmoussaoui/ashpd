@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+ashpd-handles = { path = "../../handles", version = "0.1" }
 async-trait = "0.1.60"
 tokio = { version = "1.0", features = ["io-util", "net", "time", "macros", "rt-multi-thread"] }
 futures-util = "0.3.25"

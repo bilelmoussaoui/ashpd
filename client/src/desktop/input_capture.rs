@@ -269,6 +269,7 @@
 
 use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::{Deserialize, de::Visitor};
@@ -278,7 +279,7 @@ use zbus::zvariant::{
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, proxy::Proxy};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[bitflags]

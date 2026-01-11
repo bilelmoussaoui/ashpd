@@ -1,6 +1,7 @@
+use ashpd_handles::AppID;
 use zbus::zvariant;
 
-use crate::{AppID, Error, proxy::Proxy};
+use crate::{Error, proxy::Proxy};
 
 #[derive(Debug, zvariant::SerializeDict, zvariant::Type)]
 #[zvariant(signature = "dict")]

@@ -1,8 +1,8 @@
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::{
-    WindowIdentifier,
-    desktop::file_chooser::{FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest},
+use ashpd::desktop::file_chooser::{
+    FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest,
 };
+use ashpd_handles::WindowIdentifier;
 use gtk::glib;
 
 use crate::{

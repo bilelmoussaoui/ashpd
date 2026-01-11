@@ -1,13 +1,11 @@
 use std::sync::Arc;
 
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::{
-    WindowIdentifier,
-    desktop::{
-        Session,
-        location::{Accuracy, Location, LocationProxy},
-    },
+use ashpd::desktop::{
+    Session,
+    location::{Accuracy, Location, LocationProxy},
 };
+use ashpd_handles::WindowIdentifier;
 use chrono::{DateTime, Local, TimeZone};
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};

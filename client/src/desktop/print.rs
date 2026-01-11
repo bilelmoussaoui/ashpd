@@ -33,11 +33,12 @@
 
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]

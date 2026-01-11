@@ -26,14 +26,12 @@
 
 use std::os::fd::OwnedFd;
 
+use ashpd_handles::{ActivationToken, MaybeWindowIdentifierExt, WindowIdentifier};
 use serde::Serialize;
 use zbus::zvariant::{self, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{
-    ActivationToken, Error, WindowIdentifier, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
