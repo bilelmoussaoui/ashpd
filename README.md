@@ -2,7 +2,7 @@
 
 [![docs](https://docs.rs/ashpd/badge.svg)](https://docs.rs/ashpd/) [![crates.io](https://img.shields.io/crates/v/ashpd)](https://crates.io/crates/ashpd) ![CI](https://github.com/bilelmoussaoui/ashpd/workflows/CI/badge.svg)
 
-ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://gitlab.freedesktop.org/dbus/zbus) wrapper of
+ASHPD, acronym of Aperture Science Handheld Portal Device is a Rust & [zbus](https://github.com/z-galaxy/zbus) wrapper of
 the XDG portals DBus interfaces. The library aims to provide an easy way to
 interact with the various portals defined per the [specifications](https://flatpak.github.io/xdg-desktop-portal/docs/).
 It provides an alternative to the C library [https://github.com/flatpak/libportal](https://github.com/flatpak/libportal)
