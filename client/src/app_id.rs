@@ -1,7 +1,7 @@
 use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::Type;
+use zbus::zvariant::{Basic, Type};
 
 /// The application ID.
 ///
@@ -9,9 +9,9 @@ use zbus::zvariant::Type;
 #[derive(Debug, Serialize, PartialEq, Type, Eq, Hash, Clone)]
 pub struct AppID(String);
 
-impl zbus::zvariant::Basic for AppID {
-    const SIGNATURE_CHAR: char = 's';
-    const SIGNATURE_STR: &'static str = "s";
+impl Basic for AppID {
+    const SIGNATURE_CHAR: char = String::SIGNATURE_CHAR;
+    const SIGNATURE_STR: &'static str = String::SIGNATURE_STR;
 }
 
 impl AppID {
@@ -102,9 +102,9 @@ impl<'de> Deserialize<'de> for AppID {
 #[derive(Debug, Serialize, Deserialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct DocumentID(String);
 
-impl zbus::zvariant::Basic for DocumentID {
-    const SIGNATURE_CHAR: char = 's';
-    const SIGNATURE_STR: &'static str = "s";
+impl Basic for DocumentID {
+    const SIGNATURE_CHAR: char = String::SIGNATURE_CHAR;
+    const SIGNATURE_STR: &'static str = String::SIGNATURE_STR;
 }
 
 impl From<&str> for DocumentID {
