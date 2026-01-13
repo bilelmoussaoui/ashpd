@@ -5,13 +5,13 @@ use std::{
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    WindowIdentifier,
     desktop::{
         PersistMode, Session,
         screencast::{CursorMode, Screencast, SourceType, Stream},
     },
     enumflags2::BitFlags,
 };
+use ashpd_handles::WindowIdentifier;
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 

@@ -12,7 +12,8 @@ use raw_window_handle::{
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize, ser::Serializer};
-use zbus::zvariant::Type;
+use zvariant::Type;
+
 /// Most portals interact with the user by showing dialogs.
 ///
 /// These dialogs should generally be placed on top of the application window
@@ -298,21 +299,22 @@ impl fmt::Display for WindowIdentifierType {
 }
 
 impl FromStr for WindowIdentifierType {
-    type Err = PortalError;
+    type Err = crate::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (kind, handle) = s
             .split_once(':')
-            .ok_or_else(|| PortalError::InvalidArgument("Invalid Window Identifier".to_owned()))?;
+            .ok_or_else(|| crate::Error::InvalidArgument("Invalid Window Identifier".to_owned()))?;
         match kind {
             "x11" => {
                 let handle = handle.trim_start_matches("0x");
                 Ok(Self::X11(
-                    std::os::raw::c_ulong::from_str_radix(handle, 16)
-                        .map_err(|_| PortalError::InvalidArgument(format!("Wrong XID {handle}")))?,
+                    std::os::raw::c_ulong::from_str_radix(handle, 16).map_err(|_| {
+                        crate::Error::InvalidArgument(format!("Wrong XID {handle}"))
+                    })?,
                 ))
             }
             "wayland" => Ok(Self::Wayland(handle.to_owned())),
-            t => Err(PortalError::InvalidArgument(format!(
+            t => Err(crate::Error::InvalidArgument(format!(
                 "Invalid Window Identifier type {t}",
             ))),
         }
@@ -454,7 +456,6 @@ mod gtk4;
 
 #[cfg(any(feature = "gtk4_wayland", feature = "gtk4_x11"))]
 pub use self::gtk4::Gtk4WindowIdentifier;
-use crate::PortalError;
 
 #[cfg(feature = "wayland")]
 mod wayland;

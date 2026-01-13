@@ -26,11 +26,12 @@
 //! }
 //! ```
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
 
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.

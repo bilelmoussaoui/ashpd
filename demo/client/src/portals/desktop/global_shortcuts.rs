@@ -1,15 +1,13 @@
 use std::{collections::HashSet, sync::Arc};
 
 use adw::subclass::prelude::*;
-use ashpd::{
-    WindowIdentifier,
-    desktop::{
-        ResponseError, Session,
-        global_shortcuts::{
-            Activated, Deactivated, GlobalShortcuts, NewShortcut, Shortcut, ShortcutsChanged,
-        },
+use ashpd::desktop::{
+    ResponseError, Session,
+    global_shortcuts::{
+        Activated, Deactivated, GlobalShortcuts, NewShortcut, Shortcut, ShortcutsChanged,
     },
 };
+use ashpd_handles::WindowIdentifier;
 use futures_util::lock::Mutex;
 use gtk::{
     glib::{self, clone},

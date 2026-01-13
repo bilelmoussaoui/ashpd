@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
+use ashpd_handles::{ActivationToken, AppID, WindowIdentifierType};
 use async_trait::async_trait;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
-    ActivationToken, AppID, PortalError, WindowIdentifierType,
+    PortalError,
     backend::{
         MaybeAppID, MaybeWindowIdentifier,
         request::{Request, RequestImpl},

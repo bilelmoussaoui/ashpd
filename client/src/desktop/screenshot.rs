@@ -35,13 +35,11 @@
 //! ```
 use std::fmt::Debug;
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{
-    Error, WindowIdentifier, desktop::Color, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, desktop::Color, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]

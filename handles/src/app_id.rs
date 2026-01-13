@@ -1,12 +1,12 @@
 use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{Basic, Type};
+use zvariant::{Basic, Type};
 
 /// The application ID.
 ///
 /// See <https://developer.gnome.org/documentation/tutorials/application-id.html>.
-#[derive(Debug, Serialize, PartialEq, Type, Eq, Hash, Clone)]
+#[derive(Debug, Serialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct AppID(String);
 
 impl Basic for AppID {

@@ -3,10 +3,8 @@
 //! ```rust,no_run
 //! use std::str::FromStr;
 //!
-//! use ashpd::{
-//!     AppID,
-//!     documents::{Documents, Permission},
-//! };
+//! use ashpd_handles::AppID;
+//! use ashpd::documents::{Documents, Permission};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Documents::new().await?;
@@ -35,13 +33,13 @@
 
 use std::{collections::HashMap, fmt, os::fd::AsFd, path::Path, str::FromStr};
 
+use ashpd_handles::{AppID, DocumentID};
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{Fd, OwnedValue, Type};
 
-pub use crate::app_id::DocumentID;
-use crate::{AppID, Error, FilePath, proxy::Proxy};
+use crate::{Error, FilePath, proxy::Proxy};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -526,9 +524,10 @@ pub use file_transfer::FileTransfer;
 mod tests {
     use std::collections::HashMap;
 
+    use ashpd_handles::DocumentID;
     use zbus::zvariant::Type;
 
-    use crate::{FilePath, app_id::DocumentID, documents::Permission};
+    use crate::{FilePath, documents::Permission};
 
     #[test]
     fn serialize_deserialize() {

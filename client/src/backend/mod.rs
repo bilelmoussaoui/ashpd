@@ -1,7 +1,6 @@
+use ashpd_handles::{AppID, WindowIdentifierType};
 use serde::{Deserialize, de::Deserializer};
 use zbus::zvariant::Type;
-
-use crate::{AppID, WindowIdentifierType};
 
 pub type Result<T> = std::result::Result<T, crate::error::PortalError>;
 

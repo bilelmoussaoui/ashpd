@@ -8,13 +8,13 @@ use std::{collections::HashMap, os::fd::AsRawFd, sync::Arc};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    WindowIdentifier,
     desktop::{
         Session,
         usb::{Device, UsbDevice, UsbError, UsbProxy},
     },
     zbus::zvariant::{Fd, OwnedFd},
 };
+use ashpd_handles::WindowIdentifier;
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
 

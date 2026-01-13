@@ -266,6 +266,6 @@ fn wayland_export_handle(
             type_: WindowIdentifierType::Wayland(state.handle),
         })
     } else {
-        Err(Box::new(crate::Error::NoResponse))
+        Err(Box::new(crate::Error::WaylandNoResponse))
     }
 }

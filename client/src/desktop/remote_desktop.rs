@@ -84,6 +84,7 @@
 
 use std::{collections::HashMap, os::fd::OwnedFd};
 
+use ashpd_handles::{MaybeWindowIdentifierExt, WindowIdentifier};
 use enumflags2::{BitFlags, bitflags};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
@@ -91,10 +92,7 @@ use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 use super::{
     HandleToken, PersistMode, Request, Session, screencast::Stream, session::SessionPortal,
 };
-use crate::{
-    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, desktop::session::CreateSessionResponse, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdKeyState"))]
