@@ -13,7 +13,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: changes
         with:
@@ -42,7 +42,7 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -60,7 +60,7 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -78,7 +78,7 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -97,7 +97,7 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository }}/ci:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -113,7 +113,7 @@ jobs:
     name: Cargo Deny
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           rust-version: "1.92"
