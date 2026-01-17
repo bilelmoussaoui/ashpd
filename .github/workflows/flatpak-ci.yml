@@ -13,7 +13,7 @@ jobs:
       volumes:
         - /mnt/flatpak_workflow:/mnt/flatpak_workflow
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: flatpak/flatpak-github-actions/flatpak-builder@master
         with:
           bundle: "ashpd-demo.flatpak"
