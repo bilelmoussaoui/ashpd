@@ -20,9 +20,9 @@
 
 use std::os::fd::AsFd;
 
-#[cfg(feature = "async-std")]
+#[cfg(feature = "async-io")]
 use async_net::{Shutdown, unix::UnixStream};
-#[cfg(feature = "async-std")]
+#[cfg(feature = "async-io")]
 use futures_util::AsyncReadExt;
 #[cfg(feature = "tokio")]
 use tokio::{io::AsyncReadExt, io::AsyncWriteExt, net::UnixStream};
@@ -109,7 +109,7 @@ pub async fn retrieve() -> Result<Vec<u8>, Error> {
         x2.shutdown().await?;
         x1
     };
-    #[cfg(feature = "async-std")]
+    #[cfg(feature = "async-io")]
     let mut x1 = {
         let (x1, x2) = UnixStream::pair()?;
         proxy.retrieve(&x2).await?;

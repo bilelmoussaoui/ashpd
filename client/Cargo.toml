@@ -11,7 +11,7 @@ version.workspace = true
 rust-version.workspace = true
 
 [features]
-async-std = ["zbus/async-io", "dep:async-fs", "dep:async-net", "futures-util/io"]
+async-io = ["zbus/async-io", "dep:async-fs", "dep:async-net", "futures-util/io"]
 default = ["tokio"]
 
 backend = ["async-trait"]
