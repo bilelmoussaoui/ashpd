@@ -21,6 +21,8 @@ mod activation_token;
 /// background or querying the user's location.
 pub mod desktop;
 /// Interact with the documents store or transfer files across apps.
+#[cfg(feature = "documents")]
+#[cfg_attr(docsrs, doc(cfg(feature = "documents")))]
 pub mod documents;
 mod error;
 mod window_identifier;
@@ -37,16 +39,88 @@ pub use self::file_path::FilePath;
 
 mod proxy;
 
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+#[cfg(any(
+    feature = "backend_access",
+    feature = "backend_account",
+    feature = "backend_app_chooser",
+    feature = "backend_background",
+    feature = "backend_email",
+    feature = "backend_file_chooser",
+    feature = "backend_lockdown",
+    feature = "backend_permission_store",
+    feature = "backend_print",
+    feature = "backend_screencast",
+    feature = "backend_screenshot",
+    feature = "backend_secret",
+    feature = "backend_settings",
+    feature = "backend_usb",
+    feature = "backend_wallpaper"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "backend_access",
+        feature = "backend_account",
+        feature = "backend_app_chooser",
+        feature = "backend_background",
+        feature = "backend_email",
+        feature = "backend_file_chooser",
+        feature = "backend_lockdown",
+        feature = "backend_permission_store",
+        feature = "backend_print",
+        feature = "backend_screencast",
+        feature = "backend_screenshot",
+        feature = "backend_secret",
+        feature = "backend_settings",
+        feature = "backend_usb",
+        feature = "backend_wallpaper"
+    )))
+)]
 pub use self::window_identifier::WindowIdentifierType;
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+#[cfg(any(
+    feature = "backend_access",
+    feature = "backend_account",
+    feature = "backend_app_chooser",
+    feature = "backend_background",
+    feature = "backend_email",
+    feature = "backend_file_chooser",
+    feature = "backend_lockdown",
+    feature = "backend_permission_store",
+    feature = "backend_print",
+    feature = "backend_screencast",
+    feature = "backend_screenshot",
+    feature = "backend_secret",
+    feature = "backend_settings",
+    feature = "backend_usb",
+    feature = "backend_wallpaper"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "backend_access",
+        feature = "backend_account",
+        feature = "backend_app_chooser",
+        feature = "backend_background",
+        feature = "backend_email",
+        feature = "backend_file_chooser",
+        feature = "backend_lockdown",
+        feature = "backend_permission_store",
+        feature = "backend_print",
+        feature = "backend_screencast",
+        feature = "backend_screenshot",
+        feature = "backend_secret",
+        feature = "backend_settings",
+        feature = "backend_usb",
+        feature = "backend_wallpaper"
+    )))
+)]
 #[allow(missing_docs)]
 /// Build your custom portals backend.
 pub mod backend;
 /// Spawn commands outside the sandbox or monitor if the running application has
 /// received an update & install it.
+#[cfg(feature = "flatpak")]
+#[cfg_attr(docsrs, doc(cfg(feature = "flatpak")))]
 pub mod flatpak;
 mod helpers;
 use std::sync::OnceLock;

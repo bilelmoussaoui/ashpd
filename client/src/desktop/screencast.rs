@@ -43,10 +43,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
 
-use super::{
-    HandleToken, PersistMode, Request, Session, remote_desktop::RemoteDesktop,
-    session::SessionPortal,
-};
+use super::{HandleToken, PersistMode, Request, Session, session::SessionPortal};
 use crate::{
     Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
     window_identifier::MaybeWindowIdentifierExt,
@@ -291,14 +288,14 @@ struct StreamProperties {
 /// A [builder-pattern] type to construct a PipeWire stream [`Stream`].
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+#[cfg(feature = "backend_screencast")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
 pub struct StreamBuilder {
     stream: Stream,
 }
 
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+#[cfg(feature = "backend_screencast")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
 impl StreamBuilder {
     /// Create a new instance of a stream builder.
     pub fn new(pipe_wire_node_id: u32) -> Self {
@@ -539,4 +536,5 @@ impl SessionPortal for Screencast {}
 /// Defines which portals session can be used in a screen-cast.
 pub trait HasScreencastSession: SessionPortal {}
 impl HasScreencastSession for Screencast {}
-impl HasScreencastSession for RemoteDesktop {}
+#[cfg(feature = "remote_desktop")]
+impl HasScreencastSession for super::remote_desktop::RemoteDesktop {}

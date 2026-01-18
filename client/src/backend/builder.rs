@@ -4,44 +4,41 @@ use enumflags2::BitFlags;
 use futures_util::{StreamExt, task::SpawnExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
-use crate::backend::{
-    Result,
-    access::{AccessImpl, AccessInterface},
-    account::{AccountImpl, AccountInterface},
-    app_chooser::{AppChooserImpl, AppChooserInterface},
-    background::{BackgroundImpl, BackgroundInterface},
-    email::{EmailImpl, EmailInterface},
-    file_chooser::{FileChooserImpl, FileChooserInterface},
-    lockdown::{LockdownImpl, LockdownInterface},
-    permission_store::{PermissionStoreImpl, PermissionStoreInterface},
-    print::{PrintImpl, PrintInterface},
-    screencast::{ScreencastImpl, ScreencastInterface},
-    screenshot::{ScreenshotImpl, ScreenshotInterface},
-    secret::{SecretImpl, SecretInterface},
-    session::SessionManager,
-    settings::{SettingsImpl, SettingsInterface},
-    usb::{UsbImpl, UsbInterface},
-    wallpaper::{WallpaperImpl, WallpaperInterface},
-};
+use crate::backend::{Result, session::SessionManager};
 
 pub struct Builder {
     name: OwnedWellKnownName,
     flags: BitFlags<zbus::fdo::RequestNameFlags>,
-    account_impl: Option<Arc<dyn AccountImpl>>,
-    access_impl: Option<Arc<dyn AccessImpl>>,
-    app_chooser_impl: Option<Arc<dyn AppChooserImpl>>,
-    background_impl: Option<Arc<dyn BackgroundImpl>>,
-    email_impl: Option<Arc<dyn EmailImpl>>,
-    file_chooser_impl: Option<Arc<dyn FileChooserImpl>>,
-    lockdown_impl: Option<Arc<dyn LockdownImpl>>,
-    permission_store_impl: Option<Arc<dyn PermissionStoreImpl>>,
-    print_impl: Option<Arc<dyn PrintImpl>>,
-    screencast_impl: Option<Arc<dyn ScreencastImpl>>,
-    screenshot_impl: Option<Arc<dyn ScreenshotImpl>>,
-    secret_impl: Option<Arc<dyn SecretImpl>>,
-    settings_impl: Option<Arc<dyn SettingsImpl>>,
-    wallpaper_impl: Option<Arc<dyn WallpaperImpl>>,
-    usb_impl: Option<Arc<dyn UsbImpl>>,
+    #[cfg(feature = "backend_account")]
+    account_impl: Option<Arc<dyn crate::backend::account::AccountImpl>>,
+    #[cfg(feature = "backend_access")]
+    access_impl: Option<Arc<dyn crate::backend::access::AccessImpl>>,
+    #[cfg(feature = "backend_app_chooser")]
+    app_chooser_impl: Option<Arc<dyn crate::backend::app_chooser::AppChooserImpl>>,
+    #[cfg(feature = "backend_background")]
+    background_impl: Option<Arc<dyn crate::backend::background::BackgroundImpl>>,
+    #[cfg(feature = "backend_email")]
+    email_impl: Option<Arc<dyn crate::backend::email::EmailImpl>>,
+    #[cfg(feature = "backend_file_chooser")]
+    file_chooser_impl: Option<Arc<dyn crate::backend::file_chooser::FileChooserImpl>>,
+    #[cfg(feature = "backend_lockdown")]
+    lockdown_impl: Option<Arc<dyn crate::backend::lockdown::LockdownImpl>>,
+    #[cfg(feature = "backend_permission_store")]
+    permission_store_impl: Option<Arc<dyn crate::backend::permission_store::PermissionStoreImpl>>,
+    #[cfg(feature = "backend_print")]
+    print_impl: Option<Arc<dyn crate::backend::print::PrintImpl>>,
+    #[cfg(feature = "backend_screencast")]
+    screencast_impl: Option<Arc<dyn crate::backend::screencast::ScreencastImpl>>,
+    #[cfg(feature = "backend_screenshot")]
+    screenshot_impl: Option<Arc<dyn crate::backend::screenshot::ScreenshotImpl>>,
+    #[cfg(feature = "backend_secret")]
+    secret_impl: Option<Arc<dyn crate::backend::secret::SecretImpl>>,
+    #[cfg(feature = "backend_settings")]
+    settings_impl: Option<Arc<dyn crate::backend::settings::SettingsImpl>>,
+    #[cfg(feature = "backend_wallpaper")]
+    wallpaper_impl: Option<Arc<dyn crate::backend::wallpaper::WallpaperImpl>>,
+    #[cfg(feature = "backend_usb")]
+    usb_impl: Option<Arc<dyn crate::backend::usb::UsbImpl>>,
     spawn: Option<Arc<dyn futures_util::task::Spawn + Send + Sync + 'static>>,
     name_lost: Option<Arc<dyn Fn() + Send + Sync + 'static>>,
     sessions: Arc<Mutex<SessionManager>>,
@@ -59,20 +56,35 @@ impl Builder {
             // same flags as zbus::Connection::request_name
             flags: zbus::fdo::RequestNameFlags::ReplaceExisting
                 | zbus::fdo::RequestNameFlags::DoNotQueue,
+            #[cfg(feature = "backend_account")]
             account_impl: None,
+            #[cfg(feature = "backend_access")]
             access_impl: None,
+            #[cfg(feature = "backend_app_chooser")]
             app_chooser_impl: None,
+            #[cfg(feature = "backend_background")]
             background_impl: None,
+            #[cfg(feature = "backend_email")]
             email_impl: None,
+            #[cfg(feature = "backend_file_chooser")]
             file_chooser_impl: None,
+            #[cfg(feature = "backend_lockdown")]
             lockdown_impl: None,
+            #[cfg(feature = "backend_permission_store")]
             permission_store_impl: None,
+            #[cfg(feature = "backend_print")]
             print_impl: None,
+            #[cfg(feature = "backend_screencast")]
             screencast_impl: None,
+            #[cfg(feature = "backend_screenshot")]
             screenshot_impl: None,
+            #[cfg(feature = "backend_secret")]
             secret_impl: None,
+            #[cfg(feature = "backend_settings")]
             settings_impl: None,
+            #[cfg(feature = "backend_wallpaper")]
             wallpaper_impl: None,
+            #[cfg(feature = "backend_usb")]
             usb_impl: None,
             spawn: None,
             name_lost: None,
@@ -99,77 +111,113 @@ impl Builder {
         self
     }
 
-    pub fn account(mut self, imp: impl AccountImpl + 'static) -> Self {
+    #[cfg(feature = "backend_account")]
+    pub fn account(mut self, imp: impl crate::backend::account::AccountImpl + 'static) -> Self {
         self.account_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn access(mut self, imp: impl AccessImpl + 'static) -> Self {
+    #[cfg(feature = "backend_access")]
+    pub fn access(mut self, imp: impl crate::backend::access::AccessImpl + 'static) -> Self {
         self.access_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn app_chooser(mut self, imp: impl AppChooserImpl + 'static) -> Self {
+    #[cfg(feature = "backend_app_chooser")]
+    pub fn app_chooser(
+        mut self,
+        imp: impl crate::backend::app_chooser::AppChooserImpl + 'static,
+    ) -> Self {
         self.app_chooser_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn background(mut self, imp: impl BackgroundImpl + 'static) -> Self {
+    #[cfg(feature = "backend_background")]
+    pub fn background(
+        mut self,
+        imp: impl crate::backend::background::BackgroundImpl + 'static,
+    ) -> Self {
         self.background_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn email(mut self, imp: impl EmailImpl + 'static) -> Self {
+    #[cfg(feature = "backend_email")]
+    pub fn email(mut self, imp: impl crate::backend::email::EmailImpl + 'static) -> Self {
         self.email_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn file_chooser(mut self, imp: impl FileChooserImpl + 'static) -> Self {
+    #[cfg(feature = "backend_file_chooser")]
+    pub fn file_chooser(
+        mut self,
+        imp: impl crate::backend::file_chooser::FileChooserImpl + 'static,
+    ) -> Self {
         self.file_chooser_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn lockdown(mut self, imp: impl LockdownImpl + 'static) -> Self {
+    #[cfg(feature = "backend_lockdown")]
+    pub fn lockdown(mut self, imp: impl crate::backend::lockdown::LockdownImpl + 'static) -> Self {
         self.lockdown_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn permission_store(mut self, imp: impl PermissionStoreImpl + 'static) -> Self {
+    #[cfg(feature = "backend_permission_store")]
+    pub fn permission_store(
+        mut self,
+        imp: impl crate::backend::permission_store::PermissionStoreImpl + 'static,
+    ) -> Self {
         self.permission_store_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn print(mut self, imp: impl PrintImpl + 'static) -> Self {
+    #[cfg(feature = "backend_print")]
+    pub fn print(mut self, imp: impl crate::backend::print::PrintImpl + 'static) -> Self {
         self.print_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn screencast(mut self, imp: impl ScreencastImpl + 'static) -> Self {
+    #[cfg(feature = "backend_screencast")]
+    pub fn screencast(
+        mut self,
+        imp: impl crate::backend::screencast::ScreencastImpl + 'static,
+    ) -> Self {
         self.screencast_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn screenshot(mut self, imp: impl ScreenshotImpl + 'static) -> Self {
+    #[cfg(feature = "backend_screenshot")]
+    pub fn screenshot(
+        mut self,
+        imp: impl crate::backend::screenshot::ScreenshotImpl + 'static,
+    ) -> Self {
         self.screenshot_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn secret(mut self, imp: impl SecretImpl + 'static) -> Self {
+    #[cfg(feature = "backend_secret")]
+    pub fn secret(mut self, imp: impl crate::backend::secret::SecretImpl + 'static) -> Self {
         self.secret_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn settings(mut self, imp: impl SettingsImpl + 'static) -> Self {
+    #[cfg(feature = "backend_settings")]
+    pub fn settings(mut self, imp: impl crate::backend::settings::SettingsImpl + 'static) -> Self {
         self.settings_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn wallpaper(mut self, imp: impl WallpaperImpl + 'static) -> Self {
+    #[cfg(feature = "backend_wallpaper")]
+    pub fn wallpaper(
+        mut self,
+        imp: impl crate::backend::wallpaper::WallpaperImpl + 'static,
+    ) -> Self {
         self.wallpaper_impl = Some(Arc::new(imp));
         self
     }
 
-    pub fn usb(mut self, imp: impl UsbImpl + 'static) -> Self {
+    #[cfg(feature = "backend_usb")]
+    pub fn usb(mut self, imp: impl crate::backend::usb::UsbImpl + 'static) -> Self {
         self.usb_impl = Some(Arc::new(imp));
         self
     }
@@ -201,8 +249,13 @@ impl Builder {
         }
 
         let object_server = connection.object_server();
+        #[cfg(feature = "backend_account")]
         if let Some(imp) = self.account_impl {
-            let portal = AccountInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::account::AccountInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Account`");
             object_server
@@ -210,8 +263,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_access")]
         if let Some(imp) = self.access_impl {
-            let portal = AccessInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::access::AccessInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Access`");
             object_server
@@ -219,8 +277,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_app_chooser")]
         if let Some(imp) = self.app_chooser_impl {
-            let portal = AppChooserInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::app_chooser::AppChooserInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.AppChooser`");
             object_server
@@ -228,8 +291,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_background")]
         if let Some(imp) = self.background_impl {
-            let portal = BackgroundInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::background::BackgroundInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Background`");
             object_server
@@ -237,8 +305,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_email")]
         if let Some(imp) = self.email_impl {
-            let portal = EmailInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::email::EmailInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Email`");
             object_server
@@ -246,8 +319,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_file_chooser")]
         if let Some(imp) = self.file_chooser_impl {
-            let portal = FileChooserInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::file_chooser::FileChooserInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.FileChooser`");
             object_server
@@ -255,8 +333,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_lockdown")]
         if let Some(imp) = self.lockdown_impl {
-            let portal = LockdownInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::lockdown::LockdownInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Lockdown`");
             object_server
@@ -264,8 +347,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_permission_store")]
         if let Some(imp) = self.permission_store_impl {
-            let portal = PermissionStoreInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::permission_store::PermissionStoreInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.PermissionStore`");
             object_server
@@ -273,8 +361,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_print")]
         if let Some(imp) = self.print_impl {
-            let portal = PrintInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::print::PrintInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Print`");
             object_server
@@ -282,8 +375,9 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_screencast")]
         if let Some(imp) = self.screencast_impl {
-            let portal = ScreencastInterface::new(
+            let portal = crate::backend::screencast::ScreencastInterface::new(
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
@@ -296,8 +390,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_screenshot")]
         if let Some(imp) = self.screenshot_impl {
-            let portal = ScreenshotInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::screenshot::ScreenshotInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Screenshot`");
             object_server
@@ -305,8 +404,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_secret")]
         if let Some(imp) = self.secret_impl {
-            let portal = SecretInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::secret::SecretInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Secret`");
             object_server
@@ -314,8 +418,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_settings")]
         if let Some(imp) = self.settings_impl {
-            let portal = SettingsInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::settings::SettingsInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Settings`");
             object_server
@@ -323,8 +432,13 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_wallpaper")]
         if let Some(imp) = self.wallpaper_impl {
-            let portal = WallpaperInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::wallpaper::WallpaperInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Wallpaper`");
             object_server
@@ -332,8 +446,10 @@ impl Builder {
                 .await?;
         }
 
+        #[cfg(feature = "backend_usb")]
         if let Some(imp) = self.usb_impl {
-            let portal = UsbInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal =
+                crate::backend::usb::UsbInterface::new(imp, connection.clone(), Arc::clone(&spawn));
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Usb`");
             object_server

@@ -14,7 +14,70 @@ rust-version.workspace = true
 async-io = ["zbus/async-io", "dep:async-fs", "dep:async-net", "futures-util/io"]
 default = ["tokio"]
 
-backend = ["async-trait"]
+backend = [
+    "backend_access",
+    "backend_account",
+    "backend_app_chooser",
+    "backend_background",
+    "backend_email",
+    "backend_file_chooser",
+    "backend_lockdown",
+    "backend_permission_store",
+    "backend_print",
+    "backend_screencast",
+    "backend_screenshot",
+    "backend_secret",
+    "backend_settings",
+    "backend_usb",
+    "backend_wallpaper",
+]
+
+backend_access = ["dep:async-trait"]
+backend_account = ["dep:async-trait", "account"]
+backend_app_chooser = ["dep:async-trait"]
+backend_background = ["dep:async-trait", "dep:serde_repr"]
+backend_email = ["dep:async-trait"]
+backend_file_chooser = ["dep:async-trait", "file_chooser"]
+backend_lockdown = ["dep:async-trait"]
+backend_permission_store = ["dep:async-trait", "documents"]
+backend_print = ["dep:async-trait", "print"]
+backend_screencast = ["dep:async-trait", "screencast"]
+backend_screenshot = ["dep:async-trait", "screenshot"]
+backend_secret = ["dep:async-trait"]
+backend_settings = ["dep:async-trait", "settings"]
+backend_usb = ["dep:async-trait", "usb"]
+backend_wallpaper = ["dep:async-trait", "wallpaper"]
+
+account = ["dep:url"]
+background = []
+camera = []
+clipboard = []
+dynamic_launcher = ["dep:serde_repr"]
+email = []
+file_chooser = ["dep:url", "dep:serde_repr"]
+game_mode = ["dep:serde_repr"]
+global_shortcuts = []
+inhibit = ["dep:serde_repr"]
+input_capture = ["dep:serde_repr"]
+location = ["dep:serde_repr"]
+memory_monitor = []
+network_monitor = ["dep:serde_repr"]
+notification = []
+open_uri = ["dep:url"]
+power_profile_monitor = []
+print = ["dep:url"]
+proxy_resolver = ["dep:url"]
+realtime = []
+remote_desktop = ["dep:serde_repr"]
+screencast = ["dep:serde_repr"]
+screenshot = ["dep:url"]
+secret = []
+settings = []
+trash = ["dep:serde_repr"]
+usb = []
+wallpaper = ["dep:url"]
+flatpak = ["dep:serde_repr"]
+documents = ["dep:serde_repr"]
 
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
 gtk4_wayland = ["gdk4wayland", "glib", "dep:gtk4"]
@@ -39,13 +102,13 @@ gtk4 = { version = "0.10", optional = true }
 pipewire = { version = "0.9", optional = true }
 raw-window-handle = { version = "0.6", optional = true }
 serde = { version = "1.0", features = ["derive"] }
-serde_repr = "0.1"
+serde_repr = { version = "0.1", optional = true }
 tokio = { version = "1.43", features = [
     "fs",
     "io-util",
 ], optional = true, default-features = false }
 tracing = { version = "0.1", optional = true }
-url = { version = "2.5", features = ["serde"] }
+url = { version = "2.5", features = ["serde"], optional = true }
 wayland-backend = { version = "0.3", optional = true, features = [
     "client_system",
 ] }

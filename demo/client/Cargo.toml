@@ -8,7 +8,13 @@ license = "MIT"
 [dependencies]
 adw = {version = "0.8.1", package = "libadwaita", features = ["v1_9"]}
 anyhow = "1.0"
-ashpd = {path = "../../client", version = "0.13", default-features = false, features = ["tokio", "gtk4", "tracing", "pipewire"]}
+ashpd = {path = "../../client", version = "0.13", default-features = false, features = [
+    "tokio", "gtk4", "tracing", "pipewire", "account", "background", "camera",
+    "dynamic_launcher", "email", "file_chooser", "global_shortcuts",
+    "inhibit", "location", "network_monitor", "notification", "open_uri",
+    "proxy_resolver", "remote_desktop", "screencast", "screenshot", "secret",
+    "usb", "wallpaper", "flatpak", "documents", "print",
+]}
 async-channel = "2.3"
 chrono = {version = "0.4", default-features = false, features = ["clock"]}
 futures-util = "0.3"
