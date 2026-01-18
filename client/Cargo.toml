@@ -48,13 +48,13 @@ backend_settings = ["dep:async-trait", "settings"]
 backend_usb = ["dep:async-trait", "usb"]
 backend_wallpaper = ["dep:async-trait", "wallpaper"]
 
-account = ["dep:url"]
+account = ["dep:url", "zbus/url"]
 background = []
 camera = []
 clipboard = []
 dynamic_launcher = ["dep:serde_repr"]
 email = []
-file_chooser = ["dep:url", "dep:serde_repr"]
+file_chooser = ["dep:url", "zbus/url", "dep:serde_repr"]
 game_mode = ["dep:serde_repr"]
 global_shortcuts = []
 inhibit = ["dep:serde_repr"]
@@ -63,19 +63,19 @@ location = ["dep:serde_repr"]
 memory_monitor = []
 network_monitor = ["dep:serde_repr"]
 notification = []
-open_uri = ["dep:url"]
+open_uri = ["dep:url", "zbus/url"]
 power_profile_monitor = []
-print = ["dep:url"]
-proxy_resolver = ["dep:url"]
+print = ["dep:url", "zbus/url"]
+proxy_resolver = ["dep:url", "zbus/url"]
 realtime = []
 remote_desktop = ["dep:serde_repr"]
 screencast = ["dep:serde_repr"]
-screenshot = ["dep:url"]
+screenshot = ["dep:url", "zbus/url"]
 secret = []
 settings = []
 trash = ["dep:serde_repr"]
 usb = []
-wallpaper = ["dep:url"]
+wallpaper = ["dep:url", "zbus/url"]
 flatpak = ["dep:serde_repr"]
 documents = ["dep:serde_repr"]
 
@@ -118,7 +118,7 @@ wayland-protocols = { version = "0.32", optional = true, features = [
     "client",
     "staging",
 ] }
-zbus = { version = "5.0", default-features = false, features = ["url"] }
+zbus = { version = "5.0", default-features = false }
 
 [dev-dependencies]
 serde_json = "1.0"
