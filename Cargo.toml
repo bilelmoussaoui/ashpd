@@ -1,11 +1,7 @@
 [workspace]
 resolver = "2"
 
-members = [
-    "client",
-    "demo/client",
-    "demo/backend",
-]
+members = ["client", "demo/client", "demo/backend"]
 
 [workspace.package]
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
@@ -19,19 +15,20 @@ version = "0.13.0"
 rust-version = "1.92"
 
 [workspace.dependencies]
-zvariant = { version = "5.8", default-features = false, features = ["gvariant"]}
+zvariant = { version = "5.8", default-features = false, features = [
+    "gvariant",
+] }
 ashpd = { path = "client", version = "0.13.0", default-features = false }
 endi = "1.1"
-clap = { version = "4.5", features = [ "cargo", "derive" ] }
+clap = { version = "4.5", features = ["cargo", "derive"] }
 futures-channel = "0.3"
 futures-lite = "2.6"
 futures-util = "0.3"
-oo7 = { path = "client", version = "0.6", default-features = false, features = ["unstable", "tracing"]}
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.48", default-features = false }
 tempfile = "3.23"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 zbus = { version = "5.12.0", default-features = false }
-zbus_macros = {version = "5.11", features = ["gvariant"]}
+zbus_macros = { version = "5.11", features = ["gvariant"] }
 zeroize = { version = "1", features = ["zeroize_derive"] }
