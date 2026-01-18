@@ -48,7 +48,7 @@ pub struct UserInformation {
 
 impl UserInformation {
     #[cfg(feature = "backend_account")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "backend_account")))]
     /// Create a new instance of [`UserInformation`].
     pub fn new(id: &str, name: &str, image: url::Url) -> Self {
         Self {

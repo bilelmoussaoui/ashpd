@@ -186,14 +186,14 @@ impl Debug for Streams {
 /// request.
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+#[cfg(feature = "backend_screencast")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
 pub struct StreamsBuilder {
     streams: Streams,
 }
 
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+#[cfg(feature = "backend_screencast")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
 impl StreamsBuilder {
     /// Create a new instance of a streams builder.
     pub fn new(streams: Vec<Stream>) -> Self {
