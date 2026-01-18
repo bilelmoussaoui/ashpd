@@ -129,7 +129,6 @@ use std::sync::OnceLock;
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 pub use async_trait;
 pub use enumflags2;
-pub use url;
 pub use zbus::{self, zvariant};
 
 /// Check whether the application is running inside a sandbox.
