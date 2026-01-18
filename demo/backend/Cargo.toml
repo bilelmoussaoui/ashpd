@@ -6,9 +6,15 @@ license.workspace = true
 
 [dependencies]
 async-trait = "0.1.60"
-tokio = { version = "1.0", features = ["io-util", "net", "time", "macros", "rt-multi-thread"] }
+tokio = { version = "1.0", features = [
+    "io-util",
+    "net",
+    "time",
+    "macros",
+    "rt-multi-thread",
+] }
 futures-util = "0.3.25"
-nix = { version = "0.30", features = ["user"], default-features = false}
+nix = { version = "0.30", features = ["user"], default-features = false }
 tracing = "0.1"
 tracing-subscriber = "0.3.16"
 url = "2.3.1"
@@ -16,4 +22,14 @@ zbus = "5.0"
 
 [dependencies.ashpd]
 workspace = true
-features = ["backend_access", "backend_account", "backend_screencast", "backend_screenshot", "backend_secret", "backend_wallpaper", "backend_settings", "tracing", "tokio"]
+features = [
+    "backend_access",
+    "backend_account",
+    "backend_screencast",
+    "backend_screenshot",
+    "backend_secret",
+    "backend_wallpaper",
+    "backend_settings",
+    "tracing",
+    "tokio",
+]
