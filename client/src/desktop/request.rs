@@ -29,8 +29,43 @@ pub enum Response<T> {
     Err(ResponseError),
 }
 
-#[cfg(feature = "backend")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+#[cfg(any(
+    feature = "backend_access",
+    feature = "backend_account",
+    feature = "backend_app_chooser",
+    feature = "backend_background",
+    feature = "backend_email",
+    feature = "backend_file_chooser",
+    feature = "backend_lockdown",
+    feature = "backend_permission_store",
+    feature = "backend_print",
+    feature = "backend_screencast",
+    feature = "backend_screenshot",
+    feature = "backend_secret",
+    feature = "backend_settings",
+    feature = "backend_usb",
+    feature = "backend_wallpaper",
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "backend_access",
+        feature = "backend_account",
+        feature = "backend_app_chooser",
+        feature = "backend_background",
+        feature = "backend_email",
+        feature = "backend_file_chooser",
+        feature = "backend_lockdown",
+        feature = "backend_permission_store",
+        feature = "backend_print",
+        feature = "backend_screencast",
+        feature = "backend_screenshot",
+        feature = "backend_secret",
+        feature = "backend_settings",
+        feature = "backend_usb",
+        feature = "backend_wallpaper",
+    )))
+)]
 impl<T> Response<T> {
     /// The corresponding response type.
     pub fn response_type(self) -> ResponseType {

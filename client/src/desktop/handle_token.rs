@@ -4,8 +4,6 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "backend")]
-use zbus::zvariant::OwnedObjectPath;
 use zbus::{names::OwnedMemberName, zvariant::Type};
 
 /// A handle token is a DBus Object Path element.
@@ -17,8 +15,7 @@ use zbus::{names::OwnedMemberName, zvariant::Type};
 ///
 /// A valid object path element must only contain the ASCII characters
 /// `[A-Z][a-z][0-9]_`
-#[derive(Serialize, Type)]
-#[cfg_attr(feature = "backend", derive(PartialEq, Eq, Hash, Clone))]
+#[derive(Serialize, Type, PartialEq, Eq, Hash, Clone)]
 pub struct HandleToken(OwnedMemberName);
 
 impl Display for HandleToken {
@@ -86,11 +83,27 @@ impl TryFrom<&str> for HandleToken {
     }
 }
 
-#[cfg(feature = "backend")]
-impl TryFrom<&OwnedObjectPath> for HandleToken {
+#[cfg(any(
+    feature = "backend_access",
+    feature = "backend_account",
+    feature = "backend_app_chooser",
+    feature = "backend_background",
+    feature = "backend_email",
+    feature = "backend_file_chooser",
+    feature = "backend_lockdown",
+    feature = "backend_permission_store",
+    feature = "backend_print",
+    feature = "backend_screencast",
+    feature = "backend_screenshot",
+    feature = "backend_secret",
+    feature = "backend_settings",
+    feature = "backend_usb",
+    feature = "backend_wallpaper",
+))]
+impl TryFrom<&zbus::zvariant::OwnedObjectPath> for HandleToken {
     type Error = HandleInvalidCharacter;
 
-    fn try_from(value: &OwnedObjectPath) -> Result<Self, Self::Error> {
+    fn try_from(value: &zbus::zvariant::OwnedObjectPath) -> Result<Self, Self::Error> {
         let base_segment = value
             .as_str()
             .split('/')

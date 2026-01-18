@@ -1,6 +1,8 @@
 use zbus::DBusError;
 
-use crate::desktop::{dynamic_launcher::UnexpectedIconError, request::ResponseError};
+#[cfg(feature = "dynamic_launcher")]
+use crate::desktop::dynamic_launcher::UnexpectedIconError;
+use crate::desktop::request::ResponseError;
 
 /// An error type that describes the various DBus errors.
 ///
@@ -144,6 +146,7 @@ impl From<std::io::Error> for Error {
     }
 }
 
+#[cfg(feature = "dynamic_launcher")]
 impl From<UnexpectedIconError> for Error {
     fn from(_: UnexpectedIconError) -> Self {
         Self::UnexpectedIcon

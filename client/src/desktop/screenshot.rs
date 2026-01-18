@@ -59,8 +59,8 @@ pub struct Screenshot {
 }
 
 impl Screenshot {
-    #[cfg(feature = "backend")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
+    #[cfg(feature = "backend_screenshot")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "backend_screenshot")))]
     /// Create a new instance of the screenshot.
     pub fn new(uri: url::Url) -> Self {
         Self { uri }
