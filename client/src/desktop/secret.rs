@@ -18,14 +18,11 @@
 //! }
 //! ```
 
-use std::os::fd::AsFd;
+use std::{
+    io::Read,
+    os::{fd::AsFd, unix::net::UnixStream},
+};
 
-#[cfg(feature = "async-io")]
-use async_net::{Shutdown, unix::UnixStream};
-#[cfg(feature = "async-io")]
-use futures_util::AsyncReadExt;
-#[cfg(feature = "tokio")]
-use tokio::{io::AsyncReadExt, io::AsyncWriteExt, net::UnixStream};
 use zbus::zvariant::{Fd, SerializeDict, Type};
 
 use super::{HandleToken, Request};
@@ -97,27 +94,30 @@ impl std::ops::Deref for Secret {
 
 /// A handy wrapper around [`Secret::retrieve`].
 ///
-/// It crates a UnixStream internally for receiving the secret.
+/// It creates a UnixStream internally for receiving the secret.
 pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
-    let mut buf = Vec::with_capacity(64);
 
+    let (mut x1, x2) = UnixStream::pair()?;
+    proxy.retrieve(&x2).await?;
+    drop(x2);
+
+    // Read the secret on a blocking thread since it's a small amount of data
     #[cfg(feature = "tokio")]
-    let mut x1 = {
-        let (x1, mut x2) = UnixStream::pair()?;
-        proxy.retrieve(&x2).await?;
-        x2.shutdown().await?;
-        x1
-    };
-    #[cfg(feature = "async-io")]
-    let mut x1 = {
-        let (x1, x2) = UnixStream::pair()?;
-        proxy.retrieve(&x2).await?;
-        x2.shutdown(Shutdown::Write)?;
-        x1
-    };
+    let buf = tokio::task::spawn_blocking(move || {
+        let mut buf = Vec::with_capacity(64);
+        x1.read_to_end(&mut buf)?;
+        Ok::<_, std::io::Error>(buf)
+    })
+    .await
+    .map_err(|e| Error::from(std::io::Error::new(std::io::ErrorKind::Other, e)))??;
 
-    x1.read_to_end(&mut buf).await?;
+    #[cfg(not(feature = "tokio"))]
+    let buf = {
+        let mut buf = Vec::with_capacity(64);
+        x1.read_to_end(&mut buf)?;
+        buf
+    };
 
     Ok(buf)
 }

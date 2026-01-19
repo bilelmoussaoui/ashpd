@@ -10,11 +10,7 @@ use gtk::{
     glib::{self, clone},
 };
 
-use crate::{
-    config,
-    portals::{spawn_tokio, spawn_tokio_blocking},
-    window::ApplicationWindow,
-};
+use crate::{config, portals::spawn_tokio, window::ApplicationWindow};
 
 mod imp {
     use std::cell::OnceCell;
@@ -129,12 +125,11 @@ impl Application {
 
         self.add_action_entries([about_action, quit_action, restart_action]);
 
-        let is_sandboxed = spawn_tokio_blocking(async { ashpd::is_sandboxed().await });
         // The restart app requires the Flatpak portal
         self.lookup_action("restart")
             .and_downcast_ref::<gio::SimpleAction>()
             .unwrap()
-            .set_enabled(is_sandboxed);
+            .set_enabled(ashpd::is_sandboxed());
     }
 
     pub async fn stop_current_instance() -> ashpd::Result<()> {

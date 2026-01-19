@@ -1,31 +1,19 @@
-#[cfg(feature = "async-io")]
-use async_fs::File;
-#[cfg(feature = "async-io")]
-use futures_util::AsyncReadExt;
-#[cfg(feature = "tokio")]
-use tokio::{fs::File, io::AsyncReadExt};
+use std::io::Read;
 
-pub(crate) async fn is_flatpak() -> bool {
-    #[cfg(feature = "async-io")]
-    {
-        async_fs::metadata("/.flatpak-info").await.is_ok()
-    }
-    #[cfg(not(feature = "async-io"))]
-    {
-        std::path::PathBuf::from("/.flatpak-info").exists()
-    }
+pub(crate) fn is_flatpak() -> bool {
+    std::path::PathBuf::from("/.flatpak-info").exists()
 }
 
-pub(crate) async fn is_snap() -> bool {
+pub(crate) fn is_snap() -> bool {
     let pid = std::process::id();
     let path = format!("/proc/{pid}/cgroup");
-    let mut file = match File::open(path).await {
+    let mut file = match std::fs::File::open(path) {
         Ok(file) => file,
         Err(_) => return false,
     };
 
     let mut buffer = String::new();
-    match file.read_to_string(&mut buffer).await {
+    match file.read_to_string(&mut buffer) {
         Ok(_) => cgroup_v2_is_snap(&buffer),
         Err(_) => false,
     }

@@ -12,7 +12,6 @@ use crate::{
             NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage,
             ScreenCastPage, ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
         },
-        spawn_tokio_blocking,
     },
 };
 
@@ -111,7 +110,7 @@ mod imp {
             if config::PROFILE == "Devel" {
                 obj.add_css_class("devel");
             }
-            let is_sandboxed: bool = spawn_tokio_blocking(async { ashpd::is_sandboxed().await });
+            let is_sandboxed: bool = ashpd::is_sandboxed();
             // Add pages based on whether the app is sandboxed
             self.background_page.set_visible(is_sandboxed);
             self.device_page.set_visible(!is_sandboxed);
