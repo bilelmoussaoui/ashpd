@@ -6,7 +6,7 @@ name = "ashpd-demo"
 version = "0.1.0"
 
 [dependencies]
-adw = { version = "0.8.1", package = "libadwaita", features = ["v1_9"] }
+adw = { version = "0.9.0-alpha", package = "libadwaita", features = ["v1_9"] }
 anyhow = "1.0"
 ashpd = { path = "../../client", version = "0.13", default-features = false, features = [
     "tokio",
@@ -40,18 +40,18 @@ async-channel = "2.3"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 futures-util = "0.3"
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
-gst = { package = "gstreamer", version = "0.24" }
-gst4gtk = { package = "gst-plugin-gtk4", version = "0.14", features = [
+gst = { package = "gstreamer", version = "0.25.0-alpha" }
+gst4gtk = { package = "gst-plugin-gtk4", version = "0.15.0-alpha", features = [
     "wayland",
     "x11egl",
     "x11glx",
     "gtk_v4_14",
 ] }
-gtk = { package = "gtk4", version = "0.10", features = ["v4_14"] }
+gtk = { package = "gtk4", version = "0.11.0-alpha", features = ["v4_14"] }
 gvdb-macros = "0.1"
 rusb = "0.9.4"
 serde = { version = "1.0", features = ["derive"] }
-shumate = { version = "0.7", package = "libshumate" }
+shumate = { version = "0.8.0-alpha", package = "libshumate" }
 tokio = { version = "1.48", default-features = false, features = [
     "io-util",
     "net",
