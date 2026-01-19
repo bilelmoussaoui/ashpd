@@ -26,10 +26,10 @@ impl AppID {
             any(feature = "gtk4_x11", feature = "gtk4_wayland")
         )))
     )]
-    /// Retrieves the associated `gio::DesktopAppInfo` if found
-    pub fn app_info(&self) -> Option<gtk4::gio::DesktopAppInfo> {
+    /// Retrieves the associated `gio_unix::DesktopAppInfo` if found
+    pub fn app_info(&self) -> Option<gio_unix::DesktopAppInfo> {
         let desktop_file = format!("{}.desktop", self.0);
-        gtk4::gio::DesktopAppInfo::new(&desktop_file)
+        gio_unix::DesktopAppInfo::new(&desktop_file)
     }
 }
 
