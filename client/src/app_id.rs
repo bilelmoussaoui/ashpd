@@ -14,25 +14,6 @@ impl Basic for AppID {
     const SIGNATURE_STR: &'static str = String::SIGNATURE_STR;
 }
 
-impl AppID {
-    #[cfg(all(
-        feature = "backend",
-        any(feature = "gtk4_x11", feature = "gtk4_wayland")
-    ))]
-    #[cfg_attr(
-        docsrs,
-        doc(cfg(all(
-            feature = "backend",
-            any(feature = "gtk4_x11", feature = "gtk4_wayland")
-        )))
-    )]
-    /// Retrieves the associated `gio_unix::DesktopAppInfo` if found
-    pub fn app_info(&self) -> Option<gio_unix::DesktopAppInfo> {
-        let desktop_file = format!("{}.desktop", self.0);
-        gio_unix::DesktopAppInfo::new(&desktop_file)
-    }
-}
-
 impl FromStr for AppID {
     type Err = crate::Error;
     fn from_str(value: &str) -> Result<Self, Self::Err> {

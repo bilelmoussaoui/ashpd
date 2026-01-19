@@ -80,8 +80,8 @@ flatpak = ["dep:serde_repr"]
 documents = ["dep:serde_repr"]
 
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
-gtk4_wayland = ["gdk4wayland", "gio-unix", "glib", "dep:gtk4", "dep:futures-channel"]
-gtk4_x11 = ["gdk4x11", "gio-unix", "glib", "dep:gtk4", "dep:futures-channel"]
+gtk4_wayland = ["gdk4wayland", "glib", "dep:gtk4", "dep:futures-channel"]
+gtk4_x11 = ["gdk4x11", "glib", "dep:gtk4", "dep:futures-channel"]
 raw_handle = ["raw-window-handle"]
 tokio = ["zbus/tokio", "dep:tokio"]
 glib = ["dep:glib"]
@@ -96,7 +96,6 @@ futures-channel = { version = "0.3", optional = true }
 futures-util = "0.3"
 gdk4wayland = { package = "gdk4-wayland", version = "0.11.0-alpha", optional = true }
 gdk4x11 = { package = "gdk4-x11", version = "0.11.0-alpha", optional = true, features = [ "xlib" ] }
-gio-unix = { version = "0.22.0-alpha", optional = true }
 glib = { version = "0.22.0-alpha", optional = true }
 gtk4 = { version = "0.11.0-alpha", optional = true }
 pipewire = { version = "0.9", optional = true }

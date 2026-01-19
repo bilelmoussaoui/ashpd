@@ -59,7 +59,6 @@ dependencies = [
  "gdk4-wayland",
  "gdk4-x11",
  "getrandom",
- "gio-unix",
  "glib",
  "gstreamer",
  "gtk4",
@@ -887,31 +886,6 @@ dependencies = [
  "libc",
  "system-deps",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "gio-unix"
-version = "0.22.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ee9526d71d1d7a95a732b1b172d881f9b8ad768653798987134cad701e61ac2"
-dependencies = [
- "gio",
- "gio-unix-sys",
- "glib",
- "libc",
-]
-
-[[package]]
-name = "gio-unix-sys"
-version = "0.22.0-alpha.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4898e69b49b11966110b4e263f5854a97f2644480549aeb64b9e41e55243d84"
-dependencies = [
- "gio-sys",
- "glib-sys",
- "gobject-sys",
- "libc",
- "system-deps",
 ]
 
 [[package]]
