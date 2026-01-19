@@ -80,12 +80,13 @@ flatpak = ["dep:serde_repr"]
 documents = ["dep:serde_repr"]
 
 gtk4 = ["gtk4_x11", "gtk4_wayland"]
-gtk4_wayland = ["gdk4wayland", "glib", "dep:gtk4"]
-gtk4_x11 = ["gdk4x11", "glib", "dep:gtk4"]
+gtk4_wayland = ["gdk4wayland", "glib", "dep:gtk4", "dep:futures-channel"]
+gtk4_x11 = ["gdk4x11", "glib", "dep:gtk4", "dep:futures-channel"]
 raw_handle = ["raw-window-handle"]
 tokio = ["zbus/tokio", "dep:tokio"]
 glib = ["dep:glib"]
 wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
+pipewire = ["dep:pipewire", "dep:futures-channel"]
 
 [dependencies]
 async-fs = { version = "2.1", optional = true }
@@ -93,7 +94,7 @@ async-net = { version = "2.0", optional = true }
 async-trait = { version = "0.1", optional = true }
 enumflags2 = "0.7"
 getrandom = "0.3"
-futures-channel = "0.3"
+futures-channel = { version = "0.3", optional = true }
 futures-util = "0.3"
 gdk4wayland = { package = "gdk4-wayland", version = "0.10", optional = true }
 gdk4x11 = { package = "gdk4-x11", version = "0.10", optional = true, features = [ "xlib" ] }
