@@ -110,7 +110,7 @@ pub async fn retrieve() -> Result<Vec<u8>, Error> {
         Ok::<_, std::io::Error>(buf)
     })
     .await
-    .map_err(|e| Error::from(std::io::Error::new(std::io::ErrorKind::Other, e)))??;
+    .map_err(|e| Error::from(std::io::Error::other(e)))??;
 
     #[cfg(not(feature = "tokio"))]
     let buf = {
