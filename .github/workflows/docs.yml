@@ -27,7 +27,6 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         env:
-          RUSTFLAGS: --cfg docsrs
           RUSTDOCFLAGS: --cfg docsrs -Z unstable-options --extern-html-root-url=zbus=https://docs.rs/zbus/latest/
               --extern-html-root-url=pipewire=https://pipewire.pages.freedesktop.org/pipewire-rs/
               --extern-html-root-url=zvariant=https://docs.rs/zvariant/latest/
