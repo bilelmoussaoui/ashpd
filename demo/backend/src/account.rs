@@ -47,7 +47,7 @@ impl AccountImpl for Account {
         // Retrieve current user information by using the
         // `org.freedesktop.Accounts` interfaces.
         let cnx = zbus::Connection::system().await?;
-        let uid = nix::unistd::Uid::current().as_raw();
+        let uid = unsafe { libc::getuid() };
         let path = format!("/org/freedesktop/Accounts/User{uid}");
         let proxy = fdo_account::AccountsProxy::builder(&cnx)
             .path(path)?
