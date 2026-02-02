@@ -8,7 +8,10 @@ use futures_util::{
 };
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
-use crate::desktop::{HandleToken, Response};
+use crate::{
+    PortalError,
+    desktop::{HandleToken, Response},
+};
 
 #[async_trait]
 pub trait RequestImpl: Send + Sync {
@@ -63,18 +66,27 @@ impl Request {
         );
         server.at(&path, request).await?;
 
-        let response = fut.await;
+        let result = fut.await;
 
         #[cfg(feature = "tracing")]
-        tracing::debug!("{_method} returned {:#?}", response);
+        tracing::debug!("{_method} returned {:#?}", result);
         #[cfg(feature = "tracing")]
         tracing::debug!("Releasing request {:?}", path.as_str());
         server.remove::<Self, _>(&path).await?;
 
-        Ok(match response {
+        let response = match result {
             Err(_) => Response::cancelled(),
-            Ok(response) => Response::ok(response?),
-        })
+            Ok(result) => match result {
+                Ok(results) => Response::ok(results),
+                Err(error) => match error {
+                    PortalError::Cancelled(_) => Response::cancelled(),
+                    other => {
+                        return Err(other);
+                    }
+                },
+            },
+        };
+        Ok(response)
     }
 
     pub(crate) fn new(
