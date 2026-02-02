@@ -9,7 +9,7 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::ResponseType, wallpaper::SetOn},
-    zvariant::{DeserializeDict, OwnedObjectPath, Type, Optional},
+    zvariant::{DeserializeDict, Optional, OwnedObjectPath, Type},
 };
 
 #[derive(DeserializeDict, Type, Debug)]
