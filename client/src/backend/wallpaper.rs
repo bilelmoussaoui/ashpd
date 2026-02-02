@@ -5,11 +5,11 @@ use async_trait::async_trait;
 use crate::{
     AppID, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::ResponseType, wallpaper::SetOn},
-    zvariant::{DeserializeDict, OwnedObjectPath, Type},
+    zvariant::{DeserializeDict, OwnedObjectPath, Type, Optional},
 };
 
 #[derive(DeserializeDict, Type, Debug)]
@@ -72,8 +72,8 @@ impl WallpaperInterface {
     async fn set_wallpaper_uri(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         uri: url::Url,
         options: WallpaperOptions,
     ) -> Result<ResponseType> {
@@ -88,8 +88,8 @@ impl WallpaperInterface {
             async move {
                 imp.with_uri(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     uri,
                     options,
                 )

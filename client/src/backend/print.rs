@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     AppID, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -13,7 +13,7 @@ use crate::{
         print::{PageSetup, PreparePrint, Settings},
         request::Response,
     },
-    zvariant::{self, DeserializeDict, OwnedObjectPath},
+    zvariant::{self, DeserializeDict, Optional, OwnedObjectPath},
 };
 
 #[derive(DeserializeDict, zvariant::Type)]
@@ -105,8 +105,8 @@ impl PrintInterface {
     async fn prepare_print(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         title: String,
         settings: Settings,
         page_setup: PageSetup,
@@ -123,8 +123,8 @@ impl PrintInterface {
             async move {
                 imp.prepare_print(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     title,
                     settings,
                     page_setup,
@@ -141,8 +141,8 @@ impl PrintInterface {
     async fn print(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         title: String,
         fd: zvariant::OwnedFd,
         options: PrintOptions,
@@ -158,8 +158,8 @@ impl PrintInterface {
             async move {
                 imp.print(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     title,
                     fd,
                     options,

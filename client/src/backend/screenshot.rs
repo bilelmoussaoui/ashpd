@@ -5,13 +5,13 @@ use async_trait::async_trait;
 use crate::{
     AppID, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
     },
     desktop::{
         Color, HandleToken, request::Response, screenshot::Screenshot as ScreenshotResponse,
     },
-    zvariant::{DeserializeDict, OwnedObjectPath, Type},
+    zvariant::{DeserializeDict, Optional, OwnedObjectPath, Type},
 };
 
 #[derive(DeserializeDict, Type, Debug)]
@@ -89,8 +89,8 @@ impl ScreenshotInterface {
     async fn screenshot(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         options: ScreenshotOptions,
     ) -> Result<Response<ScreenshotResponse>> {
         let imp = Arc::clone(&self.imp);
@@ -104,8 +104,8 @@ impl ScreenshotInterface {
             async move {
                 imp.screenshot(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     options,
                 )
                 .await
@@ -119,8 +119,8 @@ impl ScreenshotInterface {
     async fn pick_color(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         options: ColorOptions,
     ) -> Result<Response<Color>> {
         let imp = Arc::clone(&self.imp);
@@ -134,8 +134,8 @@ impl ScreenshotInterface {
             async move {
                 imp.pick_color(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     options,
                 )
                 .await

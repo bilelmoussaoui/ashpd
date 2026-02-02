@@ -5,11 +5,11 @@ use async_trait::async_trait;
 use crate::{
     AppID, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Icon, file_chooser::Choice, request::Response},
-    zvariant::{self, DeserializeDict, OwnedObjectPath, SerializeDict},
+    zvariant::{self, DeserializeDict, Optional, OwnedObjectPath, SerializeDict},
 };
 
 #[derive(DeserializeDict, zvariant::Type)]
@@ -105,8 +105,8 @@ impl AccessInterface {
     async fn access_dialog(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         title: String,
         subtitle: String,
         body: String,
@@ -123,8 +123,8 @@ impl AccessInterface {
             async move {
                 imp.access_dialog(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     title,
                     subtitle,
                     body,

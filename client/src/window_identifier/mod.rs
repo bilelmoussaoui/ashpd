@@ -298,6 +298,14 @@ pub enum WindowIdentifierType {
     Wayland(String),
 }
 
+impl zbus::zvariant::NoneValue for WindowIdentifierType {
+    type NoneType = String;
+
+    fn null_value() -> String {
+        String::default()
+    }
+}
+
 impl fmt::Display for WindowIdentifierType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -332,6 +340,14 @@ impl FromStr for WindowIdentifierType {
                 "Invalid Window Identifier type {t}",
             ))),
         }
+    }
+}
+
+impl TryFrom<String> for WindowIdentifierType {
+    type Error = PortalError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::from_str(&value)
     }
 }
 

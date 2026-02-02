@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     AppID, FilePath, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -13,7 +13,7 @@ use crate::{
         file_chooser::{Choice, FileFilter},
         request::Response,
     },
-    zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
+    zvariant::{DeserializeDict, Optional, OwnedObjectPath, SerializeDict, Type},
 };
 
 #[derive(Debug, Type, SerializeDict, Default)]
@@ -245,8 +245,8 @@ impl FileChooserInterface {
     async fn open_file(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         title: String,
         options: OpenFileOptions,
     ) -> Result<Response<SelectedFiles>> {
@@ -261,8 +261,8 @@ impl FileChooserInterface {
             async move {
                 imp.open_file(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     &title,
                     options,
                 )
@@ -276,8 +276,8 @@ impl FileChooserInterface {
     async fn save_file(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         title: String,
         options: SaveFileOptions,
     ) -> Result<Response<SelectedFiles>> {
@@ -292,8 +292,8 @@ impl FileChooserInterface {
             async move {
                 imp.save_file(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     &title,
                     options,
                 )
@@ -307,8 +307,8 @@ impl FileChooserInterface {
     async fn save_files(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         title: String,
         options: SaveFilesOptions,
     ) -> Result<Response<SelectedFiles>> {
@@ -323,8 +323,8 @@ impl FileChooserInterface {
             async move {
                 imp.save_files(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     &title,
                     options,
                 )

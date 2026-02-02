@@ -5,12 +5,9 @@ use serde::{Deserialize, Deserializer};
 
 use crate::{
     ActivationToken, AppID, PortalError, WindowIdentifierType,
-    backend::{
-        MaybeAppID, MaybeWindowIdentifier,
-        request::{Request, RequestImpl},
-    },
+    backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
-    zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
+    zvariant::{DeserializeDict, Optional, OwnedObjectPath, SerializeDict, Type},
 };
 
 /// The desktop ID of an application.
@@ -156,8 +153,8 @@ impl AppChooserInterface {
     async fn choose_application(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        parent_window: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        parent_window: Optional<WindowIdentifierType>,
         choices: Vec<DesktopID>,
         options: ChooserOptions,
     ) -> Result<Response<Choice>, PortalError> {
@@ -172,8 +169,8 @@ impl AppChooserInterface {
             async move {
                 imp.choose_application(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    parent_window.inner(),
+                    app_id.into(),
+                    parent_window.into(),
                     choices,
                     options,
                 )

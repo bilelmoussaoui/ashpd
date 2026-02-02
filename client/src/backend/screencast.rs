@@ -9,7 +9,7 @@ use enumflags2::BitFlags;
 use crate::{
     AppID, PortalError, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
         session::{CreateSessionResponse, Session, SessionImpl, SessionManager},
     },
@@ -18,7 +18,9 @@ use crate::{
         request::Response,
         screencast::{CursorMode, SourceType, Stream},
     },
-    zvariant::{DeserializeDict, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value},
+    zvariant::{
+        DeserializeDict, Optional, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
+    },
 };
 
 #[derive(DeserializeDict, Type, Debug)]
@@ -200,7 +202,7 @@ impl ScreencastInterface {
         &self,
         handle: OwnedObjectPath,
         session_handle: OwnedObjectPath,
-        app_id: MaybeAppID,
+        app_id: Optional<AppID>,
         options: CreateSessionOptions,
     ) -> Result<Response<CreateSessionResponse>> {
         let session_token = HandleToken::try_from(&session_handle).unwrap();
@@ -226,7 +228,7 @@ impl ScreencastInterface {
                 imp.create_session(
                     HandleToken::try_from(&handle).unwrap(),
                     token,
-                    app_id.inner(),
+                    app_id.into(),
                     options,
                 )
                 .await
@@ -266,7 +268,7 @@ impl ScreencastInterface {
         &self,
         handle: OwnedObjectPath,
         session_handle: OwnedObjectPath,
-        app_id: MaybeAppID,
+        app_id: Optional<AppID>,
         options: SelectSourcesOptions,
     ) -> Result<Response<SelectSourcesResponse>> {
         let session_token = HandleToken::try_from(&session_handle).unwrap();
@@ -283,7 +285,7 @@ impl ScreencastInterface {
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),
             async move {
-                imp.select_sources(session_token, app_id.inner(), options)
+                imp.select_sources(session_token, app_id.into(), options)
                     .await
             },
         )
@@ -296,8 +298,8 @@ impl ScreencastInterface {
         &self,
         handle: OwnedObjectPath,
         session_handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         options: StartCastOptions,
     ) -> Result<Response<StartCastResponse>> {
         let session_token = HandleToken::try_from(&session_handle).unwrap();
@@ -316,8 +318,8 @@ impl ScreencastInterface {
             async move {
                 imp.start_cast(
                     session_token,
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     options,
                 )
                 .await

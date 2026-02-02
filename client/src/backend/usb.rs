@@ -5,11 +5,11 @@ use async_trait::async_trait;
 use crate::{
     AppID, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::Response, usb::UsbDevice},
-    zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type},
+    zvariant::{DeserializeDict, Optional, OwnedObjectPath, SerializeDict, Type},
 };
 
 #[derive(Debug, DeserializeDict, Type)]
@@ -75,8 +75,8 @@ impl UsbInterface {
     async fn acquire_devices(
         &self,
         handle: OwnedObjectPath,
-        window_identifier: MaybeWindowIdentifier,
-        app_id: MaybeAppID,
+        window_identifier: Optional<WindowIdentifierType>,
+        app_id: Optional<AppID>,
         devices: Vec<(String, UsbDevice, AccessOptions)>,
         options: AcquireDevicesOptions,
     ) -> Result<Response<Vec<(String, AccessOptions)>>> {
@@ -91,8 +91,8 @@ impl UsbInterface {
             async move {
                 imp.acquire_devices(
                     HandleToken::try_from(&handle).unwrap(),
-                    window_identifier.inner(),
-                    app_id.inner(),
+                    window_identifier.into(),
+                    app_id.into(),
                     devices,
                     options,
                 )

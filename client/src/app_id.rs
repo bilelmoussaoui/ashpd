@@ -1,7 +1,7 @@
 use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{Basic, Type};
+use zbus::zvariant::{self, Basic, Type};
 
 /// The application ID.
 ///
@@ -12,6 +12,14 @@ pub struct AppID(String);
 impl Basic for AppID {
     const SIGNATURE_CHAR: char = String::SIGNATURE_CHAR;
     const SIGNATURE_STR: &'static str = String::SIGNATURE_STR;
+}
+
+impl zvariant::NoneValue for AppID {
+    type NoneType = String;
+
+    fn null_value() -> String {
+        String::default()
+    }
 }
 
 impl FromStr for AppID {

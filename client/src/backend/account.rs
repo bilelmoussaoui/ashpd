@@ -5,11 +5,11 @@ use async_trait::async_trait;
 use crate::{
     AppID, WindowIdentifierType,
     backend::{
-        MaybeAppID, MaybeWindowIdentifier, Result,
+        Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, account::UserInformation, request::Response},
-    zvariant::{DeserializeDict, OwnedObjectPath, Type},
+    zvariant::{DeserializeDict, Optional, OwnedObjectPath, Type},
 };
 
 #[derive(Debug, DeserializeDict, Type)]
@@ -64,8 +64,8 @@ impl AccountInterface {
     async fn get_user_information(
         &self,
         handle: OwnedObjectPath,
-        app_id: MaybeAppID,
-        window_identifier: MaybeWindowIdentifier,
+        app_id: Optional<AppID>,
+        window_identifier: Optional<WindowIdentifierType>,
         options: UserInformationOptions,
     ) -> Result<Response<UserInformation>> {
         let imp = Arc::clone(&self.imp);
@@ -79,8 +79,8 @@ impl AccountInterface {
             async move {
                 imp.get_user_information(
                     HandleToken::try_from(&handle).unwrap(),
-                    app_id.inner(),
-                    window_identifier.inner(),
+                    app_id.into(),
+                    window_identifier.into(),
                     options,
                 )
                 .await
