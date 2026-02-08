@@ -91,7 +91,7 @@ pipewire = ["dep:pipewire", "dep:futures-channel"]
 [dependencies]
 async-trait = { version = "0.1", optional = true }
 enumflags2 = "0.7"
-getrandom = "0.3"
+getrandom = "0.4"
 futures-channel = { version = "0.3", optional = true }
 futures-util = "0.3"
 gdk4wayland = { package = "gdk4-wayland", version = "0.11.0-alpha", optional = true }
