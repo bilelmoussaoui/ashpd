@@ -102,6 +102,8 @@ pub enum WindowIdentifier {
     Wayland(WaylandWindowIdentifier),
     #[doc(hidden)]
     X11(WindowIdentifierType),
+    #[doc(hidden)]
+    XdgExportedV2Handle(String),
 }
 
 unsafe impl Send for WindowIdentifier {}
@@ -124,6 +126,7 @@ impl std::fmt::Display for WindowIdentifier {
             #[cfg(feature = "wayland")]
             Self::Wayland(identifier) => identifier.fmt(f),
             Self::X11(identifier) => identifier.fmt(f),
+            Self::XdgExportedV2Handle(handle) => write!(f, "wayland:{handle}"),
         }
     }
 }
@@ -202,6 +205,10 @@ impl WindowIdentifier {
     /// Create an instance of [`WindowIdentifier`] from an X11 window's XID.
     pub fn from_xid(xid: std::os::raw::c_ulong) -> Self {
         Self::X11(WindowIdentifierType::X11(xid))
+    }
+
+    pub fn from_xdg_foreign_exported_v2(handle: String) -> Self {
+        Self::XdgExportedV2Handle(handle)
     }
 
     #[cfg(feature = "wayland")]
