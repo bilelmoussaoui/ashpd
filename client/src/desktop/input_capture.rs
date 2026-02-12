@@ -303,7 +303,7 @@ use zbus::zvariant::{
     as_value::{self, optional},
 };
 
-use super::{HandleToken, Request, Session, session::SessionPortal};
+use super::{HandleToken, PersistMode, Request, Session, session::SessionPortal};
 use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
@@ -371,12 +371,28 @@ pub struct StartOptions {
     handle_token: HandleToken,
     #[serde(with = "as_value")]
     capabilities: BitFlags<Capabilities>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    restore_token: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    persist_mode: Option<PersistMode>,
 }
 
 impl StartOptions {
     /// Request the specified capabilities.
     pub fn set_capabilities(mut self, capabilities: BitFlags<Capabilities>) -> Self {
         self.capabilities = capabilities;
+        self
+    }
+
+    /// Set the token to restore a previous persistent session.
+    pub fn set_restore_token(mut self, restore_token: impl Into<Option<String>>) -> Self {
+        self.restore_token = restore_token.into();
+        self
+    }
+
+    /// Set the persist mode for this session.
+    pub fn set_persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
+        self.persist_mode = persist_mode.into();
         self
     }
 }
@@ -389,6 +405,8 @@ pub struct StartResponse {
     capabilities: BitFlags<Capabilities>,
     #[serde(default, with = "optional")]
     clipboard_enabled: Option<bool>,
+    #[serde(default, with = "optional")]
+    restore_token: Option<String>,
 }
 
 impl StartResponse {
@@ -400,6 +418,11 @@ impl StartResponse {
     /// Whether the clipboard was enabled.
     pub fn is_clipboard_enabled(&self) -> bool {
         self.clipboard_enabled.unwrap_or(false)
+    }
+
+    /// The session restore token.
+    pub fn restore_token(&self) -> Option<&str> {
+        self.restore_token.as_deref()
     }
 }
 
@@ -827,6 +850,8 @@ impl InputCapture {
     ///   [`create_session2()`][`InputCapture::create_session2`].
     /// * `identifier` - Identifier for the application window.
     /// * `capabilities` - Bitmask of requested capabilities.
+    /// * `restore_token` - The token to restore a previous session.
+    /// * `persist_mode` - How this session should persist.
     ///
     /// # Specifications
     ///
