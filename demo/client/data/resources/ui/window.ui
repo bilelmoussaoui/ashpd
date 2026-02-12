@@ -180,6 +180,16 @@
                         </child>
                         <child>
                           <object class="AdwViewStackPage">
+                            <property name="name">input_capture</property>
+                            <property name="title" translatable="yes">Input Capture</property>
+                            <property name="icon-name">input-gaming-symbolic</property>
+                            <property name="child">
+                              <object class="InputCapturePage" id="input_capture" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwViewStackPage">
                             <property name="name">location</property>
                             <property name="title" translatable="yes">Location</property>
                             <property name="icon-name">map-marker-symbolic</property>
