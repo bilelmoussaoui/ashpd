@@ -21,6 +21,7 @@ ashpd = { path = "../../client", version = "0.13.0-alpha", default-features = fa
     "file_chooser",
     "global_shortcuts",
     "inhibit",
+    "input_capture",
     "location",
     "network_monitor",
     "notification",

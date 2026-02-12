@@ -15,6 +15,7 @@
         <file compressed="true" preprocess="xml-stripblanks" alias="file_chooser.ui">resources/ui/file_chooser.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="inhibit.ui">resources/ui/inhibit.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="global_shortcuts.ui">resources/ui/global_shortcuts.ui</file>
+        <file compressed="true" preprocess="xml-stripblanks" alias="input_capture.ui">resources/ui/input_capture.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="location.ui">resources/ui/location.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="network_monitor.ui">resources/ui/network_monitor.ui</file>
         <file compressed="true" preprocess="xml-stripblanks" alias="notification.ui">resources/ui/notification.ui</file>
