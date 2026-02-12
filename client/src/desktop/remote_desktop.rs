@@ -209,6 +209,8 @@ pub struct SelectedDevices {
     streams: Vec<Stream>,
     #[serde(default, with = "optional")]
     restore_token: Option<String>,
+    #[serde(default, with = "optional")]
+    clipboard_enabled: Option<bool>,
 }
 
 impl SelectedDevices {
@@ -225,6 +227,11 @@ impl SelectedDevices {
     /// The session restore token.
     pub fn restore_token(&self) -> Option<&str> {
         self.restore_token.as_deref()
+    }
+
+    /// Whether the clipboard was enabled.
+    pub fn clipboard_enabled(&self) -> bool {
+        self.clipboard_enabled.unwrap_or(false)
     }
 }
 
