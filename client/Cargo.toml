@@ -100,3 +100,11 @@ features = ["backend", "gtk4", "raw_handle",
     "settings","trash","usb","wallpaper","flatpak","documents"
 ]
 rustdoc-args = ["--generate-link-to-definition"]
+
+[[example]]
+name = "screen_cast_gstreamer"
+required-features = ["screencast"]
+
+[[example]]
+name = "screen_cast_pw"
+required-features = ["screencast", "pipewire"]
