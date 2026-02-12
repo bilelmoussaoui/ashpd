@@ -937,3 +937,5 @@ impl std::ops::Deref for InputCapture {
 
 impl crate::Sealed for InputCapture {}
 impl SessionPortal for InputCapture {}
+#[cfg(feature = "clipboard")]
+impl crate::desktop::clipboard::IsClipboardSession for InputCapture {}
