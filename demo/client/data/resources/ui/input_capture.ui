@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="InputCapturePage" parent="PortalPage">
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">True</property>
+        <property name="spacing">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwClamp">
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">12</property>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">Input Capture</property>
+                    <property name="description" translatable="yes">Communicates with org.freedesktop.portal.InputCapture</property>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Status</property>
+                        <child>
+                          <object class="GtkLabel" id="status_label">
+                            <property name="label">Not active</property>
+                            <property name="halign">start</property>
+                            <property name="selectable">True</property>
+                            <style>
+                              <class name="dim-label"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">Session</property>
+                    <property name="description" translatable="yes">Create and manage input capture session</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">_Start Session</property>
+                            <property name="use-underline">True</property>
+                            <property name="halign">start</property>
+                            <property name="action-name">input_capture.start</property>
+                            <style>
+                              <class name="pill" />
+                              <class name="suggested-action" />
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">_Close Session</property>
+                            <property name="use-underline">True</property>
+                            <property name="halign">start</property>
+                            <property name="action-name">input_capture.stop</property>
+                            <style>
+                              <class name="pill" />
+                              <class name="destructive-action" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">Control</property>
+                    <property name="description" translatable="yes">Enable/Disable input capture. When enabled, barriers on screen edges will trigger capture.</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">_Enable</property>
+                            <property name="use-underline">True</property>
+                            <property name="halign">start</property>
+                            <property name="action-name">input_capture.enable</property>
+                            <style>
+                              <class name="pill" />
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">_Disable</property>
+                            <property name="use-underline">True</property>
+                            <property name="halign">start</property>
+                            <property name="action-name">input_capture.disable</property>
+                            <style>
+                              <class name="pill" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">How it works</property>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">1. Start Session</property>
+                        <property name="subtitle" translatable="yes">Creates an input capture session and sets up barriers on screen edges</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">2. Enable</property>
+                        <property name="subtitle" translatable="yes">Activates the barriers - move cursor to screen edge to trigger</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">3. Auto-release</property>
+                        <property name="subtitle" translatable="yes">After activation, capture is automatically released after 5 seconds</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <style>
+          <class name="page-content" />
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>

@@ -8,9 +8,9 @@ use crate::{
         DocumentsPage,
         desktop::{
             AccountPage, BackgroundPage, CameraPage, DevicePage, DynamicLauncherPage, EmailPage,
-            FileChooserPage, GlobalShortcutsPage, InhibitPage, LocationPage, NetworkMonitorPage,
-            NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage,
-            ScreenCastPage, ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
+            FileChooserPage, GlobalShortcutsPage, InhibitPage, InputCapturePage, LocationPage,
+            NetworkMonitorPage, NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage,
+            RemoteDesktopPage, ScreenCastPage, ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
         },
     },
 };
@@ -67,6 +67,8 @@ mod imp {
         #[template_child]
         pub global_shortcuts: TemplateChild<GlobalShortcutsPage>,
         #[template_child]
+        pub input_capture: TemplateChild<InputCapturePage>,
+        #[template_child]
         pub secret: TemplateChild<SecretPage>,
         #[template_child]
         pub remote_desktop: TemplateChild<RemoteDesktopPage>,
@@ -83,6 +85,7 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             BackgroundPage::static_type();
             DevicePage::static_type();
+            InputCapturePage::static_type();
             NetworkMonitorPage::static_type();
             ProxyResolverPage::static_type();
             klass.bind_template();
