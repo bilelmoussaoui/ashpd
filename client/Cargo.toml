@@ -127,3 +127,11 @@ quick-xml = "0.39"
 [package.metadata.docs.rs]
 features = ["backend", "gtk4", "raw_handle"]
 rustdoc-args = ["--generate-link-to-definition"]
+
+[[example]]
+name = "screen_cast_gstreamer"
+required-features = ["screencast"]
+
+[[example]]
+name = "screen_cast_pw"
+required-features = ["screencast", "remote_desktop", "pipewire"]
