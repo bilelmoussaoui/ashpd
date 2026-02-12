@@ -304,6 +304,7 @@ mod tests {
 
     use super::*;
 
+    #[cfg(feature = "account")]
     #[test]
     fn response_signature() {
         use crate::desktop::account::UserInformation;
