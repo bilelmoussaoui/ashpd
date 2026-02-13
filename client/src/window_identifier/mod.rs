@@ -225,7 +225,7 @@ impl WindowIdentifier {
     ///
     /// The developer takes responsibility of keeping the handle around till the
     /// interaction is over before un-exporting the handle.
-    pub fn from_xdg_foreign_exported_v2(handle: String) -> Self {
+    pub fn from_xdg_foreign_exported(handle: String) -> Self {
         Self::Raw(WindowIdentifierType::Wayland(handle))
     }
 
