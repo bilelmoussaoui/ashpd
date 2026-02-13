@@ -13,13 +13,8 @@
                 <property name="title" translatable="yes">Resolve a URI through a proxy</property>
                 <property name="description" translatable="yes">Calls Lookup on org.freedesktop.portal.ProxyResolver</property>
                 <child>
-                  <object class="AdwActionRow">
+                  <object class="AdwEntryRow" id="uri">
                     <property name="title" translatable="yes">URI</property>
-                    <child>
-                      <object class="GtkEntry" id="uri">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

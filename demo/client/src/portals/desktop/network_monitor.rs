@@ -20,9 +20,9 @@ mod imp {
         #[template_child]
         pub connectivity: TemplateChild<gtk::Label>,
         #[template_child]
-        pub host_entry: TemplateChild<gtk::Entry>,
+        pub host_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
-        pub port_entry: TemplateChild<gtk::Entry>,
+        pub port_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub can_reach_row: TemplateChild<adw::ActionRow>,
         #[template_child]

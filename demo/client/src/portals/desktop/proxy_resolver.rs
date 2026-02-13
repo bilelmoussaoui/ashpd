@@ -14,7 +14,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/proxy_resolver.ui")]
     pub struct ProxyResolverPage {
         #[template_child]
-        pub uri: TemplateChild<gtk::Entry>,
+        pub uri: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
     }
