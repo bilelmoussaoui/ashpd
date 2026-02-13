@@ -75,11 +75,11 @@ impl AccountPage {
                 imp.name_label.set_text(user_info.name());
                 match glib::Uri::try_from(user_info.image())
                     .ok()
-                    .and_then(|uri| Some(uri.path()))
+                    .map(|uri| uri.path())
                     .ok_or_else(|| {
                         glib::Error::new(glib::FileError::Failed, "Failed to retrieve file path")
                     })
-                    .and_then(|path| gdk::Texture::from_filename(path))
+                    .and_then(gdk::Texture::from_filename)
                 {
                     Ok(texture) => {
                         imp.avatar.set_custom_image(Some(&texture));

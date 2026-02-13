@@ -29,7 +29,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri =
-//!         ashpd::Uri::::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!         ashpd::Uri::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     OpenFileRequest::default().ask(true).send_uri(&uri).await?;
 //!     Ok(())
 //! }
