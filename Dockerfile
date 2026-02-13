@@ -11,6 +11,7 @@ RUN sudo dnf install -y \
     ninja-build \
     git \
     sassc \
+    libX11 \
     && sudo dnf clean all
 
 # Build and install libadwaita from git main
