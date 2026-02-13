@@ -9,35 +9,32 @@ use crate::backend::{Result, session::SessionManager};
 pub struct Builder {
     name: OwnedWellKnownName,
     flags: BitFlags<zbus::fdo::RequestNameFlags>,
-    #[cfg(feature = "backend_account")]
+    #[cfg(feature = "account")]
     account_impl: Option<Arc<dyn crate::backend::account::AccountImpl>>,
-    #[cfg(feature = "backend_access")]
     access_impl: Option<Arc<dyn crate::backend::access::AccessImpl>>,
-    #[cfg(feature = "backend_app_chooser")]
     app_chooser_impl: Option<Arc<dyn crate::backend::app_chooser::AppChooserImpl>>,
-    #[cfg(feature = "backend_background")]
+    #[cfg(feature = "background")]
     background_impl: Option<Arc<dyn crate::backend::background::BackgroundImpl>>,
-    #[cfg(feature = "backend_email")]
+    #[cfg(feature = "email")]
     email_impl: Option<Arc<dyn crate::backend::email::EmailImpl>>,
-    #[cfg(feature = "backend_file_chooser")]
+    #[cfg(feature = "file_chooser")]
     file_chooser_impl: Option<Arc<dyn crate::backend::file_chooser::FileChooserImpl>>,
-    #[cfg(feature = "backend_lockdown")]
     lockdown_impl: Option<Arc<dyn crate::backend::lockdown::LockdownImpl>>,
-    #[cfg(feature = "backend_permission_store")]
+    #[cfg(feature = "documents")]
     permission_store_impl: Option<Arc<dyn crate::backend::permission_store::PermissionStoreImpl>>,
-    #[cfg(feature = "backend_print")]
+    #[cfg(feature = "print")]
     print_impl: Option<Arc<dyn crate::backend::print::PrintImpl>>,
-    #[cfg(feature = "backend_screencast")]
+    #[cfg(feature = "screencast")]
     screencast_impl: Option<Arc<dyn crate::backend::screencast::ScreencastImpl>>,
-    #[cfg(feature = "backend_screenshot")]
+    #[cfg(feature = "screenshot")]
     screenshot_impl: Option<Arc<dyn crate::backend::screenshot::ScreenshotImpl>>,
-    #[cfg(feature = "backend_secret")]
+    #[cfg(feature = "secret")]
     secret_impl: Option<Arc<dyn crate::backend::secret::SecretImpl>>,
-    #[cfg(feature = "backend_settings")]
+    #[cfg(feature = "settings")]
     settings_impl: Option<Arc<dyn crate::backend::settings::SettingsImpl>>,
-    #[cfg(feature = "backend_wallpaper")]
+    #[cfg(feature = "wallpaper")]
     wallpaper_impl: Option<Arc<dyn crate::backend::wallpaper::WallpaperImpl>>,
-    #[cfg(feature = "backend_usb")]
+    #[cfg(feature = "usb")]
     usb_impl: Option<Arc<dyn crate::backend::usb::UsbImpl>>,
     spawn: Option<Arc<dyn futures_util::task::Spawn + Send + Sync + 'static>>,
     name_lost: Option<Arc<dyn Fn() + Send + Sync + 'static>>,
@@ -56,35 +53,33 @@ impl Builder {
             // same flags as zbus::Connection::request_name
             flags: zbus::fdo::RequestNameFlags::ReplaceExisting
                 | zbus::fdo::RequestNameFlags::DoNotQueue,
-            #[cfg(feature = "backend_account")]
+            #[cfg(feature = "account")]
             account_impl: None,
-            #[cfg(feature = "backend_access")]
             access_impl: None,
-            #[cfg(feature = "backend_app_chooser")]
             app_chooser_impl: None,
-            #[cfg(feature = "backend_background")]
+            #[cfg(feature = "background")]
             background_impl: None,
-            #[cfg(feature = "backend_email")]
+            #[cfg(feature = "email")]
             email_impl: None,
-            #[cfg(feature = "backend_file_chooser")]
+            #[cfg(feature = "file_chooser")]
             file_chooser_impl: None,
-            #[cfg(feature = "backend_lockdown")]
             lockdown_impl: None,
-            #[cfg(feature = "backend_permission_store")]
+
+            #[cfg(feature = "documents")]
             permission_store_impl: None,
-            #[cfg(feature = "backend_print")]
+            #[cfg(feature = "print")]
             print_impl: None,
-            #[cfg(feature = "backend_screencast")]
+            #[cfg(feature = "screencast")]
             screencast_impl: None,
-            #[cfg(feature = "backend_screenshot")]
+            #[cfg(feature = "screenshot")]
             screenshot_impl: None,
-            #[cfg(feature = "backend_secret")]
+            #[cfg(feature = "secret")]
             secret_impl: None,
-            #[cfg(feature = "backend_settings")]
+            #[cfg(feature = "settings")]
             settings_impl: None,
-            #[cfg(feature = "backend_wallpaper")]
+            #[cfg(feature = "wallpaper")]
             wallpaper_impl: None,
-            #[cfg(feature = "backend_usb")]
+            #[cfg(feature = "usb")]
             usb_impl: None,
             spawn: None,
             name_lost: None,
@@ -111,19 +106,17 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_account")]
+    #[cfg(feature = "account")]
     pub fn account(mut self, imp: impl crate::backend::account::AccountImpl + 'static) -> Self {
         self.account_impl = Some(Arc::new(imp));
         self
     }
 
-    #[cfg(feature = "backend_access")]
     pub fn access(mut self, imp: impl crate::backend::access::AccessImpl + 'static) -> Self {
         self.access_impl = Some(Arc::new(imp));
         self
     }
 
-    #[cfg(feature = "backend_app_chooser")]
     pub fn app_chooser(
         mut self,
         imp: impl crate::backend::app_chooser::AppChooserImpl + 'static,
@@ -132,7 +125,7 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_background")]
+    #[cfg(feature = "background")]
     pub fn background(
         mut self,
         imp: impl crate::backend::background::BackgroundImpl + 'static,
@@ -141,13 +134,13 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_email")]
+    #[cfg(feature = "email")]
     pub fn email(mut self, imp: impl crate::backend::email::EmailImpl + 'static) -> Self {
         self.email_impl = Some(Arc::new(imp));
         self
     }
 
-    #[cfg(feature = "backend_file_chooser")]
+    #[cfg(feature = "file_chooser")]
     pub fn file_chooser(
         mut self,
         imp: impl crate::backend::file_chooser::FileChooserImpl + 'static,
@@ -156,13 +149,12 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_lockdown")]
     pub fn lockdown(mut self, imp: impl crate::backend::lockdown::LockdownImpl + 'static) -> Self {
         self.lockdown_impl = Some(Arc::new(imp));
         self
     }
 
-    #[cfg(feature = "backend_permission_store")]
+    #[cfg(feature = "documents")]
     pub fn permission_store(
         mut self,
         imp: impl crate::backend::permission_store::PermissionStoreImpl + 'static,
@@ -171,13 +163,13 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_print")]
+    #[cfg(feature = "print")]
     pub fn print(mut self, imp: impl crate::backend::print::PrintImpl + 'static) -> Self {
         self.print_impl = Some(Arc::new(imp));
         self
     }
 
-    #[cfg(feature = "backend_screencast")]
+    #[cfg(feature = "screencast")]
     pub fn screencast(
         mut self,
         imp: impl crate::backend::screencast::ScreencastImpl + 'static,
@@ -186,7 +178,7 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_screenshot")]
+    #[cfg(feature = "screenshot")]
     pub fn screenshot(
         mut self,
         imp: impl crate::backend::screenshot::ScreenshotImpl + 'static,
@@ -195,19 +187,19 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_secret")]
+    #[cfg(feature = "secret")]
     pub fn secret(mut self, imp: impl crate::backend::secret::SecretImpl + 'static) -> Self {
         self.secret_impl = Some(Arc::new(imp));
         self
     }
 
-    #[cfg(feature = "backend_settings")]
+    #[cfg(feature = "settings")]
     pub fn settings(mut self, imp: impl crate::backend::settings::SettingsImpl + 'static) -> Self {
         self.settings_impl = Some(Arc::new(imp));
         self
     }
 
-    #[cfg(feature = "backend_wallpaper")]
+    #[cfg(feature = "wallpaper")]
     pub fn wallpaper(
         mut self,
         imp: impl crate::backend::wallpaper::WallpaperImpl + 'static,
@@ -216,7 +208,7 @@ impl Builder {
         self
     }
 
-    #[cfg(feature = "backend_usb")]
+    #[cfg(feature = "usb")]
     pub fn usb(mut self, imp: impl crate::backend::usb::UsbImpl + 'static) -> Self {
         self.usb_impl = Some(Arc::new(imp));
         self
@@ -249,7 +241,7 @@ impl Builder {
         }
 
         let object_server = connection.object_server();
-        #[cfg(feature = "backend_account")]
+        #[cfg(feature = "account")]
         if let Some(imp) = self.account_impl {
             let portal = crate::backend::account::AccountInterface::new(
                 imp,
@@ -263,7 +255,6 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_access")]
         if let Some(imp) = self.access_impl {
             let portal = crate::backend::access::AccessInterface::new(
                 imp,
@@ -277,7 +268,6 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_app_chooser")]
         if let Some(imp) = self.app_chooser_impl {
             let portal = crate::backend::app_chooser::AppChooserInterface::new(
                 imp,
@@ -291,7 +281,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_background")]
+        #[cfg(feature = "background")]
         if let Some(imp) = self.background_impl {
             let portal = crate::backend::background::BackgroundInterface::new(
                 imp,
@@ -305,7 +295,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_email")]
+        #[cfg(feature = "email")]
         if let Some(imp) = self.email_impl {
             let portal = crate::backend::email::EmailInterface::new(
                 imp,
@@ -319,7 +309,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_file_chooser")]
+        #[cfg(feature = "file_chooser")]
         if let Some(imp) = self.file_chooser_impl {
             let portal = crate::backend::file_chooser::FileChooserInterface::new(
                 imp,
@@ -333,7 +323,6 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_lockdown")]
         if let Some(imp) = self.lockdown_impl {
             let portal = crate::backend::lockdown::LockdownInterface::new(
                 imp,
@@ -347,7 +336,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_permission_store")]
+        #[cfg(feature = "documents")]
         if let Some(imp) = self.permission_store_impl {
             let portal = crate::backend::permission_store::PermissionStoreInterface::new(
                 imp,
@@ -361,7 +350,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_print")]
+        #[cfg(feature = "print")]
         if let Some(imp) = self.print_impl {
             let portal = crate::backend::print::PrintInterface::new(
                 imp,
@@ -375,7 +364,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_screencast")]
+        #[cfg(feature = "screencast")]
         if let Some(imp) = self.screencast_impl {
             let portal = crate::backend::screencast::ScreencastInterface::new(
                 imp,
@@ -390,7 +379,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_screenshot")]
+        #[cfg(feature = "screenshot")]
         if let Some(imp) = self.screenshot_impl {
             let portal = crate::backend::screenshot::ScreenshotInterface::new(
                 imp,
@@ -404,7 +393,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_secret")]
+        #[cfg(feature = "secret")]
         if let Some(imp) = self.secret_impl {
             let portal = crate::backend::secret::SecretInterface::new(
                 imp,
@@ -418,7 +407,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_settings")]
+        #[cfg(feature = "settings")]
         if let Some(imp) = self.settings_impl {
             let portal = crate::backend::settings::SettingsInterface::new(
                 imp,
@@ -432,7 +421,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_wallpaper")]
+        #[cfg(feature = "wallpaper")]
         if let Some(imp) = self.wallpaper_impl {
             let portal = crate::backend::wallpaper::WallpaperInterface::new(
                 imp,
@@ -446,7 +435,7 @@ impl Builder {
                 .await?;
         }
 
-        #[cfg(feature = "backend_usb")]
+        #[cfg(feature = "usb")]
         if let Some(imp) = self.usb_impl {
             let portal =
                 crate::backend::usb::UsbInterface::new(imp, connection.clone(), Arc::clone(&spawn));

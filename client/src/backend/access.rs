@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use serde::Deserialize;
 
 use crate::{
     AppID, WindowIdentifierType,
@@ -8,7 +9,7 @@ use crate::{
         Result,
         request::{Request, RequestImpl},
     },
-    desktop::{HandleToken, Icon, file_chooser::Choice, request::Response},
+    desktop::{HandleToken, Icon, request::Response},
     zvariant::{self, DeserializeDict, Optional, OwnedObjectPath, SerializeDict},
 };
 
@@ -20,6 +21,34 @@ pub struct AccessOptions {
     grant_label: Option<String>,
     icon: Option<String>,
     choices: Option<Vec<Choice>>,
+}
+
+#[derive(Clone, Deserialize, zvariant::Type, Debug)]
+pub struct Choice(String, String, Vec<(String, String)>, String);
+
+impl Choice {
+    /// The choice's unique id
+    pub fn id(&self) -> &str {
+        &self.0
+    }
+
+    /// The user visible label of the choice.
+    pub fn label(&self) -> &str {
+        &self.1
+    }
+
+    /// Pairs of choices.
+    pub fn pairs(&self) -> Vec<(&str, &str)> {
+        self.2
+            .iter()
+            .map(|(x, y)| (x.as_str(), y.as_str()))
+            .collect::<Vec<_>>()
+    }
+
+    /// The initially selected value.
+    pub fn initial_selection(&self) -> &str {
+        &self.3
+    }
 }
 
 impl AccessOptions {

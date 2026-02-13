@@ -14,39 +14,7 @@ rust-version.workspace = true
 async-io = ["zbus/async-io", "futures-util/io"]
 default = ["tokio"]
 
-backend = [
-    "backend_access",
-    "backend_account",
-    "backend_app_chooser",
-    "backend_background",
-    "backend_email",
-    "backend_file_chooser",
-    "backend_lockdown",
-    "backend_permission_store",
-    "backend_print",
-    "backend_screencast",
-    "backend_screenshot",
-    "backend_secret",
-    "backend_settings",
-    "backend_usb",
-    "backend_wallpaper",
-]
-
-backend_access = ["dep:async-trait"]
-backend_account = ["dep:async-trait", "account"]
-backend_app_chooser = ["dep:async-trait"]
-backend_background = ["dep:async-trait", "dep:serde_repr"]
-backend_email = ["dep:async-trait"]
-backend_file_chooser = ["dep:async-trait", "file_chooser"]
-backend_lockdown = ["dep:async-trait"]
-backend_permission_store = ["dep:async-trait", "documents"]
-backend_print = ["dep:async-trait", "print"]
-backend_screencast = ["dep:async-trait", "screencast"]
-backend_screenshot = ["dep:async-trait", "screenshot"]
-backend_secret = ["dep:async-trait"]
-backend_settings = ["dep:async-trait", "settings"]
-backend_usb = ["dep:async-trait", "usb"]
-backend_wallpaper = ["dep:async-trait", "wallpaper"]
+backend = ["dep:async-trait"]
 
 account = ["dep:url", "zbus/url"]
 background = []
@@ -62,7 +30,7 @@ input_capture = ["dep:serde_repr"]
 location = ["dep:serde_repr"]
 memory_monitor = []
 network_monitor = ["dep:serde_repr"]
-notification = ["dep:url", "zbus/url"]
+notification = []
 open_uri = ["dep:url", "zbus/url"]
 power_profile_monitor = []
 print = ["dep:url", "zbus/url"]

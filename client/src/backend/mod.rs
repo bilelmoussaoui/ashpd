@@ -1,52 +1,46 @@
 pub type Result<T> = std::result::Result<T, crate::error::PortalError>;
 
-#[cfg(feature = "backend_access")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_access")))]
 pub mod access;
-#[cfg(feature = "backend_account")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_account")))]
+#[cfg(feature = "account")]
+#[cfg_attr(docsrs, doc(cfg(feature = "account")))]
 pub mod account;
-#[cfg(feature = "backend_app_chooser")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_app_chooser")))]
 pub mod app_chooser;
-#[cfg(feature = "backend_background")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_background")))]
+#[cfg(feature = "background")]
+#[cfg_attr(docsrs, doc(cfg(feature = "background")))]
 pub mod background;
 mod builder;
 pub use builder::Builder;
-#[cfg(feature = "backend_email")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_email")))]
+#[cfg(feature = "email")]
+#[cfg_attr(docsrs, doc(cfg(feature = "email")))]
 pub mod email;
-#[cfg(feature = "backend_file_chooser")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_file_chooser")))]
+#[cfg(feature = "file_chooser")]
+#[cfg_attr(docsrs, doc(cfg(feature = "file_chooser")))]
 pub mod file_chooser;
-#[cfg(feature = "backend_lockdown")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_lockdown")))]
 pub mod lockdown;
-#[cfg(feature = "backend_permission_store")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_permission_store")))]
+#[cfg(feature = "documents")]
+#[cfg_attr(docsrs, doc(cfg(feature = "documents")))]
 pub mod permission_store;
-#[cfg(feature = "backend_print")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_print")))]
+#[cfg(feature = "print")]
+#[cfg_attr(docsrs, doc(cfg(feature = "print")))]
 pub mod print;
 pub mod request;
-#[cfg(feature = "backend_screencast")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
+#[cfg(feature = "screencast")]
+#[cfg_attr(docsrs, doc(cfg(feature = "screencast")))]
 pub mod screencast;
-#[cfg(feature = "backend_screenshot")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_screenshot")))]
+#[cfg(feature = "screenshot")]
+#[cfg_attr(docsrs, doc(cfg(feature = "screenshot")))]
 pub mod screenshot;
-#[cfg(feature = "backend_secret")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_secret")))]
+#[cfg(feature = "secret")]
+#[cfg_attr(docsrs, doc(cfg(feature = "secret")))]
 pub mod secret;
 pub mod session;
-#[cfg(feature = "backend_settings")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_settings")))]
+#[cfg(feature = "settings")]
+#[cfg_attr(docsrs, doc(cfg(feature = "settings")))]
 pub mod settings;
 mod spawn;
-#[cfg(feature = "backend_usb")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_usb")))]
+#[cfg(feature = "usb")]
+#[cfg_attr(docsrs, doc(cfg(feature = "usb")))]
 pub mod usb;
-#[cfg(feature = "backend_wallpaper")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_wallpaper")))]
+#[cfg(feature = "wallpaper")]
+#[cfg_attr(docsrs, doc(cfg(feature = "wallpaper")))]
 pub mod wallpaper;

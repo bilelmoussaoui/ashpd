@@ -50,7 +50,7 @@ pub struct ChooserOptions {
     last_choice: Option<DesktopID>,
     modal: Option<bool>,
     content_type: Option<String>,
-    uri: Option<url::Url>,
+    uri: Option<String>,
     filename: Option<String>,
     activation_token: Option<ActivationToken>,
 }
@@ -68,8 +68,8 @@ impl ChooserOptions {
         self.content_type.as_deref()
     }
 
-    pub fn uri(&self) -> Option<&url::Url> {
-        self.uri.as_ref()
+    pub fn uri(&self) -> Option<&str> {
+        self.uri.as_deref()
     }
 
     pub fn filename(&self) -> Option<&str> {

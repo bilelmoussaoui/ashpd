@@ -15,7 +15,7 @@ use crate::Error;
 /// Used by both the Notification & Dynamic launcher portals.
 pub enum Icon {
     /// An icon URI.
-    Uri(url::Url),
+    Uri(String),
     /// A list of icon names.
     Names(Vec<String>),
     /// Icon bytes.
@@ -112,9 +112,7 @@ impl<'de> Deserialize<'de> for Icon {
         match type_.as_str() {
             "file" => {
                 let uri_str = data.downcast_ref::<zvariant::Str>().unwrap();
-                let uri = url::Url::parse(uri_str.as_str())
-                    .map_err(|_| de::Error::custom("Couldn't deserialize Icon of type 'file'"))?;
-                Ok(Self::Uri(uri))
+                Ok(Self::Uri(uri_str.as_str().to_owned()))
             }
             "bytes" => {
                 let array = data.downcast_ref::<zvariant::Array>().unwrap();
@@ -158,9 +156,7 @@ impl TryFrom<&OwnedValue> for Icon {
                     .downcast_ref::<zvariant::Str>()
                     .unwrap()
                     .to_owned();
-                let uri = url::Url::parse(uri_str.as_str())
-                    .map_err(|_| crate::Error::ParseError("Failed to parse uri"))?;
-                Ok(Self::Uri(uri))
+                Ok(Self::Uri(uri_str.as_str().to_owned()))
             }
             "bytes" => {
                 let array = fields[1].downcast_ref::<zvariant::Array>().unwrap();
@@ -233,7 +229,7 @@ mod test {
         let decoded: Icon = encoded.deserialize().unwrap().0;
         assert!(matches!(decoded, Icon::Names(_)));
 
-        let icon = Icon::Uri(url::Url::parse("file://some/icon.png").unwrap());
+        let icon = Icon::Uri("file://some/icon.png".to_owned());
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = encoded.deserialize().unwrap().0;
         assert!(matches!(decoded, Icon::Uri(_)));

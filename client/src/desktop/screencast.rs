@@ -183,14 +183,14 @@ impl Debug for Streams {
 /// request.
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
-#[cfg(feature = "backend_screencast")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
+#[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 pub struct StreamsBuilder {
     streams: Streams,
 }
 
-#[cfg(feature = "backend_screencast")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
+#[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 impl StreamsBuilder {
     /// Create a new instance of a streams builder.
     pub fn new(streams: Vec<Stream>) -> Self {
@@ -285,14 +285,14 @@ struct StreamProperties {
 /// A [builder-pattern] type to construct a PipeWire stream [`Stream`].
 ///
 /// [builder-pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
-#[cfg(feature = "backend_screencast")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
+#[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 pub struct StreamBuilder {
     stream: Stream,
 }
 
-#[cfg(feature = "backend_screencast")]
-#[cfg_attr(docsrs, doc(cfg(feature = "backend_screencast")))]
+#[cfg(feature = "backend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 impl StreamBuilder {
     /// Create a new instance of a stream builder.
     pub fn new(pipe_wire_node_id: u32) -> Self {

@@ -2,23 +2,7 @@ use std::{fmt, str::FromStr};
 
 #[cfg(all(
     any(feature = "gtk4_wayland", feature = "gtk4_x11"),
-    any(
-        feature = "backend_access",
-        feature = "backend_account",
-        feature = "backend_app_chooser",
-        feature = "backend_background",
-        feature = "backend_email",
-        feature = "backend_file_chooser",
-        feature = "backend_lockdown",
-        feature = "backend_permission_store",
-        feature = "backend_print",
-        feature = "backend_screencast",
-        feature = "backend_screenshot",
-        feature = "backend_secret",
-        feature = "backend_settings",
-        feature = "backend_usb",
-        feature = "backend_wallpaper"
-    )
+    feature = "backend"
 ))]
 use ::gtk4 as gtk;
 #[cfg(all(feature = "raw_handle", feature = "gtk4"))]
@@ -402,45 +386,13 @@ impl WindowIdentifierType {
     /// Returns `true` on success.
     #[cfg(all(
         any(feature = "gtk4_wayland", feature = "gtk4_x11"),
-        any(
-            feature = "backend_access",
-            feature = "backend_account",
-            feature = "backend_app_chooser",
-            feature = "backend_background",
-            feature = "backend_email",
-            feature = "backend_file_chooser",
-            feature = "backend_lockdown",
-            feature = "backend_permission_store",
-            feature = "backend_print",
-            feature = "backend_screencast",
-            feature = "backend_screenshot",
-            feature = "backend_secret",
-            feature = "backend_settings",
-            feature = "backend_usb",
-            feature = "backend_wallpaper"
-        )
+        feature = "backend"
     ))]
     #[cfg_attr(
         docsrs,
         doc(cfg(all(
             any(feature = "gtk4_wayland", feature = "gtk4_x11"),
-            any(
-                feature = "backend_access",
-                feature = "backend_account",
-                feature = "backend_app_chooser",
-                feature = "backend_background",
-                feature = "backend_email",
-                feature = "backend_file_chooser",
-                feature = "backend_lockdown",
-                feature = "backend_permission_store",
-                feature = "backend_print",
-                feature = "backend_screencast",
-                feature = "backend_screenshot",
-                feature = "backend_secret",
-                feature = "backend_settings",
-                feature = "backend_usb",
-                feature = "backend_wallpaper"
-            )
+            feature = "backend"
         )))
     )]
     pub fn set_parent_of(&self, window: &impl gtk::prelude::IsA<gtk::Window>) -> bool {

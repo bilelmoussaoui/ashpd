@@ -23,13 +23,13 @@ zbus = "5.13"
 [dependencies.ashpd]
 workspace = true
 features = [
-    "backend_access",
-    "backend_account",
-    "backend_screencast",
-    "backend_screenshot",
-    "backend_secret",
-    "backend_wallpaper",
-    "backend_settings",
+    "backend",
+    "account",
+    "screencast",
+    "screenshot",
+    "secret",
+    "wallpaper",
+    "settings",
     "tracing",
     "tokio",
 ]

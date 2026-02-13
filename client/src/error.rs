@@ -67,12 +67,15 @@ pub enum Error {
     /// passed
     UnexpectedIcon,
 
-    #[cfg(any(
-        feature = "backend_account",
-        feature = "backend_file_chooser",
-        feature = "backend_print",
-        feature = "backend_screenshot",
-        feature = "backend_wallpaper"
+    #[cfg(all(
+        feature = "backend",
+        any(
+            feature = "account",
+            feature = "file_chooser",
+            feature = "print",
+            feature = "screenshot",
+            feature = "wallpaper"
+        )
     ))]
     /// Failed to parse a URL.
     Url(url::ParseError),
@@ -105,12 +108,15 @@ impl std::fmt::Display for Error {
                 "Expected icon of type Icon::Bytes but a different type was used."
             ),
 
-            #[cfg(any(
-                feature = "backend_account",
-                feature = "backend_file_chooser",
-                feature = "backend_print",
-                feature = "backend_screenshot",
-                feature = "backend_wallpaper"
+            #[cfg(all(
+                feature = "backend",
+                any(
+                    feature = "account",
+                    feature = "file_chooser",
+                    feature = "print",
+                    feature = "screenshot",
+                    feature = "wallpaper"
+                )
             ))]
             Self::Url(e) => write!(f, "Parse error: {e}"),
         }
@@ -167,12 +173,15 @@ impl From<UnexpectedIconError> for Error {
     }
 }
 
-#[cfg(any(
-    feature = "backend_account",
-    feature = "backend_file_chooser",
-    feature = "backend_print",
-    feature = "backend_screenshot",
-    feature = "backend_wallpaper"
+#[cfg(all(
+    feature = "backend",
+    any(
+        feature = "account",
+        feature = "file_chooser",
+        feature = "print",
+        feature = "screenshot",
+        feature = "wallpaper"
+    )
 ))]
 impl From<url::ParseError> for Error {
     fn from(e: url::ParseError) -> Self {
