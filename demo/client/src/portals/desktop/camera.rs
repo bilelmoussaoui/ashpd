@@ -114,7 +114,11 @@ impl CameraPage {
                         .or_else(|| props.get("node.name"))
                         .map(String::from)
                         .unwrap_or_default();
-                    let name = props.get("name").map(String::from).unwrap_or_default();
+                    let name = props
+                        .get("object.path")
+                        .or_else(|| props.get("node.name"))
+                        .map(String::from)
+                        .unwrap_or_default();
                     tracing::debug!(
                         "Found camera. node_id: {}, nick: {nick}, name: {name}",
                         s.node_id()
@@ -124,9 +128,17 @@ impl CameraPage {
                     picture.set_paintable(Some(&paintable));
                     paintable.set_pipewire_node_id(stream_fd.as_fd(), Some(s.node_id()));
 
+                    let title = if let Some(path) = props
+                        .get("object.path")
+                        .and_then(|path| path.split_once(':').map(|(_, b)| b))
+                    {
+                        format!("{nick} {path}")
+                    } else {
+                        nick
+                    };
                     self.imp()
                         .picture_stack
-                        .add_titled(&picture, Some(&name), &nick);
+                        .add_titled(&picture, Some(&name), &title);
                     self.imp().paintables.borrow_mut().push(paintable.clone());
                 }
                 imp.revealer.set_reveal_child(n_cameras > 0);
