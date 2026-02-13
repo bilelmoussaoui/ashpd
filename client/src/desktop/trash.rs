@@ -9,7 +9,12 @@
 //! use ashpd::desktop::trash;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let file = File::open("/home/bilelmoussaoui/adwaita-night.jpg").unwrap();
+//!     let path = "/home/bilelmoussaoui/adwaita-night.jpg";
+//!     let file = std::fs::OpenOptions::new()
+//!         .write(true)
+//!         .read(true)
+//!         .open(path)
+//!         .unwrap();
 //!     trash::trash_file(&file.as_fd()).await?;
 //!     Ok(())
 //! }
@@ -23,7 +28,12 @@
 //! use ashpd::desktop::trash::TrashProxy;
 //!
 //! async fn run() -> ashpd::Result<()> {
-//!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!     let path = "/home/bilelmoussaoui/adwaita-night.jpg";
+//!     let file = std::fs::OpenOptions::new()
+//!         .write(true)
+//!         .read(true)
+//!         .open(path)
+//!         .unwrap();
 //!     let proxy = TrashProxy::new().await?;
 //!     proxy.trash_file(&file.as_fd()).await?;
 //!     Ok(())
