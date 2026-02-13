@@ -39,43 +39,6 @@ pub use self::file_path::FilePath;
 
 mod proxy;
 
-#[cfg(any(
-    feature = "backend_access",
-    feature = "backend_account",
-    feature = "backend_app_chooser",
-    feature = "backend_background",
-    feature = "backend_email",
-    feature = "backend_file_chooser",
-    feature = "backend_lockdown",
-    feature = "backend_permission_store",
-    feature = "backend_print",
-    feature = "backend_screencast",
-    feature = "backend_screenshot",
-    feature = "backend_secret",
-    feature = "backend_settings",
-    feature = "backend_usb",
-    feature = "backend_wallpaper"
-))]
-#[cfg_attr(
-    docsrs,
-    doc(cfg(any(
-        feature = "backend_access",
-        feature = "backend_account",
-        feature = "backend_app_chooser",
-        feature = "backend_background",
-        feature = "backend_email",
-        feature = "backend_file_chooser",
-        feature = "backend_lockdown",
-        feature = "backend_permission_store",
-        feature = "backend_print",
-        feature = "backend_screencast",
-        feature = "backend_screenshot",
-        feature = "backend_secret",
-        feature = "backend_settings",
-        feature = "backend_usb",
-        feature = "backend_wallpaper"
-    )))
-)]
 pub use self::window_identifier::WindowIdentifierType;
 #[cfg(any(
     feature = "backend_access",
