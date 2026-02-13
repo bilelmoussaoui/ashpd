@@ -70,5 +70,4 @@ gst = { package = "gstreamer", version = "0.24" }
 
 [package.metadata.docs.rs]
 features = ["backend", "gtk4", "raw_handle"]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
+rustdoc-args = ["--generate-link-to-definition"]
