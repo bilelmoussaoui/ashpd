@@ -278,7 +278,7 @@ use zbus::zvariant::{
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
 #[bitflags]
@@ -593,7 +593,7 @@ impl InputCapture {
             session_handle_token: Default::default(),
             capabilities,
         };
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         let (request, proxy) = futures_util::try_join!(
             self.0.request::<CreateSessionResponse>(
                 &options.handle_token,

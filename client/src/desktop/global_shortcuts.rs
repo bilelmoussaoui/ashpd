@@ -5,13 +5,12 @@ use std::{collections::HashMap, fmt::Debug, time::Duration};
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
-    DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type,
+    DeserializeDict, ObjectPath, Optional, OwnedObjectPath, OwnedValue, SerializeDict, Type,
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{
-    ActivationToken, Error, WindowIdentifier, desktop::session::CreateSessionResponse,
-    proxy::Proxy, window_identifier::MaybeWindowIdentifierExt,
+    ActivationToken, Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
 };
 
 #[derive(Clone, SerializeDict, Type, Debug, Default)]
@@ -270,7 +269,7 @@ impl GlobalShortcuts {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<BindShortcuts>, Error> {
         let options = BindShortcutsOptions::default();
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .request(
                 &options.handle_token,
@@ -312,7 +311,7 @@ impl GlobalShortcuts {
         let options = ConfigureShortcutsOptions {
             activation_token: activation_token.into(),
         };
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
 
         self.0
             .call_versioned::<()>("ConfigureShortcuts", &(session, identifier, options), 2)

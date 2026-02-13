@@ -54,13 +54,10 @@
 use std::os::fd::AsFd;
 
 use url::Url;
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{
-    ActivationToken, Error, WindowIdentifier, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -130,12 +127,12 @@ impl OpenURIProxy {
         directory: &impl AsFd,
         options: OpenDirOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "OpenDirectory",
-                &(&identifier, Fd::from(directory), &options),
+                &(identifier, Fd::from(directory), &options),
             )
             .await
     }
@@ -158,12 +155,12 @@ impl OpenURIProxy {
         file: &impl AsFd,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "OpenFile",
-                &(&identifier, Fd::from(file), &options),
+                &(identifier, Fd::from(file), &options),
             )
             .await
     }
@@ -189,12 +186,12 @@ impl OpenURIProxy {
         uri: &url::Url,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "OpenURI",
-                &(&identifier, uri, &options),
+                &(identifier, uri, &options),
             )
             .await
     }

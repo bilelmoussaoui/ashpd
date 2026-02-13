@@ -27,13 +27,10 @@
 use std::os::fd::OwnedFd;
 
 use serde::Serialize;
-use zbus::zvariant::{self, SerializeDict, Type};
+use zbus::zvariant::{self, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{
-    ActivationToken, Error, WindowIdentifier, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -86,12 +83,12 @@ impl EmailProxy {
         identifier: Option<&WindowIdentifier>,
         options: EmailOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "ComposeEmail",
-                &(&identifier, &options),
+                &(identifier, &options),
             )
             .await
     }

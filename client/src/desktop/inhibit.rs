@@ -38,13 +38,10 @@ use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, ObjectPath, Optional, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
-use crate::{
-    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
@@ -175,8 +172,8 @@ impl InhibitProxy {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Session<Self>, Error> {
         let options = CreateMonitorOptions::default();
-        let identifier = identifier.to_string_or_empty();
-        let body = &(&identifier, &options);
+        let identifier = Optional::from(identifier);
+        let body = &(identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
             self.0
                 .request::<CreateSessionResponse>(&options.handle_token, "CreateMonitor", body),
@@ -209,12 +206,12 @@ impl InhibitProxy {
             reason: Some(reason.to_owned()),
             handle_token: Default::default(),
         };
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "Inhibit",
-                &(&identifier, flags, &options),
+                &(identifier, flags, &options),
             )
             .await
     }

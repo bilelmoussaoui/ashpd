@@ -34,10 +34,10 @@
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{DeserializeDict, Fd, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, Fd, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]
@@ -696,12 +696,12 @@ impl PrintProxy {
         let options = PreparePrintOptions::default()
             .modal(modal)
             .accept_label(accept_label);
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .request(
                 &options.handle_token,
                 "PreparePrint",
-                &(&identifier, title, settings, page_setup, &options),
+                &(identifier, title, settings, page_setup, &options),
             )
             .await
     }
@@ -736,13 +736,13 @@ impl PrintProxy {
         let options = PrintOptions::default()
             .token(token.unwrap_or(0))
             .modal(modal);
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
 
         self.0
             .empty_request(
                 &options.handle_token,
                 "Print",
-                &(&identifier, title, Fd::from(fd), &options),
+                &(identifier, title, Fd::from(fd), &options),
             )
             .await
     }

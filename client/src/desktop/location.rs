@@ -29,10 +29,10 @@ use std::fmt::Debug;
 use futures_util::Stream;
 use serde::Deserialize;
 use serde_repr::Serialize_repr;
-use zbus::zvariant::{DeserializeDict, ObjectPath, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, ObjectPath, Optional, OwnedObjectPath, SerializeDict, Type};
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdLocationAccuracy"))]
@@ -279,12 +279,12 @@ impl LocationProxy {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<()>, Error> {
         let options = SessionStartOptions::default();
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "Start",
-                &(session, &identifier, &options),
+                &(session, identifier, &options),
             )
             .await
     }

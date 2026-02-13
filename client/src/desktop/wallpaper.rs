@@ -42,13 +42,10 @@
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use zbus::zvariant::{Fd, Optional, SerializeDict, Type};
 
 use super::Request;
-use crate::{
-    Error, WindowIdentifier, desktop::HandleToken, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, WindowIdentifier, desktop::HandleToken, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdSetOn"))]
@@ -140,12 +137,12 @@ impl WallpaperProxy {
         file: &impl AsFd,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "SetWallpaperFile",
-                &(&identifier, Fd::from(file), &options),
+                &(identifier, Fd::from(file), &options),
             )
             .await
     }
@@ -157,12 +154,12 @@ impl WallpaperProxy {
         uri: &url::Url,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .empty_request(
                 &options.handle_token,
                 "SetWallpaperURI",
-                &(&identifier, uri, &options),
+                &(identifier, uri, &options),
             )
             .await
     }

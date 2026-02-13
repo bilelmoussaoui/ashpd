@@ -86,15 +86,12 @@ use std::{collections::HashMap, os::fd::OwnedFd};
 
 use enumflags2::{BitFlags, bitflags};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{self, DeserializeDict, SerializeDict, Type, Value};
+use zbus::zvariant::{self, DeserializeDict, Optional, SerializeDict, Type, Value};
 
 use super::{
     HandleToken, PersistMode, Request, Session, screencast::Stream, session::SessionPortal,
 };
-use crate::{
-    Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdKeyState"))]
@@ -312,12 +309,12 @@ impl RemoteDesktop {
         identifier: Option<&WindowIdentifier>,
     ) -> Result<Request<SelectedDevices>, Error> {
         let options = StartRemoteOptions::default();
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .request(
                 &options.handle_token,
                 "Start",
-                &(session, &identifier, &options),
+                &(session, identifier, &options),
             )
             .await
     }

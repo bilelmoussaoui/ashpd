@@ -83,12 +83,10 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{
-    Error, FilePath, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, FilePath, WindowIdentifier, proxy::Proxy};
 
 #[derive(Clone, Serialize, Deserialize, Type, Debug, PartialEq)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -324,12 +322,12 @@ impl FileChooserProxy {
         title: &str,
         options: OpenFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .request(
                 &options.handle_token,
                 "OpenFile",
-                &(&identifier, title, &options),
+                &(identifier, title, &options),
             )
             .await
     }
@@ -341,12 +339,12 @@ impl FileChooserProxy {
         title: &str,
         options: SaveFileOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .request(
                 &options.handle_token,
                 "SaveFile",
-                &(&identifier, title, &options),
+                &(identifier, title, &options),
             )
             .await
     }
@@ -358,12 +356,12 @@ impl FileChooserProxy {
         title: &str,
         options: SaveFilesOptions,
     ) -> Result<Request<SelectedFiles>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .request(
                 &options.handle_token,
                 "SaveFiles",
-                &(&identifier, title, &options),
+                &(identifier, title, &options),
             )
             .await
     }

@@ -22,13 +22,10 @@
 //! }
 //! ```
 
-use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
 
 use super::HandleToken;
-use crate::{
-    Error, WindowIdentifier, desktop::request::Request, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, WindowIdentifier, desktop::request::Request, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -103,12 +100,12 @@ impl AccountProxy {
         identifier: Option<&WindowIdentifier>,
         options: UserInformationOptions,
     ) -> Result<Request<UserInformation>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
             .request(
                 &options.handle_token,
                 "GetUserInformation",
-                (&identifier, &options),
+                (identifier, &options),
             )
             .await
     }

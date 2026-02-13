@@ -120,6 +120,21 @@ pub enum WindowIdentifier {
     Raw(WindowIdentifierType),
 }
 
+impl zbus::zvariant::NoneValue for WindowIdentifier {
+    type NoneType = String;
+
+    fn null_value() -> Self::NoneType {
+        String::default()
+    }
+}
+
+impl zbus::zvariant::NoneValue for &WindowIdentifier {
+    type NoneType = String;
+
+    fn null_value() -> Self::NoneType {
+        String::default()
+    }
+}
 unsafe impl Send for WindowIdentifier {}
 unsafe impl Sync for WindowIdentifier {}
 
@@ -149,25 +164,6 @@ impl std::fmt::Debug for WindowIdentifier {
         f.debug_tuple("WindowIdentifier")
             .field(&format_args!("{self}"))
             .finish()
-    }
-}
-
-/// Extension trait for `Option<WindowIdentifier>` to provide efficient string
-/// conversion.
-pub trait MaybeWindowIdentifierExt {
-    /// Converts to a string, avoiding allocation when None.
-    /// More efficient than `identifier.map(|i|
-    /// i.to_string()).unwrap_or_default()` because it uses a static empty
-    /// string for the None case.
-    fn to_string_or_empty(&self) -> std::borrow::Cow<'static, str>;
-}
-
-impl MaybeWindowIdentifierExt for Option<&WindowIdentifier> {
-    fn to_string_or_empty(&self) -> std::borrow::Cow<'static, str> {
-        match self {
-            Some(id) => std::borrow::Cow::Owned(id.to_string()),
-            None => std::borrow::Cow::Borrowed(""), // No allocation
-        }
     }
 }
 

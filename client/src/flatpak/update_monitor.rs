@@ -28,9 +28,9 @@
 
 use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, ObjectPath, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, ObjectPath, Optional, SerializeDict, Type};
 
-use crate::{Error, WindowIdentifier, proxy::Proxy, window_identifier::MaybeWindowIdentifierExt};
+use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.
@@ -168,9 +168,9 @@ impl UpdateMonitor {
     #[doc(alias = "xdp_portal_update_install")]
     pub async fn update(&self, identifier: Option<&WindowIdentifier>) -> Result<(), Error> {
         let options = UpdateOptions::default();
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
 
-        self.0.call("Update", &(&identifier, options)).await
+        self.0.call("Update", &(identifier, options)).await
     }
 
     /// Ends the update monitoring and cancels any ongoing installation.

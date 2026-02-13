@@ -35,13 +35,10 @@
 //! ```
 use std::fmt::Debug;
 
-use zbus::zvariant::{DeserializeDict, SerializeDict, Type};
+use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{
-    Error, WindowIdentifier, desktop::Color, proxy::Proxy,
-    window_identifier::MaybeWindowIdentifierExt,
-};
+use crate::{Error, WindowIdentifier, desktop::Color, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -127,9 +124,9 @@ impl ScreenshotProxy {
         identifier: Option<&WindowIdentifier>,
         options: ColorOptions,
     ) -> Result<Request<Color>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
-            .request(&options.handle_token, "PickColor", &(&identifier, &options))
+            .request(&options.handle_token, "PickColor", &(identifier, &options))
             .await
     }
 
@@ -156,13 +153,9 @@ impl ScreenshotProxy {
         identifier: Option<&WindowIdentifier>,
         options: ScreenshotOptions,
     ) -> Result<Request<Screenshot>, Error> {
-        let identifier = identifier.to_string_or_empty();
+        let identifier = Optional::from(identifier);
         self.0
-            .request(
-                &options.handle_token,
-                "Screenshot",
-                &(&identifier, &options),
-            )
+            .request(&options.handle_token, "Screenshot", &(identifier, &options))
             .await
     }
 }
