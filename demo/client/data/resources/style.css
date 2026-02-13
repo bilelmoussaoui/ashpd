@@ -44,3 +44,7 @@ toolbarview scrolledwindow.card undershoot.bottom {
   box-shadow: none;
   background: none;
 }
+
+.secret-text, .secret-text text {
+  background: none;
+}

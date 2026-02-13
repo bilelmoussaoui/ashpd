@@ -16,9 +16,9 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/secret.ui")]
     pub struct SecretPage {
         #[template_child]
-        pub token_label: TemplateChild<gtk::Label>,
-        #[template_child]
         pub response_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub response_text: TemplateChild<gtk::TextView>,
         pub key: Arc<Mutex<Option<String>>>,
     }
 
@@ -62,7 +62,7 @@ impl SecretPage {
                     .trim_start_matches('[')
                     .trim_end_matches(']')
                     .replace(',', " ");
-                imp.token_label.set_text(&key_str);
+                imp.response_text.buffer().set_text(&key_str);
                 imp.response_group.set_visible(true);
             }
             Err(err) => {
