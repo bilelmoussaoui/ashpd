@@ -108,3 +108,7 @@ required-features = ["screencast"]
 [[example]]
 name = "screen_cast_pw"
 required-features = ["screencast", "pipewire"]
+
+[[example]]
+name = "input_capture"
+required-features = ["input_capture"]
