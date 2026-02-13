@@ -117,9 +117,7 @@ pub enum WindowIdentifier {
     #[doc(hidden)]
     Wayland(WaylandWindowIdentifier),
     #[doc(hidden)]
-    X11(WindowIdentifierType),
-    #[doc(hidden)]
-    ExportedWayland(WindowIdentifierType),
+    Raw(WindowIdentifierType),
 }
 
 unsafe impl Send for WindowIdentifier {}
@@ -141,7 +139,7 @@ impl std::fmt::Display for WindowIdentifier {
             Self::Gtk4(identifier) => identifier.fmt(f),
             #[cfg(feature = "wayland")]
             Self::Wayland(identifier) => identifier.fmt(f),
-            Self::X11(identifier) | Self::ExportedWayland(identifier) => identifier.fmt(f),
+            Self::Raw(identifier) => identifier.fmt(f),
         }
     }
 }
@@ -219,7 +217,7 @@ impl WindowIdentifier {
 
     /// Create an instance of [`WindowIdentifier`] from an X11 window's XID.
     pub fn from_xid(xid: std::os::raw::c_ulong) -> Self {
-        Self::X11(WindowIdentifierType::X11(xid))
+        Self::Raw(WindowIdentifierType::X11(xid))
     }
 
     /// Create an instance of [`WindowIdentifier`] from a Wayland exported
@@ -228,7 +226,7 @@ impl WindowIdentifier {
     /// The developer takes responsibility of keeping the handle around till the
     /// interaction is over before un-exporting the handle.
     pub fn from_xdg_foreign_exported_v2(handle: String) -> Self {
-        Self::ExportedWayland(WindowIdentifierType::Wayland(handle))
+        Self::Raw(WindowIdentifierType::Wayland(handle))
     }
 
     #[cfg(feature = "wayland")]
@@ -311,10 +309,7 @@ pub enum WindowIdentifierType {
 
 impl From<WindowIdentifierType> for WindowIdentifier {
     fn from(value: WindowIdentifierType) -> Self {
-        match value {
-            WindowIdentifierType::X11(xid) => Self::from_xid(xid),
-            WindowIdentifierType::Wayland(handle) => Self::from_xdg_foreign_exported_v2(handle),
-        }
+        Self::Raw(value)
     }
 }
 
