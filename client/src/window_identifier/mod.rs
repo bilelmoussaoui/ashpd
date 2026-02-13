@@ -483,7 +483,8 @@ impl WindowIdentifierType {
                     // Based on GNOME's libgxdp -
                     // https://gitlab.gnome.org/GNOME/libgxdp/-/blob/e6c11f2812cad0a43e847ec97bfc1c67bf50be52/src/gxdp-external-window-x11.c#L90-105
                     let xdisplay = display.xdisplay();
-                    xlib::XSetTransientForHint(xdisplay, surface.xid(), *xid);
+                    let xlib_handle = xlib::Xlib::open().unwrap();
+                    (xlib_handle.XSetTransientForHint)(xdisplay, surface.xid(), *xid);
                     let net_wm_window_type_atom =
                         gdk4x11::x11_get_xatom_by_name_for_display(&display, "_NET_WM_WINDOW_TYPE");
                     let net_wm_window_type_dialog_atom = gdk4x11::x11_get_xatom_by_name_for_display(
@@ -491,7 +492,7 @@ impl WindowIdentifierType {
                         "_NET_WM_WINDOW_DIALOG_TYPE",
                     );
                     let data: *const u8 = &(net_wm_window_type_dialog_atom as u8);
-                    xlib::XChangeProperty(
+                    (xlib_handle.XChangeProperty)(
                         xdisplay,
                         surface.xid(),
                         net_wm_window_type_atom,
