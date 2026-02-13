@@ -33,7 +33,15 @@ jobs:
               --extern-html-root-url=enumflags2=https://docs.rs/enumflags2/latest/
         with:
           command: doc
-          args: --package ashpd --features "gtk4,pipewire,wayland,raw_handle,backend" --no-deps
+          args: >-
+              --package ashpd
+              --features "gtk4,pipewire,wayland,raw_handle,backend,
+              account,background,camera,clipboard,dynamic_launcher,email,file_chooser,
+              game_mode,global_shortcuts,inhibit,input_capture,location,memory_monitor,
+              network_monitor,notification,open_uri,power_profile_monitor,print,
+              proxy_resolver,realtime,remote_desktop,screencast,screenshot,secret,
+              settings,trash,usb,wallpaper,flatpak,documents"
+              --no-deps
 
       - name: Fix permissions
         run: |

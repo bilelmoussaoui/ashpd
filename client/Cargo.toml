@@ -92,5 +92,11 @@ gst = { package = "gstreamer", version = "0.25.0-alpha" }
 quick-xml = "0.39"
 
 [package.metadata.docs.rs]
-features = ["backend", "gtk4", "raw_handle"]
+features = ["backend", "gtk4", "raw_handle",
+    "account","background","camera","clipboard","dynamic_launcher","email","file_chooser",
+    "game_mode","global_shortcuts","inhibit","input_capture","location","memory_monitor",
+    "network_monitor","notification","open_uri","power_profile_monitor","print",
+    "proxy_resolver","realtime","remote_desktop","screencast","screenshot","secret",
+    "settings","trash","usb","wallpaper","flatpak","documents"
+]
 rustdoc-args = ["--generate-link-to-definition"]
