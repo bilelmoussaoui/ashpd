@@ -17,7 +17,6 @@ futures-util = "0.3.25"
 libc = "0.2"
 tracing = "0.1"
 tracing-subscriber = "0.3.16"
-url = "2.3.1"
 zbus = "5.13"
 
 [dependencies.ashpd]

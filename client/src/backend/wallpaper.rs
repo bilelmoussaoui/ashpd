@@ -3,7 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    AppID, WindowIdentifierType,
+    AppID, Uri, WindowIdentifierType,
     backend::{
         Result,
         request::{Request, RequestImpl},
@@ -39,7 +39,7 @@ pub trait WallpaperImpl: RequestImpl {
         token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
-        uri: url::Url,
+        uri: Uri,
         options: WallpaperOptions,
     ) -> Result<()>;
 }
@@ -74,7 +74,7 @@ impl WallpaperInterface {
         handle: OwnedObjectPath,
         app_id: Optional<AppID>,
         window_identifier: Optional<WindowIdentifierType>,
-        uri: url::Url,
+        uri: Uri,
         options: WallpaperOptions,
     ) -> Result<ResponseType> {
         let imp = Arc::clone(&self.imp);

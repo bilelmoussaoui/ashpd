@@ -38,7 +38,7 @@ use std::fmt::Debug;
 use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{Error, WindowIdentifier, desktop::Color, proxy::Proxy};
+use crate::{Error, Uri, WindowIdentifier, desktop::Color, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -52,14 +52,14 @@ struct ScreenshotOptions {
 #[zvariant(signature = "dict")]
 /// The response of a [`ScreenshotRequest`] request.
 pub struct Screenshot {
-    uri: url::Url,
+    uri: Uri,
 }
 
 impl Screenshot {
     #[cfg(feature = "backend")]
     #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
     /// Create a new instance of the screenshot.
-    pub fn new(uri: url::Url) -> Self {
+    pub fn new(uri: Uri) -> Self {
         Self { uri }
     }
 
@@ -72,7 +72,7 @@ impl Screenshot {
     }
 
     /// The screenshot URI.
-    pub fn uri(&self) -> &url::Url {
+    pub fn uri(&self) -> &Uri {
         &self.uri
     }
 }

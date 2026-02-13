@@ -3,7 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    AppID, FilePath, WindowIdentifierType,
+    AppID, FilePath, Uri, WindowIdentifierType,
     backend::{
         Result,
         request::{Request, RequestImpl},
@@ -19,7 +19,7 @@ use crate::{
 #[derive(Debug, Type, SerializeDict, Default)]
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
-    uris: Vec<url::Url>,
+    uris: Vec<Uri>,
     choices: Option<Vec<(String, String)>>,
     // Not relevant for SaveFiles
     current_filter: Option<FileFilter>,
@@ -28,7 +28,7 @@ pub struct SelectedFiles {
 }
 
 impl SelectedFiles {
-    pub fn uri(mut self, value: url::Url) -> Self {
+    pub fn uri(mut self, value: Uri) -> Self {
         self.uris.push(value);
         self
     }

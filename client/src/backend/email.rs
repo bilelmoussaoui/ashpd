@@ -3,7 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    ActivationToken, AppID, WindowIdentifierType,
+    ActivationToken, AppID, Uri, WindowIdentifierType,
     backend::{
         Result,
         request::{Request, RequestImpl},
@@ -21,7 +21,7 @@ pub struct Options {
     bcc: Option<Vec<String>>,
     subject: Option<String>,
     body: Option<String>,
-    attachments: Option<Vec<url::Url>>,
+    attachments: Option<Vec<Uri>>,
     activation_token: Option<ActivationToken>,
 }
 
@@ -50,7 +50,7 @@ impl Options {
         self.body.as_deref()
     }
 
-    pub fn attachments(&self) -> &[url::Url] {
+    pub fn attachments(&self) -> &[Uri] {
         self.attachments.as_deref().unwrap_or_default()
     }
 

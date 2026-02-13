@@ -66,19 +66,8 @@ pub enum Error {
     /// An error indicating that a Icon::Bytes was expected but wrong type was
     /// passed
     UnexpectedIcon,
-
-    #[cfg(all(
-        feature = "backend",
-        any(
-            feature = "account",
-            feature = "file_chooser",
-            feature = "print",
-            feature = "screenshot",
-            feature = "wallpaper"
-        )
-    ))]
-    /// Failed to parse a URL.
-    Url(url::ParseError),
+    /// Failed to parse a URI.
+    Uri(crate::uri::ParseError),
 }
 
 impl std::error::Error for Error {}
@@ -107,18 +96,7 @@ impl std::fmt::Display for Error {
                 f,
                 "Expected icon of type Icon::Bytes but a different type was used."
             ),
-
-            #[cfg(all(
-                feature = "backend",
-                any(
-                    feature = "account",
-                    feature = "file_chooser",
-                    feature = "print",
-                    feature = "screenshot",
-                    feature = "wallpaper"
-                )
-            ))]
-            Self::Url(e) => write!(f, "Parse error: {e}"),
+            Self::Uri(e) => write!(f, "URI parse error: {e}"),
         }
     }
 }
@@ -173,18 +151,8 @@ impl From<UnexpectedIconError> for Error {
     }
 }
 
-#[cfg(all(
-    feature = "backend",
-    any(
-        feature = "account",
-        feature = "file_chooser",
-        feature = "print",
-        feature = "screenshot",
-        feature = "wallpaper"
-    )
-))]
-impl From<url::ParseError> for Error {
-    fn from(e: url::ParseError) -> Self {
-        Self::Url(e)
+impl From<crate::uri::ParseError> for Error {
+    fn from(e: crate::uri::ParseError) -> Self {
+        Self::Uri(e)
     }
 }

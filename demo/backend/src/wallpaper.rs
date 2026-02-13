@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, WindowIdentifierType,
+    AppID, Uri, WindowIdentifierType,
     backend::{
         Result,
         request::RequestImpl,
@@ -26,7 +26,7 @@ impl WallpaperImpl for Wallpaper {
         _token: HandleToken,
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
-        _uri: url::Url,
+        _uri: Uri,
         _options: WallpaperOptions,
     ) -> Result<()> {
         Ok(())

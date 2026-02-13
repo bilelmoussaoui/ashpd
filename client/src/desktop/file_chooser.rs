@@ -86,7 +86,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{Error, FilePath, WindowIdentifier, proxy::Proxy};
+use crate::{Error, FilePath, Uri, WindowIdentifier, proxy::Proxy};
 
 #[derive(Clone, Serialize, Deserialize, Type, Debug, PartialEq)]
 /// A file filter, to limit the available file choices to a mimetype or a glob
@@ -267,7 +267,7 @@ struct SaveFilesOptions {
 /// [`SaveFilesRequest`].
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
-    uris: Vec<url::Url>,
+    uris: Vec<Uri>,
     choices: Option<Vec<(String, String)>>,
 }
 
@@ -288,7 +288,7 @@ impl SelectedFiles {
     }
 
     /// The selected files uris.
-    pub fn uris(&self) -> &[url::Url] {
+    pub fn uris(&self) -> &[Uri] {
         self.uris.as_slice()
     }
 

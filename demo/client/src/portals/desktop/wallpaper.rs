@@ -50,7 +50,7 @@ glib::wrapper! {
 }
 
 impl WallpaperPage {
-    async fn open_file(&self) -> anyhow::Result<url::Url> {
+    async fn open_file(&self) -> anyhow::Result<ashpd::Uri> {
         let root = self.native().unwrap();
         let filter = gtk::FileFilter::new();
         filter.add_pixbuf_formats();
@@ -68,7 +68,7 @@ impl WallpaperPage {
         let file = dialog
             .open_future(root.downcast_ref::<gtk::Window>())
             .await?;
-        let uri = url::Url::parse(&file.uri())?;
+        let uri = ashpd::Uri::parse(&file.uri())?;
         Ok(uri)
     }
 

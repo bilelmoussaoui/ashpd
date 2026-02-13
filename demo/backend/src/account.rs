@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, WindowIdentifierType,
+    AppID, Uri, WindowIdentifierType,
     backend::{
         Result,
         account::{AccountImpl, UserInformationOptions},
@@ -59,7 +59,7 @@ impl AccountImpl for Account {
         Ok(UserInformation::new(
             &proxy.user_name().await?,
             &proxy.real_name().await?,
-            url::Url::parse(&uri).map_err(|e| {
+            Uri::parse(&uri).map_err(|e| {
                 ashpd::PortalError::Failed(format!(
                     "Failed to parse user avatar uri from `{uri}` with {e}"
                 ))

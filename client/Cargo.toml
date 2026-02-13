@@ -16,13 +16,13 @@ default = ["tokio"]
 
 backend = ["dep:async-trait"]
 
-account = ["dep:url", "zbus/url"]
+account = []
 background = []
 camera = []
 clipboard = []
 dynamic_launcher = ["dep:serde_repr"]
 email = []
-file_chooser = ["dep:url", "zbus/url", "dep:serde_repr"]
+file_chooser = ["dep:serde_repr"]
 game_mode = ["dep:serde_repr"]
 global_shortcuts = []
 inhibit = ["dep:serde_repr"]
@@ -31,19 +31,19 @@ location = ["dep:serde_repr"]
 memory_monitor = []
 network_monitor = ["dep:serde_repr"]
 notification = []
-open_uri = ["dep:url", "zbus/url"]
+open_uri = []
 power_profile_monitor = []
-print = ["dep:url", "zbus/url"]
-proxy_resolver = ["dep:url", "zbus/url"]
+print = []
+proxy_resolver = []
 realtime = []
 remote_desktop = ["dep:serde_repr"]
 screencast = ["dep:serde_repr"]
-screenshot = ["dep:url", "zbus/url"]
+screenshot = []
 secret = []
 settings = []
 trash = ["dep:serde_repr"]
 usb = []
-wallpaper = ["dep:url", "zbus/url"]
+wallpaper = []
 flatpak = ["dep:serde_repr"]
 documents = ["dep:serde_repr"]
 
@@ -72,7 +72,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_repr = { version = "0.1", optional = true }
 tokio = { version = "1.43", optional = true, default-features = false }
 tracing = { version = "0.1", optional = true }
-url = { version = "2.5", features = ["serde"], optional = true }
 wayland-backend = { version = "0.3", optional = true, features = [
     "client_system",
 ] }

@@ -73,13 +73,13 @@ impl AccountPage {
                 self.success("User information request was successful");
                 imp.id_label.set_text(user_info.id());
                 imp.name_label.set_text(user_info.name());
-                match user_info
-                    .image()
-                    .to_file_path()
-                    .map_err(|_| {
+                match glib::Uri::try_from(user_info.image())
+                    .ok()
+                    .and_then(|uri| Some(uri.path()))
+                    .ok_or_else(|| {
                         glib::Error::new(glib::FileError::Failed, "Failed to retrieve file path")
                     })
-                    .and_then(gdk::Texture::from_filename)
+                    .and_then(|path| gdk::Texture::from_filename(path))
                 {
                     Ok(texture) => {
                         imp.avatar.set_custom_image(Some(&texture));

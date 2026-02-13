@@ -6,7 +6,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = ProxyResolver::new().await?;
-//!     let url = url::Url::parse("www.google.com").unwrap();
+//!     let url = ashpd::Uri::parse("www.google.com").unwrap();
 //!
 //!     println!("{:#?}", proxy.lookup(&url).await?);
 //!
@@ -14,7 +14,7 @@
 //! }
 //! ```
 
-use crate::{Error, proxy::Proxy};
+use crate::{Error, Uri, proxy::Proxy};
 
 /// The interface provides network proxy information to sandboxed applications.
 ///
@@ -54,7 +54,7 @@ impl ProxyResolver {
     ///
     /// See also [`Lookup`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ProxyResolver.html#org-freedesktop-portal-proxyresolver-lookup).
     #[doc(alias = "Lookup")]
-    pub async fn lookup(&self, uri: &url::Url) -> Result<Vec<url::Url>, Error> {
+    pub async fn lookup(&self, uri: &Uri) -> Result<Vec<Uri>, Error> {
         self.0.call("Lookup", &(uri)).await
     }
 }

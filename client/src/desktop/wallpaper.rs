@@ -29,7 +29,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri =
-//!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!         ashpd::Uri::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     WallpaperRequest::default()
 //!         .set_on(SetOn::Both)
 //!         .show_preview(true)
@@ -45,7 +45,7 @@ use serde::{self, Deserialize, Serialize};
 use zbus::zvariant::{Fd, Optional, SerializeDict, Type};
 
 use super::Request;
-use crate::{Error, WindowIdentifier, desktop::HandleToken, proxy::Proxy};
+use crate::{Error, Uri, WindowIdentifier, desktop::HandleToken, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdSetOn"))]
@@ -151,7 +151,7 @@ impl WallpaperProxy {
     pub async fn set_wallpaper_uri(
         &self,
         identifier: Option<&WindowIdentifier>,
-        uri: &url::Url,
+        uri: &Uri,
         options: WallpaperOptions,
     ) -> Result<Request<()>, Error> {
         let identifier = Optional::from(identifier);
@@ -217,7 +217,7 @@ impl WallpaperRequest {
     }
 
     /// Build using a URI.
-    pub async fn build_uri(self, uri: &url::Url) -> Result<Request<()>, Error> {
+    pub async fn build_uri(self, uri: &Uri) -> Result<Request<()>, Error> {
         let proxy = if let Some(connection) = self.connection {
             WallpaperProxy::with_connection(connection).await?
         } else {

@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, WindowIdentifierType,
+    AppID, Uri, WindowIdentifierType,
     backend::{
         Result,
         request::RequestImpl,
@@ -29,7 +29,7 @@ impl ScreenshotImpl for Screenshot {
         _options: ScreenshotOptions,
     ) -> Result<ScreenshotResponse> {
         Ok(ScreenshotResponse::new(
-            url::Url::parse("file:///some/screenshot").unwrap(),
+            Uri::parse("file:///some/screenshot").unwrap(),
         ))
     }
 

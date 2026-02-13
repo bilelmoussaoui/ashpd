@@ -25,7 +25,7 @@
 use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
 
 use super::HandleToken;
-use crate::{Error, WindowIdentifier, desktop::request::Request, proxy::Proxy};
+use crate::{Error, Uri, WindowIdentifier, desktop::request::Request, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -40,14 +40,14 @@ struct UserInformationOptions {
 pub struct UserInformation {
     id: String,
     name: String,
-    image: url::Url,
+    image: Uri,
 }
 
 impl UserInformation {
     #[cfg(feature = "backend")]
     #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
     /// Create a new instance of [`UserInformation`].
-    pub fn new(id: &str, name: &str, image: url::Url) -> Self {
+    pub fn new(id: &str, name: &str, image: Uri) -> Self {
         Self {
             id: id.to_owned(),
             name: name.to_owned(),
@@ -66,7 +66,7 @@ impl UserInformation {
     }
 
     /// User image uri.
-    pub fn image(&self) -> &url::Url {
+    pub fn image(&self) -> &Uri {
         &self.image
     }
 

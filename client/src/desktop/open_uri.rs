@@ -29,7 +29,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let uri =
-//!         url::Url::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
+//!         ashpd::Uri::::parse("file:///home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
 //!     OpenFileRequest::default().ask(true).send_uri(&uri).await?;
 //!     Ok(())
 //! }
@@ -53,11 +53,10 @@
 
 use std::os::fd::AsFd;
 
-use url::Url;
 use zbus::zvariant::{Fd, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
+use crate::{ActivationToken, Error, Uri, WindowIdentifier, proxy::Proxy};
 
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -183,7 +182,7 @@ impl OpenURIProxy {
     pub async fn open_uri(
         &self,
         identifier: Option<&WindowIdentifier>,
-        uri: &url::Url,
+        uri: &Uri,
         options: OpenFileOptions,
     ) -> Result<Request<()>, Error> {
         let identifier = Optional::from(identifier);
@@ -288,7 +287,7 @@ impl OpenFileRequest {
     }
 
     /// Send the request for a URI.
-    pub async fn send_uri(self, uri: &Url) -> Result<Request<()>, Error> {
+    pub async fn send_uri(self, uri: &Uri) -> Result<Request<()>, Error> {
         let proxy = if let Some(connection) = self.connection {
             OpenURIProxy::with_connection(connection).await?
         } else {

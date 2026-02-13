@@ -30,9 +30,11 @@ mod window_identifier;
 pub use self::{activation_token::ActivationToken, window_identifier::WindowIdentifier};
 mod app_id;
 mod registry;
+mod uri;
 pub use self::{
     app_id::AppID,
     registry::{register_host_app, register_host_app_with_connection},
+    uri::Uri,
 };
 mod file_path;
 pub use self::file_path::FilePath;

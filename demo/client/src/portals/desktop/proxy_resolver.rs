@@ -1,5 +1,5 @@
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::desktop::proxy_resolver::ProxyResolver;
+use ashpd::{Uri, desktop::proxy_resolver::ProxyResolver};
 use gtk::glib;
 
 use crate::{
@@ -55,7 +55,7 @@ impl ProxyResolverPage {
     async fn resolve(&self) -> ashpd::Result<()> {
         let imp = self.imp();
 
-        match url::Url::parse(&imp.uri.text()) {
+        match Uri::parse(&imp.uri.text()) {
             Ok(uri) => {
                 let response = spawn_tokio(async move {
                     let proxy = ProxyResolver::new().await?;

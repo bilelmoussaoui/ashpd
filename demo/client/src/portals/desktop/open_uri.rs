@@ -1,7 +1,7 @@
 use std::os::fd::AsFd;
 
 use adw::subclass::prelude::*;
-use ashpd::{WindowIdentifier, desktop::open_uri};
+use ashpd::{Uri, WindowIdentifier, desktop::open_uri};
 use gtk::{glib, prelude::*};
 
 use crate::{
@@ -60,15 +60,16 @@ impl OpenUriPage {
         let ask = imp.ask_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        match url::Url::parse(&imp.uri_entry.text()) {
+        match Uri::parse(&imp.uri_entry.text()) {
             Ok(uri) => {
                 let response = spawn_tokio(async move {
                     let request = open_uri::OpenFileRequest::default()
                         .ask(ask)
                         .writeable(writeable)
                         .identifier(identifier);
-                    if uri.scheme() == "file" {
-                        let file_path = uri.to_file_path().unwrap();
+                    let glib_uri = glib::Uri::try_from(&uri).expect("Valid URI");
+                    if glib_uri.scheme() == "file" {
+                        let file_path = glib_uri.path();
                         match std::fs::File::open(&file_path) {
                             Ok(fd) => request.send_file(&fd.as_fd()).await,
                             Err(err) => {

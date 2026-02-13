@@ -37,7 +37,7 @@ use serde::{Deserialize, Serialize};
 use zbus::zvariant::{DeserializeDict, Fd, Optional, SerializeDict, Type};
 
 use super::{HandleToken, Request};
-use crate::{Error, WindowIdentifier, proxy::Proxy};
+use crate::{Error, Uri, WindowIdentifier, proxy::Proxy};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]
@@ -248,7 +248,7 @@ pub struct Settings {
     pub output_file_format: Option<String>,
     /// The uri used for print-to file.
     #[zvariant(rename = "output-uri")]
-    pub output_uri: Option<url::Url>,
+    pub output_uri: Option<Uri>,
 }
 
 impl Settings {
@@ -462,7 +462,7 @@ impl Settings {
 
     /// Sets the print-to-file output uri.
     #[must_use]
-    pub fn output_uri<'a>(mut self, output_uri: impl Into<Option<&'a url::Url>>) -> Self {
+    pub fn output_uri<'a>(mut self, output_uri: impl Into<Option<&'a Uri>>) -> Self {
         self.output_uri = output_uri.into().map(ToOwned::to_owned);
         self
     }

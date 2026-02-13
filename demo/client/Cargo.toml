@@ -61,4 +61,3 @@ tokio = { version = "1.48", default-features = false, features = [
 ] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
-url = { version = "2.3", features = ["serde"] }

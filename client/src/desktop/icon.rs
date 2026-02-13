@@ -6,7 +6,7 @@ use serde::{
 };
 use zbus::zvariant::{self, OwnedValue, Type, Value};
 
-use crate::Error;
+use crate::{Error, Uri};
 
 #[derive(Debug, Type)]
 #[zvariant(signature = "(sv)")]
@@ -15,7 +15,7 @@ use crate::Error;
 /// Used by both the Notification & Dynamic launcher portals.
 pub enum Icon {
     /// An icon URI.
-    Uri(String),
+    Uri(Uri),
     /// A list of icon names.
     Names(Vec<String>),
     /// Icon bytes.
@@ -112,7 +112,9 @@ impl<'de> Deserialize<'de> for Icon {
         match type_.as_str() {
             "file" => {
                 let uri_str = data.downcast_ref::<zvariant::Str>().unwrap();
-                Ok(Self::Uri(uri_str.as_str().to_owned()))
+                let uri = Uri::parse(uri_str.as_str())
+                    .map_err(|e| serde::de::Error::custom(format!("Invalid URI: {}", e)))?;
+                Ok(Self::Uri(uri))
             }
             "bytes" => {
                 let array = data.downcast_ref::<zvariant::Array>().unwrap();
@@ -156,7 +158,8 @@ impl TryFrom<&OwnedValue> for Icon {
                     .downcast_ref::<zvariant::Str>()
                     .unwrap()
                     .to_owned();
-                Ok(Self::Uri(uri_str.as_str().to_owned()))
+                let uri = Uri::parse(uri_str.as_str()).map_err(crate::Error::Uri)?;
+                Ok(Self::Uri(uri))
             }
             "bytes" => {
                 let array = fields[1].downcast_ref::<zvariant::Array>().unwrap();
@@ -229,7 +232,7 @@ mod test {
         let decoded: Icon = encoded.deserialize().unwrap().0;
         assert!(matches!(decoded, Icon::Names(_)));
 
-        let icon = Icon::Uri("file://some/icon.png".to_owned());
+        let icon = Icon::Uri(Uri::parse("file://some/icon.png").unwrap());
         let encoded = to_bytes(ctxt, &icon).unwrap();
         let decoded: Icon = encoded.deserialize().unwrap().0;
         assert!(matches!(decoded, Icon::Uri(_)));
