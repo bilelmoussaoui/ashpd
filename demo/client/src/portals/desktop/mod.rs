@@ -1,7 +1,6 @@
 mod account;
 mod background;
 mod camera;
-mod device;
 mod dynamic_launcher;
 mod email;
 mod file_chooser;
@@ -23,7 +22,6 @@ mod wallpaper;
 pub use account::AccountPage;
 pub use background::BackgroundPage;
 pub use camera::CameraPage;
-pub use device::DevicePage;
 pub use dynamic_launcher::DynamicLauncherPage;
 pub use email::EmailPage;
 pub use file_chooser::FileChooserPage;

@@ -7,7 +7,7 @@ use crate::{
     portals::{
         DocumentsPage,
         desktop::{
-            AccountPage, BackgroundPage, CameraPage, DevicePage, DynamicLauncherPage, EmailPage,
+            AccountPage, BackgroundPage, CameraPage, DynamicLauncherPage, EmailPage,
             FileChooserPage, GlobalShortcutsPage, InhibitPage, LocationPage, NetworkMonitorPage,
             NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage,
             ScreenCastPage, ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
@@ -28,8 +28,6 @@ mod imp {
         pub background_page: TemplateChild<adw::ViewStackPage>,
         #[template_child]
         pub camera: TemplateChild<CameraPage>,
-        #[template_child]
-        pub device_page: TemplateChild<adw::ViewStackPage>,
         #[template_child]
         pub documents: TemplateChild<DocumentsPage>,
         #[template_child]
@@ -82,7 +80,6 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             BackgroundPage::static_type();
-            DevicePage::static_type();
             NetworkMonitorPage::static_type();
             ProxyResolverPage::static_type();
             klass.bind_template();
@@ -113,7 +110,6 @@ mod imp {
             let is_sandboxed: bool = ashpd::is_sandboxed();
             // Add pages based on whether the app is sandboxed
             self.background_page.set_visible(is_sandboxed);
-            self.device_page.set_visible(!is_sandboxed);
             self.network_monitor_page.set_visible(!is_sandboxed);
             self.proxy_resolver_page.set_visible(!is_sandboxed);
 

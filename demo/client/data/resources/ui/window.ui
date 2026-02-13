@@ -124,17 +124,6 @@
                           </object>
                         </child>
                         <child>
-                          <object class="AdwViewStackPage" id="device_page">
-                            <property name="name">device</property>
-                            <property name="title" translatable="yes">Device</property>
-                            <property name="visible">False</property>
-                            <property name="icon-name">speaker-symbolic</property>
-                            <property name="child">
-                              <object class="DevicePage" />
-                            </property>
-                          </object>
-                        </child>
-                        <child>
                           <object class="AdwViewStackPage">
                             <property name="name">documents</property>
                             <property name="title" translatable="yes">Documents</property>

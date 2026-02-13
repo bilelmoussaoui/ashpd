@@ -49,8 +49,6 @@ pub mod camera;
 #[cfg_attr(docsrs, doc(cfg(feature = "clipboard")))]
 #[cfg(feature = "clipboard")]
 pub mod clipboard;
-#[deprecated = "The portal does not serve any purpose as nothing really can make use of it as is."]
-pub mod device;
 #[cfg_attr(docsrs, doc(cfg(feature = "dynamic_launcher")))]
 #[cfg(feature = "dynamic_launcher")]
 pub mod dynamic_launcher;
