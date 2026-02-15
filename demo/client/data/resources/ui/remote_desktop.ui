@@ -54,6 +54,10 @@
                     </child>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
                 <child>
                   <object class="AdwComboRow" id="persist_mode_combo">
                     <property name="title" translatable="yes">Persist Session Mode</property>
@@ -69,10 +73,6 @@
                     <property name="selected">0</property>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
                 <child>
                   <object class="AdwSwitchRow" id="screencast_switch">
                     <property name="title" translatable="yes">Screen Cast</property>
