@@ -11,7 +11,7 @@ use ashpd::{
     WindowIdentifier,
     desktop::{
         Session,
-        usb::{Device, UsbDevice, UsbError, UsbProxy},
+        usb::{Device, DeviceID, UsbDevice, UsbError, UsbProxy},
     },
     zbus::zvariant::{Fd, OwnedFd},
 };
@@ -26,7 +26,7 @@ use crate::{
 mod imp {
     use std::cell::RefCell;
 
-    use ashpd::desktop::usb::UsbEventAction;
+    use ashpd::desktop::usb::{DeviceID, UsbEventAction};
     use rusb::UsbContext;
 
     use super::*;
@@ -36,13 +36,13 @@ mod imp {
     pub struct UsbPage {
         #[template_child]
         pub devices_group: TemplateChild<adw::PreferencesGroup>,
-        rows: RefCell<HashMap<String, super::row::UsbDeviceRow>>,
+        rows: RefCell<HashMap<DeviceID, super::row::UsbDeviceRow>>,
         pub session: Arc<Mutex<Option<Session<UsbProxy>>>>,
         pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
     }
 
     impl UsbPage {
-        fn add(&self, uuid: String, row: super::row::UsbDeviceRow) {
+        fn add(&self, uuid: DeviceID, row: super::row::UsbDeviceRow) {
             self.devices_group.get().add(&row);
             self.rows.borrow_mut().insert(uuid, row);
         }
@@ -54,14 +54,14 @@ mod imp {
             self.rows.borrow_mut().clear();
         }
 
-        fn acquired_device(&self, uuid: &str) {
-            if let Some(row) = self.rows.borrow().get(uuid) {
+        fn acquired_device(&self, id: &DeviceID) {
+            if let Some(row) = self.rows.borrow().get(id) {
                 row.acquire();
             }
         }
 
-        pub(super) fn released_device(&self, uuid: &str) {
-            if let Some(row) = self.rows.borrow().get(uuid) {
+        pub(super) fn released_device(&self, id: &DeviceID) {
+            if let Some(row) = self.rows.borrow().get(id) {
                 row.release();
             }
         }
@@ -82,7 +82,7 @@ mod imp {
             ))
         }
 
-        fn add_device_row(&self, device: &(String, UsbDevice)) {
+        fn add_device_row(&self, device: &(DeviceID, UsbDevice)) {
             let page = self.obj();
             let row = super::row::UsbDeviceRow::with_device(
                 page.clone(),
@@ -114,7 +114,7 @@ mod imp {
 
         pub(super) fn finish_acquire_devices(
             &self,
-            devices: &[(String, Result<OwnedFd, UsbError>)],
+            devices: &[(DeviceID, Result<OwnedFd, UsbError>)],
         ) {
             devices.iter().for_each(|device| {
                 if let Ok(fd) = &device.1 {
@@ -152,17 +152,23 @@ mod imp {
                         tracing::info!(
                             "Received event: {:#?} for device {}",
                             ev.action(),
-                            ev.device_id()
+                            ev.device_id().as_str()
                         );
                         match ev.action() {
                             UsbEventAction::Add => {
-                                page.info(&format!("USB device added {}", ev.device_id()));
+                                page.info(&format!("USB device added {}", ev.device_id().as_str()));
                             }
                             UsbEventAction::Change => {
-                                page.info(&format!("USB device changed {}", ev.device_id()));
+                                page.info(&format!(
+                                    "USB device changed {}",
+                                    ev.device_id().as_str()
+                                ));
                             }
                             UsbEventAction::Remove => {
-                                page.info(&format!("USB device removed {}", ev.device_id()));
+                                page.info(&format!(
+                                    "USB device removed {}",
+                                    ev.device_id().as_str()
+                                ));
                             }
                         }
                     }
@@ -304,16 +310,16 @@ impl UsbPage {
         }
     }
 
-    async fn share(&self, device_id: &String, device_writable: bool) -> ashpd::Result<()> {
+    async fn share(&self, device_id: &DeviceID, device_writable: bool) -> ashpd::Result<()> {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
-        let device_id_owned = device_id.to_owned();
+        let owned_id = device_id.clone();
         let devices = spawn_tokio(async move {
             let usb = UsbProxy::new().await?;
             let devices = usb
                 .acquire_devices(
                     identifier.as_ref(),
-                    &[Device::new(device_id_owned, device_writable)],
+                    &[Device::new(owned_id, device_writable)],
                 )
                 .await?;
             ashpd::Result::Ok(devices)
@@ -324,11 +330,11 @@ impl UsbPage {
         Ok(())
     }
 
-    async fn unshare(&self, device_id: &str) {
-        let device_id_owned = device_id.to_owned();
+    async fn unshare(&self, device_id: &DeviceID) {
+        let owned_id = device_id.clone();
         let result = spawn_tokio(async move {
             let usb = UsbProxy::new().await?;
-            usb.release_devices(&[&device_id_owned]).await
+            usb.release_devices(&[&owned_id]).await
         })
         .await;
         if let Err(err) = result {
@@ -341,14 +347,16 @@ impl UsbPage {
 
 mod row {
     use adw::{prelude::*, subclass::prelude::*};
+    use ashpd::desktop::usb::DeviceID;
     use gtk::glib;
 
     use super::UsbPage;
 
     mod imp {
-        use std::cell::{Cell, RefCell};
+        use std::cell::{Cell, OnceCell};
 
         use adw::subclass::prelude::*;
+        use ashpd::desktop::usb::DeviceID;
         use gtk::glib;
 
         use super::super::PortalPageExt;
@@ -365,8 +373,8 @@ mod row {
             #[template_child]
             pub(super) action_stack: TemplateChild<gtk::Stack>,
 
-            pub(super) page: RefCell<Option<super::UsbPage>>,
-            pub(super) device_id: RefCell<String>,
+            pub(super) page: OnceCell<Option<super::UsbPage>>,
+            pub(super) device_id: OnceCell<Option<DeviceID>>,
             pub(super) writable: Cell<bool>,
             pub(super) is_acquired: Cell<bool>,
         }
@@ -394,11 +402,11 @@ mod row {
                 if self.is_acquired.get() {
                     return;
                 }
-                let page = { self.page.borrow().clone() };
+                let page = { self.page.get().clone().unwrap() };
                 if let Some(page) = page {
-                    let device_id = self.device_id.borrow().clone();
+                    let device_id = self.device_id.get().as_deref().unwrap().clone();
                     let writable = self.writable.get();
-                    if let Err(err) = page.share(&device_id, writable).await {
+                    if let Err(err) = page.share(&device_id.unwrap(), writable).await {
                         tracing::error!("Acquire device error: {err}");
                         page.error(&format!("Acquire device error: {err}"));
                     } else {
@@ -413,10 +421,10 @@ mod row {
                 if !self.is_acquired.get() {
                     return;
                 }
-                let page = { self.page.borrow().clone() };
+                let page = { self.page.get().clone().unwrap() };
                 if let Some(page) = page {
-                    let device_id = self.device_id.borrow().clone();
-                    page.unshare(&device_id).await;
+                    let device_id = self.device_id.get().as_deref().unwrap().clone();
+                    page.unshare(&device_id.unwrap()).await;
                     self.is_acquired.set(false);
                     self.action_stack.set_visible_child(&*self.acquire);
                 }
@@ -437,12 +445,12 @@ mod row {
     }
 
     impl UsbDeviceRow {
-        pub(super) fn with_device(page: UsbPage, device_id: String, writable: bool) -> Self {
+        pub(super) fn with_device(page: UsbPage, device_id: DeviceID, writable: bool) -> Self {
             let obj: Self = glib::Object::new();
 
             let imp = obj.imp();
-            imp.page.replace(Some(page));
-            imp.device_id.replace(device_id);
+            imp.page.set(Some(page)).unwrap();
+            imp.device_id.set(Some(device_id)).unwrap();
             imp.writable.set(writable);
             obj
         }

@@ -17,7 +17,7 @@
 //!         let events = response.events();
 //!         for ev in events {
 //!             println!(
-//!                 "Received event: {} for device {}",
+//!                 "Received event: {:#?} for device {}",
 //!                 ev.action(),
 //!                 ev.device_id()
 //!             );
@@ -31,7 +31,7 @@
 use std::collections::HashMap;
 
 use futures_util::Stream;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
     DeserializeDict, ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
 };
@@ -49,6 +49,32 @@ struct CreateSessionOptions {
     session_handle_token: HandleToken,
 }
 
+#[derive(Debug, Clone, Hash, Serialize, Deserialize, Type, PartialEq, Eq)]
+#[zvariant(signature = "s")]
+/// A device identifier.
+pub struct DeviceID(String);
+
+impl DeviceID {
+    /// Gets the ID as a string.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<str> for DeviceID {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::ops::Deref for DeviceID {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 /// Options for the USB portal.
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
@@ -58,7 +84,7 @@ struct UsbEnumerateOptions {}
 #[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct UsbDevice {
-    parent: Option<String>,
+    parent: Option<DeviceID>,
     /// Device can be opened for reading. Default is false.
     readable: Option<bool>,
     /// Device can be opened for writing. Default is false.
@@ -72,8 +98,8 @@ pub struct UsbDevice {
 
 impl UsbDevice {
     /// Device ID of the parent device
-    pub fn parent(&self) -> Option<&str> {
-        self.parent.as_deref()
+    pub fn parent(&self) -> Option<&DeviceID> {
+        self.parent.as_ref()
     }
 
     /// Return if the device is readable.
@@ -159,16 +185,16 @@ struct AcquireDevice {
 
 /// Device to acquire. Tuple with the device ID and whether the
 /// requested permission should be to write.
-pub struct Device(String /* ID */, bool /* writable */);
+pub struct Device(DeviceID, bool /* writable */);
 
 impl Device {
     /// Create a new `Device`.
-    pub fn new(id: String, writable: bool) -> Device {
-        Device(id, writable)
+    pub fn new(id: DeviceID, writable: bool) -> Self {
+        Self(id, writable)
     }
 
     /// Get the device ID.
-    pub fn id(&self) -> &str {
+    pub fn id(&self) -> &DeviceID {
         &self.0
     }
 
@@ -198,7 +224,7 @@ struct AcquiredDevice {
 /// A USB event received part of the `device_event` signal response.
 /// An event is composed of an `action`, a device `id` and the
 /// [`UsbDevice`] description.
-pub struct UsbEvent(UsbEventAction, /* id */ String, UsbDevice);
+pub struct UsbEvent(UsbEventAction, DeviceID, UsbDevice);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Deserialize, Type)]
 #[zvariant(signature = "s")]
@@ -220,7 +246,7 @@ impl UsbEvent {
     }
 
     /// The device ID string.
-    pub fn device_id(&self) -> &str {
+    pub fn device_id(&self) -> &DeviceID {
         &self.1
     }
 
@@ -288,7 +314,7 @@ impl UsbProxy {
     ///
     /// See also [`EnumerateDevices`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-enumeratedevices).
     #[doc(alias = "EnumerateDevices")]
-    pub async fn enumerate_devices(&self) -> Result<Vec<(String, UsbDevice)>, Error> {
+    pub async fn enumerate_devices(&self) -> Result<Vec<(DeviceID, UsbDevice)>, Error> {
         let options = UsbEnumerateOptions::default();
         self.0.call("EnumerateDevices", &(&options)).await
     }
@@ -308,14 +334,14 @@ impl UsbProxy {
         &self,
         parent_window: Option<&WindowIdentifier>,
         devices: &[Device],
-    ) -> Result<Vec<(String, Result<OwnedFd, UsbError>)>, Error> {
+    ) -> Result<Vec<(DeviceID, Result<OwnedFd, UsbError>)>, Error> {
         let options = AcquireOptions::default();
         let parent_window = parent_window.map(|i| i.to_string()).unwrap_or_default();
-        let acquire_devices: Vec<(String, AcquireDevice)> = devices
+        let acquire_devices: Vec<(DeviceID, AcquireDevice)> = devices
             .iter()
             .map(|dev| {
                 let device = AcquireDevice { writable: dev.1 };
-                (dev.0.to_string(), device)
+                (dev.id().clone(), device)
             })
             .collect();
         let request = self
@@ -326,7 +352,7 @@ impl UsbProxy {
                 &(&parent_window, &acquire_devices, &options),
             )
             .await?;
-        let mut devices: Vec<(String, Result<OwnedFd, UsbError>)> = vec![];
+        let mut devices: Vec<(DeviceID, Result<OwnedFd, UsbError>)> = vec![];
         if request.response().is_ok() {
             let path = request.path();
             loop {
@@ -350,12 +376,12 @@ impl UsbProxy {
     async fn finish_acquire_devices(
         &self,
         request_path: &ObjectPath<'_>,
-    ) -> Result<(Vec<(String, Result<OwnedFd, UsbError>)>, bool), Error> {
+    ) -> Result<(Vec<(DeviceID, Result<OwnedFd, UsbError>)>, bool), Error> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("FinishAcquireDevices", &(request_path, &options))
             .await
-            .map(|result: (Vec<(String, AcquiredDevice)>, bool)| {
+            .map(|result: (Vec<(DeviceID, AcquiredDevice)>, bool)| {
                 let finished = result.1;
                 (
                     result
@@ -376,7 +402,7 @@ impl UsbProxy {
     ///
     /// See also [`ReleaseDevices`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-releasedevices).
     #[doc(alias = "ReleaseDevices")]
-    pub async fn release_devices(&self, devices: &[&str]) -> Result<(), Error> {
+    pub async fn release_devices(&self, devices: &[&DeviceID]) -> Result<(), Error> {
         let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0.call("ReleaseDevices", &(devices, &options)).await
     }
