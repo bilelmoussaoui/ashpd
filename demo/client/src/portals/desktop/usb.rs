@@ -26,6 +26,7 @@ use crate::{
 mod imp {
     use std::cell::RefCell;
 
+    use ashpd::desktop::usb::UsbEventAction;
     use rusb::UsbContext;
 
     use super::*;
@@ -81,7 +82,8 @@ mod imp {
             ))
         }
 
-        fn add_device_row(&self, page: &super::UsbPage, device: &(String, UsbDevice)) {
+        fn add_device_row(&self, device: &(String, UsbDevice)) {
+            let page = self.obj();
             let row = super::row::UsbDeviceRow::with_device(
                 page.clone(),
                 device.0.clone(),
@@ -97,8 +99,6 @@ mod imp {
         }
 
         pub(super) async fn refresh_devices(&self) -> ashpd::Result<()> {
-            let page = self.obj();
-
             self.clear_devices();
             let devices = spawn_tokio(async move {
                 let usb = UsbProxy::new().await?;
@@ -107,7 +107,7 @@ mod imp {
             })
             .await?;
             for device in devices {
-                self.add_device_row(&page, &device);
+                self.add_device_row(&device);
             }
             Ok(())
         }
@@ -150,15 +150,21 @@ mod imp {
                     let events = events_response.events();
                     for ev in events {
                         tracing::info!(
-                            "Received event: {} for device {}",
+                            "Received event: {:#?} for device {}",
                             ev.action(),
                             ev.device_id()
                         );
-                        page.info(&format!(
-                            "USB event: {} for device {}",
-                            ev.action(),
-                            ev.device_id()
-                        ));
+                        match ev.action() {
+                            UsbEventAction::Add => {
+                                page.info(&format!("USB device added {}", ev.device_id()));
+                            }
+                            UsbEventAction::Change => {
+                                page.info(&format!("USB device changed {}", ev.device_id()));
+                            }
+                            UsbEventAction::Remove => {
+                                page.info(&format!("USB device removed {}", ev.device_id()));
+                            }
+                        }
                     }
                 }
             });

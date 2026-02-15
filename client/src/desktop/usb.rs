@@ -198,12 +198,25 @@ struct AcquiredDevice {
 /// A USB event received part of the `device_event` signal response.
 /// An event is composed of an `action`, a device `id` and the
 /// [`UsbDevice`] description.
-pub struct UsbEvent(/* action */ String, /* id */ String, UsbDevice);
+pub struct UsbEvent(UsbEventAction, /* id */ String, UsbDevice);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Deserialize, Type)]
+#[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
+/// A USB event action.
+pub enum UsbEventAction {
+    /// Add.
+    Add,
+    /// Change.
+    Change,
+    /// Remove.
+    Remove,
+}
 
 impl UsbEvent {
-    /// The action. Possible values are `"add"`, `"change"` or `"remove"`.
-    pub fn action(&self) -> &str {
-        &self.0
+    /// The action.
+    pub fn action(&self) -> UsbEventAction {
+        self.0
     }
 
     /// The device ID string.
