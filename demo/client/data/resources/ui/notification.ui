@@ -28,6 +28,16 @@
                   </object>
                 </child>
                 <child>
+                  <object class="AdwEntryRow" id="markup_body_entry">
+                    <property name="title" translatable="yes">Markup Body</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="icon_entry">
+                    <property name="title" translatable="yes">Icon Name</property>
+                  </object>
+                </child>
+                <child>
                   <object class="AdwEntryRow" id="default_action_entry">
                     <property name="title" translatable="yes">Default Action</property>
                   </object>
@@ -51,6 +61,82 @@
                       </object>
                     </property>
                     <property name="selected">1</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="category_combo">
+                    <property name="title" translatable="yes">Category</property>
+                    <property name="subtitle" translatable="yes">Notification content type</property>
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">None</item>
+                          <item translatable="yes">Instant Message</item>
+                          <item translatable="yes">Alarm Ringing</item>
+                          <item translatable="yes">Incoming Call</item>
+                          <item translatable="yes">Ongoing Call</item>
+                          <item translatable="yes">Missed Call</item>
+                          <item translatable="yes">Extreme Weather</item>
+                          <item translatable="yes">Cell Network Extreme Danger</item>
+                          <item translatable="yes">Cell Network Severe Danger</item>
+                          <item translatable="yes">Amber Alert</item>
+                          <item translatable="yes">Broadcast Test</item>
+                          <item translatable="yes">Low Battery</item>
+                          <item translatable="yes">Web Notification</item>
+                        </items>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwExpanderRow" id="display_hints_expander">
+                    <property name="title" translatable="yes">Display Hints</property>
+                    <property name="subtitle" translatable="yes">Ways to display the notification</property>
+                    <child>
+                      <object class="AdwSwitchRow" id="transient_switch">
+                        <property name="title" translatable="yes">Transient</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="tray_switch">
+                        <property name="title" translatable="yes">Tray</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="persistent_switch">
+                        <property name="title" translatable="yes">Persistent</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="hide_on_lockscreen_switch">
+                        <property name="title" translatable="yes">Hide on Lockscreen</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="hide_content_on_lockscreen_switch">
+                        <property name="title" translatable="yes">Hide Content on Lockscreen</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="show_as_new_switch">
+                        <property name="title" translatable="yes">Show as New</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow" id="sound_row">
+                    <property name="title" translatable="yes">Sound File</property>
+                    <child type="suffix">
+                      <object class="GtkButton">
+                        <property name="valign">center</property>
+                        <property name="action-name">notification.select_sound</property>
+                        <property name="icon-name">document-open-symbolic</property>
+                        <style>
+                          <class name="flat" />
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
