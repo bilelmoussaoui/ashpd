@@ -20,6 +20,434 @@
                 <child>
                   <object class="AdwSwitchRow" id="modal_switch">
                     <property name="title" translatable="yes">Modal</property>
+                    <property name="subtitle" translatable="yes">Whether the dialog blocks interaction</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="accept_label">
+                    <property name="title" translatable="yes">Accept Label</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="has_current_page_switch">
+                    <property name="title" translatable="yes">Has Current Page</property>
+                    <property name="subtitle" translatable="yes">Enable "current" option for print-pages</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="has_selected_pages_switch">
+                    <property name="title" translatable="yes">Has Selected Pages</property>
+                    <property name="subtitle" translatable="yes">Enable "selection" option for print-pages</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Print Settings</property>
+                <child>
+                  <object class="AdwEntryRow" id="paper_format">
+                    <property name="title" translatable="yes">Paper Format</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="paper_width">
+                    <property name="title" translatable="yes">Paper Width (mm)</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="paper_height">
+                    <property name="title" translatable="yes">Paper Height (mm)</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="n_copies_spin">
+                    <property name="title" translatable="yes">Number of Copies</property>
+                    <property name="subtitle" translatable="yes">How many copies to print</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">100</property>
+                        <property name="value">1</property>
+                        <property name="step-increment">1</property>
+                        <property name="page-increment">10</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="default_source">
+                    <property name="title" translatable="yes">Default Source</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="orientation_combo">
+                    <property name="title" translatable="yes">Orientation</property>
+                    <property name="subtitle" translatable="yes">Page orientation for printing</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdOrientation</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="orientation_name" />
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="quality_combo">
+                    <property name="title" translatable="yes">Quality</property>
+                    <property name="subtitle" translatable="yes">Print quality setting</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdQuality</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="quality_name" />
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="resolution">
+                    <property name="title" translatable="yes">Resolution</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="resolution_x_spin">
+                    <property name="title" translatable="yes">Resolution X (dpi)</property>
+                    <property name="subtitle" translatable="yes">Horizontal resolution in dots per inch</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">10000</property>
+                        <property name="value">300</property>
+                        <property name="step-increment">1</property>
+                        <property name="page-increment">100</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="resolution_y_spin">
+                    <property name="title" translatable="yes">Resolution Y (dpi)</property>
+                    <property name="subtitle" translatable="yes">Vertical resolution in dots per inch</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">10000</property>
+                        <property name="value">300</property>
+                        <property name="step-increment">1</property>
+                        <property name="page-increment">100</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="duplex_combo">
+                    <property name="title" translatable="yes">Duplex</property>
+                    <property name="subtitle" translatable="yes">Single or double-sided printing</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdDuplex</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="duplex_name" />
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="use_color_switch">
+                    <property name="title" translatable="yes">Use Color</property>
+                    <property name="subtitle" translatable="yes">Print in color or monochrome</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="collate_switch">
+                    <property name="title" translatable="yes">Collate</property>
+                    <property name="subtitle" translatable="yes">Collate copies in order</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="reverse_switch">
+                    <property name="title" translatable="yes">Reverse</property>
+                    <property name="subtitle" translatable="yes">Print pages in reverse order</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="media_type">
+                    <property name="title" translatable="yes">Media Type</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="dither_combo">
+                    <property name="title" translatable="yes">Dither</property>
+                    <property name="subtitle" translatable="yes">Dithering algorithm for color gradients</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdDither</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="dither_name" />
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="scale_spin">
+                    <property name="title" translatable="yes">Scale (%)</property>
+                    <property name="subtitle" translatable="yes">Scaling percentage for output</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">200</property>
+                        <property name="value">100</property>
+                        <property name="step-increment">1</property>
+                        <property name="page-increment">10</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Page Settings</property>
+                <child>
+                  <object class="AdwComboRow" id="print_pages_combo">
+                    <property name="title" translatable="yes">Print Pages</property>
+                    <property name="subtitle" translatable="yes">Which pages to print</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdPrintPages</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="print_pages_name" />
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="page_ranges">
+                    <property name="title" translatable="yes">Page Ranges</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="page_set_combo">
+                    <property name="title" translatable="yes">Page Set</property>
+                    <property name="subtitle" translatable="yes">Print all, even, or odd pages</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdPageSet</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="page_set_name" />
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="finishings">
+                    <property name="title" translatable="yes">Finishings</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="number_up_spin">
+                    <property name="title" translatable="yes">Number Up</property>
+                    <property name="subtitle" translatable="yes">Number of pages per sheet</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">16</property>
+                        <property name="value">1</property>
+                        <property name="step-increment">1</property>
+                        <property name="page-increment">2</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="number_up_layout_combo">
+                    <property name="title" translatable="yes">Number Up Layout</property>
+                    <property name="subtitle" translatable="yes">Page arrangement on sheet</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdNumberUpLayout</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="number_up_layout_name" />
+                    </property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Output Settings</property>
+                <child>
+                  <object class="AdwEntryRow" id="output_bin">
+                    <property name="title" translatable="yes">Output Bin</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="printer_lpi">
+                    <property name="title" translatable="yes">Printer LPI</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="output_basename">
+                    <property name="title" translatable="yes">Output Basename</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="output_file_format_combo">
+                    <property name="title" translatable="yes">Output File Format</property>
+                    <property name="subtitle" translatable="yes">File format for print-to-file</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdOutputFileFormat</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="output_file_format_name" />
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="output_uri">
+                    <property name="title" translatable="yes">Output URI</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Page Setup</property>
+                <child>
+                  <object class="AdwEntryRow" id="ppdname">
+                    <property name="title" translatable="yes">PPD Name</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="page_setup_name">
+                    <property name="title" translatable="yes">Name</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="display_name">
+                    <property name="title" translatable="yes">Display Name</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="width_spin">
+                    <property name="title" translatable="yes">Width (mm)</property>
+                    <property name="subtitle" translatable="yes">Paper width in millimeters</property>
+                    <property name="digits">2</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">1000</property>
+                        <property name="value">210</property>
+                        <property name="step-increment">0.1</property>
+                        <property name="page-increment">10</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="height_spin">
+                    <property name="title" translatable="yes">Height (mm)</property>
+                    <property name="subtitle" translatable="yes">Paper height in millimeters</property>
+                    <property name="digits">2</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">1000</property>
+                        <property name="value">297</property>
+                        <property name="step-increment">0.1</property>
+                        <property name="page-increment">10</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="margin_top_spin">
+                    <property name="title" translatable="yes">Margin Top (mm)</property>
+                    <property name="subtitle" translatable="yes">Top page margin</property>
+                    <property name="digits">2</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">100</property>
+                        <property name="value">10</property>
+                        <property name="step-increment">0.1</property>
+                        <property name="page-increment">1</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="margin_bottom_spin">
+                    <property name="title" translatable="yes">Margin Bottom (mm)</property>
+                    <property name="subtitle" translatable="yes">Bottom page margin</property>
+                    <property name="digits">2</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">100</property>
+                        <property name="value">10</property>
+                        <property name="step-increment">0.1</property>
+                        <property name="page-increment">1</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="margin_left_spin">
+                    <property name="title" translatable="yes">Margin Left (mm)</property>
+                    <property name="subtitle" translatable="yes">Left page margin</property>
+                    <property name="digits">2</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">100</property>
+                        <property name="value">10</property>
+                        <property name="step-increment">0.1</property>
+                        <property name="page-increment">1</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSpinRow" id="margin_right_spin">
+                    <property name="title" translatable="yes">Margin Right (mm)</property>
+                    <property name="subtitle" translatable="yes">Right page margin</property>
+                    <property name="digits">2</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="lower">0</property>
+                        <property name="upper">100</property>
+                        <property name="value">10</property>
+                        <property name="step-increment">0.1</property>
+                        <property name="page-increment">1</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="page_setup_orientation_combo">
+                    <property name="title" translatable="yes">Page Setup Orientation</property>
+                    <property name="subtitle" translatable="yes">Default orientation for this setup</property>
+                    <property name="model">
+                      <object class="AdwEnumListModel">
+                        <property name="enum-type">AshpdOrientation</property>
+                      </object>
+                    </property>
+                    <property name="expression">
+                      <closure type="gchararray" function="orientation_name" />
+                    </property>
                   </object>
                 </child>
               </object>
@@ -34,39 +462,6 @@
                   <class name="pill" />
                   <class name="suggested-action" />
                 </style>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup" id="response_group">
-                <property name="title" translatable="yes">Response</property>
-                <property name="visible">False</property>
-                <property name="margin-top">24</property>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Screensaver Status</property>
-                    <child>
-                      <object class="GtkLabel" id="screensaver_status_label">
-                        <property name="valign">center</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Session State</property>
-                    <child>
-                      <object class="GtkLabel" id="session_state_label">
-                        <property name="valign">center</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
-                      </object>
-                    </child>
-                  </object>
-                </child>
               </object>
             </child>
           </object>
