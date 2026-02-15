@@ -11,9 +11,9 @@ use ashpd::{
     WindowIdentifier,
     desktop::{
         Session,
-        usb::{Device, DeviceID, UsbDevice, UsbError, UsbProxy},
+        usb::{Device, DeviceID, UsbError, UsbProxy},
     },
-    zbus::zvariant::{Fd, OwnedFd},
+    zbus::zvariant::OwnedFd,
 };
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
@@ -36,36 +36,12 @@ mod imp {
     pub struct UsbPage {
         #[template_child]
         pub devices_group: TemplateChild<adw::PreferencesGroup>,
-        rows: RefCell<HashMap<DeviceID, super::row::UsbDeviceRow>>,
+        pub(super) rows: RefCell<HashMap<DeviceID, super::row::UsbDeviceRow>>,
         pub session: Arc<Mutex<Option<Session<UsbProxy>>>>,
         pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
     }
 
     impl UsbPage {
-        fn add(&self, uuid: DeviceID, row: super::row::UsbDeviceRow) {
-            self.devices_group.get().add(&row);
-            self.rows.borrow_mut().insert(uuid, row);
-        }
-
-        fn clear_devices(&self) {
-            for row in self.rows.borrow().values() {
-                self.devices_group.get().remove(row);
-            }
-            self.rows.borrow_mut().clear();
-        }
-
-        fn acquired_device(&self, id: &DeviceID) {
-            if let Some(row) = self.rows.borrow().get(id) {
-                row.acquire();
-            }
-        }
-
-        pub(super) fn released_device(&self, id: &DeviceID) {
-            if let Some(row) = self.rows.borrow().get(id) {
-                row.release();
-            }
-        }
-
         fn usb_describe_device(fd: &dyn AsRawFd) -> ashpd::Result<String> {
             let context = rusb::Context::new()
                 .map_err(|_| ashpd::PortalError::Failed("rusb Context".to_string()))?;
@@ -82,33 +58,83 @@ mod imp {
             ))
         }
 
-        fn add_device_row(&self, device: &(DeviceID, UsbDevice)) {
-            let page = self.obj();
-            let row = super::row::UsbDeviceRow::with_device(
-                page.clone(),
-                device.0.clone(),
-                device.1.is_writable(),
-            );
-            let vendor = device.1.vendor().unwrap_or_default();
-            let dev = device.1.model().unwrap_or_default();
-            row.set_title(&format!("{} {}", &vendor, &dev));
-            if let Some(devnode) = &device.1.device_file() {
-                row.set_subtitle(devnode);
-            }
-            page.imp().add(device.0.clone(), row);
-        }
-
         pub(super) async fn refresh_devices(&self) -> ashpd::Result<()> {
-            self.clear_devices();
             let devices = spawn_tokio(async move {
                 let usb = UsbProxy::new().await?;
                 let devices = usb.enumerate_devices().await?;
                 ashpd::Result::Ok(devices)
             })
             .await?;
+
+            let mut rows = self.rows.borrow_mut();
+
+            let device_ids: std::collections::HashSet<_> =
+                devices.iter().map(|d| d.0.clone()).collect();
+
+            let page = self.obj();
             for device in devices {
-                self.add_device_row(&device);
+                if !rows.contains_key(&device.0) {
+                    let row =
+                        super::row::UsbDeviceRow::with_device(device.0.clone(), device.1.clone());
+                    let vendor = device.1.vendor().unwrap_or_default();
+                    let dev = device.1.model().unwrap_or_default();
+                    row.set_title(&format!("{} {}", &vendor, &dev));
+                    if let Some(devnode) = &device.1.device_file() {
+                        row.set_subtitle(devnode);
+                    }
+
+                    row.connect_closure(
+                        "acquire-device",
+                        false,
+                        glib::closure_local!(
+                            #[weak]
+                            page,
+                            move |_row: super::row::UsbDeviceRow,
+                                  device_id_str: String,
+                                  writable: bool| {
+                                glib::spawn_future_local(async move {
+                                    let device_id = DeviceID::from(device_id_str);
+                                    if let Err(err) = page.share(&device_id, writable).await {
+                                        tracing::error!("Acquire device error: {err}");
+                                        page.error(&format!("Acquire device error: {err}"));
+                                    }
+                                });
+                            }
+                        ),
+                    );
+
+                    row.connect_closure(
+                        "release-device",
+                        false,
+                        glib::closure_local!(
+                            #[weak]
+                            page,
+                            move |_row: super::row::UsbDeviceRow, device_id_str: String| {
+                                glib::spawn_future_local(async move {
+                                    let device_id = DeviceID::from(device_id_str);
+                                    page.unshare(&device_id).await;
+                                });
+                            }
+                        ),
+                    );
+
+                    self.devices_group.get().add(&row);
+                    rows.insert(device.0.clone(), row);
+                }
             }
+
+            let ids_to_remove: Vec<_> = rows
+                .keys()
+                .filter(|id| !device_ids.contains(id))
+                .cloned()
+                .collect();
+
+            for id in ids_to_remove {
+                if let Some(row) = rows.remove(&id) {
+                    self.devices_group.get().remove(&row);
+                }
+            }
+
             Ok(())
         }
 
@@ -118,12 +144,14 @@ mod imp {
         ) {
             devices.iter().for_each(|device| {
                 if let Ok(fd) = &device.1 {
-                    match Self::usb_describe_device(&Fd::from(fd)) {
+                    match Self::usb_describe_device(fd) {
                         Ok(describe) => self.obj().info(&describe),
                         Err(err) => self.obj().info(&err.to_string()),
                     }
                 }
-                self.acquired_device(&device.0);
+                if let Some(row) = self.rows.borrow().get(&device.0) {
+                    row.acquire();
+                }
             });
         }
 
@@ -341,16 +369,16 @@ impl UsbPage {
             tracing::error!("Acquire device error: {err}");
             self.error(&format!("Acquire device error: {err}"));
         }
-        self.imp().released_device(device_id);
+        if let Some(row) = self.imp().rows.borrow().get(device_id) {
+            row.release();
+        }
     }
 }
 
 mod row {
     use adw::{prelude::*, subclass::prelude::*};
-    use ashpd::desktop::usb::DeviceID;
+    use ashpd::desktop::usb::{DeviceID, UsbDevice};
     use gtk::glib;
-
-    use super::UsbPage;
 
     mod imp {
         use std::cell::{Cell, OnceCell};
@@ -359,7 +387,7 @@ mod row {
         use ashpd::desktop::usb::DeviceID;
         use gtk::glib;
 
-        use super::super::PortalPageExt;
+        use super::*;
 
         #[derive(Debug, gtk::CompositeTemplate, Default)]
         #[template(resource = "/com/belmoussaoui/ashpd/demo/usb_device_row.ui")]
@@ -373,9 +401,8 @@ mod row {
             #[template_child]
             pub(super) action_stack: TemplateChild<gtk::Stack>,
 
-            pub(super) page: OnceCell<Option<super::UsbPage>>,
-            pub(super) device_id: OnceCell<Option<DeviceID>>,
-            pub(super) writable: Cell<bool>,
+            pub(super) device_id: OnceCell<DeviceID>,
+            pub(super) device: OnceCell<UsbDevice>,
             pub(super) is_acquired: Cell<bool>,
         }
 
@@ -398,40 +425,43 @@ mod row {
         #[gtk::template_callbacks]
         impl UsbDeviceRow {
             #[template_callback]
-            async fn handle_acquire_clicked(&self, _: &gtk::Button) {
+            fn handle_acquire_clicked(&self, _: &gtk::Button) {
                 if self.is_acquired.get() {
                     return;
                 }
-                let page = { self.page.get().clone().unwrap() };
-                if let Some(page) = page {
-                    let device_id = self.device_id.get().as_deref().unwrap().clone();
-                    let writable = self.writable.get();
-                    if let Err(err) = page.share(&device_id.unwrap(), writable).await {
-                        tracing::error!("Acquire device error: {err}");
-                        page.error(&format!("Acquire device error: {err}"));
-                    } else {
-                        self.is_acquired.set(true);
-                        self.action_stack.set_visible_child(&*self.release);
-                    }
-                }
+                let device_id = self.device_id.get().unwrap().as_str();
+                let writable = self.device.get().unwrap().is_writable();
+                self.obj()
+                    .emit_by_name::<()>("acquire-device", &[&device_id, &writable]);
             }
 
             #[template_callback]
-            async fn handle_release_clicked(&self, _: &gtk::Button) {
+            fn handle_release_clicked(&self, _: &gtk::Button) {
                 if !self.is_acquired.get() {
                     return;
                 }
-                let page = { self.page.get().clone().unwrap() };
-                if let Some(page) = page {
-                    let device_id = self.device_id.get().as_deref().unwrap().clone();
-                    page.unshare(&device_id.unwrap()).await;
-                    self.is_acquired.set(false);
-                    self.action_stack.set_visible_child(&*self.acquire);
-                }
+                let device_id = self.device_id.get().unwrap().as_str();
+                self.obj()
+                    .emit_by_name::<()>("release-device", &[&device_id]);
             }
         }
 
-        impl ObjectImpl for UsbDeviceRow {}
+        impl ObjectImpl for UsbDeviceRow {
+            fn signals() -> &'static [glib::subclass::Signal] {
+                use std::sync::OnceLock;
+                static SIGNALS: OnceLock<Vec<glib::subclass::Signal>> = OnceLock::new();
+                SIGNALS.get_or_init(|| {
+                    vec![
+                        glib::subclass::Signal::builder("acquire-device")
+                            .param_types([String::static_type(), bool::static_type()])
+                            .build(),
+                        glib::subclass::Signal::builder("release-device")
+                            .param_types([String::static_type()])
+                            .build(),
+                    ]
+                })
+            }
+        }
         impl WidgetImpl for UsbDeviceRow {}
         impl ListBoxRowImpl for UsbDeviceRow {}
         impl PreferencesRowImpl for UsbDeviceRow {}
@@ -445,22 +475,27 @@ mod row {
     }
 
     impl UsbDeviceRow {
-        pub(super) fn with_device(page: UsbPage, device_id: DeviceID, writable: bool) -> Self {
+        pub(super) fn with_device(device_id: DeviceID, device: UsbDevice) -> Self {
             let obj: Self = glib::Object::new();
 
             let imp = obj.imp();
-            imp.page.set(Some(page)).unwrap();
-            imp.device_id.set(Some(device_id)).unwrap();
-            imp.writable.set(writable);
+            imp.device_id.set(device_id).unwrap();
+            imp.device.set(device).unwrap();
             obj
         }
 
         pub(super) fn acquire(&self) {
-            self.imp().checkbox.set_active(true);
+            let imp = self.imp();
+            imp.is_acquired.set(true);
+            imp.action_stack.set_visible_child(&*imp.release);
+            imp.checkbox.set_active(true);
         }
 
         pub(super) fn release(&self) {
-            self.imp().checkbox.set_active(false);
+            let imp = self.imp();
+            imp.is_acquired.set(false);
+            imp.action_stack.set_visible_child(&*imp.acquire);
+            imp.checkbox.set_active(false);
         }
     }
 }

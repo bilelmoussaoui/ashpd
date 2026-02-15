@@ -75,13 +75,19 @@ impl std::ops::Deref for DeviceID {
     }
 }
 
+impl From<String> for DeviceID {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
 /// Options for the USB portal.
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct UsbEnumerateOptions {}
 
 /// USB device description
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(SerializeDict, DeserializeDict, Clone, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct UsbDevice {
     parent: Option<DeviceID>,
