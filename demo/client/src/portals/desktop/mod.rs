@@ -16,6 +16,7 @@ mod remote_desktop;
 mod screencast;
 mod screenshot;
 mod secret;
+mod settings;
 mod usb;
 mod wallpaper;
 
@@ -37,5 +38,6 @@ pub use remote_desktop::RemoteDesktopPage;
 pub use screencast::ScreenCastPage;
 pub use screenshot::ScreenshotPage;
 pub use secret::SecretPage;
+pub use settings::SettingsPage;
 pub use usb::UsbPage;
 pub use wallpaper::WallpaperPage;

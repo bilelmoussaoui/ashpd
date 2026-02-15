@@ -30,6 +30,7 @@ ashpd = { path = "../../client", version = "0.13.0-alpha", default-features = fa
     "screencast",
     "screenshot",
     "secret",
+    "settings",
     "usb",
     "wallpaper",
     "flatpak",

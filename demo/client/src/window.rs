@@ -10,7 +10,7 @@ use crate::{
             AccountPage, BackgroundPage, CameraPage, DynamicLauncherPage, EmailPage,
             FileChooserPage, GlobalShortcutsPage, InhibitPage, LocationPage, NetworkMonitorPage,
             NotificationPage, OpenUriPage, PrintPage, ProxyResolverPage, RemoteDesktopPage,
-            ScreenCastPage, ScreenshotPage, SecretPage, UsbPage, WallpaperPage,
+            ScreenCastPage, ScreenshotPage, SecretPage, SettingsPage, UsbPage, WallpaperPage,
         },
     },
 };
@@ -70,6 +70,8 @@ mod imp {
         pub remote_desktop: TemplateChild<RemoteDesktopPage>,
         #[template_child]
         pub print: TemplateChild<PrintPage>,
+        #[template_child]
+        pub settings: TemplateChild<SettingsPage>,
     }
 
     #[glib::object_subclass]

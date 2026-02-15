@@ -287,6 +287,16 @@
                         </child>
                         <child>
                           <object class="AdwViewStackPage">
+                            <property name="name">settings</property>
+                            <property name="title" translatable="yes">Settings</property>
+                            <property name="icon-name">preferences-system-symbolic</property>
+                            <property name="child">
+                              <object class="SettingsPage" id="settings" />
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwViewStackPage">
                             <property name="name">usb</property>
                             <property name="title" translatable="yes">USB</property>
                             <property name="icon-name">drive-harddisk-usb-symbolic</property>

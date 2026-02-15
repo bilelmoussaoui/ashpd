@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="SettingsPage" parent="PortalPage">
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
+        <property name="hscrollbar-policy">never</property>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">12</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="AdwClamp">
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">12</property>
+                    <child>
+                      <object class="AdwPreferencesGroup">
+                        <property name="title" translatable="yes">Information</property>
+                        <property name="description" translatable="yes">Communicates with org.freedesktop.portal.Settings</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwPreferencesGroup">
+                        <property name="title" translatable="yes">Appearance</property>
+                        <property name="description" translatable="yes">System appearance settings from the org.freedesktop.appearance namespace</property>
+                        <child>
+                          <object class="AdwActionRow">
+                            <property name="title" translatable="yes">Color Scheme</property>
+                            <property name="subtitle" translatable="yes">System's preferred color scheme</property>
+                            <child>
+                              <object class="GtkLabel" id="color_scheme_label">
+                                <property name="label">Loading...</property>
+                                <property name="halign">start</property>
+                                <property name="selectable">True</property>
+                                <style>
+                                  <class name="dim-label"/>
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow">
+                            <property name="title" translatable="yes">Accent Color</property>
+                            <property name="subtitle" translatable="yes">System's preferred accent color</property>
+                            <child>
+                              <object class="ColorWidget" id="accent_color_widget">
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwActionRow">
+                            <property name="title" translatable="yes">Contrast</property>
+                            <property name="subtitle" translatable="yes">System's preferred contrast level</property>
+                            <child>
+                              <object class="GtkLabel" id="contrast_label">
+                                <property name="label">Loading...</property>
+                                <property name="halign">start</property>
+                                <property name="selectable">True</property>
+                                <style>
+                                  <class name="dim-label"/>
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwPreferencesGroup" id="all_settings_group">
+                        <property name="title" translatable="yes">All Settings</property>
+                        <property name="description" translatable="yes">All available portal settings across all namespaces</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <style>
+              <class name="page-content" />
+            </style>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
