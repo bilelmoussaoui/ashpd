@@ -5,7 +5,7 @@
 //! ```rust,no_run
 //! use std::{fs::File, os::fd::AsFd};
 //!
-//! use ashpd::desktop::print::PrintProxy;
+//! use ashpd::desktop::print::{PreparePrintOptions, PrintOptions, PrintProxy};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = PrintProxy::new().await?;
@@ -18,13 +18,17 @@
 //!             "prepare print",
 //!             Default::default(),
 //!             Default::default(),
-//!             None,
-//!             true,
+//!             PreparePrintOptions::default().modal(true),
 //!         )
 //!         .await?
 //!         .response()?;
 //!     proxy
-//!         .print(None, "test", &file.as_fd(), Some(pre_print.token), true)
+//!         .print(
+//!             None,
+//!             "test",
+//!             &file.as_fd(),
+//!             PrintOptions::default().token(pre_print.token).modal(true),
+//!         )
 //!         .await?;
 //!
 //!     Ok(())
@@ -172,6 +176,196 @@ impl FromStr for Quality {
     }
 }
 
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdDuplex"))]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
+/// Duplex printing mode.
+pub enum Duplex {
+    /// Simplex (single-sided) printing.
+    Simplex,
+    /// Horizontal duplex (flip on short edge).
+    Horizontal,
+    /// Vertical duplex (flip on long edge).
+    Vertical,
+}
+
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdPrintPages"))]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
+/// What pages to print.
+pub enum PrintPages {
+    /// Print all pages.
+    All,
+    /// Print selected pages.
+    Selection,
+    /// Print current page.
+    Current,
+    /// Print page ranges.
+    Ranges,
+}
+
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdPageSet"))]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
+/// What pages to print.
+pub enum PageSet {
+    /// Print all pages.
+    All,
+    /// Print even pages only.
+    Even,
+    /// Print odd pages only.
+    Odd,
+}
+
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdNumberUpLayout"))]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+#[serde(rename_all = "lowercase")]
+/// Layout for number-up printing.
+pub enum NumberUpLayout {
+    /// Left to right, top to bottom.
+    #[serde(rename = "lrtb")]
+    Lrtb,
+    /// Left to right, bottom to top.
+    #[serde(rename = "lrbt")]
+    Lrbt,
+    /// Right to left, top to bottom.
+    #[serde(rename = "rltb")]
+    Rltb,
+    /// Right to left, bottom to top.
+    #[serde(rename = "rlbt")]
+    Rlbt,
+    /// Top to bottom, left to right.
+    #[serde(rename = "tblr")]
+    Tblr,
+    /// Top to bottom, right to left.
+    #[serde(rename = "tbrl")]
+    Tbrl,
+    /// Bottom to top, left to right.
+    #[serde(rename = "btlr")]
+    Btlr,
+    /// Bottom to top, right to left.
+    #[serde(rename = "btrl")]
+    Btrl,
+}
+
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdOutputFileFormat"))]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+#[serde(rename_all = "UPPERCASE")]
+/// Output file format for print-to-file.
+pub enum OutputFileFormat {
+    /// PDF format.
+    Pdf,
+    /// PostScript format.
+    Ps,
+    /// SVG format.
+    Svg,
+}
+
+#[cfg_attr(feature = "glib", derive(glib::Enum))]
+#[cfg_attr(feature = "glib", enum_type(name = "AshpdDither"))]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
+#[zvariant(signature = "s")]
+#[serde(rename_all = "kebab-case")]
+/// Dithering to use for printing.
+pub enum Dither {
+    /// Fine dithering.
+    Fine,
+    /// No dithering.
+    None,
+    /// Coarse dithering.
+    Coarse,
+    /// Line art dithering.
+    Lineart,
+    /// Grayscale dithering.
+    Grayscale,
+    /// Error diffusion dithering.
+    ErrorDiffusion,
+}
+
+// Custom serialization modules for string-wrapped types
+mod string_bool {
+    use serde::{Deserializer, Serializer, de::Error};
+    use zbus::zvariant::as_value::optional;
+
+    pub fn serialize<S>(value: &Option<bool>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match value {
+            Some(true) => optional::serialize(&Some("true"), serializer),
+            Some(false) => optional::serialize(&Some("false"), serializer),
+            None => optional::serialize(&None::<&str>, serializer),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<bool>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let opt: Option<String> = optional::deserialize(deserializer)?;
+        opt.map(|s| match s.as_str() {
+            "true" => Ok(true),
+            "false" => Ok(false),
+            _ => Err(D::Error::custom(format!("invalid boolean string: {}", s))),
+        })
+        .transpose()
+    }
+}
+
+mod string_u32 {
+    use serde::{Deserializer, Serializer, de::Error};
+    use zbus::zvariant::as_value::optional;
+
+    pub fn serialize<S>(value: &Option<u32>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let str_value = value.map(|v| v.to_string());
+        optional::serialize(&str_value, serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<u32>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let opt: Option<String> = optional::deserialize(deserializer)?;
+        opt.map(|s| s.parse::<u32>().map_err(D::Error::custom))
+            .transpose()
+    }
+}
+
+mod string_i32 {
+    use serde::{Deserializer, Serializer, de::Error};
+    use zbus::zvariant::as_value::optional;
+
+    pub fn serialize<S>(value: &Option<i32>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let str_value = value.map(|v| v.to_string());
+        optional::serialize(&str_value, serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<i32>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let opt: Option<String> = optional::deserialize(deserializer)?;
+        opt.map(|s| s.parse::<i32>().map_err(D::Error::custom))
+            .transpose()
+    }
+}
+
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Print settings to set in the print dialog.
 #[zvariant(signature = "dict")]
@@ -190,8 +384,8 @@ pub struct Settings {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub paper_height: Option<String>,
     /// The number of copies to print.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub n_copies: Option<String>,
+    #[serde(with = "string_u32", skip_serializing_if = "Option::is_none")]
+    pub n_copies: Option<u32>,
     /// The default paper source.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub default_source: Option<String>,
@@ -202,63 +396,62 @@ pub struct Settings {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub resolution: Option<String>,
     /// Whether to use color.
+    #[serde(with = "string_bool", skip_serializing_if = "Option::is_none")]
+    pub use_color: Option<bool>,
+    /// Duplex printing mode.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub use_color: Option<String>,
-    /// Duplex printing mode, one of simplex, horizontal or vertical.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub duplex: Option<String>,
+    pub duplex: Option<Duplex>,
     /// Whether to collate copies.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub collate: Option<String>,
+    #[serde(with = "string_bool", skip_serializing_if = "Option::is_none")]
+    pub collate: Option<bool>,
     /// Whether to reverse the order of printed pages.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub reverse: Option<String>,
+    #[serde(with = "string_bool", skip_serializing_if = "Option::is_none")]
+    pub reverse: Option<bool>,
     /// A media type according to [PWG 5101.1-2002](ftp://ftp.pwg.org/pub/pwg/candidates/cs-pwgmsn10-20020226-5101.1.pdf)
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub media_type: Option<String>,
-    /// The dithering to use, one of fine, none, coarse, lineart, grayscale or
-    /// error-diffusion.
+    /// The dithering to use.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub dither: Option<String>,
-    /// The scale in percent
+    pub dither: Option<Dither>,
+    /// The scale in percent.
+    #[serde(with = "string_u32", skip_serializing_if = "Option::is_none")]
+    pub scale: Option<u32>,
+    /// What pages to print.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub scale: Option<String>,
-    /// What pages to print, one of all, selection, current or ranges.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub print_pages: Option<String>,
+    pub print_pages: Option<PrintPages>,
     /// A list of page ranges, formatted like this: 0-2,4,9-11.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub page_ranges: Option<String>,
-    /// What pages to print, one of all, even or odd.
+    /// Whether to print all, even, or odd pages.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub page_set: Option<String>,
+    pub page_set: Option<PageSet>,
     /// The finishings.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub finishings: Option<String>,
     /// The number of pages per sheet.
+    #[serde(with = "string_u32", skip_serializing_if = "Option::is_none")]
+    pub number_up: Option<u32>,
+    /// Layout for number-up printing.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub number_up: Option<String>,
-    /// One of lrtb, lrbt, rltb, rlbt, tblr, tbrl, btlr, btrl.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub number_up_layout: Option<String>,
+    pub number_up_layout: Option<NumberUpLayout>,
     /// The output bin.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_bin: Option<String>,
     /// The horizontal resolution in dpi.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub resolution_x: Option<String>,
+    #[serde(with = "string_i32", skip_serializing_if = "Option::is_none")]
+    pub resolution_x: Option<i32>,
     /// The vertical resolution in dpi.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub resolution_y: Option<String>,
+    #[serde(with = "string_i32", skip_serializing_if = "Option::is_none")]
+    pub resolution_y: Option<i32>,
     /// The resolution in lpi (lines per inch).
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub printer_lpi: Option<String>,
     /// Basename to use for print-to-file.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_basename: Option<String>,
-    /// Format to use for print-to-file, one of PDF, PS, SVG
+    /// Format to use for print-to-file.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub output_file_format: Option<String>,
+    pub output_file_format: Option<OutputFileFormat>,
     /// The uri used for print-to file.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_uri: Option<Uri>,
@@ -295,8 +488,8 @@ impl Settings {
 
     /// Sets the number of copies to print.
     #[must_use]
-    pub fn n_copies<'a>(mut self, n_copies: impl Into<Option<&'a str>>) -> Self {
-        self.n_copies = n_copies.into().map(ToOwned::to_owned);
+    pub fn n_copies(mut self, n_copies: impl Into<Option<u32>>) -> Self {
+        self.n_copies = n_copies.into();
         self
     }
 
@@ -324,43 +517,28 @@ impl Settings {
     /// Sets whether to use color.
     #[must_use]
     pub fn use_color(mut self, use_color: impl Into<Option<bool>>) -> Self {
-        let use_color = use_color.into().unwrap_or_default();
-        if use_color {
-            self.use_color = Some("yes".to_owned());
-        } else {
-            self.use_color = Some("no".to_owned())
-        };
+        self.use_color = use_color.into();
         self
     }
 
     /// Sets the duplex printing mode.
     #[must_use]
-    pub fn duplex<'a>(mut self, duplex: impl Into<Option<&'a str>>) -> Self {
-        self.duplex = duplex.into().map(ToOwned::to_owned);
+    pub fn duplex(mut self, duplex: impl Into<Option<Duplex>>) -> Self {
+        self.duplex = duplex.into();
         self
     }
 
     /// Whether to collate copies.
     #[must_use]
     pub fn collate(mut self, collate: impl Into<Option<bool>>) -> Self {
-        let collate = collate.into().unwrap_or_default();
-        if collate {
-            self.collate = Some("yes".to_owned());
-        } else {
-            self.collate = Some("no".to_owned())
-        };
+        self.collate = collate.into();
         self
     }
 
     /// Sets whether to reverse the order of the printed pages.
     #[must_use]
     pub fn reverse(mut self, reverse: impl Into<Option<bool>>) -> Self {
-        let reverse = reverse.into().unwrap_or_default();
-        if reverse {
-            self.reverse = Some("yes".to_owned());
-        } else {
-            self.reverse = Some("no".to_owned())
-        };
+        self.reverse = reverse.into();
         self
     }
 
@@ -373,22 +551,22 @@ impl Settings {
 
     /// Sets the dithering to use.
     #[must_use]
-    pub fn dither<'a>(mut self, dither: impl Into<Option<&'a str>>) -> Self {
-        self.dither = dither.into().map(ToOwned::to_owned);
+    pub fn dither(mut self, dither: impl Into<Option<Dither>>) -> Self {
+        self.dither = dither.into();
         self
     }
 
     /// Sets the page scale in percent.
     #[must_use]
-    pub fn scale<'a>(mut self, scale: impl Into<Option<&'a str>>) -> Self {
-        self.scale = scale.into().map(ToOwned::to_owned);
+    pub fn scale(mut self, scale: impl Into<Option<u32>>) -> Self {
+        self.scale = scale.into();
         self
     }
 
-    /// Sets what pages to print, one of all, selection, current or ranges.
+    /// Sets what pages to print.
     #[must_use]
-    pub fn print_pages<'a>(mut self, print_pages: impl Into<Option<&'a str>>) -> Self {
-        self.print_pages = print_pages.into().map(ToOwned::to_owned);
+    pub fn print_pages(mut self, print_pages: impl Into<Option<PrintPages>>) -> Self {
+        self.print_pages = print_pages.into();
         self
     }
 
@@ -399,10 +577,10 @@ impl Settings {
         self
     }
 
-    /// Sets what pages to print, one of all, even or odd.
+    /// Sets whether to print all, even, or odd pages.
     #[must_use]
-    pub fn page_set<'a>(mut self, page_set: impl Into<Option<&'a str>>) -> Self {
-        self.page_set = page_set.into().map(ToOwned::to_owned);
+    pub fn page_set(mut self, page_set: impl Into<Option<PageSet>>) -> Self {
+        self.page_set = page_set.into();
         self
     }
 
@@ -415,16 +593,15 @@ impl Settings {
 
     /// Sets the number of pages per sheet.
     #[must_use]
-    pub fn number_up<'a>(mut self, number_up: impl Into<Option<&'a str>>) -> Self {
-        self.number_up = number_up.into().map(ToOwned::to_owned);
+    pub fn number_up(mut self, number_up: impl Into<Option<u32>>) -> Self {
+        self.number_up = number_up.into();
         self
     }
 
-    /// Sets the number up layout, one of lrtb, lrbt, rltb, rlbt, tblr, tbrl,
-    /// btlr, btrl.
+    /// Sets the number-up layout.
     #[must_use]
-    pub fn number_up_layout<'a>(mut self, number_up_layout: impl Into<Option<&'a str>>) -> Self {
-        self.number_up_layout = number_up_layout.into().map(ToOwned::to_owned);
+    pub fn number_up_layout(mut self, number_up_layout: impl Into<Option<NumberUpLayout>>) -> Self {
+        self.number_up_layout = number_up_layout.into();
         self
     }
 
@@ -437,15 +614,15 @@ impl Settings {
 
     /// Sets the horizontal resolution in dpi.
     #[must_use]
-    pub fn resolution_x<'a>(mut self, resolution_x: impl Into<Option<&'a str>>) -> Self {
-        self.resolution_x = resolution_x.into().map(ToOwned::to_owned);
+    pub fn resolution_x(mut self, resolution_x: impl Into<Option<i32>>) -> Self {
+        self.resolution_x = resolution_x.into();
         self
     }
 
     /// Sets the vertical resolution in dpi.
     #[must_use]
-    pub fn resolution_y<'a>(mut self, resolution_y: impl Into<Option<&'a str>>) -> Self {
-        self.resolution_y = resolution_y.into().map(ToOwned::to_owned);
+    pub fn resolution_y(mut self, resolution_y: impl Into<Option<i32>>) -> Self {
+        self.resolution_y = resolution_y.into();
         self
     }
 
@@ -463,13 +640,13 @@ impl Settings {
         self
     }
 
-    /// Sets the print-to-file format, one of PS, PDF, SVG.
+    /// Sets the print-to-file format.
     #[must_use]
-    pub fn output_file_format<'a>(
+    pub fn output_file_format(
         mut self,
-        output_file_format: impl Into<Option<&'a str>>,
+        output_file_format: impl Into<Option<OutputFileFormat>>,
     ) -> Self {
-        self.output_file_format = output_file_format.into().map(ToOwned::to_owned);
+        self.output_file_format = output_file_format.into();
         self
     }
 
@@ -594,7 +771,8 @@ impl PageSetup {
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::prepare_print`] request.
 #[zvariant(signature = "dict")]
-struct PreparePrintOptions {
+#[serde(rename_all = "kebab-case")]
+pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value")]
     handle_token: HandleToken,
@@ -604,6 +782,18 @@ struct PreparePrintOptions {
     /// Label for the accept button. Mnemonic underlines are allowed.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
+    /// File formats supported by the app for print-to-file.
+    /// Added in version 3.
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    supported_output_file_formats: Vec<OutputFileFormat>,
+    /// Whether it makes sense to return "current" for the print-pages setting.
+    /// Added in version 4.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    has_current_page: Option<bool>,
+    /// Whether it makes sense to return "selection" for the print-pages
+    /// setting. Added in version 4.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    has_selected_pages: Option<bool>,
 }
 
 impl PreparePrintOptions {
@@ -620,12 +810,40 @@ impl PreparePrintOptions {
         self.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
     }
+
+    /// Sets the supported output file formats for print-to-file.
+    /// Added in version 3.
+    #[must_use]
+    pub fn supported_output_file_formats(
+        mut self,
+        formats: impl IntoIterator<Item = OutputFileFormat>,
+    ) -> Self {
+        self.supported_output_file_formats = formats.into_iter().collect();
+        self
+    }
+
+    /// Sets whether it makes sense to return "current" for print-pages.
+    /// Added in version 4.
+    #[must_use]
+    pub fn has_current_page(mut self, has_current_page: impl Into<Option<bool>>) -> Self {
+        self.has_current_page = has_current_page.into();
+        self
+    }
+
+    /// Sets whether it makes sense to return "selection" for print-pages.
+    /// Added in version 4.
+    #[must_use]
+    pub fn has_selected_pages(mut self, has_selected_pages: impl Into<Option<bool>>) -> Self {
+        self.has_selected_pages = has_selected_pages.into();
+        self
+    }
 }
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::print`] request.
 #[zvariant(signature = "dict")]
-struct PrintOptions {
+#[serde(rename_all = "kebab-case")]
+pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value")]
     handle_token: HandleToken,
@@ -636,6 +854,10 @@ struct PrintOptions {
     /// call.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     token: Option<u32>,
+    /// File formats supported by the app for print-to-file.
+    /// Added in version 3.
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    supported_output_file_formats: Vec<OutputFileFormat>,
 }
 
 impl PrintOptions {
@@ -648,6 +870,17 @@ impl PrintOptions {
     /// Sets whether the dialog should be a modal.
     pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
+        self
+    }
+
+    /// Sets the supported output file formats for print-to-file.
+    /// Added in version 3.
+    #[must_use]
+    pub fn supported_output_file_formats(
+        mut self,
+        formats: impl IntoIterator<Item = OutputFileFormat>,
+    ) -> Self {
+        self.supported_output_file_formats = formats.into_iter().collect();
         self
     }
 }
@@ -698,27 +931,21 @@ impl PrintProxy {
     /// * `title` - Title for the print dialog.
     /// * `settings` - [`Settings`].
     /// * `page_setup` - [`PageSetup`].
-    /// * `modal` - Whether the dialog should be a modal.
-    /// * `accept_label` - Label for the accept button. Mnemonic underlines are
-    ///   allowed.
+    /// * `options` - [`PreparePrintOptions`]. allowed.
     ///
     /// # Specifications
     ///
     /// See also [`PreparePrint`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Print.html#org-freedesktop-portal-print-prepareprint).
     #[doc(alias = "PreparePrint")]
     #[doc(alias = "xdp_portal_prepare_print")]
-    pub async fn prepare_print<'a>(
+    pub async fn prepare_print(
         &self,
         identifier: Option<&WindowIdentifier>,
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
-        accept_label: impl Into<Option<&'a str>>,
-        modal: bool,
+        options: PreparePrintOptions,
     ) -> Result<Request<PreparePrint>, Error> {
-        let options = PreparePrintOptions::default()
-            .modal(modal)
-            .accept_label(accept_label);
         let identifier = Optional::from(identifier);
         self.0
             .request(
@@ -739,9 +966,7 @@ impl PrintProxy {
     /// * `identifier` - The application window identifier.
     /// * `title` - The title for the print dialog.
     /// * `fd` - File descriptor for reading the content to print.
-    /// * `token` - A token returned by a call to
-    ///   [`prepare_print()`][`PrintProxy::prepare_print`].
-    /// * `modal` - Whether the dialog should be a modal.
+    /// * `options` - [`PrintOptions`].
     ///
     /// # Specifications
     ///
@@ -753,12 +978,8 @@ impl PrintProxy {
         identifier: Option<&WindowIdentifier>,
         title: &str,
         fd: &impl AsFd,
-        token: Option<u32>,
-        modal: bool,
+        options: PrintOptions,
     ) -> Result<Request<()>, Error> {
-        let options = PrintOptions::default()
-            .token(token.unwrap_or(0))
-            .modal(modal);
         let identifier = Optional::from(identifier);
 
         self.0

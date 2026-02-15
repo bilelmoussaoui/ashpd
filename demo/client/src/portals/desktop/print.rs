@@ -3,7 +3,7 @@ use std::os::fd::AsFd;
 use adw::subclass::prelude::*;
 use ashpd::{
     WindowIdentifier,
-    desktop::print::{PageSetup, PrintProxy, Settings},
+    desktop::print::{PageSetup, PreparePrintOptions, PrintOptions, PrintProxy, Settings},
 };
 use gtk::{gio, glib, prelude::*};
 
@@ -113,8 +113,7 @@ async fn print(
                 &owned_title,
                 Settings::default(),
                 PageSetup::default(),
-                None,
-                modal,
+                PreparePrintOptions::default().modal(modal),
             )
             .await?
             .response()?;
@@ -124,8 +123,7 @@ async fn print(
                 identifier.as_ref(),
                 &owned_title,
                 &file.as_fd(),
-                Some(out.token),
-                modal,
+                PrintOptions::default().token(out.token).modal(modal),
             )
             .await
     })
