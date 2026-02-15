@@ -9,20 +9,9 @@
             <property name="spacing">12</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="AdwPreferencesGroup" id="usb_devices">
+              <object class="AdwPreferencesGroup">
                 <property name="title" translatable="yes">Device Access</property>
                 <property name="description" translatable="yes">Calls AcquireDevices or ReleaseDevices on org.freedesktop.portal.Usb.</property>
-                <property name="header-suffix">
-                  <object class="GtkButton">
-                    <property name="tooltip-text" translatable="yes">Refresh</property>
-                    <property name="icon-name">view-refresh-symbolic</property>
-                    <property name="action-name">usb.refresh</property>
-                    <property name="valign">center</property>
-                    <style>
-                      <class name="flat"/>
-                    </style>
-                  </object>
-                </property>
               </object>
             </child>
             <child>
@@ -54,6 +43,21 @@
                     </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup" id="devices_group">
+                <property name="header-suffix">
+                  <object class="GtkButton">
+                    <property name="tooltip-text" translatable="yes">Refresh</property>
+                    <property name="icon-name">view-refresh-symbolic</property>
+                    <property name="action-name">usb.refresh</property>
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="flat"/>
+                    </style>
+                  </object>
+                </property>
               </object>
             </child>
           </object>

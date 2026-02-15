@@ -34,7 +34,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/usb.ui")]
     pub struct UsbPage {
         #[template_child]
-        pub usb_devices: TemplateChild<adw::PreferencesGroup>,
+        pub devices_group: TemplateChild<adw::PreferencesGroup>,
         rows: RefCell<HashMap<String, super::row::UsbDeviceRow>>,
         pub session: Arc<Mutex<Option<Session<UsbProxy>>>>,
         pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
@@ -42,13 +42,13 @@ mod imp {
 
     impl UsbPage {
         fn add(&self, uuid: String, row: super::row::UsbDeviceRow) {
-            self.usb_devices.get().add(&row);
+            self.devices_group.get().add(&row);
             self.rows.borrow_mut().insert(uuid, row);
         }
 
         fn clear_devices(&self) {
             for row in self.rows.borrow().values() {
-                self.usb_devices.get().remove(row);
+                self.devices_group.get().remove(row);
             }
             self.rows.borrow_mut().clear();
         }
@@ -250,7 +250,7 @@ mod imp {
                         widget.obj().action_set_enabled("usb.stop_session", false);
                     } else {
                         widget.obj().action_set_enabled("usb.start_session", true);
-                        widget.obj().action_set_enabled("usb.stop_session", true);
+                        widget.obj().action_set_enabled("usb.stop_session", false);
                     }
                 }
             ));
@@ -356,9 +356,13 @@ mod row {
             pub(super) acquire: TemplateChild<gtk::Button>,
             #[template_child]
             pub(super) release: TemplateChild<gtk::Button>,
+            #[template_child]
+            pub(super) action_stack: TemplateChild<gtk::Stack>,
+
             pub(super) page: RefCell<Option<super::UsbPage>>,
             pub(super) device_id: RefCell<String>,
             pub(super) writable: Cell<bool>,
+            pub(super) is_acquired: Cell<bool>,
         }
 
         #[glib::object_subclass]
@@ -381,6 +385,9 @@ mod row {
         impl UsbDeviceRow {
             #[template_callback]
             async fn handle_acquire_clicked(&self, _: &gtk::Button) {
+                if self.is_acquired.get() {
+                    return;
+                }
                 let page = { self.page.borrow().clone() };
                 if let Some(page) = page {
                     let device_id = self.device_id.borrow().clone();
@@ -388,16 +395,24 @@ mod row {
                     if let Err(err) = page.share(&device_id, writable).await {
                         tracing::error!("Acquire device error: {err}");
                         page.error(&format!("Acquire device error: {err}"));
+                    } else {
+                        self.is_acquired.set(true);
+                        self.action_stack.set_visible_child(&*self.release);
                     }
                 }
             }
 
             #[template_callback]
             async fn handle_release_clicked(&self, _: &gtk::Button) {
+                if !self.is_acquired.get() {
+                    return;
+                }
                 let page = { self.page.borrow().clone() };
                 if let Some(page) = page {
                     let device_id = self.device_id.borrow().clone();
                     page.unshare(&device_id).await;
+                    self.is_acquired.set(false);
+                    self.action_stack.set_visible_child(&*self.acquire);
                 }
             }
         }
