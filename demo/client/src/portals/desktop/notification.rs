@@ -1,5 +1,8 @@
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::desktop::notification::{Button, Notification, NotificationProxy, Priority};
+use ashpd::desktop::{
+    Icon,
+    notification::{Button, Notification, NotificationProxy, Priority},
+};
 use futures_util::stream::StreamExt;
 use gtk::glib;
 
@@ -21,6 +24,10 @@ mod imp {
         pub title_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub body_entry: TemplateChild<adw::EntryRow>,
+        #[template_child]
+        pub markup_body_entry: TemplateChild<adw::EntryRow>,
+        #[template_child]
+        pub icon_entry: TemplateChild<adw::EntryRow>,
         #[template_child]
         pub priority_combo: TemplateChild<adw::ComboRow>,
         #[template_child]
@@ -113,6 +120,8 @@ impl NotificationPage {
         let notification_id = imp.id_entry.text();
         let title = imp.title_entry.text();
         let body = imp.body_entry.text();
+        let markup_body = imp.markup_body_entry.text();
+        let icon_name = imp.icon_entry.text();
         let default_action = imp.default_action_entry.text();
         let default_action_target = imp.default_action_target_entry.text();
         let priority = match imp.priority_combo.selected() {
@@ -128,6 +137,13 @@ impl NotificationPage {
             .default_action_target(&*default_action_target)
             .body(&*body)
             .priority(priority);
+
+        if !markup_body.is_empty() {
+            notification = notification.markup_body(&*markup_body);
+        }
+        if !icon_name.is_empty() {
+            notification = notification.icon(Icon::with_names(&[&icon_name]));
+        }
 
         for button in self.buttons().into_iter() {
             notification = notification.button(button);

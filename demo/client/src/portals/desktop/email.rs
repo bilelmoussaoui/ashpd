@@ -1,7 +1,7 @@
 use std::{fs::File, os::fd::OwnedFd};
 
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::{WindowIdentifier, desktop::email::EmailRequest};
+use ashpd::{ActivationToken, WindowIdentifier, desktop::email::EmailRequest};
 use gtk::{
     gio,
     glib::{self, clone},
@@ -136,6 +136,7 @@ impl EmailPage {
         let cc = is_empty(imp.cc_entry.text()).map(split_comma);
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
+        let activation_token = ActivationToken::from_window(self);
         let attachments = self.attachments();
 
         let response = spawn_tokio(async move {
@@ -145,7 +146,8 @@ impl EmailPage {
                 .addresses::<Vec<_>, String>(addresses)
                 .cc::<Vec<_>, String>(cc)
                 .bcc::<Vec<_>, String>(bcc)
-                .body(body.as_deref());
+                .body(body.as_deref())
+                .activation_token(activation_token);
             if !attachments.is_empty() {
                 // TODO: add a request.set_attachments helper method
                 attachments.into_iter().for_each(|attachment| {
