@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     AppID, WindowIdentifierType,
@@ -9,16 +10,17 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::Response, usb::UsbDevice},
-    zvariant::{DeserializeDict, Optional, OwnedObjectPath, SerializeDict, Type},
+    zvariant::{Optional, OwnedObjectPath, Type, as_value::optional},
 };
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 pub struct AcquireDevicesOptions {}
 
-#[derive(Debug, SerializeDict, DeserializeDict, Type)]
+#[derive(Debug, Serialize, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 pub struct AccessOptions {
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     writable: Option<bool>,
 }
 

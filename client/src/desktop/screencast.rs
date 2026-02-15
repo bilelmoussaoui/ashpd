@@ -41,7 +41,10 @@ use std::{collections::HashMap, fmt::Debug, os::fd::OwnedFd};
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{self, DeserializeDict, Optional, SerializeDict, Type, Value};
+use zbus::zvariant::{
+    self, Optional, Type, Value,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, PersistMode, Request, Session, session::SessionPortal};
 use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
@@ -81,29 +84,37 @@ pub enum CursorMode {
     Metadata,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
+    #[serde(with = "as_value")]
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::select_sources`] request.
 #[zvariant(signature = "dict")]
 struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// What types of content to record.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     types: Option<BitFlags<SourceType>>,
     /// Whether to allow selecting multiple sources.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     cursor_mode: Option<CursorMode>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     persist_mode: Option<PersistMode>,
 }
 
@@ -142,19 +153,22 @@ impl SelectSourcesOptions {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
-#[derive(Default, SerializeDict, DeserializeDict, Type)]
+#[derive(Default, Serialize, Deserialize, Type)]
 /// A response to a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 pub struct Streams {
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     streams: Vec<Stream>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
 }
 
@@ -271,14 +285,19 @@ impl Debug for Stream {
             .finish()
     }
 }
-#[derive(Clone, SerializeDict, DeserializeDict, Type, Debug)]
+#[derive(Clone, Serialize, Deserialize, Type, Debug)]
 /// The stream properties.
 #[zvariant(signature = "dict")]
 struct StreamProperties {
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     id: Option<String>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     position: Option<(i32, i32)>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     size: Option<(i32, i32)>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     source_type: Option<SourceType>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     mapping_id: Option<String>,
 }
 

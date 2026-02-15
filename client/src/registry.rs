@@ -1,8 +1,9 @@
+use serde::Serialize;
 use zbus::zvariant;
 
 use crate::{AppID, Error, proxy::Proxy};
 
-#[derive(Debug, zvariant::SerializeDict, zvariant::Type)]
+#[derive(Debug, Serialize, zvariant::Type)]
 #[zvariant(signature = "dict")]
 struct RegisterOptions {}
 

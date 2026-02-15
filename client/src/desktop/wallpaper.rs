@@ -42,7 +42,10 @@
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{Fd, Optional, SerializeDict, Type};
+use zbus::zvariant::{
+    Fd, Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::Request;
 use crate::{Error, Uri, WindowIdentifier, desktop::HandleToken, proxy::Proxy};
@@ -105,13 +108,22 @@ impl FromStr for SetOn {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct WallpaperOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
-    #[zvariant(rename = "show-preview")]
+    #[serde(
+        rename = "show-preview",
+        with = "optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     show_preview: Option<bool>,
-    #[zvariant(rename = "set-on")]
+    #[serde(
+        rename = "set-on",
+        with = "optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     set_on: Option<SetOn>,
 }
 

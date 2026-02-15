@@ -25,19 +25,25 @@
 use std::{collections::HashMap, os::fd::AsFd};
 
 use futures_util::Stream;
-use zbus::zvariant::{Fd, SerializeDict, Type, Value};
+use serde::Serialize;
+use zbus::zvariant::{Fd, Type, Value, as_value::optional};
 
 use crate::{Error, proxy::Proxy};
 
-#[derive(SerializeDict, Debug, Type, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`FileTransfer::start_transfer`] request.
 #[zvariant(signature = "dict")]
 struct TransferOptions {
     /// Whether to allow the chosen application to write to the files.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     writeable: Option<bool>,
     /// Whether to stop the transfer automatically after the first
     /// [`retrieve_files()`][`FileTransfer::retrieve_files`] call.
-    #[zvariant(rename = "autostop")]
+    #[serde(
+        rename = "autostop",
+        with = "optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     auto_stop: Option<bool>,
 }
 

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     AppID, FilePath, Uri, WindowIdentifierType,
@@ -13,17 +14,24 @@ use crate::{
         file_chooser::{Choice, FileFilter},
         request::Response,
     },
-    zvariant::{DeserializeDict, Optional, OwnedObjectPath, SerializeDict, Type},
+    zvariant::{
+        Optional, OwnedObjectPath, Type,
+        as_value::{self, optional},
+    },
 };
 
-#[derive(Debug, Type, SerializeDict, Default)]
+#[derive(Debug, Type, Serialize, Default)]
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
     uris: Vec<Uri>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     choices: Option<Vec<(String, String)>>,
     // Not relevant for SaveFiles
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_filter: Option<FileFilter>,
     // Only relevant for OpenFile
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     writable: Option<bool>,
 }
 
@@ -54,16 +62,24 @@ impl SelectedFiles {
 // but we will have to figure out how to handle handle_token
 // as if we set it to Option<T>, the Default would no longer
 // generate a random value, breaking some of the infrastructure we had
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct OpenFileOptions {
+    #[serde(default, with = "optional")]
     accept_label: Option<String>,
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     multiple: Option<bool>,
+    #[serde(default, with = "optional")]
     directory: Option<bool>,
+    #[serde(default, with = "optional")]
     filters: Option<Vec<FileFilter>>,
+    #[serde(default, with = "optional")]
     current_filter: Option<FileFilter>,
+    #[serde(default, with = "optional")]
     choices: Option<Vec<Choice>>,
+    #[serde(default, with = "optional")]
     current_folder: Option<FilePath>,
 }
 
@@ -101,17 +117,26 @@ impl OpenFileOptions {
     }
 }
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct SaveFileOptions {
+    #[serde(default, with = "optional")]
     accept_label: Option<String>,
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     multiple: Option<bool>,
+    #[serde(default, with = "optional")]
     filters: Option<Vec<FileFilter>>,
+    #[serde(default, with = "optional")]
     current_filter: Option<FileFilter>,
+    #[serde(default, with = "optional")]
     choices: Option<Vec<Choice>>,
+    #[serde(default, with = "optional")]
     current_name: Option<String>,
+    #[serde(default, with = "optional")]
     current_folder: Option<FilePath>,
+    #[serde(default, with = "optional")]
     current_file: Option<FilePath>,
 }
 
@@ -153,13 +178,18 @@ impl SaveFileOptions {
     }
 }
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct SaveFilesOptions {
+    #[serde(default, with = "optional")]
     accept_label: Option<String>,
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     choices: Option<Vec<Choice>>,
+    #[serde(default, with = "optional")]
     current_folder: Option<FilePath>,
+    #[serde(default, with = "optional")]
     files: Option<Vec<FilePath>>,
 }
 

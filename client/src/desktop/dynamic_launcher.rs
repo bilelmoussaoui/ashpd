@@ -55,7 +55,10 @@ use std::collections::HashMap;
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{self, DeserializeDict, Optional, OwnedValue, SerializeDict, Type, Value};
+use zbus::zvariant::{
+    self, Optional, OwnedValue, Type, Value,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Icon, Request};
 use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
@@ -112,15 +115,21 @@ impl LauncherIcon {
     }
 }
 
-#[derive(Debug, Default, SerializeDict, Type)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 /// Options to pass to [`DynamicLauncherProxy::prepare_install`]
 pub struct PrepareInstallOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
+    #[serde(with = "as_value")]
     launcher_type: LauncherType,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     target: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     editable_name: Option<bool>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     editable_icon: Option<bool>,
 }
 
@@ -157,12 +166,15 @@ impl PrepareInstallOptions {
     }
 }
 
-#[derive(DeserializeDict, Type)]
+#[derive(Deserialize, Type)]
 #[zvariant(signature = "dict")]
 /// A response of [`DynamicLauncherProxy::prepare_install`]
 pub struct PrepareInstallResponse {
+    #[serde(with = "as_value")]
     name: String,
+    #[serde(with = "as_value")]
     icon: OwnedValue,
+    #[serde(with = "as_value")]
     token: String,
 }
 
@@ -194,10 +206,11 @@ impl std::fmt::Debug for PrepareInstallResponse {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 /// Options to pass to [`DynamicLauncherProxy::launch`]
 pub struct LaunchOptions {
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
 }
 

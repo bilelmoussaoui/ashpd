@@ -27,27 +27,32 @@
 //! ```
 
 use futures_util::Stream;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, ObjectPath, Optional, SerializeDict, Type};
+use zbus::zvariant::{
+    ObjectPath, Optional, Type,
+    as_value::{self, optional},
+};
 
 use crate::{Error, WindowIdentifier, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.
 ///
 /// Currently there are no possible options yet.
 #[zvariant(signature = "dict")]
 struct UpdateOptions {}
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 /// A response containing the update information when an update is available.
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "kebab-case")]
 pub struct UpdateInfo {
-    #[zvariant(rename = "running-commit")]
+    #[serde(with = "as_value")]
     running_commit: String,
-    #[zvariant(rename = "local-commit")]
+    #[serde(with = "as_value")]
     local_commit: String,
-    #[zvariant(rename = "remote-commit")]
+    #[serde(with = "as_value")]
     remote_commit: String,
 }
 
@@ -88,22 +93,28 @@ pub enum UpdateStatus {
     Failed = 3,
 }
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 /// A response of the update progress signal.
 #[zvariant(signature = "dict")]
 pub struct UpdateProgress {
     /// The number of operations that the update consists of.
+    #[serde(default, with = "optional")]
     pub n_ops: Option<u32>,
     /// The position of the currently active operation.
+    #[serde(default, with = "optional")]
     pub op: Option<u32>,
     /// The progress of the currently active operation, as a number between 0
     /// and 100.
+    #[serde(default, with = "optional")]
     pub progress: Option<u32>,
     /// The overall status of the update.
+    #[serde(default, with = "optional")]
     pub status: Option<UpdateStatus>,
     /// The error name, sent when status is `UpdateStatus::Failed`.
+    #[serde(default, with = "optional")]
     pub error: Option<String>,
     /// The error message, sent when status is `UpdateStatus::Failed`.
+    #[serde(default, with = "optional")]
     pub error_message: Option<String>,
 }
 

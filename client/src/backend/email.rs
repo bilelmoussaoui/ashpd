@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use serde::Deserialize;
 
 use crate::{
     ActivationToken, AppID, Uri, WindowIdentifierType,
@@ -9,19 +10,27 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::Response},
-    zvariant::{self, DeserializeDict, Optional, OwnedObjectPath},
+    zvariant::{self, Optional, OwnedObjectPath, as_value::optional},
 };
 
-#[derive(DeserializeDict, zvariant::Type)]
+#[derive(Deserialize, zvariant::Type)]
 #[zvariant(signature = "dict")]
 pub struct Options {
+    #[serde(default, with = "optional")]
     address: Option<String>,
+    #[serde(default, with = "optional")]
     addresses: Option<Vec<String>>,
+    #[serde(default, with = "optional")]
     cc: Option<Vec<String>>,
+    #[serde(default, with = "optional")]
     bcc: Option<Vec<String>>,
+    #[serde(default, with = "optional")]
     subject: Option<String>,
+    #[serde(default, with = "optional")]
     body: Option<String>,
+    #[serde(default, with = "optional")]
     attachments: Option<Vec<Uri>>,
+    #[serde(default, with = "optional")]
     activation_token: Option<ActivationToken>,
 }
 

@@ -20,20 +20,24 @@
 use std::fmt;
 
 use futures_util::Stream;
+use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use zbus::zvariant::{DeserializeDict, Type};
+use zbus::zvariant::{Type, as_value};
 
 use crate::{Error, proxy::Proxy};
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 /// The network status, composed of the availability, metered & connectivity
 #[zvariant(signature = "dict")]
 pub struct NetworkStatus {
     /// Whether the network is considered available.
+    #[serde(with = "as_value")]
     available: bool,
     /// Whether the network is considered metered.
+    #[serde(with = "as_value")]
     metered: bool,
     /// More detailed information about the host's network connectivity
+    #[serde(with = "as_value")]
     connectivity: Connectivity,
 }
 

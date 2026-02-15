@@ -30,29 +30,45 @@
 //! If no `command` is provided, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
 
-use serde::Serialize;
-use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
+use serde::{Deserialize, Serialize};
+use zbus::zvariant::{
+    Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request};
 use crate::{Error, WindowIdentifier, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct BackgroundOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     autostart: Option<bool>,
-    #[zvariant(rename = "dbus-activatable")]
+    #[serde(
+        with = "optional",
+        rename = "dbus-activatable",
+        skip_serializing_if = "Option::is_none"
+    )]
     dbus_activatable: Option<bool>,
-    #[zvariant(rename = "commandline")]
-    command: Option<Vec<String>>,
+    #[serde(
+        with = "as_value",
+        rename = "commandline",
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    command: Vec<String>,
 }
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 /// The response of a [`BackgroundRequest`] request.
 #[zvariant(signature = "dict")]
 pub struct Background {
+    #[serde(with = "as_value")]
     background: bool,
+    #[serde(with = "as_value")]
     autostart: bool,
 }
 
@@ -76,9 +92,10 @@ impl Background {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct SetStatusOptions {
+    #[serde(with = "as_value")]
     message: String,
 }
 
@@ -196,11 +213,9 @@ impl BackgroundRequest {
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
     pub fn command<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
         mut self,
-        command: impl Into<Option<P>>,
+        command: P,
     ) -> Self {
-        self.options.command = command
-            .into()
-            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
+        self.options.command = command.into_iter().map(|s| s.as_ref().to_owned()).collect();
         self
     }
 

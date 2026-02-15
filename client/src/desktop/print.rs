@@ -34,7 +34,10 @@
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{DeserializeDict, Fd, Optional, SerializeDict, Type};
+use zbus::zvariant::{
+    Fd, Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request};
 use crate::{Error, Uri, WindowIdentifier, proxy::Proxy};
@@ -169,85 +172,95 @@ impl FromStr for Quality {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Print settings to set in the print dialog.
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "kebab-case")]
 pub struct Settings {
     /// One of landscape, portrait, reverse_landscape or reverse_portrait.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub orientation: Option<Orientation>,
     /// A paper name according to [PWG 5101.1-2002](ftp://ftp.pwg.org/pub/pwg/candidates/cs-pwgmsn10-20020226-5101.1.pdf)
-    #[zvariant(rename = "paper-format")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub paper_format: Option<String>,
     /// Paper width, in millimeters.
-    #[zvariant(rename = "paper-width")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub paper_width: Option<String>,
     /// Paper height, in millimeters.
-    #[zvariant(rename = "paper-height")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub paper_height: Option<String>,
     /// The number of copies to print.
-    #[zvariant(rename = "n-copies")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub n_copies: Option<String>,
     /// The default paper source.
-    #[zvariant(rename = "default-source")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub default_source: Option<String>,
     /// Print quality.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub quality: Option<Quality>,
     /// The resolution, sets both resolution-x & resolution-y
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub resolution: Option<String>,
     /// Whether to use color.
-    #[zvariant(rename = "use-color")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub use_color: Option<String>,
     /// Duplex printing mode, one of simplex, horizontal or vertical.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub duplex: Option<String>,
     /// Whether to collate copies.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub collate: Option<String>,
     /// Whether to reverse the order of printed pages.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub reverse: Option<String>,
     /// A media type according to [PWG 5101.1-2002](ftp://ftp.pwg.org/pub/pwg/candidates/cs-pwgmsn10-20020226-5101.1.pdf)
-    #[zvariant(rename = "media-type")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub media_type: Option<String>,
     /// The dithering to use, one of fine, none, coarse, lineart, grayscale or
     /// error-diffusion.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub dither: Option<String>,
     /// The scale in percent
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub scale: Option<String>,
     /// What pages to print, one of all, selection, current or ranges.
-    #[zvariant(rename = "print-pages")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub print_pages: Option<String>,
     /// A list of page ranges, formatted like this: 0-2,4,9-11.
-    #[zvariant(rename = "page-ranges")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub page_ranges: Option<String>,
     /// What pages to print, one of all, even or odd.
-    #[zvariant(rename = "page-set")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub page_set: Option<String>,
     /// The finishings.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub finishings: Option<String>,
     /// The number of pages per sheet.
-    #[zvariant(rename = "number-up")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub number_up: Option<String>,
     /// One of lrtb, lrbt, rltb, rlbt, tblr, tbrl, btlr, btrl.
-    #[zvariant(rename = "number-up-layout")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub number_up_layout: Option<String>,
-    #[zvariant(rename = "output-bin")]
     /// The output bin.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_bin: Option<String>,
     /// The horizontal resolution in dpi.
-    #[zvariant(rename = "resolution-x")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub resolution_x: Option<String>,
     /// The vertical resolution in dpi.
-    #[zvariant(rename = "resolution-y")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub resolution_y: Option<String>,
     /// The resolution in lpi (lines per inch).
-    #[zvariant(rename = "printer-lpi")]
-    pub print_lpi: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    pub printer_lpi: Option<String>,
     /// Basename to use for print-to-file.
-    #[zvariant(rename = "output-basename")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_basename: Option<String>,
     /// Format to use for print-to-file, one of PDF, PS, SVG
-    #[zvariant(rename = "output-file-format")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_file_format: Option<String>,
     /// The uri used for print-to file.
-    #[zvariant(rename = "output-uri")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_uri: Option<Uri>,
 }
 
@@ -438,8 +451,8 @@ impl Settings {
 
     /// Sets the resolution in lines per inch.
     #[must_use]
-    pub fn print_lpi<'a>(mut self, print_lpi: impl Into<Option<&'a str>>) -> Self {
-        self.print_lpi = print_lpi.into().map(ToOwned::to_owned);
+    pub fn printer_lpi<'a>(mut self, printer_lpi: impl Into<Option<&'a str>>) -> Self {
+        self.printer_lpi = printer_lpi.into().map(ToOwned::to_owned);
         self
     }
 
@@ -468,39 +481,41 @@ impl Settings {
     }
 }
 
-#[derive(SerializeDict, DeserializeDict, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Setup the printed pages.
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "PascalCase")]
 pub struct PageSetup {
     /// the PPD name. It's the name to select a given driver.
-    #[zvariant(rename = "PPDName")]
+    #[serde(rename = "PPDName")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub ppdname: Option<String>,
     /// The name of the page setup.
-    #[zvariant(rename = "Name")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// The user-visible name of the page setup.
-    #[zvariant(rename = "DisplayName")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub display_name: Option<String>,
     /// Paper width in millimeters.
-    #[zvariant(rename = "Width")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub width: Option<f64>,
     /// Paper height in millimeters.
-    #[zvariant(rename = "Height")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub height: Option<f64>,
     /// Top margin in millimeters.
-    #[zvariant(rename = "MarginTop")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_top: Option<f64>,
     /// Bottom margin in millimeters.
-    #[zvariant(rename = "MarginBottom")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_bottom: Option<f64>,
     /// Right margin in millimeters.
-    #[zvariant(rename = "MarginRight")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_right: Option<f64>,
     /// Left margin in millimeters.
-    #[zvariant(rename = "MarginLeft")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_left: Option<f64>,
     /// The page orientation.
-    #[zvariant(rename = "Orientation")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub orientation: Option<Orientation>,
 }
 
@@ -576,15 +591,18 @@ impl PageSetup {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::prepare_print`] request.
 #[zvariant(signature = "dict")]
 struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
     /// Label for the accept button. Mnemonic underlines are allowed.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
 }
 
@@ -604,16 +622,19 @@ impl PreparePrintOptions {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::print`] request.
 #[zvariant(signature = "dict")]
 struct PrintOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
     /// Token that was returned by a previous [`PrintProxy::prepare_print`]
     /// call.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     token: Option<u32>,
 }
 
@@ -631,16 +652,18 @@ impl PrintOptions {
     }
 }
 
-#[derive(DeserializeDict, SerializeDict, Type, Debug)]
+#[derive(Deserialize, Serialize, Type, Debug)]
 /// A response to a [`PrintProxy::prepare_print`] request.
 #[zvariant(signature = "dict")]
 pub struct PreparePrint {
     /// The printing settings.
+    #[serde(with = "as_value")]
     pub settings: Settings,
-    #[zvariant(rename = "page-setup")]
     /// The printed pages setup.
+    #[serde(rename = "page-setup", with = "as_value")]
     pub page_setup: PageSetup,
     /// A token to pass to the print request.
+    #[serde(with = "as_value")]
     pub token: u32,
 }
 

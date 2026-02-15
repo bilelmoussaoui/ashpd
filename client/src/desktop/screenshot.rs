@@ -35,23 +35,31 @@
 //! ```
 use std::fmt::Debug;
 
-use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
+use serde::{Deserialize, Serialize};
+use zbus::zvariant::{
+    Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request};
 use crate::{Error, Uri, WindowIdentifier, desktop::Color, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct ScreenshotOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     interactive: Option<bool>,
 }
 
-#[derive(SerializeDict, DeserializeDict, Type)]
+#[derive(Serialize, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 /// The response of a [`ScreenshotRequest`] request.
 pub struct Screenshot {
+    #[serde(with = "as_value")]
     uri: Uri,
 }
 
@@ -83,9 +91,10 @@ impl Debug for Screenshot {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct ColorOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 

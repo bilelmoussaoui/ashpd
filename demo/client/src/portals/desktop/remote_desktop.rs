@@ -277,7 +277,7 @@ impl RemoteDesktopPage {
 
             ashpd::Result::Ok((
                 response.devices(),
-                response.streams().unwrap_or_default().to_owned(),
+                response.streams().to_owned(),
                 session,
                 response.restore_token().map(ToOwned::to_owned),
             ))

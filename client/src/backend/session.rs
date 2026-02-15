@@ -4,9 +4,10 @@ use std::{
 };
 
 use async_trait::async_trait;
+use serde::Serialize;
 use zbus::{
     object_server::SignalEmitter,
-    zvariant::{OwnedObjectPath, SerializeDict, Type},
+    zvariant::{OwnedObjectPath, Type, as_value},
 };
 
 use crate::{PortalError, desktop::HandleToken};
@@ -119,9 +120,10 @@ pub trait SessionImpl: Send + Sync {
     async fn session_closed(&self, session_token: HandleToken) -> crate::backend::Result<()>;
 }
 
-#[derive(SerializeDict, Type, Debug)]
+#[derive(Serialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct CreateSessionResponse {
+    #[serde(with = "as_value")]
     session_id: HandleToken,
 }
 

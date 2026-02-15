@@ -37,7 +37,7 @@ use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{self, Fd, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{self, Fd, OwnedObjectPath, Type, as_value::optional};
 
 use crate::{Error, FilePath, Pid, proxy::Proxy};
 
@@ -102,39 +102,40 @@ pub enum SupportsFlags {
     ExposePids,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::spawn`] request.
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "kebab-case")]
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
-    #[zvariant(rename = "sandbox-expose")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     sandbox_expose: Option<Vec<String>>,
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, read-only.
-    #[zvariant(rename = "sandbox-expose-ro")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     sandbox_expose_ro: Option<Vec<String>>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
-    #[zvariant(rename = "sandbox-expose-fd")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     sandbox_expose_fd: Option<Vec<zvariant::OwnedFd>>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, read-only.
-    #[zvariant(rename = "sandbox-expose-fd-ro")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     sandbox_expose_fd_ro: Option<Vec<zvariant::OwnedFd>>,
     /// Flags affecting the created sandbox.
-    #[zvariant(rename = "sandbox-flags")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
     /// A list of environment variables to remove.
-    #[zvariant(rename = "unset-env")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     unset_env: Option<Vec<String>>,
     /// A file descriptor of the directory that  will be used as `/usr` in the
     /// new sandbox.
-    #[zvariant(rename = "usr-fd")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     usr_fd: Option<zvariant::OwnedFd>,
     /// A file descriptor of the directory that  will be used as `/app` in the
     /// new sandbox.
-    #[zvariant(rename = "app-fd")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     app_fd: Option<zvariant::OwnedFd>,
 }
 
@@ -230,7 +231,7 @@ impl SpawnOptions {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::create_update_monitor`] request.
 ///
 /// Currently there are no possible options yet.

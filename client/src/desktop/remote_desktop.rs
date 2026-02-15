@@ -85,8 +85,12 @@
 use std::{collections::HashMap, os::fd::OwnedFd};
 
 use enumflags2::{BitFlags, bitflags};
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{self, DeserializeDict, Optional, SerializeDict, Type, Value};
+use zbus::zvariant::{
+    self, Optional, Type, Value,
+    as_value::{self, optional},
+};
 
 use super::{
     HandleToken, PersistMode, Request, Session, screencast::Stream, session::SessionPortal,
@@ -140,25 +144,31 @@ pub enum Axis {
     Horizontal = 1,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateRemoteOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
+    #[serde(with = "as_value")]
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
 struct SelectDevicesOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// The device types to request remote controlling of. Default is all.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     types: Option<BitFlags<DeviceType>>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     persist_mode: Option<PersistMode>,
 }
 
@@ -180,20 +190,24 @@ impl SelectDevicesOptions {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::start`] request.
 #[zvariant(signature = "dict")]
 struct StartRemoteOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
-#[derive(DeserializeDict, Type, Debug, Default)]
+#[derive(Deserialize, Type, Debug, Default)]
 /// A response to a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
 pub struct SelectedDevices {
+    #[serde(default, with = "as_value")]
     devices: BitFlags<DeviceType>,
-    streams: Option<Vec<Stream>>,
+    #[serde(default, with = "as_value")]
+    streams: Vec<Stream>,
+    #[serde(default, with = "optional")]
     restore_token: Option<String>,
 }
 
@@ -204,8 +218,8 @@ impl SelectedDevices {
     }
 
     /// The selected streams if a ScreenCast portal is used on the same session
-    pub fn streams(&self) -> Option<&[Stream]> {
-        self.streams.as_deref()
+    pub fn streams(&self) -> &[Stream] {
+        &self.streams
     }
 
     /// The session restore token.

@@ -36,30 +36,37 @@
 
 use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, ObjectPath, Optional, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{
+    ObjectPath, Optional, OwnedObjectPath, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
 #[zvariant(signature = "dict")]
 struct CreateMonitorOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
+    #[serde(with = "as_value")]
     session_handle_token: HandleToken,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::inhibit`] request.
 #[zvariant(signature = "dict")]
 struct InhibitOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// User-visible reason for the inhibition.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
 }
 
@@ -83,12 +90,13 @@ pub enum InhibitFlags {
     Idle,
 }
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "kebab-case")]
 struct State {
-    #[zvariant(rename = "screensaver-active")]
+    #[serde(with = "as_value")]
     screensaver_active: bool,
-    #[zvariant(rename = "session-state")]
+    #[serde(with = "as_value")]
     session_state: SessionState,
 }
 

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     AppID, WindowIdentifierType,
@@ -10,16 +10,21 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Icon, request::Response},
-    zvariant::{self, DeserializeDict, Optional, OwnedObjectPath, SerializeDict},
+    zvariant::{self, Optional, OwnedObjectPath, as_value::optional},
 };
 
-#[derive(DeserializeDict, zvariant::Type)]
+#[derive(Deserialize, zvariant::Type)]
 #[zvariant(signature = "dict")]
 pub struct AccessOptions {
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     deny_label: Option<String>,
+    #[serde(default, with = "optional")]
     grant_label: Option<String>,
+    #[serde(default, with = "optional")]
     icon: Option<String>,
+    #[serde(default, with = "optional")]
     choices: Option<Vec<Choice>>,
 }
 
@@ -73,9 +78,10 @@ impl AccessOptions {
     }
 }
 
-#[derive(SerializeDict, Debug, zvariant::Type, Default)]
+#[derive(Serialize, Debug, zvariant::Type, Default)]
 #[zvariant(signature = "dict")]
 pub struct AccessResponse {
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     choices: Option<Vec<(String, String)>>,
 }
 

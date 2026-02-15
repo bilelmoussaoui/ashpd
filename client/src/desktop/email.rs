@@ -27,22 +27,34 @@
 use std::os::fd::OwnedFd;
 
 use serde::Serialize;
-use zbus::zvariant::{self, Optional, SerializeDict, Type};
+use zbus::zvariant::{
+    self, Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request};
 use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct EmailOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     address: Option<String>,
-    addresses: Option<Vec<String>>,
-    cc: Option<Vec<String>>,
-    bcc: Option<Vec<String>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    addresses: Vec<String>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    cc: Vec<String>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    bcc: Vec<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     subject: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     body: Option<String>,
-    attachment_fds: Option<Vec<zvariant::OwnedFd>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    attachment_fds: Vec<zvariant::OwnedFd>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
 }
 
@@ -134,9 +146,9 @@ impl EmailRequest {
         mut self,
         addresses: impl Into<Option<P>>,
     ) -> Self {
-        self.options.addresses = addresses
-            .into()
-            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
+        if let Some(a) = addresses.into() {
+            self.options.addresses = a.into_iter().map(|s| s.as_ref().to_owned()).collect();
+        }
         self
     }
 
@@ -146,9 +158,9 @@ impl EmailRequest {
         mut self,
         bcc: impl Into<Option<P>>,
     ) -> Self {
-        self.options.bcc = bcc
-            .into()
-            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
+        if let Some(a) = bcc.into() {
+            self.options.bcc = a.into_iter().map(|s| s.as_ref().to_owned()).collect();
+        }
         self
     }
 
@@ -158,9 +170,9 @@ impl EmailRequest {
         mut self,
         cc: impl Into<Option<P>>,
     ) -> Self {
-        self.options.cc = cc
-            .into()
-            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
+        if let Some(a) = cc.into() {
+            self.options.cc = a.into_iter().map(|s| s.as_ref().to_owned()).collect();
+        }
         self
     }
 
@@ -199,12 +211,7 @@ impl EmailRequest {
     /// A different variant of [`Self::attach`].
     pub fn add_attachment(&mut self, attachment: OwnedFd) {
         let attachment = zvariant::OwnedFd::from(attachment);
-        match self.options.attachment_fds {
-            Some(ref mut attachments) => attachments.push(attachment),
-            None => {
-                self.options.attachment_fds.replace(vec![attachment]);
-            }
-        };
+        self.options.attachment_fds.push(attachment);
     }
 
     #[must_use]

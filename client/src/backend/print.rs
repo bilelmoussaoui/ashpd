@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use serde::Deserialize;
 
 use crate::{
     AppID, WindowIdentifierType,
@@ -13,13 +14,15 @@ use crate::{
         print::{PageSetup, PreparePrint, Settings},
         request::Response,
     },
-    zvariant::{self, DeserializeDict, Optional, OwnedObjectPath},
+    zvariant::{self, Optional, OwnedObjectPath, as_value::optional},
 };
 
-#[derive(DeserializeDict, zvariant::Type)]
+#[derive(Deserialize, zvariant::Type)]
 #[zvariant(signature = "dict")]
 pub struct PreparePrintOptions {
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     accept_label: Option<String>,
 }
 
@@ -33,10 +36,12 @@ impl PreparePrintOptions {
     }
 }
 
-#[derive(DeserializeDict, zvariant::Type)]
+#[derive(Deserialize, zvariant::Type)]
 #[zvariant(signature = "dict")]
 pub struct PrintOptions {
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     token: Option<u32>,
 }
 

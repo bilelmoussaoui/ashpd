@@ -5,7 +5,8 @@ use std::{collections::HashMap, fmt::Debug, time::Duration};
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
-    DeserializeDict, ObjectPath, Optional, OwnedObjectPath, OwnedValue, SerializeDict, Type,
+    ObjectPath, Optional, OwnedObjectPath, OwnedValue, Type,
+    as_value::{self, optional},
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
@@ -13,13 +14,15 @@ use crate::{
     ActivationToken, Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
 };
 
-#[derive(Clone, SerializeDict, Type, Debug, Default)]
+#[derive(Clone, Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct NewShortcutInfo {
     /// User-readable text describing what the shortcut does.
+    #[serde(with = "as_value")]
     description: String,
     /// The preferred shortcut trigger, defined as described by the "shortcuts"
     /// XDG specification. Optional.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     preferred_trigger: Option<String>,
 }
 
@@ -49,13 +52,15 @@ impl NewShortcut {
     }
 }
 
-#[derive(Clone, DeserializeDict, Type, Debug, Default)]
+#[derive(Clone, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct ShortcutInfo {
     /// User-readable text describing what the shortcut does.
+    #[serde(with = "as_value")]
     description: String,
     /// User-readable text describing how to trigger the shortcut for the client
     /// to render.
+    #[serde(with = "as_value")]
     trigger_description: String,
 }
 
@@ -85,27 +90,31 @@ impl Shortcut {
 }
 
 /// Specified options for a [`GlobalShortcuts::create_session`] request.
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
+    #[serde(with = "as_value")]
     session_handle_token: HandleToken,
 }
 
 /// Specified options for a [`GlobalShortcuts::bind_shortcuts`] request.
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct BindShortcutsOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
 /// A response to a [`GlobalShortcuts::bind_shortcuts`] request.
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct BindShortcuts {
+    #[serde(default, with = "as_value")]
     shortcuts: Vec<Shortcut>,
 }
 
@@ -116,25 +125,28 @@ impl BindShortcuts {
     }
 }
 
-#[derive(SerializeDict, Type, Debug)]
+#[derive(Serialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 struct ConfigureShortcutsOptions {
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
 }
 
 /// Specified options for a [`GlobalShortcuts::list_shortcuts`] request.
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct ListShortcutsOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
 /// A response to a [`GlobalShortcuts::list_shortcuts`] request.
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct ListShortcuts {
     /// A list of shortcuts.
+    #[serde(default, with = "as_value")]
     shortcuts: Vec<Shortcut>,
 }
 

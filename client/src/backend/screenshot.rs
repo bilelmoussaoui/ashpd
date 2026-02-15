@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use serde::Deserialize;
 
 use crate::{
     AppID, WindowIdentifierType,
@@ -11,14 +12,17 @@ use crate::{
     desktop::{
         Color, HandleToken, request::Response, screenshot::Screenshot as ScreenshotResponse,
     },
-    zvariant::{DeserializeDict, Optional, OwnedObjectPath, Type},
+    zvariant::{Optional, OwnedObjectPath, Type, as_value::optional},
 };
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct ScreenshotOptions {
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     interactive: Option<bool>,
+    #[serde(default, with = "optional")]
     permission_store_checked: Option<bool>,
 }
 
@@ -36,7 +40,7 @@ impl ScreenshotOptions {
     }
 }
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct ColorOptions;
 

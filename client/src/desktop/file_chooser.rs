@@ -83,7 +83,10 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
+use zbus::zvariant::{
+    Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request};
 use crate::{Error, FilePath, Uri, WindowIdentifier, proxy::Proxy};
@@ -223,52 +226,78 @@ impl Choice {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct OpenFileOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     multiple: Option<bool>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     directory: Option<bool>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
     filters: Vec<FileFilter>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_filter: Option<FileFilter>,
-    choices: Option<Vec<Choice>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    choices: Vec<Choice>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct SaveFileOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_name: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_file: Option<FilePath>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
     filters: Vec<FileFilter>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_filter: Option<FileFilter>,
-    choices: Option<Vec<Choice>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    choices: Vec<Choice>,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct SaveFilesOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    choices: Option<Vec<Choice>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    choices: Vec<Choice>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
-    files: Option<Vec<FilePath>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    files: Vec<FilePath>,
 }
 
-#[derive(Debug, Type, DeserializeDict)]
+#[derive(Deserialize, Type, Debug)]
 /// A response of [`OpenFileRequest`], [`SaveFileRequest`] or
 /// [`SaveFilesRequest`].
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
+    #[serde(default, with = "as_value")]
     uris: Vec<Uri>,
-    choices: Option<Vec<(String, String)>>,
+    #[serde(default, with = "as_value")]
+    choices: Vec<(String, String)>,
 }
 
 impl SelectedFiles {
@@ -294,7 +323,7 @@ impl SelectedFiles {
 
     /// The selected value of each choice as a tuple of (key, value)
     pub fn choices(&self) -> &[(String, String)] {
-        self.choices.as_deref().unwrap_or_default()
+        &self.choices
     }
 }
 
@@ -454,17 +483,14 @@ impl OpenFileRequest {
     /// Adds a choice.
     #[must_use]
     pub fn choice(mut self, choice: Choice) -> Self {
-        self.options
-            .choices
-            .get_or_insert_with(Vec::new)
-            .push(choice);
+        self.options.choices.push(choice);
         self
     }
 
     #[must_use]
     /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
-        self.options.choices = Some(choices.into_iter().collect());
+        self.options.choices = choices.into_iter().collect();
         self
     }
 
@@ -544,17 +570,14 @@ impl SaveFilesRequest {
     /// Adds a choice.
     #[must_use]
     pub fn choice(mut self, choice: Choice) -> Self {
-        self.options
-            .choices
-            .get_or_insert_with(Vec::new)
-            .push(choice);
+        self.options.choices.push(choice);
         self
     }
 
     #[must_use]
     /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
-        self.options.choices = Some(choices.into_iter().collect());
+        self.options.choices = choices.into_iter().collect();
         self
     }
 
@@ -575,10 +598,12 @@ impl SaveFilesRequest {
         mut self,
         files: impl Into<Option<P>>,
     ) -> Result<Self, crate::Error> {
-        self.options.files = files
-            .into()
-            .map(|files| files.into_iter().map(|s| FilePath::new(s)).collect())
-            .transpose()?;
+        if let Some(f) = files.into() {
+            self.options.files = f
+                .into_iter()
+                .map(|s| FilePath::new(s))
+                .collect::<Result<Vec<_>, _>>()?;
+        }
         Ok(self)
     }
 
@@ -695,17 +720,14 @@ impl SaveFileRequest {
     /// Adds a choice.
     #[must_use]
     pub fn choice(mut self, choice: Choice) -> Self {
-        self.options
-            .choices
-            .get_or_insert_with(Vec::new)
-            .push(choice);
+        self.options.choices.push(choice);
         self
     }
 
     #[must_use]
     /// Adds a list of choices.
     pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
-        self.options.choices = Some(choices.into_iter().collect());
+        self.options.choices = choices.into_iter().collect();
         self
     }
 

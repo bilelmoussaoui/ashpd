@@ -53,34 +53,44 @@
 
 use std::os::fd::AsFd;
 
-use zbus::zvariant::{Fd, Optional, SerializeDict, Type};
+use serde::Serialize;
+use zbus::zvariant::{
+    Fd, Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request};
 use crate::{ActivationToken, Error, Uri, WindowIdentifier, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 /// Options passed to [`OpenURIProxy::open_directory`].
 pub struct OpenDirOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// The activation token.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub activation_token: Option<ActivationToken>,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 /// Options passed to [`OpenURIProxy::open_file`].
 pub struct OpenFileOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// Whether the file should be writable.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub writeable: Option<bool>,
     /// Whether to ask the user.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub ask: Option<bool>,
     /// The activation token.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub activation_token: Option<ActivationToken>,
 }
 
-#[derive(Debug, SerializeDict, Type, Default)]
+#[derive(Debug, Serialize, Type, Default)]
 #[zvariant(signature = "dict")]
 /// Options passed to [`OpenURIProxy::scheme_supported`].
 pub struct SchemeSupportedOptions {}

@@ -65,11 +65,13 @@ impl BackgroundPage {
         let reason = imp.reason_entry.text();
         let auto_start = imp.auto_start_switch.is_active();
         let dbus_activatable = imp.dbus_activatable_switch.is_active();
-        let command = is_empty(imp.command_entry.text()).map(|txt| {
-            txt.split_whitespace()
-                .map(|s| s.to_string())
-                .collect::<Vec<String>>()
-        });
+        let command = is_empty(imp.command_entry.text())
+            .map(|txt| {
+                txt.split_whitespace()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>()
+            })
+            .unwrap_or_default();
 
         self.info("Requesting background access");
 

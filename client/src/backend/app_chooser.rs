@@ -1,13 +1,16 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{
     ActivationToken, AppID, PortalError, WindowIdentifierType,
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
-    zvariant::{DeserializeDict, Optional, OwnedObjectPath, SerializeDict, Type},
+    zvariant::{
+        Optional, OwnedObjectPath, Type,
+        as_value::{self, optional},
+    },
 };
 
 /// The desktop ID of an application.
@@ -44,14 +47,20 @@ impl std::fmt::Display for DesktopID {
     }
 }
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 pub struct ChooserOptions {
+    #[serde(default, with = "optional")]
     last_choice: Option<DesktopID>,
+    #[serde(default, with = "optional")]
     modal: Option<bool>,
+    #[serde(default, with = "optional")]
     content_type: Option<String>,
+    #[serde(default, with = "optional")]
     uri: Option<String>,
+    #[serde(default, with = "optional")]
     filename: Option<String>,
+    #[serde(default, with = "optional")]
     activation_token: Option<ActivationToken>,
 }
 
@@ -81,10 +90,12 @@ impl ChooserOptions {
     }
 }
 
-#[derive(Debug, SerializeDict, Type)]
+#[derive(Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 pub struct Choice {
+    #[serde(with = "as_value")]
     choice: AppID,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
 }
 

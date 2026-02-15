@@ -2,6 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
 use enumflags2::{BitFlags, bitflags};
+use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
@@ -9,7 +10,7 @@ use crate::{
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
     zbus::object_server::SignalEmitter,
-    zvariant::{OwnedObjectPath, SerializeDict, Type},
+    zvariant::{OwnedObjectPath, Type, as_value},
 };
 
 #[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Eq, Debug, Type)]
@@ -20,9 +21,10 @@ pub enum Activity {
     AllowInstance = 2,
 }
 
-#[derive(Debug, SerializeDict, Type)]
+#[derive(Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 pub struct Background {
+    #[serde(with = "as_value")]
     result: Activity,
 }
 

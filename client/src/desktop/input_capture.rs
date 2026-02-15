@@ -271,11 +271,11 @@ use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
 use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
-use serde::{Deserialize, de::Visitor};
+use serde::{Deserialize, Serialize, de::Visitor};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    self, DeserializeDict, ObjectPath, Optional, OwnedObjectPath, OwnedValue, SerializeDict, Type,
-    Value,
+    self, ObjectPath, OwnedObjectPath, OwnedValue, Optional, Type, Value,
+    as_value::{self, optional},
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
@@ -294,45 +294,54 @@ pub enum Capabilities {
     Touchscreen,
 }
 
-#[derive(Debug, SerializeDict, Type)]
+#[derive(Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "as_value")]
     session_handle_token: HandleToken,
+    #[serde(with = "as_value")]
     capabilities: BitFlags<Capabilities>,
 }
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 struct CreateSessionResponse {
+    #[serde(with = "as_value")]
     session_handle: OwnedObjectPath,
+    #[serde(with = "as_value")]
     capabilities: BitFlags<Capabilities>,
 }
 
-#[derive(Default, Debug, SerializeDict, Type)]
+#[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 struct GetZonesOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
-#[derive(Default, Debug, SerializeDict, Type)]
+#[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 struct SetPointerBarriersOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
-#[derive(Default, Debug, SerializeDict, Type)]
+#[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 struct EnableOptions {}
 
-#[derive(Default, Debug, SerializeDict, Type)]
+#[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 struct DisableOptions {}
 
-#[derive(Default, Debug, SerializeDict, Type)]
+#[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 struct ReleaseOptions {
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_id: Option<u32>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     cursor_position: Option<(f64, f64)>,
 }
 
@@ -353,9 +362,10 @@ impl Disabled {
     }
 }
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 struct DeactivatedOptions {
+    #[serde(default, with = "optional")]
     activation_id: Option<u32>,
 }
 
@@ -377,11 +387,14 @@ impl Deactivated {
     }
 }
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 struct ActivatedOptions {
+    #[serde(default, with = "optional")]
     activation_id: Option<u32>,
+    #[serde(default, with = "optional")]
     cursor_position: Option<(f32, f32)>,
+    #[serde(default, with = "optional")]
     barrier_id: Option<ActivatedBarrier>,
 }
 
@@ -454,9 +467,10 @@ impl Visitor<'_> for ActivatedBarrierVisitor {
     }
 }
 
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 struct ZonesChangedOptions {
+    #[serde(default, with = "optional")]
     zone_set: Option<u32>,
 }
 
@@ -505,10 +519,12 @@ impl Region {
 }
 
 /// A response of [`InputCapture::zones`].
-#[derive(Debug, Type, DeserializeDict)]
+#[derive(Debug, Type, Deserialize)]
 #[zvariant(signature = "dict")]
 pub struct Zones {
+    #[serde(default, with = "as_value")]
     zones: Vec<Region>,
+    #[serde(default, with = "as_value")]
     zone_set: u32,
 }
 
@@ -527,11 +543,13 @@ impl Zones {
 /// A barrier ID.
 pub type BarrierID = NonZeroU32;
 
-#[derive(Debug, SerializeDict, Type)]
+#[derive(Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 /// Input Barrier.
 pub struct Barrier {
+    #[serde(with = "as_value")]
     barrier_id: BarrierID,
+    #[serde(with = "as_value")]
     position: (i32, i32, i32, i32),
 }
 
@@ -546,9 +564,10 @@ impl Barrier {
 }
 
 /// A response to [`InputCapture::set_pointer_barriers`]
-#[derive(Debug, DeserializeDict, Type)]
+#[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 pub struct SetPointerBarriersResponse {
+    #[serde(default, with = "as_value")]
     failed_barriers: Vec<BarrierID>,
 }
 

@@ -1,20 +1,16 @@
-use crate::zvariant::{self, DeserializeDict, SerializeDict, Type};
+use serde::{Deserialize, Serialize};
+
+use crate::zvariant::{self, Type, as_value};
 
 #[derive(
-    SerializeDict,
-    DeserializeDict,
-    Clone,
-    Copy,
-    PartialEq,
-    Type,
-    zvariant::Value,
-    zvariant::OwnedValue,
+    Serialize, Deserialize, Clone, Copy, PartialEq, Type, zvariant::Value, zvariant::OwnedValue,
 )]
 /// A color as a RGB tuple.
 ///
 /// **Note** the values are normalized in the [0.0, 1.0] range.
 #[zvariant(signature = "dict")]
 pub struct Color {
+    #[serde(with = "as_value")]
     color: (f64, f64, f64),
 }
 

@@ -6,22 +6,27 @@
 use std::collections::HashMap;
 
 use futures_util::{Stream, StreamExt};
-use zbus::zvariant::{DeserializeDict, OwnedFd, OwnedObjectPath, SerializeDict, Type, Value};
+use serde::{Deserialize, Serialize};
+use zbus::zvariant::{OwnedFd, OwnedObjectPath, Type, Value, as_value::optional};
 
 use super::{Session, remote_desktop::RemoteDesktop};
 use crate::{Result, proxy::Proxy};
 
-#[derive(Debug, Type, SerializeDict)]
+#[derive(Debug, Type, Serialize)]
 #[zvariant(signature = "dict")]
 struct SetSelectionOptions<'a> {
+    #[serde(borrow)]
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
     mime_types: &'a [&'a str],
 }
 
-#[derive(Debug, Type, DeserializeDict)]
+#[derive(Debug, Type, Deserialize, Default)]
 #[zvariant(signature = "dict")]
 /// The details of a new clipboard selection.
 pub struct SelectionOwnerChanged {
-    mime_types: Option<Vec<String>>,
+    #[serde(default, with = "as_value")]
+    mime_types: Vec<String>,
+    #[serde(default, with = "optional")]
     session_is_owner: Option<bool>,
 }
 
@@ -32,8 +37,8 @@ impl SelectionOwnerChanged {
     }
 
     /// A list of mime types the new clipboard has content for.
-    pub fn mime_types(&self) -> Vec<String> {
-        self.mime_types.clone().unwrap_or_default()
+    pub fn mime_types(&self) -> &[String] {
+        &self.mime_types
     }
 }
 

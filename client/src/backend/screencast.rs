@@ -5,6 +5,7 @@ use std::{
 
 use async_trait::async_trait;
 use enumflags2::BitFlags;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     AppID, PortalError, WindowIdentifierType,
@@ -19,21 +20,27 @@ use crate::{
         screencast::{CursorMode, SourceType, Stream},
     },
     zvariant::{
-        DeserializeDict, Optional, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
+        Optional, OwnedObjectPath, OwnedValue, Type, Value,
+        as_value::{self, optional},
     },
 };
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct CreateSessionOptions {}
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct SelectSourcesOptions {
+    #[serde(default, with = "optional")]
     types: Option<BitFlags<SourceType>>,
+    #[serde(default, with = "optional")]
     multiple: Option<bool>,
+    #[serde(default, with = "optional")]
     cursor_mode: Option<CursorMode>,
+    #[serde(default, with = "optional")]
     restore_data: Option<(String, u32, OwnedValue)>,
+    #[serde(default, with = "optional")]
     persist_mode: Option<PersistMode>,
 }
 
@@ -62,18 +69,20 @@ impl SelectSourcesOptions {
     }
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct SelectSourcesResponse {}
 
-#[derive(DeserializeDict, Type, Debug)]
+#[derive(Deserialize, Type, Debug)]
 #[zvariant(signature = "dict")]
 pub struct StartCastOptions {}
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct StartCastResponse {
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
     streams: Vec<Stream>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     restore_data: Option<(String, u32, OwnedValue)>,
 }
 

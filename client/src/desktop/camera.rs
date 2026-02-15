@@ -33,14 +33,16 @@
 
 use std::{collections::HashMap, os::fd::OwnedFd};
 
-use zbus::zvariant::{self, SerializeDict, Type, Value};
+use serde::Serialize;
+use zbus::zvariant::{self, Type, Value, as_value};
 
 use super::{HandleToken, Request};
 use crate::{Error, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct CameraAccessOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 

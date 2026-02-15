@@ -27,9 +27,12 @@
 use std::fmt::Debug;
 
 use futures_util::Stream;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
-use zbus::zvariant::{DeserializeDict, ObjectPath, Optional, OwnedObjectPath, SerializeDict, Type};
+use zbus::zvariant::{
+    ObjectPath, Optional, OwnedObjectPath, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{Error, WindowIdentifier, proxy::Proxy};
@@ -61,27 +64,38 @@ pub enum Accuracy {
     Exact = 5,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::create_session`] request.
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
     /// A string that will be used as the last element of the session handle.
+    #[serde(with = "as_value")]
     session_handle_token: HandleToken,
     /// Distance threshold in meters. Default is 0.
-    #[zvariant(rename = "distance-threshold")]
+    #[serde(
+        rename = "distance-threshold",
+        with = "optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     distance_threshold: Option<u32>,
     /// Time threshold in seconds. Default is 0.
-    #[zvariant(rename = "time-threshold")]
+    #[serde(
+        rename = "time-threshold",
+        with = "optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     time_threshold: Option<u32>,
     /// Requested accuracy. Default is `Accuracy::Exact`.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     accuracy: Option<Accuracy>,
 }
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::start`] request.
 #[zvariant(signature = "dict")]
 struct SessionStartOptions {
     /// A string that will be used as the last element of the handle.
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
@@ -168,24 +182,25 @@ impl Debug for Location {
     }
 }
 
-#[derive(Debug, SerializeDict, DeserializeDict, Type)]
+#[derive(Debug, Serialize, Deserialize, Type)]
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "PascalCase")]
 struct LocationInner {
-    #[zvariant(rename = "Accuracy")]
+    #[serde(with = "as_value")]
     accuracy: f64,
-    #[zvariant(rename = "Altitude")]
+    #[serde(with = "as_value")]
     altitude: f64,
-    #[zvariant(rename = "Speed")]
+    #[serde(with = "as_value")]
     speed: f64,
-    #[zvariant(rename = "Heading")]
+    #[serde(with = "as_value")]
     heading: f64,
-    #[zvariant(rename = "Description")]
+    #[serde(with = "as_value")]
     description: String,
-    #[zvariant(rename = "Latitude")]
+    #[serde(with = "as_value")]
     latitude: f64,
-    #[zvariant(rename = "Longitude")]
+    #[serde(with = "as_value")]
     longitude: f64,
-    #[zvariant(rename = "Timestamp")]
+    #[serde(with = "as_value")]
     timestamp: (u64, u64),
 }
 

@@ -33,7 +33,8 @@ use std::collections::HashMap;
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
-    DeserializeDict, ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
+    ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, Type, Value,
+    as_value::{self, optional},
 };
 
 use crate::{
@@ -42,10 +43,12 @@ use crate::{
     proxy::Proxy,
 };
 
-#[derive(Debug, SerializeDict, Type, Default)]
+#[derive(Debug, Serialize, Type, Default)]
 #[zvariant(signature = "dict")]
 struct CreateSessionOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "as_value")]
     session_handle_token: HandleToken,
 }
 
@@ -88,23 +91,32 @@ impl std::fmt::Display for DeviceID {
 }
 
 /// Options for the USB portal.
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct UsbEnumerateOptions {}
 
 /// USB device description
-#[derive(SerializeDict, DeserializeDict, Clone, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct UsbDevice {
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     parent: Option<DeviceID>,
     /// Device can be opened for reading. Default is false.
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     readable: Option<bool>,
     /// Device can be opened for writing. Default is false.
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     writable: Option<bool>,
     /// The device node for the USB.
-    #[zvariant(rename = "device-file")]
+    #[serde(
+        default,
+        rename = "device-file",
+        with = "optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     device_file: Option<String>,
     /// Device properties
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     properties: Option<HashMap<String, OwnedValue>>,
 }
 
@@ -189,9 +201,10 @@ impl From<AcquiredDevice> for Result<OwnedFd, UsbError> {
 }
 
 /// Device to acquire.
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct AcquireDevice {
+    #[serde(with = "as_value")]
     writable: bool,
 }
 
@@ -217,18 +230,22 @@ impl Device {
 }
 
 /// Option for AcquireDevice call.
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct AcquireOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
 /// Finished device acquired.
-#[derive(DeserializeDict, Type, Debug, Default)]
+#[derive(Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct AcquiredDevice {
+    #[serde(with = "as_value")]
     success: bool,
+    #[serde(default, with = "optional")]
     fd: Option<OwnedFd>,
+    #[serde(default, with = "optional")]
     error: Option<String>,
 }
 

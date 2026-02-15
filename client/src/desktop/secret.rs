@@ -23,18 +23,24 @@ use std::{
     os::{fd::AsFd, unix::net::UnixStream},
 };
 
-use zbus::zvariant::{Fd, SerializeDict, Type};
+use serde::Serialize;
+use zbus::zvariant::{
+    Fd, Type,
+    as_value::{self, optional},
+};
 
 use super::{HandleToken, Request};
 use crate::{Error, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.
 #[zvariant(signature = "dict")]
 struct RetrieveOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// A string returned by a previous call to `retrieve`.
     /// TODO: seems to not be used by the portal...
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     token: Option<String>,
 }
 

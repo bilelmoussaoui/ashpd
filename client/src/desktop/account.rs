@@ -22,24 +22,33 @@
 //! }
 //! ```
 
-use zbus::zvariant::{DeserializeDict, Optional, SerializeDict, Type};
+use serde::{Deserialize, Serialize};
+use zbus::zvariant::{
+    Optional, Type,
+    as_value::{self, optional},
+};
 
 use super::HandleToken;
 use crate::{Error, Uri, WindowIdentifier, desktop::request::Request, proxy::Proxy};
 
-#[derive(SerializeDict, Type, Debug, Default)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 struct UserInformationOptions {
+    #[serde(with = "as_value")]
     handle_token: HandleToken,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
 }
 
-#[derive(Debug, DeserializeDict, SerializeDict, Type)]
+#[derive(Debug, Serialize, Deserialize, Type)]
 /// The response of a [`UserInformationRequest`] request.
 #[zvariant(signature = "dict")]
 pub struct UserInformation {
+    #[serde(with = "as_value")]
     id: String,
+    #[serde(with = "as_value")]
     name: String,
+    #[serde(with = "as_value")]
     image: Uri,
 }
 

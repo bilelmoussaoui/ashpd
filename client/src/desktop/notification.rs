@@ -54,7 +54,10 @@ use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use futures_util::Stream;
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{DeserializeDict, OwnedValue, SerializeDict, Type, Value};
+use zbus::zvariant::{
+    OwnedValue, Type, Value,
+    as_value::{self, optional},
+};
 
 use super::Icon;
 use crate::{Error, proxy::Proxy};
@@ -268,32 +271,40 @@ impl Serialize for DisplayHint {
     }
 }
 
-#[derive(SerializeDict, Type, Debug)]
+#[derive(Serialize, Type, Debug)]
 /// A notification
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "kebab-case")]
 pub struct Notification {
     /// User-visible string to display as the title.
+    #[serde(with = "as_value")]
     title: String,
     /// User-visible string to display as the body.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     body: Option<String>,
-    #[zvariant(rename = "markup-body")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     markup_body: Option<String>,
     /// Serialized icon (e.g using gio::Icon::serialize).
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     icon: Option<Icon>,
     /// The priority for the notification.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     priority: Option<Priority>,
     /// Name of an action that is exported by the application.
     /// This action will be activated when the user clicks on the notification.
-    #[zvariant(rename = "default-action")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     default_action: Option<String>,
     /// Target parameter to send along when activating the default action.
-    #[zvariant(rename = "default-action-target")]
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     default_action_target: Option<OwnedValue>,
     /// Array of buttons to add to the notification.
-    buttons: Option<Vec<Button>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    buttons: Vec<Button>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     category: Option<Category>,
-    #[zvariant(rename = "display-hint")]
-    display_hints: Option<Vec<DisplayHint>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    display_hint: Vec<DisplayHint>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     sound: Option<OwnedValue>,
 }
 
@@ -312,9 +323,9 @@ impl Notification {
             icon: None,
             default_action: None,
             default_action_target: None,
-            buttons: None,
+            buttons: Vec::new(),
             category: None,
-            display_hints: None,
+            display_hint: Vec::new(),
             sound: None,
         }
     }
@@ -364,7 +375,7 @@ impl Notification {
     #[must_use]
     /// Sets the notification display hints.
     pub fn display_hint(mut self, hints: impl IntoIterator<Item = DisplayHint>) -> Self {
-        self.display_hints = Some(hints.into_iter().collect());
+        self.display_hint = hints.into_iter().collect();
         self
     }
 
@@ -397,12 +408,7 @@ impl Notification {
     /// Adds a new button to the notification.
     #[must_use]
     pub fn button(mut self, button: Button) -> Self {
-        match self.buttons {
-            Some(ref mut buttons) => buttons.push(button),
-            None => {
-                self.buttons.replace(vec![button]);
-            }
-        };
+        self.buttons.push(button);
         self
     }
 }
@@ -484,17 +490,21 @@ impl<'de> Deserialize<'de> for ButtonPurpose {
     }
 }
 
-#[derive(SerializeDict, Type, Debug)]
+#[derive(Serialize, Type, Debug)]
 /// A notification button
 #[zvariant(signature = "dict")]
 pub struct Button {
     /// User-visible label for the button. Mandatory.
+    #[serde(with = "as_value")]
     label: String,
     /// Name of an action that is exported by the application. The action will
     /// be activated when the user clicks on the button.
+    #[serde(with = "as_value")]
     action: String,
     /// Target parameter to send along when activating the action.
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     target: Option<OwnedValue>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     purpose: Option<ButtonPurpose>,
 }
 
@@ -551,12 +561,14 @@ impl Action {
     }
 }
 
-#[derive(DeserializeDict, Type, Debug, OwnedValue)]
+#[derive(Deserialize, Type, Debug, OwnedValue)]
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "kebab-case")]
 // TODO: figure out why this can't use the enums
 struct SupportedOptions {
+    #[serde(default, with = "as_value")]
     category: Vec<String>,
-    #[zvariant(rename = "button-purpose")]
+    #[serde(default, with = "as_value")]
     button_purpose: Vec<String>,
 }
 
