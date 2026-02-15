@@ -108,6 +108,13 @@ impl UsbDevice {
                 .get("ID_MODEL_FROM_DATABASE")
                 .or_else(|| properties.get("ID_MODEL_ENC"))
                 .and_then(|v| v.downcast_ref::<String>().ok())
+                .map(|model| {
+                    model
+                        .replace("\\x20", " ") // Unescape the literal \x20 to space
+                        .split_whitespace()
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                })
         })
     }
 
