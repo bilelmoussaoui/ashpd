@@ -400,7 +400,7 @@ pub struct SaveFilesOptions {
     accept_label: Option<String>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<Choice>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
