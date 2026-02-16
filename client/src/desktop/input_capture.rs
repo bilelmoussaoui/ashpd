@@ -229,14 +229,14 @@
 //!             let ei_event = event_stream.next().await.unwrap().unwrap();
 //!             eprintln!("ei event: {ei_event:?}");
 //!             if let EiEvent::SeatAdded(seat_event) = &ei_event {
-//!                 seat_event.seat.bind_capabilities(&[
-//!                     DeviceCapability::Pointer,
-//!                     DeviceCapability::PointerAbsolute,
-//!                     DeviceCapability::Keyboard,
-//!                     DeviceCapability::Touch,
-//!                     DeviceCapability::Scroll,
-//!                     DeviceCapability::Button,
-//!                 ]);
+//!                 seat_event.seat.bind_capabilities(
+//!                     DeviceCapability::Pointer |
+//!                     DeviceCapability::PointerAbsolute |
+//!                     DeviceCapability::Keyboard |
+//!                     DeviceCapability::Touch |
+//!                     DeviceCapability::Scroll |
+//!                     DeviceCapability::Button
+//!                 );
 //!                 context.flush().unwrap();
 //!             }
 //!             if let EiEvent::DeviceAdded(_) = ei_event {
