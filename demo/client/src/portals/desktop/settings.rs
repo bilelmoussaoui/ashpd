@@ -117,17 +117,18 @@ impl SettingsPage {
             .set_rgba(gdk::RGBA::from(accent_color));
         imp.contrast_label.set_text(&format_contrast(contrast));
 
-        // Display all settings
+        // Display all settings grouped by namespace
         for (namespace, settings_map) in all_settings {
             // Skip appearance namespace as we handle those with dedicated getters
             if namespace == APPEARANCE_NAMESPACE {
                 continue;
             }
 
+            // Create a preference group for this namespace
+            let group = adw::PreferencesGroup::builder().title(&namespace).build();
+
             for (key, value) in settings_map {
-                let row = adw::ActionRow::builder()
-                    .title(format!("{}.{}", namespace, key))
-                    .build();
+                let row = adw::ActionRow::builder().title(&key).build();
 
                 let formatted_value = format_value(&value);
 
@@ -136,15 +137,16 @@ impl SettingsPage {
                     .halign(gtk::Align::Start)
                     .valign(gtk::Align::Center)
                     .selectable(true)
-                    .wrap(true)
-                    .max_width_chars(50)
+                    .ellipsize(gtk::pango::EllipsizeMode::End)
                     .xalign(0.0)
                     .build();
                 value_label.add_css_class("dim-label");
                 row.add_suffix(&value_label);
 
-                imp.all_settings_group.add(&row);
+                group.add(&row);
             }
+
+            imp.all_settings_group.add(&group);
         }
 
         imp.settings.replace(Some(settings));
@@ -185,9 +187,48 @@ fn format_value(value: &ashpd::zvariant::OwnedValue) -> String {
             Value::Signature(v) => v.to_string(),
             Value::ObjectPath(v) => v.to_string(),
             Value::Value(v) => format_value(&v.try_to_owned().unwrap_or_else(|_| value.clone())),
-            Value::Array(_) | Value::Dict(_) | Value::Structure(_) | Value::Fd(_) => {
-                format!("{:?}", inner)
+            Value::Array(arr) => {
+                let len = arr.len();
+                if len == 0 {
+                    "[]".to_string()
+                } else {
+                    let items: Vec<String> = arr
+                        .iter()
+                        .map(|v| format_value(&v.try_to_owned().unwrap()))
+                        .collect();
+                    format!("[{}]", items.join(", "))
+                }
             }
+            Value::Dict(dict) => {
+                let entries: Vec<String> = dict
+                    .iter()
+                    .map(|(k, v)| {
+                        format!(
+                            "{}: {}",
+                            format_value(&k.try_to_owned().unwrap()),
+                            format_value(&v.try_to_owned().unwrap())
+                        )
+                    })
+                    .collect();
+                if entries.is_empty() {
+                    "{}".to_string()
+                } else {
+                    format!("{{{}}}", entries.join(", "))
+                }
+            }
+            Value::Structure(s) => {
+                let fields = s.fields();
+                if fields.is_empty() {
+                    "()".to_string()
+                } else {
+                    let formatted: Vec<String> = fields
+                        .iter()
+                        .map(|v| format_value(&v.try_to_owned().unwrap()))
+                        .collect();
+                    format!("({})", formatted.join(", "))
+                }
+            }
+            Value::Fd(_) => "<file descriptor>".to_string(),
         }
     } else {
         // Fall back to debug representation
