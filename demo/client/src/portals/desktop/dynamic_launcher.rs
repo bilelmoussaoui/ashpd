@@ -345,16 +345,19 @@ impl DynamicLauncherPage {
     async fn load_cache(&self) -> Result<(), glib::Error> {
         let imp = self.imp();
         let file = gio::File::for_path(Self::cache_file());
-        let (buffer, _) = file.load_contents_future().await?;
-        let lines = std::str::from_utf8(&buffer).expect("Valid utf8").lines();
-        for desktop_id in lines {
-            if desktop_id.is_empty() || !desktop_id.starts_with(config::APP_ID) {
-                continue;
+        let has_items = if let Ok((buffer, _)) = file.load_contents_future().await {
+            let lines = std::str::from_utf8(&buffer).expect("Valid utf8").lines();
+            for desktop_id in lines {
+                if desktop_id.is_empty() || !desktop_id.starts_with(config::APP_ID) {
+                    continue;
+                }
+                imp.installed_apps_cache.append(desktop_id);
             }
-            imp.installed_apps_cache.append(desktop_id);
-        }
 
-        let has_items = imp.installed_apps_cache.n_items() != 0;
+            imp.installed_apps_cache.n_items() != 0
+        } else {
+            false
+        };
         imp.installed_apps.set_visible(has_items);
         imp.installed_apps_label.set_visible(has_items);
         Ok(())
