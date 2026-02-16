@@ -81,6 +81,12 @@ impl From<String> for DeviceID {
     }
 }
 
+impl std::fmt::Display for DeviceID {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 /// Options for the USB portal.
 #[derive(SerializeDict, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
