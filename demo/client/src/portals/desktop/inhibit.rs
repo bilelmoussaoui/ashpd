@@ -68,7 +68,22 @@ mod imp {
             self.obj().action_set_enabled("inhibit.stop", false);
         }
     }
-    impl WidgetImpl for InhibitPage {}
+    impl WidgetImpl for InhibitPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { InhibitProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for InhibitPage {}
     impl PortalPageImpl for InhibitPage {}
 }

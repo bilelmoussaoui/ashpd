@@ -4,11 +4,16 @@ use gtk::{glib, prelude::*};
 use super::{Notification, NotificationKind};
 
 mod imp {
+    use std::cell::Cell;
+
     use super::*;
 
-    #[derive(Debug, gtk::CompositeTemplate, Default)]
+    #[derive(Debug, gtk::CompositeTemplate, glib::Properties, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/portal_page.ui")]
+    #[properties(wrapper_type = super::PortalPage)]
     pub struct PortalPage {
+        #[property(get, set)]
+        portal_version: Cell<u32>,
         #[template_child]
         pub notification: TemplateChild<Notification>,
         #[template_child]
@@ -31,6 +36,8 @@ mod imp {
             obj.init_template();
         }
     }
+
+    #[glib::derived_properties]
     impl ObjectImpl for PortalPage {}
     impl WidgetImpl for PortalPage {
         fn unmap(&self) {

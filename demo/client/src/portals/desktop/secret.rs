@@ -10,6 +10,8 @@ use crate::{
 };
 
 mod imp {
+    use ashpd::desktop::secret::Secret;
+
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -41,7 +43,22 @@ mod imp {
         }
     }
     impl ObjectImpl for SecretPage {}
-    impl WidgetImpl for SecretPage {}
+    impl WidgetImpl for SecretPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { Secret::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for SecretPage {}
     impl PortalPageImpl for SecretPage {}
 }

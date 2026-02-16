@@ -15,6 +15,8 @@ use crate::{
 mod imp {
     use std::cell::RefCell;
 
+    use ashpd::desktop::camera::Camera;
+
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -76,6 +78,16 @@ mod imp {
 
                         widget.action_set_enabled("camera.start", false);
                         widget.action_set_enabled("camera.stop", false);
+                    }
+                }
+            ));
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                widget,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { Camera::new().await }).await {
+                        widget.set_property("portal-version", proxy.version());
                     }
                 }
             ));

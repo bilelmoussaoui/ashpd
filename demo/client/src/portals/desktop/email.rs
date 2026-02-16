@@ -1,7 +1,10 @@
 use std::{fs::File, os::fd::OwnedFd};
 
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::{ActivationToken, WindowIdentifier, desktop::email::EmailRequest};
+use ashpd::{
+    ActivationToken, WindowIdentifier,
+    desktop::email::{EmailProxy, EmailRequest},
+};
 use gtk::{
     gio,
     glib::{self, clone},
@@ -114,7 +117,22 @@ mod imp {
             ));
         }
     }
-    impl WidgetImpl for EmailPage {}
+    impl WidgetImpl for EmailPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { EmailProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for EmailPage {}
     impl PortalPageImpl for EmailPage {}
 }

@@ -1,5 +1,8 @@
 use adw::{prelude::*, subclass::prelude::*};
-use ashpd::{WindowIdentifier, desktop::wallpaper};
+use ashpd::{
+    WindowIdentifier,
+    desktop::wallpaper::{self, WallpaperProxy},
+};
 use gtk::{gio, glib};
 
 use crate::{
@@ -38,7 +41,22 @@ mod imp {
         }
     }
     impl ObjectImpl for WallpaperPage {}
-    impl WidgetImpl for WallpaperPage {}
+    impl WidgetImpl for WallpaperPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { WallpaperProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for WallpaperPage {}
     impl PortalPageImpl for WallpaperPage {}
 }

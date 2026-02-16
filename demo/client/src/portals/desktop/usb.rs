@@ -277,6 +277,8 @@ mod imp {
 
     impl WidgetImpl for UsbPage {
         fn map(&self) {
+            let obj = self.obj();
+
             glib::spawn_future_local(clone!(
                 #[weak(rename_to = widget)]
                 self,
@@ -291,6 +293,16 @@ mod imp {
                     } else {
                         widget.obj().action_set_enabled("usb.start_session", true);
                         widget.obj().action_set_enabled("usb.stop_session", false);
+                    }
+                }
+            ));
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { UsbProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
                     }
                 }
             ));

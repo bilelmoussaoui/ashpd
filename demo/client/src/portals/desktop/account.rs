@@ -1,5 +1,8 @@
 use adw::subclass::prelude::*;
-use ashpd::{WindowIdentifier, desktop::account::UserInformation};
+use ashpd::{
+    WindowIdentifier,
+    desktop::account::{AccountProxy, UserInformation},
+};
 use gtk::{gdk, glib, prelude::*};
 
 use crate::{
@@ -43,7 +46,22 @@ mod imp {
         }
     }
     impl ObjectImpl for AccountPage {}
-    impl WidgetImpl for AccountPage {}
+    impl WidgetImpl for AccountPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { AccountProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for AccountPage {}
     impl PortalPageImpl for AccountPage {}
 }

@@ -40,7 +40,22 @@ mod imp {
         }
     }
     impl ObjectImpl for ProxyResolverPage {}
-    impl WidgetImpl for ProxyResolverPage {}
+    impl WidgetImpl for ProxyResolverPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { ProxyResolver::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for ProxyResolverPage {}
     impl PortalPageImpl for ProxyResolverPage {}
 }

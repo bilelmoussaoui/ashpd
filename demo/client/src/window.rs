@@ -13,15 +13,18 @@ use crate::{
             ScreenCastPage, ScreenshotPage, SecretPage, SettingsPage, UsbPage, WallpaperPage,
         },
     },
+    widgets::PortalPage,
 };
 
 mod imp {
+    use std::cell::RefCell;
 
     use super::*;
 
-    #[derive(Debug, Default, gtk::CompositeTemplate)]
+    #[derive(Debug, gtk::CompositeTemplate, Default)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/window.ui")]
     pub struct ApplicationWindow {
+        pub(super) version_binding: RefCell<Option<glib::Binding>>,
         #[template_child]
         pub account: TemplateChild<AccountPage>,
         #[template_child]
@@ -117,6 +120,45 @@ mod imp {
 
             self.stack.set_visible_child_name("welcome");
             obj.load_window_state();
+
+            // Update window title and subtitle when page changes
+            self.stack.connect_visible_child_notify(glib::clone!(
+                #[weak(rename_to = window_title)]
+                self.window_title,
+                #[weak(rename_to = window)]
+                self,
+                move |stack| {
+                    if let Some(page) = stack.visible_child() {
+                        let stack_page = stack.page(&page);
+                        if let Some(title) = stack_page.title() {
+                            window_title.set_title(&title);
+                        }
+
+                        // Unbind previous version binding if it exists
+                        if let Some(binding) = window.version_binding.borrow_mut().take() {
+                            binding.unbind();
+                        }
+
+                        // Bind portal version to subtitle
+                        if let Some(portal_page) = page.downcast_ref::<PortalPage>() {
+                            let binding = portal_page
+                                .bind_property("portal-version", &window_title, "subtitle")
+                                .transform_to(|_, version: u32| {
+                                    if version == 0 {
+                                        None
+                                    } else {
+                                        Some(format!("Version {version}"))
+                                    }
+                                })
+                                .sync_create()
+                                .build();
+                            window.version_binding.replace(Some(binding));
+                        } else {
+                            window_title.set_subtitle("");
+                        }
+                    }
+                }
+            ));
         }
     }
 

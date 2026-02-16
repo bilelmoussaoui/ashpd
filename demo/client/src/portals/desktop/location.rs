@@ -127,7 +127,22 @@ mod imp {
             ));
         }
     }
-    impl WidgetImpl for LocationPage {}
+    impl WidgetImpl for LocationPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { LocationProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for LocationPage {}
     impl PortalPageImpl for LocationPage {}
 }

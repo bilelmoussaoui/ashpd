@@ -117,6 +117,16 @@ mod imp {
                     }
                 }
             ));
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                widget,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { RemoteDesktop::new().await }).await {
+                        widget.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
             self.parent_map();
         }
     }

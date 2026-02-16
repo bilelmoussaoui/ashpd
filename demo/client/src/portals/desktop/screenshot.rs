@@ -1,5 +1,8 @@
 use adw::subclass::prelude::*;
-use ashpd::{WindowIdentifier, desktop::screenshot};
+use ashpd::{
+    WindowIdentifier,
+    desktop::screenshot::{self, ScreenshotProxy},
+};
 use gtk::{gdk, gio, glib, prelude::*};
 
 use crate::{
@@ -52,7 +55,22 @@ mod imp {
             self.screenshot_photo.set_overflow(gtk::Overflow::Hidden);
         }
     }
-    impl WidgetImpl for ScreenshotPage {}
+    impl WidgetImpl for ScreenshotPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { ScreenshotProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for ScreenshotPage {}
     impl PortalPageImpl for ScreenshotPage {}
 }

@@ -46,7 +46,26 @@ mod imp {
         }
     }
     impl ObjectImpl for BackgroundPage {}
-    impl WidgetImpl for BackgroundPage {}
+    impl WidgetImpl for BackgroundPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async {
+                        ashpd::desktop::background::BackgroundProxy::new().await
+                    })
+                    .await
+                    {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for BackgroundPage {}
     impl PortalPageImpl for BackgroundPage {}
 }

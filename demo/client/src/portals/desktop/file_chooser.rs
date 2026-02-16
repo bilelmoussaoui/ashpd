@@ -2,7 +2,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     WindowIdentifier,
     desktop::file_chooser::{
-        Choice, FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest,
+        Choice, FileChooserProxy, FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest,
     },
 };
 use gtk::glib;
@@ -322,7 +322,22 @@ mod imp {
         }
     }
     impl ObjectImpl for FileChooserPage {}
-    impl WidgetImpl for FileChooserPage {}
+    impl WidgetImpl for FileChooserPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { FileChooserProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for FileChooserPage {}
     impl PortalPageImpl for FileChooserPage {}
 }

@@ -42,7 +42,24 @@ mod imp {
         }
     }
     impl ObjectImpl for OpenUriPage {}
-    impl WidgetImpl for OpenUriPage {}
+    impl WidgetImpl for OpenUriPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) =
+                        spawn_tokio(async { open_uri::OpenURIProxy::new().await }).await
+                    {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for OpenUriPage {}
     impl PortalPageImpl for OpenUriPage {}
 }

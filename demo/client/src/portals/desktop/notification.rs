@@ -100,7 +100,22 @@ mod imp {
         }
     }
     impl ObjectImpl for NotificationPage {}
-    impl WidgetImpl for NotificationPage {}
+    impl WidgetImpl for NotificationPage {
+        fn map(&self) {
+            self.parent_map();
+            let obj = self.obj();
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                obj,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { NotificationProxy::new().await }).await {
+                        obj.set_property("portal-version", proxy.version());
+                    }
+                }
+            ));
+        }
+    }
     impl BinImpl for NotificationPage {}
     impl PortalPageImpl for NotificationPage {}
 }

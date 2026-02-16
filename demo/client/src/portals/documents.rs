@@ -1,4 +1,4 @@
-use adw::subclass::prelude::*;
+use adw::{prelude::*, subclass::prelude::*};
 use ashpd::documents::Documents;
 use gtk::glib::{self, clone};
 
@@ -40,6 +40,16 @@ mod imp {
                 async move {
                     if let Err(err) = widget.refresh().await {
                         tracing::error!("Failed to call a method on Documents portal{}", err);
+                    }
+                }
+            ));
+
+            glib::spawn_future_local(glib::clone!(
+                #[weak]
+                widget,
+                async move {
+                    if let Ok(proxy) = spawn_tokio(async { Documents::new().await }).await {
+                        widget.set_property("portal-version", proxy.version());
                     }
                 }
             ));
