@@ -114,7 +114,7 @@ impl NetworkMonitorPage {
         imp.network_available
             .set_label(if status.is_available() { "Yes" } else { "No" });
         imp.metered
-            .set_label(&if status.is_metered() { "Yes" } else { "No" });
+            .set_label(if status.is_metered() { "Yes" } else { "No" });
 
         Ok(())
     }
