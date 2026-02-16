@@ -62,6 +62,11 @@ impl Clipboard {
         ))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// # Specifications
     ///
     /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-requestclipboard).

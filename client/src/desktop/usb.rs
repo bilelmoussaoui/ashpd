@@ -320,6 +320,11 @@ impl UsbProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Create a USB session.
     ///
     /// While this session is active, the caller will receive

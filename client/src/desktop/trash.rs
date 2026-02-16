@@ -75,6 +75,11 @@ impl TrashProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Sends a file to the trashcan.
     /// Applications are allowed to trash a file if they can open it in
     /// read/write mode.

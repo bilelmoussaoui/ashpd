@@ -98,6 +98,11 @@ impl FileTransfer {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Adds files to a session. This method can be called multiple times on a
     /// given session. **Note** only regular files (not directories) can be
     /// added.

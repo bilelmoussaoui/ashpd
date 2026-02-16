@@ -274,7 +274,7 @@ use futures_util::Stream;
 use serde::{Deserialize, Serialize, de::Visitor};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    self, ObjectPath, OwnedObjectPath, OwnedValue, Optional, Type, Value,
+    self, ObjectPath, Optional, OwnedObjectPath, OwnedValue, Type, Value,
     as_value::{self, optional},
 };
 
@@ -595,6 +595,11 @@ impl InputCapture {
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.InputCapture")
                 .await?;
         Ok(Self(proxy))
+    }
+
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
     }
 
     /// Create an input capture session.

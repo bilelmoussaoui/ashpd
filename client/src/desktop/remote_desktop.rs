@@ -250,6 +250,11 @@ impl RemoteDesktop {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Create a remote desktop session.
     /// A remote desktop session is used to allow remote controlling a desktop
     /// session. It can also be used together with a screen cast session.

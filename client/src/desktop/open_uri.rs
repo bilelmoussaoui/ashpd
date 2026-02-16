@@ -118,6 +118,11 @@ impl OpenURIProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Asks to open the directory containing a local file in the file browser.
     ///
     /// # Arguments

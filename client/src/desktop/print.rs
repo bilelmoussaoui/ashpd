@@ -921,7 +921,11 @@ impl PrintProxy {
         Ok(Self(proxy))
     }
 
-    // TODO accept_label: Added in version 2 of the interface.
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Presents a print dialog to the user and returns print settings and page
     /// setup.
     ///
@@ -944,8 +948,22 @@ impl PrintProxy {
         title: &str,
         settings: Settings,
         page_setup: PageSetup,
-        options: PreparePrintOptions,
+        mut options: PreparePrintOptions,
     ) -> Result<Request<PreparePrint>, Error> {
+        let version = self.version();
+
+        // Clear version-specific fields if not supported
+        if version < 2 {
+            options.accept_label = None;
+        }
+        if version < 3 {
+            options.supported_output_file_formats.clear();
+        }
+        if version < 4 {
+            options.has_current_page = None;
+            options.has_selected_pages = None;
+        }
+
         let identifier = Optional::from(identifier);
         self.0
             .request(
@@ -978,8 +996,15 @@ impl PrintProxy {
         identifier: Option<&WindowIdentifier>,
         title: &str,
         fd: &impl AsFd,
-        options: PrintOptions,
+        mut options: PrintOptions,
     ) -> Result<Request<()>, Error> {
+        let version = self.version();
+
+        // Clear version-specific fields if not supported
+        if version < 3 {
+            options.supported_output_file_formats.clear();
+        }
+
         let identifier = Optional::from(identifier);
 
         self.0

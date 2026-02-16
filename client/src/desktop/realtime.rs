@@ -26,6 +26,11 @@ impl Realtime {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     #[doc(alias = "MakeThreadRealtimeWithPID")]
     #[allow(missing_docs)]
     pub async fn max_thread_realtime_with_pid(

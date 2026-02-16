@@ -164,6 +164,11 @@ impl Documents {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Adds a file to the document store.
     /// The file is passed in the form of an open file descriptor
     /// to prove that the caller has access to the file.

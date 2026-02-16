@@ -145,6 +145,11 @@ impl UpdateMonitor {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// A signal received when there's progress during the application update.
     ///
     /// # Specifications

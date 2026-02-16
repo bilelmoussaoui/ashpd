@@ -76,6 +76,11 @@ impl EmailProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Presents a window that lets the user compose an email.
     ///
     /// **Note** the default email client for the host will need to support
@@ -197,7 +202,6 @@ impl EmailRequest {
         self
     }
 
-    // TODO Added in version 4 of the interface.
     /// Sets the token that can be used to activate the chosen application.
     #[must_use]
     pub fn activation_token(
@@ -222,12 +226,18 @@ impl EmailRequest {
     }
 
     /// Send the request.
-    pub async fn send(self) -> Result<Request<()>, Error> {
+    pub async fn send(mut self) -> Result<Request<()>, Error> {
         let proxy = if let Some(connection) = self.connection {
             EmailProxy::with_connection(connection).await?
         } else {
             EmailProxy::new().await?
         };
+
+        // activation_token requires version 4
+        if proxy.version() < 4 {
+            self.options.activation_token = None;
+        }
+
         proxy.compose(self.identifier.as_ref(), self.options).await
     }
 }

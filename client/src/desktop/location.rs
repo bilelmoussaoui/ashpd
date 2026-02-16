@@ -227,6 +227,11 @@ impl LocationProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Signal emitted when the user location is updated.
     ///
     /// # Specifications

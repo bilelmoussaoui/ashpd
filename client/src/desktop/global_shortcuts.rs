@@ -248,6 +248,11 @@ impl GlobalShortcuts {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Create a global shortcuts session.
     ///
     /// # Specifications

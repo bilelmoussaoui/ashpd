@@ -122,6 +122,11 @@ impl BackgroundProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     ///  Sets the status of the application running in background.
     ///
     /// # Arguments

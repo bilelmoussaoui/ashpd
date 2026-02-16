@@ -162,6 +162,11 @@ impl InhibitProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Creates a monitoring session.
     /// While this session is active, the caller will receive `state_changed`
     /// signals with updates on the session state.

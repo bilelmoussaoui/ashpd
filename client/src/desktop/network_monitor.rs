@@ -112,6 +112,11 @@ impl NetworkMonitor {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Returns whether the given hostname is believed to be reachable.
     ///
     /// # Arguments

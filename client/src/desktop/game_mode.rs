@@ -91,6 +91,11 @@ impl GameMode {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Query the GameMode status for a process.
     /// If the caller is running inside a sandbox with pid namespace isolation,
     /// the pid will be translated to the respective host pid.

@@ -609,6 +609,11 @@ impl NotificationProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Signal emitted when a particular action is invoked.
     ///
     /// # Specifications

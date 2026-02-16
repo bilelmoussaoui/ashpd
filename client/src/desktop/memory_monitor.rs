@@ -47,6 +47,11 @@ impl MemoryMonitor {
         Ok(Self(proxy))
     }
 
+    /// Returns the version of the portal interface.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
     /// Signal emitted when a particular low memory situation happens
     /// with 0 being the lowest level of memory availability warning, and 255
     /// being the highest.
