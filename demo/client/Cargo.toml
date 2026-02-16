@@ -16,6 +16,7 @@ ashpd = { path = "../../client", version = "0.13.0-alpha", default-features = fa
     "account",
     "background",
     "camera",
+    "clipboard",
     "dynamic_launcher",
     "email",
     "file_chooser",
