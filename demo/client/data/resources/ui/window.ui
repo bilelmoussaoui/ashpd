@@ -61,6 +61,7 @@
         </property>
         <property name="content">
           <object class="AdwNavigationPage">
+            <property name="title" translatable="yes">ASHPD Demo</property>
             <property name="child">
               <object class="AdwToolbarView">
                 <child type="top">
