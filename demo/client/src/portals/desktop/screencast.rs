@@ -200,7 +200,7 @@ impl ScreenCastPage {
             }
             Err(err) => {
                 tracing::error!("Failed to start screen cast session: {err}");
-                self.error("Failed to start a screen cast session");
+                self.error(&format!("Failed to start a screen cast session: {err}"));
                 self.stop_session().await;
             }
         };

@@ -184,7 +184,7 @@ impl EmailPage {
             }
             Err(err) => {
                 tracing::error!("Failed to compose email: {err}");
-                self.error("Request to compose an email failed");
+                self.error(&format!("Request to compose an email failed: {err}"));
             }
         }
     }

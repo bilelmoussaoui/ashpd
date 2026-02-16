@@ -84,7 +84,7 @@ impl SecretPage {
             }
             Err(err) => {
                 tracing::error!("Failed to retrieve secret: {err}");
-                self.error("Failed to retrieve secret");
+                self.error(&format!("Failed to retrieve secret: {err}"));
             }
         }
     }

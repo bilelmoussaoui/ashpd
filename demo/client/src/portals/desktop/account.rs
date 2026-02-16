@@ -112,7 +112,7 @@ impl AccountPage {
             }
             Err(err) => {
                 tracing::error!("Failed to retrieve user information: {err}");
-                self.error("Request to fetch user information failed");
+                self.error(&format!("Request to fetch user information failed: {err}"));
             }
         };
     }

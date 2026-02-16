@@ -101,7 +101,7 @@ impl ScreenshotPage {
             }
             Err(err) => {
                 tracing::error!("Failed to pick color: {err}");
-                self.error("Request to pick a color failed");
+                self.error(&format!("Request to pick a color failed: {err}"));
             }
         }
     }
@@ -138,7 +138,7 @@ impl ScreenshotPage {
             }
             Err(err) => {
                 tracing::error!("Failed to take a screenshot {err}");
-                self.error("Request to take a screenshot failed");
+                self.error(&format!("Request to take a screenshot failed: {err}"));
             }
         }
     }

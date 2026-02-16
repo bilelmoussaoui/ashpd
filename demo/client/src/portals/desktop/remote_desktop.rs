@@ -220,7 +220,7 @@ impl RemoteDesktopPage {
             }
             Err(err) => {
                 tracing::error!("Failed to start remote desktop session: {err}");
-                self.error("Failed to start a remote desktop session");
+                self.error(&format!("Failed to start a remote desktop session: {err}"));
                 self.stop_session().await;
             }
         };

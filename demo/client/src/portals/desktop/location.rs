@@ -216,7 +216,7 @@ impl LocationPage {
                 tracing::error!("Failed to locate: {err}");
                 self.action_set_enabled("location.stop", false);
                 self.action_set_enabled("location.start", true);
-                self.error("Failed to locate");
+                self.error(&format!("Failed to locate: {err}"));
             }
         }
     }

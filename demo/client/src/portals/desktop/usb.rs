@@ -146,7 +146,7 @@ mod imp {
                 if let Ok(fd) = &device.1 {
                     match Self::usb_describe_device(fd) {
                         Ok(describe) => self.obj().info(&describe),
-                        Err(err) => self.obj().info(&err.to_string()),
+                        Err(err) => self.obj().error(&err.to_string()),
                     }
                 }
                 if let Some(row) = self.rows.borrow().get(&device.0) {

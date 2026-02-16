@@ -97,7 +97,7 @@ impl WallpaperPage {
             Ok(uri) => uri,
             Err(err) => {
                 tracing::error!("Failed to open a file: {err}");
-                self.error("Failed to open a file");
+                self.error(&format!("Failed to open a file: {err}"));
                 return;
             }
         };
@@ -123,7 +123,7 @@ impl WallpaperPage {
         match response {
             Err(err) => {
                 tracing::error!("Failed to set wallpaper: {err}");
-                self.error("Request to set a wallpaper failed");
+                self.error(&format!("Request to set a wallpaper failed: {err}"));
             }
             Ok(_) => self.success("Set a wallpaper request was successful"),
         }

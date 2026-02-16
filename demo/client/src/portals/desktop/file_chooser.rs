@@ -493,7 +493,7 @@ impl FileChooserPage {
             }
             Err(err) => {
                 tracing::error!("Failed to open a file: {err}");
-                self.error("Request to open a file failed");
+                self.error(&format!("Request to open a file failed: {err}"));
             }
         }
     }
@@ -544,7 +544,7 @@ impl FileChooserPage {
             }
             Err(err) => {
                 tracing::error!("Failed to save a file: {err}");
-                self.error("Request to save a file failed");
+                self.error(&format!("Request to save a file failed: {err}"));
             }
         }
         Ok(())
@@ -590,7 +590,7 @@ impl FileChooserPage {
             }
             Err(err) => {
                 tracing::error!("Failed to save files: {err}");
-                self.error("Request to save files failed");
+                self.error(&format!("Request to save files failed: {err}"));
             }
         }
         Ok(())

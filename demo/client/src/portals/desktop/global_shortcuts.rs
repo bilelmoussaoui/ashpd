@@ -63,6 +63,7 @@ mod imp {
                 |page, _, _| async move {
                     if let Err(err) = page.start_session().await {
                         tracing::error!("Failed to request {}", err);
+                        page.error(&format!("Failed to request: {err}"));
                     }
                 },
             );

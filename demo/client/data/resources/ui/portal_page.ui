@@ -2,12 +2,23 @@
 <interface>
   <template class="PortalPage" parent="AdwBin">
     <child>
-      <object class="GtkBox" id="container">
-        <property name="hexpand">True</property>
-        <property name="spacing">12</property>
+      <object class="GtkBox">
         <property name="orientation">vertical</property>
         <child>
           <object class="Notification" id="notification" />
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="hscrollbar-policy">never</property>
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkBox" id="container">
+                <property name="hexpand">True</property>
+                <property name="spacing">12</property>
+                <property name="orientation">vertical</property>
+              </object>
+            </child>
+          </object>
         </child>
       </object>
     </child>

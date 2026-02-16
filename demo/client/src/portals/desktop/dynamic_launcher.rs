@@ -214,8 +214,8 @@ mod imp {
                             widget.error("Launcher icon is required");
                         }
                         Err(err) => {
-                            widget.error("Failed to install launcher");
                             tracing::error!("Failed to install launcher {err}");
+                            widget.error(&format!("Failed to install launcher: {err}"));
                         }
                     }
                 },
@@ -233,7 +233,7 @@ mod imp {
                             }
                         }
                         Err(err) => {
-                            widget.error("Failed to uninstall launcher");
+                            widget.error(&format!("Failed to uninstall launcher: {err}"));
                             tracing::error!("Failed to uninstall launcher {err}");
                         }
                     }
@@ -244,8 +244,8 @@ mod imp {
                 None,
                 |widget, _, _| async move {
                     if let Err(err) = widget.select_icon().await {
-                        widget.error("Failed to select launcher icon");
                         tracing::error!("Failed to select launcher icon {err}");
+                        widget.error(&format!("Failed to select launcher icon: {err}"));
                     }
                 },
             );

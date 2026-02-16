@@ -471,7 +471,7 @@ impl PrintPage {
             }
             Err(err) => {
                 tracing::error!("Failed to print {}", err);
-                self.error("Request to print failed");
+                self.error(&format!("Request to print failed: {err}"));
             }
         }
         Ok(())

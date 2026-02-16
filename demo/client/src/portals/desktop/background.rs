@@ -116,7 +116,7 @@ impl BackgroundPage {
             }
             Err(err) => {
                 tracing::error!("Failed to request running in background: {err}");
-                self.error("Request to run in background failed");
+                self.error(&format!("Request to run in background failed: {err}"));
             }
         }
     }

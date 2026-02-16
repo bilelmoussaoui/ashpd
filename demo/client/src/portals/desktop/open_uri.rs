@@ -109,13 +109,13 @@ impl OpenUriPage {
                     }
                     Err(err) => {
                         tracing::error!("Failed to open URI: {err}");
-                        self.error("Request to open URI failed");
+                        self.error(&format!("Request to open URI failed: {err}"));
                     }
                 }
             }
             Err(err) => {
                 tracing::error!("Failed to parse URI: {err}");
-                self.error("Malformed URI");
+                self.error(&format!("Malformed URI: {err}"));
             }
         }
     }

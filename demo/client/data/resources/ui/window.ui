@@ -82,17 +82,11 @@
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="min-content-width">360</property>
-                    <property name="hscrollbar-policy">never</property>
-                    <property name="min-content-height">250</property>
-                    <property name="vexpand">True</property>
-                    <child>
-                      <object class="AdwViewStack" id="stack">
-                        <property name="hexpand">True</property>
-                        <property name="vhomogeneous">False</property>
-                        <property name="hhomogeneous">False</property>
+                <property name="content">
+                  <object class="AdwViewStack" id="stack">
+                    <property name="hexpand">True</property>
+                    <property name="vhomogeneous">False</property>
+                    <property name="hhomogeneous">False</property>
                         <child>
                           <object class="AdwViewStackPage">
                             <property name="name">account</property>
@@ -331,9 +325,7 @@
                           </object>
                         </child>
                       </object>
-                    </child>
-                  </object>
-                </child>
+                </property>
               </object>
             </property>
           </object>

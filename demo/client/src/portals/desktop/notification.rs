@@ -79,6 +79,7 @@ mod imp {
             klass.install_action_async("notification.send", None, |page, _, _| async move {
                 if let Err(err) = page.send().await {
                     tracing::error!("Failed to send a notification {}", err);
+                    page.error(&format!("Failed to send a notification: {err}"));
                 }
             });
             klass.install_action("notification.add_button", None, |page, _, _| {
@@ -90,6 +91,7 @@ mod imp {
                 |page, _, _| async move {
                     if let Err(err) = page.select_sound().await {
                         tracing::error!("Failed to select sound file {err}");
+                        page.error(&format!("Failed to select sound file: {err}"));
                     }
                 },
             );
@@ -336,7 +338,7 @@ impl NotificationPage {
             }
             Err(err) => {
                 tracing::error!("Failed to send a notification: {err}");
-                self.error("Failed to send a notification");
+                self.error(&format!("Failed to send a notification: {err}"));
             }
         }
         Ok(())

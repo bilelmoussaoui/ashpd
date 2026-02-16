@@ -43,6 +43,9 @@ mod imp {
                 |page, _, _| async move {
                     if let Err(err) = page.can_reach().await {
                         tracing::error!("Failed to call can reach on NetworkMonitor {}", err);
+                        page.error(&format!(
+                            "Failed to call can reach on NetworkMonitor: {err}"
+                        ));
                     }
                 },
             );
@@ -62,6 +65,9 @@ mod imp {
                 async move {
                     if let Err(err) = widget.refresh().await {
                         tracing::error!("Failed to call can refresh on NetworkMonitor {}", err);
+                        widget.error(&format!(
+                            "Failed to call can refresh on NetworkMonitor: {err}"
+                        ));
                     }
                 }
             ));
@@ -139,7 +145,7 @@ impl NetworkMonitorPage {
             }
             Err(err) => {
                 tracing::error!("Can reach request failed: {err}");
-                self.error("Request failed");
+                self.error(&format!("Request failed: {err}"));
             }
         }
 

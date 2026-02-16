@@ -31,6 +31,7 @@ mod imp {
             klass.install_action_async("proxy_resolver.resolve", None, |page, _, _| async move {
                 if let Err(err) = page.resolve().await {
                     tracing::error!("Failed to resolve proxy {}", err);
+                    page.error(&format!("Failed to resolve proxy: {err}"));
                 }
             });
         }
@@ -91,13 +92,13 @@ impl ProxyResolverPage {
                     }
                     Err(err) => {
                         tracing::error!("Failed to lookup URI: {err}");
-                        self.error("Request to lookup a URI failed");
+                        self.error(&format!("Request to lookup a URI failed: {err}"));
                     }
                 }
             }
             Err(err) => {
                 tracing::error!("Failed to parse URI: {err}");
-                self.error("Request to lookup a URI failed");
+                self.error(&format!("Request to lookup a URI failed: {err}"));
             }
         };
 
