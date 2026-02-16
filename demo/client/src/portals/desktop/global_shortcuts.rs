@@ -4,7 +4,7 @@ use adw::subclass::prelude::*;
 use ashpd::{
     WindowIdentifier,
     desktop::{
-        ResponseError, Session,
+        Session,
         global_shortcuts::{
             Activated, Deactivated, GlobalShortcuts, NewShortcut, Shortcut, ShortcutsChanged,
         },
@@ -135,30 +135,20 @@ impl GlobalShortcutsPage {
                     let request = global_shortcuts
                         .bind_shortcuts(&session, &shortcuts[..], identifier.as_ref())
                         .await?;
-                    let shortcuts_data = request
-                        .response()
-                        .map(|resp| {
-                            resp.shortcuts()
-                                .iter()
-                                .map(|s: &Shortcut| RegisteredShortcut {
-                                    id: s.id().to_owned(),
-                                    activation: s.trigger_description().to_owned(),
-                                })
-                                .collect::<Vec<_>>()
-                        })
-                        .map_err(|e| match e {
-                            ashpd::Error::Response(ResponseError::Cancelled) => "Cancelled",
-                            ashpd::Error::Response(ResponseError::Other) => "Other response error",
-                            _ => "Unknown error",
-                        });
+                    let shortcuts_data = request.response().map(|resp| {
+                        resp.shortcuts()
+                            .iter()
+                            .map(|s: &Shortcut| RegisteredShortcut {
+                                id: s.id().to_owned(),
+                                activation: s.trigger_description().to_owned(),
+                            })
+                            .collect::<Vec<_>>()
+                    });
                     ashpd::Result::Ok((global_shortcuts, session, shortcuts_data))
                 })
                 .await?;
                 let (global_shortcuts, session, shortcuts_data) = result;
 
-                if let Err(e) = &shortcuts_data {
-                    self.error(e);
-                };
                 imp.activations_group.set_visible(shortcuts_data.is_ok());
                 self.action_set_enabled("global_shortcuts.stop", shortcuts_data.is_ok());
                 self.action_set_enabled("global_shortcuts.start_session", shortcuts_data.is_err());
@@ -225,7 +215,8 @@ impl GlobalShortcutsPage {
                         }
                     }
                     Err(e) => {
-                        tracing::warn!("Failure {:?}", e);
+                        tracing::warn!("Failed to start session {e}");
+                        self.error(&format!("Failed to start session: {e}"));
                     }
                 }
             }

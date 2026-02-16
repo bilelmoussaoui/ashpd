@@ -75,10 +75,15 @@ impl std::error::Error for Error {}
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Response(e) => write!(f, "Portal request didn't succeed: {e}"),
+            Self::Response(e) => match e {
+                ResponseError::Cancelled => write!(f, "Portal request was cancelled"),
+                ResponseError::Other => {
+                    write!(f, "Portal request didn't succeed with no information")
+                }
+            },
             Self::Zbus(e) => write!(f, "ZBus Error: {e}"),
             Self::Portal(e) => write!(f, "Portal request failed: {e}"),
-            Self::NoResponse => f.write_str("Portal error: no response"),
+            Self::NoResponse => f.write_str("Portal request didn't receive a response"),
             Self::IO(e) => write!(f, "IO: {e}"),
             #[cfg(feature = "pipewire")]
             Self::Pipewire(e) => write!(f, "Pipewire: {e}"),
