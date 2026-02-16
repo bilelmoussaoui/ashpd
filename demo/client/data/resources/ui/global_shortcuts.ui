@@ -15,6 +15,7 @@
                 <child>
                   <object class="AdwEntryRow" id="shortcuts">
                     <property name="title" translatable="yes">Shortcuts</property>
+                    <property name="text">screenshot:Take a Screenshot:&lt;Control&gt;&lt;Shift&gt;s,play-pause:Play/Pause Media:&lt;Control&gt;space</property>
                   </object>
                 </child>
               </object>

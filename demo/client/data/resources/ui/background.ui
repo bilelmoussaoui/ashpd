@@ -15,11 +15,13 @@
                 <child>
                   <object class="AdwEntryRow" id="reason_entry">
                     <property name="title" translatable="yes">Reason</property>
+                    <property name="text">To continue syncing your files</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="auto_start_switch">
                     <property name="title" translatable="yes">Auto Start</property>
+                    <property name="active">True</property>
                   </object>
                 </child>
                 <child>
@@ -30,6 +32,7 @@
                 <child>
                   <object class="AdwEntryRow" id="command_entry">
                     <property name="title" translatable="yes">Command</property>
+                    <property name="text">/usr/bin/ashpd-demo</property>
                   </object>
                 </child>
               </object>

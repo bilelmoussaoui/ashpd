@@ -15,16 +15,19 @@
                 <child>
                   <object class="AdwEntryRow" id="id_entry">
                     <property name="title" translatable="yes">ID</property>
+                    <property name="text">test-notification</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="title_entry">
                     <property name="title" translatable="yes">Title</property>
+                    <property name="text">Test Notification</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="body_entry">
                     <property name="title" translatable="yes">Body</property>
+                    <property name="text">This is a test notification from ASHPD Demo</property>
                   </object>
                 </child>
                 <child>
@@ -35,16 +38,19 @@
                 <child>
                   <object class="AdwEntryRow" id="icon_entry">
                     <property name="title" translatable="yes">Icon Name</property>
+                    <property name="text">dialog-information</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="default_action_entry">
                     <property name="title" translatable="yes">Default Action</property>
+                    <property name="text">app.notification-action</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="default_action_target_entry">
                     <property name="title" translatable="yes">Default Action Target</property>
+                    <property name="text">target-value</property>
                   </object>
                 </child>
                 <child>

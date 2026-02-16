@@ -15,6 +15,7 @@
                 <child>
                   <object class="AdwSwitchRow" id="preview_switch">
                     <property name="title" translatable="yes">Show Preview</property>
+                    <property name="active">True</property>
                   </object>
                 </child>
                 <child>

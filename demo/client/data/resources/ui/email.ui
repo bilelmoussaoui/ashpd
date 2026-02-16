@@ -16,18 +16,21 @@
                   <object class="AdwEntryRow" id="subject">
                     <property name="title" translatable="yes">_Subject</property>
                     <property name="use-underline">True</property>
+                    <property name="text">Testing the Email Portal</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="body">
                     <property name="title" translatable="yes">_Body</property>
                     <property name="use-underline">True</property>
+                    <property name="text">This is a test email sent from the ASHPD demo application.</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="addresses">
                     <property name="title" translatable="yes">_Addresses</property>
                     <property name="use-underline">True</property>
+                    <property name="text">user@example.com</property>
                   </object>
                 </child>
                 <child>

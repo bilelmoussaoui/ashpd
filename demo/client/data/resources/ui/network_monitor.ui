@@ -65,11 +65,13 @@
                 <child>
                   <object class="AdwEntryRow" id="host_entry">
                     <property name="title" translatable="yes">Hostname</property>
+                    <property name="text">www.gnome.org</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="port_entry">
                     <property name="title" translatable="yes">Port</property>
+                    <property name="text">443</property>
                   </object>
                 </child>
               </object>

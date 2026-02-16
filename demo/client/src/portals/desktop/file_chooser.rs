@@ -26,12 +26,12 @@ mod choice_widget {
 
         #[derive(Debug, Default)]
         pub struct ChoiceWidget {
-            pub(super) id_row: adw::EntryRow,
-            pub(super) label_row: adw::EntryRow,
-            pub(super) type_combo: adw::ComboRow,
-            pub(super) boolean_switch: adw::SwitchRow,
-            pub(super) options_text: gtk::TextView,
-            pub(super) initial_entry: adw::EntryRow,
+            pub id_row: adw::EntryRow,
+            pub label_row: adw::EntryRow,
+            pub type_combo: adw::ComboRow,
+            pub boolean_switch: adw::SwitchRow,
+            pub options_text: gtk::TextView,
+            pub initial_entry: adw::EntryRow,
         }
 
         #[glib::object_subclass]
@@ -321,7 +321,56 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for FileChooserPage {}
+    impl ObjectImpl for FileChooserPage {
+        fn constructed(&self) {
+            self.parent_constructed();
+            let obj = self.obj();
+
+            // Add default choice for open file
+            let open_choice = ChoiceWidget::default();
+            open_choice.imp().id_row.set_text("encoding");
+            open_choice.imp().label_row.set_text("File Encoding");
+            open_choice.imp().type_combo.set_selected(1);
+            open_choice.connect_removed(glib::clone!(
+                #[weak]
+                obj,
+                move |choice| {
+                    obj.imp().open_choices_box.remove(choice);
+                }
+            ));
+            self.open_choices_box.append(&open_choice);
+
+            // Add default choice for save file
+            let save_file_choice = ChoiceWidget::default();
+            save_file_choice.imp().id_row.set_text("compress");
+            save_file_choice.imp().label_row.set_text("Compress File");
+            save_file_choice.imp().type_combo.set_selected(0); // Boolean
+            save_file_choice.imp().boolean_switch.set_active(false);
+            save_file_choice.connect_removed(glib::clone!(
+                #[weak]
+                obj,
+                move |choice| {
+                    obj.imp().save_file_choices_box.remove(choice);
+                }
+            ));
+            self.save_file_choices_box.append(&save_file_choice);
+
+            // Add default choice for save files
+            let save_files_choice = ChoiceWidget::default();
+            save_files_choice.imp().id_row.set_text("archive");
+            save_files_choice.imp().label_row.set_text("Create Archive");
+            save_files_choice.imp().type_combo.set_selected(0); // Boolean
+            save_files_choice.imp().boolean_switch.set_active(true);
+            save_files_choice.connect_removed(glib::clone!(
+                #[weak]
+                obj,
+                move |choice| {
+                    obj.imp().save_files_choices_box.remove(choice);
+                }
+            ));
+            self.save_files_choices_box.append(&save_files_choice);
+        }
+    }
     impl WidgetImpl for FileChooserPage {
         fn map(&self) {
             self.parent_map();

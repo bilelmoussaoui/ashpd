@@ -15,6 +15,7 @@
                 <child>
                   <object class="AdwEntryRow" id="uri">
                     <property name="title" translatable="yes">URI</property>
+                    <property name="text">https://www.gnome.org</property>
                   </object>
                 </child>
               </object>

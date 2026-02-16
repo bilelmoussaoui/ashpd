@@ -15,17 +15,20 @@
                 <child>
                   <object class="AdwEntryRow" id="title">
                     <property name="title" translatable="yes">Title</property>
+                    <property name="text">Print Document</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="modal_switch">
                     <property name="title" translatable="yes">Modal</property>
                     <property name="subtitle" translatable="yes">Whether the dialog blocks interaction</property>
+                    <property name="active">True</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="accept_label">
                     <property name="title" translatable="yes">Accept Label</property>
+                    <property name="text">Print</property>
                   </object>
                 </child>
                 <child>

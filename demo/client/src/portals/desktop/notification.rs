@@ -99,7 +99,42 @@ mod imp {
             obj.init_template();
         }
     }
-    impl ObjectImpl for NotificationPage {}
+    impl ObjectImpl for NotificationPage {
+        fn constructed(&self) {
+            self.parent_constructed();
+            let obj = self.obj();
+
+            // Add default buttons
+            let button1 = NotificationButton::default();
+            button1.imp().label_row.set_text("View");
+            button1.imp().action_row.set_text("app.view-notification");
+            button1.imp().target_row.set_text("notification-id");
+            button1.connect_removed(glib::clone!(
+                #[weak]
+                obj,
+                move |button| {
+                    obj.imp().buttons_box.remove(button);
+                }
+            ));
+            self.buttons_box.append(&button1);
+
+            let button2 = NotificationButton::default();
+            button2.imp().label_row.set_text("Dismiss");
+            button2
+                .imp()
+                .action_row
+                .set_text("app.dismiss-notification");
+            button2.imp().target_row.set_text("notification-id");
+            button2.connect_removed(glib::clone!(
+                #[weak]
+                obj,
+                move |button| {
+                    obj.imp().buttons_box.remove(button);
+                }
+            ));
+            self.buttons_box.append(&button2);
+        }
+    }
     impl WidgetImpl for NotificationPage {
         fn map(&self) {
             self.parent_map();
@@ -320,10 +355,10 @@ mod button {
 
         #[derive(Debug, Default)]
         pub struct NotificationButton {
-            pub(super) label_row: adw::EntryRow,
-            pub(super) action_row: adw::EntryRow,
-            pub(super) target_row: adw::EntryRow,
-            pub(super) purpose_combo: adw::ComboRow,
+            pub label_row: adw::EntryRow,
+            pub action_row: adw::EntryRow,
+            pub target_row: adw::EntryRow,
+            pub purpose_combo: adw::ComboRow,
         }
 
         #[glib::object_subclass]
