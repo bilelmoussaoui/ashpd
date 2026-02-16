@@ -35,9 +35,10 @@ use zbus::zvariant::{
 use super::{HandleToken, Request};
 use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
 
+/// Options for composing an email.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct EmailOptions {
+pub struct EmailOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -58,9 +59,10 @@ struct EmailOptions {
     activation_token: Option<ActivationToken>,
 }
 
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Email.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Email")]
-struct EmailProxy(Proxy<'static>);
+pub struct EmailProxy(Proxy<'static>);
 
 impl EmailProxy {
     /// Create a new instance of [`EmailProxy`].

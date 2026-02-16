@@ -108,9 +108,10 @@ impl FromStr for SetOn {
     }
 }
 
+/// Options for setting a wallpaper.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct WallpaperOptions {
+pub struct WallpaperOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(
@@ -127,14 +128,34 @@ struct WallpaperOptions {
     set_on: Option<SetOn>,
 }
 
-struct WallpaperProxy(Proxy<'static>);
+impl WallpaperOptions {
+    /// Sets whether to show a preview of the wallpaper.
+    #[must_use]
+    pub fn show_preview(mut self, show_preview: impl Into<Option<bool>>) -> Self {
+        self.show_preview = show_preview.into();
+        self
+    }
+
+    /// Sets where to set the wallpaper.
+    #[must_use]
+    pub fn set_on(mut self, set_on: impl Into<Option<SetOn>>) -> Self {
+        self.set_on = set_on.into();
+        self
+    }
+}
+
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Wallpaper`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Wallpaper.html).
+#[doc(alias = "org.freedesktop.portal.Wallpaper")]
+pub struct WallpaperProxy(Proxy<'static>);
 
 impl WallpaperProxy {
+    /// Create a new instance of [`WallpaperProxy`].
     pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Wallpaper").await?;
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`WallpaperProxy`] with a specific connection.
     pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Wallpaper")
@@ -142,6 +163,12 @@ impl WallpaperProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the portal interface version.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
+    /// Sets the wallpaper from a file.
     #[doc(alias = "SetWallpaperFile")]
     pub async fn set_wallpaper_file(
         &self,
@@ -159,6 +186,7 @@ impl WallpaperProxy {
             .await
     }
 
+    /// Sets the wallpaper from a URI.
     #[doc(alias = "SetWallpaperURI")]
     pub async fn set_wallpaper_uri(
         &self,

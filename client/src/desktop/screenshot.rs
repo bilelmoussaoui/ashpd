@@ -44,15 +44,32 @@ use zbus::zvariant::{
 use super::{HandleToken, Request};
 use crate::{Error, Uri, WindowIdentifier, desktop::Color, proxy::Proxy};
 
+/// Options for taking a screenshot.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct ScreenshotOptions {
+pub struct ScreenshotOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     interactive: Option<bool>,
+}
+
+impl ScreenshotOptions {
+    /// Sets whether the dialog should be modal.
+    #[must_use]
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.modal = modal.into();
+        self
+    }
+
+    /// Sets whether the dialog should offer customization.
+    #[must_use]
+    pub fn interactive(mut self, interactive: impl Into<Option<bool>>) -> Self {
+        self.interactive = interactive.into();
+        self
+    }
 }
 
 #[derive(Serialize, Deserialize, Type)]
@@ -91,16 +108,18 @@ impl Debug for Screenshot {
     }
 }
 
+/// Options for picking a color.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct ColorOptions {
+pub struct ColorOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Screenshot`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Screenshot.html).
 #[derive(Debug)]
 #[doc(alias = "org.freedesktop.portal.Screenshot")]
-struct ScreenshotProxy(Proxy<'static>);
+pub struct ScreenshotProxy(Proxy<'static>);
 
 impl ScreenshotProxy {
     /// Create a new instance of [`ScreenshotProxy`].
@@ -115,6 +134,11 @@ impl ScreenshotProxy {
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Screenshot")
                 .await?;
         Ok(Self(proxy))
+    }
+
+    /// Returns the portal interface version.
+    pub fn version(&self) -> u32 {
+        self.0.version()
     }
 
     /// Obtains the color of a single pixel.

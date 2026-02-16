@@ -31,13 +31,23 @@ use zbus::zvariant::{
 use super::HandleToken;
 use crate::{Error, Uri, WindowIdentifier, desktop::request::Request, proxy::Proxy};
 
+/// Options for requesting user information.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct UserInformationOptions {
+pub struct UserInformationOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
+}
+
+impl UserInformationOptions {
+    /// Sets a user-visible reason for the request.
+    #[must_use]
+    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+        self.reason = reason.into().map(ToOwned::to_owned);
+        self
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
@@ -88,14 +98,18 @@ impl UserInformation {
     }
 }
 
-struct AccountProxy(Proxy<'static>);
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.Account`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Account.html).
+#[doc(alias = "org.freedesktop.portal.Account")]
+pub struct AccountProxy(Proxy<'static>);
 
 impl AccountProxy {
+    /// Create a new instance of [`AccountProxy`].
     pub async fn new() -> Result<Self, Error> {
         let proxy = Proxy::new_desktop("org.freedesktop.portal.Account").await?;
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`AccountProxy`] with a specific connection.
     pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.Account")
@@ -103,6 +117,12 @@ impl AccountProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the portal interface version.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
+    /// Requests user information.
     #[doc(alias = "GetUserInformation")]
     pub async fn user_information(
         &self,

@@ -226,9 +226,10 @@ impl Choice {
     }
 }
 
+/// Options for opening a file.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct OpenFileOptions {
+pub struct OpenFileOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -249,9 +250,68 @@ struct OpenFileOptions {
     current_folder: Option<FilePath>,
 }
 
+impl OpenFileOptions {
+    /// Sets the accept label.
+    #[must_use]
+    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+        self.accept_label = accept_label.into().map(ToOwned::to_owned);
+        self
+    }
+
+    /// Sets whether the dialog should be modal.
+    #[must_use]
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.modal = modal.into();
+        self
+    }
+
+    /// Sets whether multiple files can be selected.
+    #[must_use]
+    pub fn multiple(mut self, multiple: impl Into<Option<bool>>) -> Self {
+        self.multiple = multiple.into();
+        self
+    }
+
+    /// Sets whether to select directories instead of files.
+    #[must_use]
+    pub fn directory(mut self, directory: impl Into<Option<bool>>) -> Self {
+        self.directory = directory.into();
+        self
+    }
+
+    /// Sets the file filters.
+    #[must_use]
+    pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
+        self.filters = filters.into_iter().collect();
+        self
+    }
+
+    /// Sets the current filter.
+    #[must_use]
+    pub fn current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
+        self.current_filter = current_filter.into();
+        self
+    }
+
+    /// Sets the choices.
+    #[must_use]
+    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+        self.choices = choices.into_iter().collect();
+        self
+    }
+
+    /// Sets the current folder.
+    #[must_use]
+    pub fn current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
+        self.current_folder = current_folder.into();
+        self
+    }
+}
+
+/// Options for saving a file.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct SaveFileOptions {
+pub struct SaveFileOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -272,9 +332,68 @@ struct SaveFileOptions {
     choices: Vec<Choice>,
 }
 
+impl SaveFileOptions {
+    /// Sets the accept label.
+    #[must_use]
+    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+        self.accept_label = accept_label.into().map(ToOwned::to_owned);
+        self
+    }
+
+    /// Sets whether the dialog should be modal.
+    #[must_use]
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.modal = modal.into();
+        self
+    }
+
+    /// Sets the current name.
+    #[must_use]
+    pub fn current_name<'a>(mut self, current_name: impl Into<Option<&'a str>>) -> Self {
+        self.current_name = current_name.into().map(ToOwned::to_owned);
+        self
+    }
+
+    /// Sets the current folder.
+    #[must_use]
+    pub fn current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
+        self.current_folder = current_folder.into();
+        self
+    }
+
+    /// Sets the current file.
+    #[must_use]
+    pub fn current_file(mut self, current_file: impl Into<Option<FilePath>>) -> Self {
+        self.current_file = current_file.into();
+        self
+    }
+
+    /// Sets the file filters.
+    #[must_use]
+    pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
+        self.filters = filters.into_iter().collect();
+        self
+    }
+
+    /// Sets the current filter.
+    #[must_use]
+    pub fn current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
+        self.current_filter = current_filter.into();
+        self
+    }
+
+    /// Sets the choices.
+    #[must_use]
+    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+        self.choices = choices.into_iter().collect();
+        self
+    }
+}
+
+/// Options for saving multiple files.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct SaveFilesOptions {
+pub struct SaveFilesOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -287,6 +406,43 @@ struct SaveFilesOptions {
     current_folder: Option<FilePath>,
     #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
     files: Vec<FilePath>,
+}
+
+impl SaveFilesOptions {
+    /// Sets the accept label.
+    #[must_use]
+    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+        self.accept_label = accept_label.into().map(ToOwned::to_owned);
+        self
+    }
+
+    /// Sets whether the dialog should be modal.
+    #[must_use]
+    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+        self.modal = modal.into();
+        self
+    }
+
+    /// Sets the choices.
+    #[must_use]
+    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+        self.choices = choices.into_iter().collect();
+        self
+    }
+
+    /// Sets the current folder.
+    #[must_use]
+    pub fn current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
+        self.current_folder = current_folder.into();
+        self
+    }
+
+    /// Sets the files.
+    #[must_use]
+    pub fn files(mut self, files: impl IntoIterator<Item = FilePath>) -> Self {
+        self.files = files.into_iter().collect();
+        self
+    }
 }
 
 #[derive(Deserialize, Type, Debug)]
@@ -327,8 +483,9 @@ impl SelectedFiles {
     }
 }
 
+/// Wrapper of the DBus interface: [`org.freedesktop.portal.FileChooser`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html).
 #[doc(alias = "org.freedesktop.portal.FileChooser")]
-struct FileChooserProxy(Proxy<'static>);
+pub struct FileChooserProxy(Proxy<'static>);
 
 impl FileChooserProxy {
     /// Create a new instance of [`FileChooserProxy`].
@@ -337,6 +494,8 @@ impl FileChooserProxy {
         Ok(Self(proxy))
     }
 
+    /// Create a new instance of [`FileChooserProxy`] with a specific
+    /// connection.
     pub async fn with_connection(connection: zbus::Connection) -> Result<Self, Error> {
         let proxy =
             Proxy::new_desktop_with_connection(connection, "org.freedesktop.portal.FileChooser")
@@ -344,6 +503,12 @@ impl FileChooserProxy {
         Ok(Self(proxy))
     }
 
+    /// Returns the portal interface version.
+    pub fn version(&self) -> u32 {
+        self.0.version()
+    }
+
+    /// Asks to open one or more files.
     #[doc(alias = "OpenFile")]
     pub async fn open_file(
         &self,
@@ -361,6 +526,7 @@ impl FileChooserProxy {
             .await
     }
 
+    /// Asks for a location to save a file.
     #[doc(alias = "SaveFile")]
     pub async fn save_file(
         &self,
@@ -378,6 +544,7 @@ impl FileChooserProxy {
             .await
     }
 
+    /// Asks for a location to save one or more files.
     #[doc(alias = "SaveFiles")]
     pub async fn save_files(
         &self,
