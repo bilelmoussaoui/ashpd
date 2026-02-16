@@ -274,7 +274,8 @@ use futures_util::Stream;
 use serde::{Deserialize, de::Visitor};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    self, DeserializeDict, ObjectPath, OwnedObjectPath, OwnedValue, SerializeDict, Type, Value,
+    self, DeserializeDict, ObjectPath, Optional, OwnedObjectPath, OwnedValue, SerializeDict, Type,
+    Value,
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
