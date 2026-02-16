@@ -18,7 +18,7 @@
 //!             "prepare print",
 //!             Default::default(),
 //!             Default::default(),
-//!             PreparePrintOptions::default().modal(true),
+//!             PreparePrintOptions::default().set_modal(true),
 //!         )
 //!         .await?
 //!         .response()?;
@@ -27,7 +27,9 @@
 //!             None,
 //!             "test",
 //!             &file.as_fd(),
-//!             PrintOptions::default().token(pre_print.token).modal(true),
+//!             PrintOptions::default()
+//!                 .set_token(pre_print.token)
+//!                 .set_modal(true),
 //!         )
 //!         .await?;
 //!
@@ -768,53 +770,80 @@ impl PageSetup {
     }
 }
 
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::prepare_print`] request.
 #[zvariant(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
+    #[serde(rename = "handle_token", with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
     /// Label for the accept button. Mnemonic underlines are allowed.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
     /// File formats supported by the app for print-to-file.
     /// Added in version 3.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        with = "as_value",
+        skip_serializing_if = "Vec::is_empty",
+        skip_deserializing
+    )]
     supported_output_file_formats: Vec<OutputFileFormat>,
     /// Whether it makes sense to return "current" for the print-pages setting.
     /// Added in version 4.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        with = "optional",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
     has_current_page: Option<bool>,
     /// Whether it makes sense to return "selection" for the print-pages
     /// setting. Added in version 4.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        with = "optional",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
     has_selected_pages: Option<bool>,
 }
 
 impl PreparePrintOptions {
     /// Sets whether the dialog should be a modal.
     #[must_use]
-    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+    pub fn set_modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
     }
 
-    /// Label for the accept button. Mnemonic underlines are allowed.
+    /// Gets whether the dialog should be a modal.
+    #[cfg(feature = "backend")]
+    pub fn modal(&self) -> Option<bool> {
+        self.modal
+    }
+
+    /// Sets the label for the accept button. Mnemonic underlines are allowed.
     #[must_use]
-    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
         self.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
+    }
+
+    /// Gets the label for the accept button.
+    #[cfg(feature = "backend")]
+    pub fn accept_label(&self) -> Option<&str> {
+        self.accept_label.as_deref()
     }
 
     /// Sets the supported output file formats for print-to-file.
     /// Added in version 3.
     #[must_use]
-    pub fn supported_output_file_formats(
+    pub fn set_supported_output_file_formats(
         mut self,
         formats: impl IntoIterator<Item = OutputFileFormat>,
     ) -> Self {
@@ -825,7 +854,7 @@ impl PreparePrintOptions {
     /// Sets whether it makes sense to return "current" for print-pages.
     /// Added in version 4.
     #[must_use]
-    pub fn has_current_page(mut self, has_current_page: impl Into<Option<bool>>) -> Self {
+    pub fn set_has_current_page(mut self, has_current_page: impl Into<Option<bool>>) -> Self {
         self.has_current_page = has_current_page.into();
         self
     }
@@ -833,50 +862,69 @@ impl PreparePrintOptions {
     /// Sets whether it makes sense to return "selection" for print-pages.
     /// Added in version 4.
     #[must_use]
-    pub fn has_selected_pages(mut self, has_selected_pages: impl Into<Option<bool>>) -> Self {
+    pub fn set_has_selected_pages(mut self, has_selected_pages: impl Into<Option<bool>>) -> Self {
         self.has_selected_pages = has_selected_pages.into();
         self
     }
 }
 
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::print`] request.
 #[zvariant(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
+    #[serde(rename = "handle_token", with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
     /// Token that was returned by a previous [`PrintProxy::prepare_print`]
     /// call.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     token: Option<u32>,
     /// File formats supported by the app for print-to-file.
     /// Added in version 3.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        with = "as_value",
+        skip_serializing_if = "Vec::is_empty",
+        skip_deserializing
+    )]
     supported_output_file_formats: Vec<OutputFileFormat>,
 }
 
 impl PrintOptions {
-    /// A token retrieved from [`PrintProxy::prepare_print`].
-    pub fn token(mut self, token: impl Into<Option<u32>>) -> Self {
+    /// Sets the token retrieved from [`PrintProxy::prepare_print`].
+    #[must_use]
+    pub fn set_token(mut self, token: impl Into<Option<u32>>) -> Self {
         self.token = token.into();
         self
     }
 
+    /// Gets the token.
+    #[cfg(feature = "backend")]
+    pub fn token(&self) -> Option<u32> {
+        self.token
+    }
+
     /// Sets whether the dialog should be a modal.
-    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+    #[must_use]
+    pub fn set_modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
+    }
+
+    /// Gets whether the dialog should be a modal.
+    #[cfg(feature = "backend")]
+    pub fn modal(&self) -> Option<bool> {
+        self.modal
     }
 
     /// Sets the supported output file formats for print-to-file.
     /// Added in version 3.
     #[must_use]
-    pub fn supported_output_file_formats(
+    pub fn set_supported_output_file_formats(
         mut self,
         formats: impl IntoIterator<Item = OutputFileFormat>,
     ) -> Self {

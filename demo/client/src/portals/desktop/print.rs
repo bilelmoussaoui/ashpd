@@ -445,15 +445,19 @@ impl PrintPage {
             .orientation(page_setup_orientation);
 
         let prepare_options = PreparePrintOptions::default()
-            .modal(modal)
-            .accept_label(accept_label.as_deref())
-            .has_current_page(has_current_page)
-            .has_selected_pages(has_selected_pages)
-            .supported_output_file_formats(output_file_format.map(|f| vec![f]).unwrap_or_default());
+            .set_modal(modal)
+            .set_accept_label(accept_label.as_deref())
+            .set_has_current_page(has_current_page)
+            .set_has_selected_pages(has_selected_pages)
+            .set_supported_output_file_formats(
+                output_file_format.map(|f| vec![f]).unwrap_or_default(),
+            );
 
         let print_options = PrintOptions::default()
-            .modal(modal)
-            .supported_output_file_formats(output_file_format.map(|f| vec![f]).unwrap_or_default());
+            .set_modal(modal)
+            .set_supported_output_file_formats(
+                output_file_format.map(|f| vec![f]).unwrap_or_default(),
+            );
 
         match print(
             identifier,
@@ -507,7 +511,7 @@ async fn print(
                 identifier.as_ref(),
                 &owned_title,
                 &file.as_fd(),
-                print_options.token(out.token),
+                print_options.set_token(out.token),
             )
             .await
     })

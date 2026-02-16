@@ -42,7 +42,7 @@ use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    self, Optional, Type, Value,
+    self, Optional, OwnedValue, Type, Value,
     as_value::{self, optional},
 };
 
@@ -84,81 +84,123 @@ pub enum CursorMode {
     Metadata,
 }
 
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::create_session`] request.
 #[zvariant(signature = "dict")]
-struct CreateSessionOptions {
+pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
     /// A string that will be used as the last element of the session handle.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     session_handle_token: HandleToken,
 }
 
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::select_sources`] request.
 #[zvariant(signature = "dict")]
-struct SelectSourcesOptions {
+pub struct SelectSourcesOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
     /// What types of content to record.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     types: Option<BitFlags<SourceType>>,
     /// Whether to allow selecting multiple sources.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     multiple: Option<bool>,
     /// Determines how the cursor will be drawn in the screen cast stream.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     cursor_mode: Option<CursorMode>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "optional",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
     restore_token: Option<String>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing)]
+    restore_data: Option<(String, u32, OwnedValue)>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     persist_mode: Option<PersistMode>,
 }
 
 impl SelectSourcesOptions {
     /// Sets whether to allow selecting multiple sources.
     #[must_use]
-    pub fn multiple(mut self, multiple: impl Into<Option<bool>>) -> Self {
+    pub fn set_multiple(mut self, multiple: impl Into<Option<bool>>) -> Self {
         self.multiple = multiple.into();
         self
     }
 
+    /// Gets whether to allow selecting multiple sources.
+    #[cfg(feature = "backend")]
+    pub fn is_multiple(&self) -> Option<bool> {
+        self.multiple
+    }
+
     /// Sets how the cursor will be drawn on the screen cast stream.
     #[must_use]
-    pub fn cursor_mode(mut self, cursor_mode: impl Into<Option<CursorMode>>) -> Self {
+    pub fn set_cursor_mode(mut self, cursor_mode: impl Into<Option<CursorMode>>) -> Self {
         self.cursor_mode = cursor_mode.into();
         self
     }
 
+    /// Gets how the cursor will be drawn on the screen cast stream.
+    #[cfg(feature = "backend")]
+    pub fn cursor_mode(&self) -> Option<CursorMode> {
+        self.cursor_mode
+    }
+
     /// Sets the types of content to record.
     #[must_use]
-    pub fn types(mut self, types: impl Into<Option<BitFlags<SourceType>>>) -> Self {
+    pub fn set_types(mut self, types: impl Into<Option<BitFlags<SourceType>>>) -> Self {
         self.types = types.into();
         self
     }
 
+    /// Gets the types of content to record.
+    #[cfg(feature = "backend")]
+    pub fn types(&self) -> Option<BitFlags<SourceType>> {
+        self.types
+    }
+
+    /// Sets the persist mode.
     #[must_use]
-    pub fn persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
+    pub fn set_persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
         self.persist_mode = persist_mode.into();
         self
     }
 
+    /// Gets the persist mode.
+    #[cfg(feature = "backend")]
+    pub fn persist_mode(&self) -> Option<PersistMode> {
+        self.persist_mode
+    }
+
+    /// Sets the restore token.
     #[must_use]
-    pub fn restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
         self.restore_token = token.into().map(ToOwned::to_owned);
         self
     }
+
+    /// Gets the restore data.
+    #[cfg(feature = "backend")]
+    pub fn restore_data<'a>(&'a self) -> Option<(&'a str, u32, &'a Value<'a>)> {
+        use std::borrow::Borrow;
+        match &self.restore_data {
+            Some((key, version, data)) => Some((key.as_str(), *version, data.borrow())),
+            None => None,
+        }
+    }
 }
 
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
-struct StartCastOptions {
+pub struct StartCastOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
 }
 
@@ -168,8 +210,15 @@ struct StartCastOptions {
 pub struct Streams {
     #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     streams: Vec<Stream>,
-    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        with = "optional",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
     restore_token: Option<String>,
+    #[serde(default, with = "optional", skip_serializing)]
+    restore_data: Option<(String, u32, OwnedValue)>,
 }
 
 impl Streams {
@@ -181,6 +230,12 @@ impl Streams {
     /// The list of streams.
     pub fn streams(&self) -> &[Stream] {
         &self.streams
+    }
+
+    /// The session restore data.
+    #[cfg(feature = "backend")]
+    pub fn restore_data(&self) -> Option<&(String, u32, OwnedValue)> {
+        self.restore_data.as_ref()
     }
 }
 
@@ -212,13 +267,14 @@ impl StreamsBuilder {
             streams: Streams {
                 streams,
                 restore_token: None,
+                restore_data: None,
             },
         }
     }
 
-    /// Set the streams' optional restore token.
-    pub fn restore_token(mut self, restore_token: impl Into<Option<String>>) -> Self {
-        self.streams.restore_token = restore_token.into();
+    /// Set the streams' optional restore data.
+    pub fn restore_data(mut self, data: Option<(String, u32, impl Into<OwnedValue>)>) -> Self {
+        self.streams.restore_data = data.map(|(s, u, d)| (s, u, d.into()));
         self
     }
 
@@ -475,11 +531,11 @@ impl Screencast {
         persist_mode: PersistMode,
     ) -> Result<Request<()>, Error> {
         let options = SelectSourcesOptions::default()
-            .cursor_mode(cursor_mode)
-            .multiple(multiple)
-            .types(types)
-            .persist_mode(persist_mode)
-            .restore_token(restore_token);
+            .set_cursor_mode(cursor_mode)
+            .set_multiple(multiple)
+            .set_types(types)
+            .set_persist_mode(persist_mode)
+            .set_restore_token(restore_token);
         self.0
             .empty_request(&options.handle_token, "SelectSources", &(session, &options))
             .await

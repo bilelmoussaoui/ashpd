@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde::Deserialize;
 
 use crate::{
     AppID, Uri, WindowIdentifierType,
@@ -9,29 +8,9 @@ use crate::{
         Result,
         request::{Request, RequestImpl},
     },
-    desktop::{HandleToken, request::ResponseType, wallpaper::SetOn},
-    zvariant::{Optional, OwnedObjectPath, Type, as_value::optional},
+    desktop::{HandleToken, request::ResponseType, wallpaper::WallpaperOptions},
+    zvariant::{Optional, OwnedObjectPath},
 };
-
-#[derive(Deserialize, Type, Debug)]
-#[zvariant(signature = "dict")]
-#[serde(rename_all = "kebab-case")]
-pub struct WallpaperOptions {
-    #[serde(default, with = "optional")]
-    show_preview: Option<bool>,
-    #[serde(default, with = "optional")]
-    set_on: Option<SetOn>,
-}
-
-impl WallpaperOptions {
-    pub fn show_preview(&self) -> Option<bool> {
-        self.show_preview
-    }
-
-    pub fn set_on(&self) -> Option<SetOn> {
-        self.set_on
-    }
-}
 
 #[async_trait]
 pub trait WallpaperImpl: RequestImpl {

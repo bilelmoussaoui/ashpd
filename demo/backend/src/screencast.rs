@@ -3,15 +3,15 @@ use ashpd::{
     backend::{
         Result,
         request::RequestImpl,
-        screencast::{
-            CreateSessionOptions, ScreencastImpl, SelectSourcesOptions, SelectSourcesResponse,
-            StartCastOptions, StartCastResponse, StartCastResponseBuilder,
-        },
+        screencast::{ScreencastImpl, SelectSourcesResponse},
         session::{CreateSessionResponse, SessionImpl},
     },
     desktop::{
         HandleToken,
-        screencast::{CursorMode, SourceType, StreamBuilder},
+        screencast::{
+            CreateSessionOptions, CursorMode, SelectSourcesOptions, SourceType, StartCastOptions,
+            StreamBuilder, Streams, StreamsBuilder,
+        },
     },
     enumflags2::BitFlags,
 };
@@ -64,14 +64,14 @@ impl ScreencastImpl for Screencast {
         _app_id: Option<AppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: StartCastOptions,
-    ) -> Result<StartCastResponse> {
+    ) -> Result<Streams> {
         tracing::debug!("IN Screencast::start_cast(): {session_token}");
         let streams = vec![
             StreamBuilder::new(42)
                 .source_type(SourceType::Monitor)
                 .build(),
         ];
-        Ok(StartCastResponseBuilder::new(streams).build())
+        Ok(StreamsBuilder::new(streams).build())
     }
 }
 

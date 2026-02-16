@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde::Deserialize;
 
 use crate::{
     AppID, WindowIdentifierType,
@@ -11,49 +10,11 @@ use crate::{
     },
     desktop::{
         HandleToken,
-        print::{PageSetup, PreparePrint, Settings},
+        print::{PageSetup, PreparePrint, PreparePrintOptions, PrintOptions, Settings},
         request::Response,
     },
-    zvariant::{self, Optional, OwnedObjectPath, as_value::optional},
+    zvariant::{self, Optional, OwnedObjectPath},
 };
-
-#[derive(Deserialize, zvariant::Type)]
-#[zvariant(signature = "dict")]
-pub struct PreparePrintOptions {
-    #[serde(default, with = "optional")]
-    modal: Option<bool>,
-    #[serde(default, with = "optional")]
-    accept_label: Option<String>,
-}
-
-impl PreparePrintOptions {
-    pub fn is_modal(&self) -> Option<bool> {
-        self.modal
-    }
-
-    pub fn accept_label(&self) -> Option<&str> {
-        self.accept_label.as_deref()
-    }
-}
-
-#[derive(Deserialize, zvariant::Type)]
-#[zvariant(signature = "dict")]
-pub struct PrintOptions {
-    #[serde(default, with = "optional")]
-    modal: Option<bool>,
-    #[serde(default, with = "optional")]
-    token: Option<u32>,
-}
-
-impl PrintOptions {
-    pub fn is_modal(&self) -> Option<bool> {
-        self.modal
-    }
-
-    pub fn token(&self) -> Option<u32> {
-        self.token
-    }
-}
 
 #[async_trait]
 pub trait PrintImpl: RequestImpl {

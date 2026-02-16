@@ -1,72 +1,16 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde::Deserialize;
 
 use crate::{
-    ActivationToken, AppID, Uri, WindowIdentifierType,
+    AppID, WindowIdentifierType,
     backend::{
         Result,
         request::{Request, RequestImpl},
     },
-    desktop::{HandleToken, request::Response},
-    zvariant::{self, Optional, OwnedObjectPath, as_value::optional},
+    desktop::{HandleToken, email::EmailOptions, request::Response},
+    zvariant::{Optional, OwnedObjectPath},
 };
-
-#[derive(Deserialize, zvariant::Type)]
-#[zvariant(signature = "dict")]
-pub struct Options {
-    #[serde(default, with = "optional")]
-    address: Option<String>,
-    #[serde(default, with = "optional")]
-    addresses: Option<Vec<String>>,
-    #[serde(default, with = "optional")]
-    cc: Option<Vec<String>>,
-    #[serde(default, with = "optional")]
-    bcc: Option<Vec<String>>,
-    #[serde(default, with = "optional")]
-    subject: Option<String>,
-    #[serde(default, with = "optional")]
-    body: Option<String>,
-    #[serde(default, with = "optional")]
-    attachments: Option<Vec<Uri>>,
-    #[serde(default, with = "optional")]
-    activation_token: Option<ActivationToken>,
-}
-
-impl Options {
-    pub fn address(&self) -> Option<&str> {
-        self.address.as_deref()
-    }
-
-    pub fn addresses(&self) -> &[String] {
-        self.addresses.as_deref().unwrap_or_default()
-    }
-
-    pub fn cc(&self) -> &[String] {
-        self.cc.as_deref().unwrap_or_default()
-    }
-
-    pub fn bcc(&self) -> &[String] {
-        self.bcc.as_deref().unwrap_or_default()
-    }
-
-    pub fn subject(&self) -> Option<&str> {
-        self.subject.as_deref()
-    }
-
-    pub fn body(&self) -> Option<&str> {
-        self.body.as_deref()
-    }
-
-    pub fn attachments(&self) -> &[Uri] {
-        self.attachments.as_deref().unwrap_or_default()
-    }
-
-    pub fn activation_token(&self) -> Option<&ActivationToken> {
-        self.activation_token.as_ref()
-    }
-}
 
 #[async_trait]
 pub trait EmailImpl: RequestImpl {
@@ -76,7 +20,7 @@ pub trait EmailImpl: RequestImpl {
         token: HandleToken,
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
-        options: Options,
+        options: EmailOptions,
     ) -> Result<()>;
 }
 
@@ -109,7 +53,7 @@ impl EmailInterface {
         handle: OwnedObjectPath,
         app_id: Optional<AppID>,
         window_identifier: Optional<WindowIdentifierType>,
-        options: Options,
+        options: EmailOptions,
     ) -> Result<Response<()>> {
         let imp = Arc::clone(&self.imp);
 

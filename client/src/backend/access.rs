@@ -10,7 +10,10 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Icon, request::Response},
-    zvariant::{self, Optional, OwnedObjectPath, as_value::optional},
+    zvariant::{
+        self, Optional, OwnedObjectPath,
+        as_value::{self, optional},
+    },
 };
 
 #[derive(Deserialize, zvariant::Type)]
@@ -24,8 +27,8 @@ pub struct AccessOptions {
     grant_label: Option<String>,
     #[serde(default, with = "optional")]
     icon: Option<String>,
-    #[serde(default, with = "optional")]
-    choices: Option<Vec<Choice>>,
+    #[serde(default, with = "as_value")]
+    choices: Vec<Choice>,
 }
 
 #[derive(Clone, Deserialize, zvariant::Type, Debug)]
@@ -74,24 +77,22 @@ impl AccessOptions {
     }
 
     pub fn choices(&self) -> &[Choice] {
-        self.choices.as_deref().unwrap_or_default()
+        &self.choices
     }
 }
 
 #[derive(Serialize, Debug, zvariant::Type, Default)]
 #[zvariant(signature = "dict")]
 pub struct AccessResponse {
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    choices: Option<Vec<(String, String)>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    choices: Vec<(String, String)>,
 }
 
 impl AccessResponse {
     /// Adds a selected choice (key, value).
     #[must_use]
     pub fn choice(mut self, key: &str, value: &str) -> Self {
-        self.choices
-            .get_or_insert_with(Vec::new)
-            .push((key.to_owned(), value.to_owned()));
+        self.choices.push((key.to_owned(), value.to_owned()));
         self
     }
 }

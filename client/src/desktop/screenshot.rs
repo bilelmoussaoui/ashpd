@@ -45,30 +45,50 @@ use super::{HandleToken, Request};
 use crate::{Error, Uri, WindowIdentifier, desktop::Color, proxy::Proxy};
 
 /// Options for taking a screenshot.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct ScreenshotOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     interactive: Option<bool>,
+    #[serde(default, with = "optional", skip_serializing)]
+    permission_store_checked: Option<bool>,
 }
 
 impl ScreenshotOptions {
     /// Sets whether the dialog should be modal.
     #[must_use]
-    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+    pub fn set_modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
     }
 
+    /// Gets whether the dialog should be modal.
+    #[cfg(feature = "backend")]
+    pub fn modal(&self) -> Option<bool> {
+        self.modal
+    }
+
     /// Sets whether the dialog should offer customization.
     #[must_use]
-    pub fn interactive(mut self, interactive: impl Into<Option<bool>>) -> Self {
+    pub fn set_interactive(mut self, interactive: impl Into<Option<bool>>) -> Self {
         self.interactive = interactive.into();
         self
+    }
+
+    /// Gets whether the dialog should offer customization.
+    #[cfg(feature = "backend")]
+    pub fn interactive(&self) -> Option<bool> {
+        self.interactive
+    }
+
+    /// Gets whether the permission store has been checked.
+    #[cfg(feature = "backend")]
+    pub fn permission_store_checked(&self) -> Option<bool> {
+        self.permission_store_checked
     }
 }
 
@@ -109,10 +129,10 @@ impl Debug for Screenshot {
 }
 
 /// Options for picking a color.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct ColorOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
 }
 

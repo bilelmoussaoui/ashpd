@@ -26,37 +26,93 @@
 
 use std::os::fd::OwnedFd;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
     self, Optional, Type,
     as_value::{self, optional},
 };
 
 use super::{HandleToken, Request};
-use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
+use crate::{ActivationToken, Error, Uri, WindowIdentifier, proxy::Proxy};
 
 /// Options for composing an email.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct EmailOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     address: Option<String>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     addresses: Vec<String>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     cc: Vec<String>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     bcc: Vec<String>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     subject: Option<String>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     body: Option<String>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        with = "as_value",
+        skip_serializing_if = "Vec::is_empty",
+        skip_deserializing
+    )]
     attachment_fds: Vec<zvariant::OwnedFd>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "as_value", skip_serializing)]
+    attachments: Vec<Uri>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
+}
+
+impl EmailOptions {
+    /// Gets the email address.
+    #[cfg(feature = "backend")]
+    pub fn address(&self) -> Option<&str> {
+        self.address.as_deref()
+    }
+
+    /// Gets the list of email addresses.
+    #[cfg(feature = "backend")]
+    pub fn addresses(&self) -> &[String] {
+        &self.addresses
+    }
+
+    /// Gets the list of CC email addresses.
+    #[cfg(feature = "backend")]
+    pub fn cc(&self) -> &[String] {
+        &self.cc
+    }
+
+    /// Gets the list of BCC email addresses.
+    #[cfg(feature = "backend")]
+    pub fn bcc(&self) -> &[String] {
+        &self.bcc
+    }
+
+    /// Gets the email subject.
+    #[cfg(feature = "backend")]
+    pub fn subject(&self) -> Option<&str> {
+        self.subject.as_deref()
+    }
+
+    /// Gets the email body.
+    #[cfg(feature = "backend")]
+    pub fn body(&self) -> Option<&str> {
+        self.body.as_deref()
+    }
+
+    /// Gets the list of attachment URIs.
+    #[cfg(feature = "backend")]
+    pub fn attachments(&self) -> &[Uri] {
+        &self.attachments
+    }
+
+    /// Gets the activation token.
+    #[cfg(feature = "backend")]
+    pub fn activation_token(&self) -> Option<&ActivationToken> {
+        self.activation_token.as_ref()
+    }
 }
 
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Email`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Email.html).

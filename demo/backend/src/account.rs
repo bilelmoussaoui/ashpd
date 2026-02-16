@@ -1,11 +1,10 @@
 use ashpd::{
     AppID, Uri, WindowIdentifierType,
-    backend::{
-        Result,
-        account::{AccountImpl, UserInformationOptions},
-        request::RequestImpl,
+    backend::{Result, account::AccountImpl, request::RequestImpl},
+    desktop::{
+        HandleToken,
+        account::{UserInformation, UserInformationOptions},
     },
-    desktop::{HandleToken, account::UserInformation},
 };
 use async_trait::async_trait;
 

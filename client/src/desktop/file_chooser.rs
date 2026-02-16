@@ -227,233 +227,376 @@ impl Choice {
 }
 
 /// Options for opening a file.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct OpenFileOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     multiple: Option<bool>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     directory: Option<bool>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     filters: Vec<FileFilter>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_filter: Option<FileFilter>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<Choice>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
 }
 
 impl OpenFileOptions {
     /// Sets the accept label.
     #[must_use]
-    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
         self.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
     }
 
+    /// Gets the accept label.
+    #[cfg(feature = "backend")]
+    pub fn accept_label(&self) -> Option<&str> {
+        self.accept_label.as_deref()
+    }
+
     /// Sets whether the dialog should be modal.
     #[must_use]
-    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+    pub fn set_modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
     }
 
+    /// Gets whether the dialog should be modal.
+    #[cfg(feature = "backend")]
+    pub fn modal(&self) -> Option<bool> {
+        self.modal
+    }
+
     /// Sets whether multiple files can be selected.
     #[must_use]
-    pub fn multiple(mut self, multiple: impl Into<Option<bool>>) -> Self {
+    pub fn set_multiple(mut self, multiple: impl Into<Option<bool>>) -> Self {
         self.multiple = multiple.into();
         self
     }
 
+    /// Gets whether multiple files can be selected.
+    #[cfg(feature = "backend")]
+    pub fn multiple(&self) -> Option<bool> {
+        self.multiple
+    }
+
     /// Sets whether to select directories instead of files.
     #[must_use]
-    pub fn directory(mut self, directory: impl Into<Option<bool>>) -> Self {
+    pub fn set_directory(mut self, directory: impl Into<Option<bool>>) -> Self {
         self.directory = directory.into();
         self
     }
 
+    /// Gets whether to select directories instead of files.
+    #[cfg(feature = "backend")]
+    pub fn directory(&self) -> Option<bool> {
+        self.directory
+    }
+
     /// Sets the file filters.
     #[must_use]
-    pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
+    pub fn set_filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
         self.filters = filters.into_iter().collect();
         self
     }
 
+    /// Gets the file filters.
+    #[cfg(feature = "backend")]
+    pub fn filters(&self) -> &[FileFilter] {
+        &self.filters
+    }
+
     /// Sets the current filter.
     #[must_use]
-    pub fn current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
+    pub fn set_current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
         self.current_filter = current_filter.into();
         self
     }
 
+    /// Gets the current filter.
+    #[cfg(feature = "backend")]
+    pub fn current_filter(&self) -> Option<&FileFilter> {
+        self.current_filter.as_ref()
+    }
+
     /// Sets the choices.
     #[must_use]
-    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+    pub fn set_choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
         self.choices = choices.into_iter().collect();
         self
     }
 
+    /// Gets the choices.
+    #[cfg(feature = "backend")]
+    pub fn choices(&self) -> &[Choice] {
+        &self.choices
+    }
+
     /// Sets the current folder.
     #[must_use]
-    pub fn current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
+    pub fn set_current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
         self.current_folder = current_folder.into();
         self
+    }
+
+    /// Gets the current folder.
+    #[cfg(feature = "backend")]
+    pub fn current_folder(&self) -> Option<&FilePath> {
+        self.current_folder.as_ref()
     }
 }
 
 /// Options for saving a file.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct SaveFileOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_name: Option<String>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_file: Option<FilePath>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     filters: Vec<FileFilter>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_filter: Option<FileFilter>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<Choice>,
 }
 
 impl SaveFileOptions {
     /// Sets the accept label.
     #[must_use]
-    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
         self.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
     }
 
+    /// Gets the accept label.
+    #[cfg(feature = "backend")]
+    pub fn accept_label(&self) -> Option<&str> {
+        self.accept_label.as_deref()
+    }
+
     /// Sets whether the dialog should be modal.
     #[must_use]
-    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+    pub fn set_modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
     }
 
+    /// Gets whether the dialog should be modal.
+    #[cfg(feature = "backend")]
+    pub fn modal(&self) -> Option<bool> {
+        self.modal
+    }
+
     /// Sets the current name.
     #[must_use]
-    pub fn current_name<'a>(mut self, current_name: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_current_name<'a>(mut self, current_name: impl Into<Option<&'a str>>) -> Self {
         self.current_name = current_name.into().map(ToOwned::to_owned);
         self
     }
 
+    /// Gets the current name.
+    #[cfg(feature = "backend")]
+    pub fn current_name(&self) -> Option<&str> {
+        self.current_name.as_deref()
+    }
+
     /// Sets the current folder.
     #[must_use]
-    pub fn current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
+    pub fn set_current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
         self.current_folder = current_folder.into();
         self
     }
 
+    /// Gets the current folder.
+    #[cfg(feature = "backend")]
+    pub fn current_folder(&self) -> Option<&FilePath> {
+        self.current_folder.as_ref()
+    }
+
     /// Sets the current file.
     #[must_use]
-    pub fn current_file(mut self, current_file: impl Into<Option<FilePath>>) -> Self {
+    pub fn set_current_file(mut self, current_file: impl Into<Option<FilePath>>) -> Self {
         self.current_file = current_file.into();
         self
     }
 
+    /// Gets the current file.
+    #[cfg(feature = "backend")]
+    pub fn current_file(&self) -> Option<&FilePath> {
+        self.current_file.as_ref()
+    }
+
     /// Sets the file filters.
     #[must_use]
-    pub fn filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
+    pub fn set_filters(mut self, filters: impl IntoIterator<Item = FileFilter>) -> Self {
         self.filters = filters.into_iter().collect();
         self
     }
 
+    /// Gets the file filters.
+    #[cfg(feature = "backend")]
+    pub fn filters(&self) -> &[FileFilter] {
+        &self.filters
+    }
+
     /// Sets the current filter.
     #[must_use]
-    pub fn current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
+    pub fn set_current_filter(mut self, current_filter: impl Into<Option<FileFilter>>) -> Self {
         self.current_filter = current_filter.into();
         self
     }
 
+    /// Gets the current filter.
+    #[cfg(feature = "backend")]
+    pub fn current_filter(&self) -> Option<&FileFilter> {
+        self.current_filter.as_ref()
+    }
+
     /// Sets the choices.
     #[must_use]
-    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+    pub fn set_choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
         self.choices = choices.into_iter().collect();
         self
+    }
+
+    /// Gets the choices.
+    #[cfg(feature = "backend")]
+    pub fn choices(&self) -> &[Choice] {
+        &self.choices
     }
 }
 
 /// Options for saving multiple files.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct SaveFilesOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<Choice>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     files: Vec<FilePath>,
 }
 
 impl SaveFilesOptions {
     /// Sets the accept label.
     #[must_use]
-    pub fn accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_accept_label<'a>(mut self, accept_label: impl Into<Option<&'a str>>) -> Self {
         self.accept_label = accept_label.into().map(ToOwned::to_owned);
         self
     }
 
+    /// Gets the accept label.
+    #[cfg(feature = "backend")]
+    pub fn accept_label(&self) -> Option<&str> {
+        self.accept_label.as_deref()
+    }
+
     /// Sets whether the dialog should be modal.
     #[must_use]
-    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+    pub fn set_modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
     }
 
+    /// Gets whether the dialog should be modal.
+    #[cfg(feature = "backend")]
+    pub fn modal(&self) -> Option<bool> {
+        self.modal
+    }
+
     /// Sets the choices.
     #[must_use]
-    pub fn choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
+    pub fn set_choices(mut self, choices: impl IntoIterator<Item = Choice>) -> Self {
         self.choices = choices.into_iter().collect();
         self
     }
 
+    /// Gets the choices.
+    #[cfg(feature = "backend")]
+    pub fn choices(&self) -> &[Choice] {
+        &self.choices
+    }
+
     /// Sets the current folder.
     #[must_use]
-    pub fn current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
+    pub fn set_current_folder(mut self, current_folder: impl Into<Option<FilePath>>) -> Self {
         self.current_folder = current_folder.into();
         self
     }
 
+    /// Gets the current folder.
+    #[cfg(feature = "backend")]
+    pub fn current_folder(&self) -> Option<&FilePath> {
+        self.current_folder.as_ref()
+    }
+
     /// Sets the files.
     #[must_use]
-    pub fn files(mut self, files: impl IntoIterator<Item = FilePath>) -> Self {
+    pub fn set_files(mut self, files: impl IntoIterator<Item = FilePath>) -> Self {
         self.files = files.into_iter().collect();
         self
     }
+
+    /// Gets the files.
+    #[cfg(feature = "backend")]
+    pub fn files(&self) -> &[FilePath] {
+        &self.files
+    }
 }
 
-#[derive(Deserialize, Type, Debug)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// A response of [`OpenFileRequest`], [`SaveFileRequest`] or
 /// [`SaveFilesRequest`].
 #[zvariant(signature = "dict")]
 pub struct SelectedFiles {
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     uris: Vec<Uri>,
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<(String, String)>,
+    // Backend-only fields
+    /// Not relevant for SaveFiles
+    #[serde(
+        default,
+        with = "optional",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
+    current_filter: Option<FileFilter>,
+    /// Only relevant for OpenFile
+    #[serde(
+        default,
+        with = "optional",
+        skip_serializing_if = "Option::is_none",
+        skip_deserializing
+    )]
+    writable: Option<bool>,
 }
 
 impl SelectedFiles {
@@ -480,6 +623,35 @@ impl SelectedFiles {
     /// The selected value of each choice as a tuple of (key, value)
     pub fn choices(&self) -> &[(String, String)] {
         &self.choices
+    }
+
+    /// Adds a URI to the selected files.
+    #[cfg(feature = "backend")]
+    pub fn uri(mut self, value: Uri) -> Self {
+        self.uris.push(value);
+        self
+    }
+
+    /// Adds a choice to the selected files.
+    #[cfg(feature = "backend")]
+    pub fn choice(mut self, choice_key: &str, choice_value: &str) -> Self {
+        self.choices
+            .push((choice_key.to_owned(), choice_value.to_owned()));
+        self
+    }
+
+    /// Sets the current filter.
+    #[cfg(feature = "backend")]
+    pub fn current_filter(mut self, value: impl Into<Option<FileFilter>>) -> Self {
+        self.current_filter = value.into();
+        self
+    }
+
+    /// Sets whether the file is writable.
+    #[cfg(feature = "backend")]
+    pub fn writable(mut self, value: impl Into<Option<bool>>) -> Self {
+        self.writable = value.into();
+        self
     }
 }
 

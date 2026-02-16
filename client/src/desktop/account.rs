@@ -32,21 +32,27 @@ use super::HandleToken;
 use crate::{Error, Uri, WindowIdentifier, desktop::request::Request, proxy::Proxy};
 
 /// Options for requesting user information.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct UserInformationOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
 }
 
 impl UserInformationOptions {
     /// Sets a user-visible reason for the request.
     #[must_use]
-    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
         self.reason = reason.into().map(ToOwned::to_owned);
         self
+    }
+
+    /// Gets the user-visible reason for the request.
+    #[cfg(feature = "backend")]
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref()
     }
 }
 

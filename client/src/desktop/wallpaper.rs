@@ -109,38 +109,43 @@ impl FromStr for SetOn {
 }
 
 /// Options for setting a wallpaper.
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
+#[serde(rename_all = "kebab-case")]
 pub struct WallpaperOptions {
-    #[serde(with = "as_value")]
+    #[serde(rename = "handle_token", with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(
-        rename = "show-preview",
-        with = "optional",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     show_preview: Option<bool>,
-    #[serde(
-        rename = "set-on",
-        with = "optional",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     set_on: Option<SetOn>,
 }
 
 impl WallpaperOptions {
     /// Sets whether to show a preview of the wallpaper.
     #[must_use]
-    pub fn show_preview(mut self, show_preview: impl Into<Option<bool>>) -> Self {
+    pub fn set_show_preview(mut self, show_preview: impl Into<Option<bool>>) -> Self {
         self.show_preview = show_preview.into();
         self
     }
 
+    /// Gets whether to show a preview of the wallpaper.
+    #[cfg(feature = "backend")]
+    pub fn show_preview(&self) -> Option<bool> {
+        self.show_preview
+    }
+
     /// Sets where to set the wallpaper.
     #[must_use]
-    pub fn set_on(mut self, set_on: impl Into<Option<SetOn>>) -> Self {
+    pub fn set_set_on(mut self, set_on: impl Into<Option<SetOn>>) -> Self {
         self.set_on = set_on.into();
         self
+    }
+
+    /// Gets where to set the wallpaper.
+    #[cfg(feature = "backend")]
+    pub fn set_on(&self) -> Option<SetOn> {
+        self.set_on
     }
 }
 

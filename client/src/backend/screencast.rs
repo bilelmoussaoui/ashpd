@@ -1,11 +1,8 @@
-use std::{
-    borrow::Borrow,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 use enumflags2::BitFlags;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use crate::{
     AppID, PortalError, WindowIdentifierType,
@@ -15,112 +12,19 @@ use crate::{
         session::{CreateSessionResponse, Session, SessionImpl, SessionManager},
     },
     desktop::{
-        HandleToken, PersistMode,
+        HandleToken,
         request::Response,
-        screencast::{CursorMode, SourceType, Stream},
+        screencast::{
+            CreateSessionOptions, CursorMode, SelectSourcesOptions, SourceType, StartCastOptions,
+            Streams,
+        },
     },
-    zvariant::{
-        Optional, OwnedObjectPath, OwnedValue, Type, Value,
-        as_value::{self, optional},
-    },
+    zvariant::{Optional, OwnedObjectPath, Type},
 };
-
-#[derive(Deserialize, Type, Debug)]
-#[zvariant(signature = "dict")]
-pub struct CreateSessionOptions {}
-
-#[derive(Deserialize, Type, Debug)]
-#[zvariant(signature = "dict")]
-pub struct SelectSourcesOptions {
-    #[serde(default, with = "optional")]
-    types: Option<BitFlags<SourceType>>,
-    #[serde(default, with = "optional")]
-    multiple: Option<bool>,
-    #[serde(default, with = "optional")]
-    cursor_mode: Option<CursorMode>,
-    #[serde(default, with = "optional")]
-    restore_data: Option<(String, u32, OwnedValue)>,
-    #[serde(default, with = "optional")]
-    persist_mode: Option<PersistMode>,
-}
-
-impl SelectSourcesOptions {
-    pub fn types(&self) -> Option<BitFlags<SourceType>> {
-        self.types
-    }
-
-    pub fn is_multiple(&self) -> Option<bool> {
-        self.multiple
-    }
-
-    pub fn cursor_mode(&self) -> Option<CursorMode> {
-        self.cursor_mode
-    }
-
-    pub fn restore_data<'a>(&'a self) -> Option<(&'a str, u32, &'a Value<'a>)> {
-        match &self.restore_data {
-            Some((key, version, data)) => Some((key.as_str(), *version, data.borrow())),
-            None => None,
-        }
-    }
-
-    pub fn persist_mode(&self) -> Option<PersistMode> {
-        self.persist_mode
-    }
-}
 
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 pub struct SelectSourcesResponse {}
-
-#[derive(Deserialize, Type, Debug)]
-#[zvariant(signature = "dict")]
-pub struct StartCastOptions {}
-
-#[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
-pub struct StartCastResponse {
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
-    streams: Vec<Stream>,
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    restore_data: Option<(String, u32, OwnedValue)>,
-}
-
-impl StartCastResponse {
-    /// The session restore token.
-    pub fn restore_data(&self) -> Option<&(String, u32, OwnedValue)> {
-        self.restore_data.as_ref()
-    }
-
-    /// The list of streams.
-    pub fn streams(&self) -> &[Stream] {
-        &self.streams
-    }
-}
-
-pub struct StartCastResponseBuilder {
-    response: StartCastResponse,
-}
-
-impl StartCastResponseBuilder {
-    pub fn new(streams: Vec<Stream>) -> Self {
-        Self {
-            response: StartCastResponse {
-                streams,
-                restore_data: None,
-            },
-        }
-    }
-
-    pub fn restore_data(mut self, data: Option<(String, u32, impl Into<OwnedValue>)>) -> Self {
-        self.response.restore_data = data.map(|(s, u, d)| (s, u, d.into()));
-        self
-    }
-
-    pub fn build(self) -> StartCastResponse {
-        self.response
-    }
-}
 
 #[async_trait]
 pub trait ScreencastImpl: RequestImpl + SessionImpl {
@@ -154,7 +58,7 @@ pub trait ScreencastImpl: RequestImpl + SessionImpl {
         app_id: Option<AppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: StartCastOptions,
-    ) -> Result<StartCastResponse>;
+    ) -> Result<Streams>;
 }
 
 pub(crate) struct ScreencastInterface {
@@ -310,7 +214,7 @@ impl ScreencastInterface {
         app_id: Optional<AppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: StartCastOptions,
-    ) -> Result<Response<StartCastResponse>> {
+    ) -> Result<Response<Streams>> {
         let session_token = HandleToken::try_from(&session_handle).unwrap();
         {
             let sessions = self.sessions.lock().unwrap();

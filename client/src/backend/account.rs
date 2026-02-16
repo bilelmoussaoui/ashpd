@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde::Deserialize;
 
 use crate::{
     AppID, WindowIdentifierType,
@@ -9,22 +8,13 @@ use crate::{
         Result,
         request::{Request, RequestImpl},
     },
-    desktop::{HandleToken, account::UserInformation, request::Response},
-    zvariant::{Optional, OwnedObjectPath, Type, as_value::optional},
+    desktop::{
+        HandleToken,
+        account::{UserInformation, UserInformationOptions},
+        request::Response,
+    },
+    zvariant::{Optional, OwnedObjectPath},
 };
-
-#[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
-pub struct UserInformationOptions {
-    #[serde(default, with = "optional")]
-    reason: Option<String>,
-}
-
-impl UserInformationOptions {
-    pub fn reason(&self) -> Option<&str> {
-        self.reason.as_deref()
-    }
-}
 
 #[async_trait]
 pub trait AccountImpl: RequestImpl {
