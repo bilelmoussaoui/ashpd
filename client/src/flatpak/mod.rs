@@ -37,7 +37,10 @@ use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{self, Fd, OwnedObjectPath, Type, as_value::optional};
+use zbus::zvariant::{
+    self, Fd, OwnedObjectPath, Type,
+    as_value::{self, optional},
+};
 
 use crate::{Error, FilePath, Pid, proxy::Proxy};
 
@@ -109,26 +112,26 @@ pub enum SupportsFlags {
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    sandbox_expose: Option<Vec<String>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose: Vec<String>,
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, read-only.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    sandbox_expose_ro: Option<Vec<String>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose_ro: Vec<String>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    sandbox_expose_fd: Option<Vec<zvariant::OwnedFd>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose_fd: Vec<zvariant::OwnedFd>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, read-only.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    sandbox_expose_fd_ro: Option<Vec<zvariant::OwnedFd>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose_fd_ro: Vec<zvariant::OwnedFd>,
     /// Flags affecting the created sandbox.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
     /// A list of environment variables to remove.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    unset_env: Option<Vec<String>>,
+    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    unset_env: Vec<String>,
     /// A file descriptor of the directory that  will be used as `/usr` in the
     /// new sandbox.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -149,7 +152,8 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose = sandbox_expose
             .into()
-            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
+            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect())
+            .unwrap_or_default();
         self
     }
 
@@ -163,7 +167,8 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose_ro = sandbox_expose_ro
             .into()
-            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
+            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect())
+            .unwrap_or_default();
         self
     }
 
@@ -175,7 +180,8 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose_fd = sandbox_expose_fd
             .into()
-            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect());
+            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect())
+            .unwrap_or_default();
         self
     }
 
@@ -188,7 +194,8 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose_fd_ro = sandbox_expose_fd_ro
             .into()
-            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect());
+            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect())
+            .unwrap_or_default();
         self
     }
 
@@ -210,7 +217,8 @@ impl SpawnOptions {
     ) -> Self {
         self.unset_env = env
             .into()
-            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect());
+            .map(|a| a.into_iter().map(|s| s.as_ref().to_owned()).collect())
+            .unwrap_or_default();
         self
     }
 
