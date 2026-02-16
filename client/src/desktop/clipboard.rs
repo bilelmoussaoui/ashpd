@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{OwnedFd, OwnedObjectPath, Type, Value, as_value::optional};
+use zbus::zvariant::{OwnedFd, OwnedObjectPath, Type, Value, as_value, as_value::optional};
 
 use super::{Session, remote_desktop::RemoteDesktop};
 use crate::{Result, proxy::Proxy};
@@ -16,7 +16,7 @@ use crate::{Result, proxy::Proxy};
 #[zvariant(signature = "dict")]
 struct SetSelectionOptions<'a> {
     #[serde(borrow)]
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_value", skip_serializing_if = "<[_]>::is_empty")]
     mime_types: &'a [&'a str],
 }
 
