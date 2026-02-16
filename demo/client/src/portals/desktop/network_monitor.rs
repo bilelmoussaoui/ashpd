@@ -97,11 +97,24 @@ impl NetworkMonitorPage {
         })
         .await?;
 
-        imp.connectivity
-            .set_label(&status.connectivity().to_string());
+        match status.connectivity() {
+            ashpd::desktop::network_monitor::Connectivity::Local => {
+                imp.connectivity.set_label("Local")
+            }
+            ashpd::desktop::network_monitor::Connectivity::Limited => {
+                imp.connectivity.set_label("Limited")
+            }
+            ashpd::desktop::network_monitor::Connectivity::CaptivePortal => {
+                imp.connectivity.set_label("Captive Portal")
+            }
+            ashpd::desktop::network_monitor::Connectivity::FullNetwork => {
+                imp.connectivity.set_label("Full Network")
+            }
+        }
         imp.network_available
-            .set_label(&status.is_available().to_string());
-        imp.metered.set_label(&status.is_metered().to_string());
+            .set_label(if status.is_available() { "Yes" } else { "No" });
+        imp.metered
+            .set_label(&if status.is_metered() { "Yes" } else { "No" });
 
         Ok(())
     }
@@ -119,7 +132,8 @@ impl NetworkMonitorPage {
 
         match response {
             Ok(response) => {
-                imp.can_reach_row.set_title(&response.to_string());
+                imp.can_reach_row
+                    .set_title(if response { "Yes" } else { "No" });
                 imp.response_group.set_visible(true);
                 self.success("Can reach request was successful");
             }
