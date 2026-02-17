@@ -18,8 +18,9 @@ use crate::{
 };
 
 mod imp {
-    use super::*;
     use std::collections::HashMap;
+
+    use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/com/belmoussaoui/ashpd/demo/input_capture.ui")]
@@ -364,8 +365,8 @@ impl InputCapturePage {
         let (session, failed_barriers, eis_result, barrier_positions) = spawn_tokio(async move {
             let proxy = InputCapture::new().await?;
 
-            // Create session with all capabilities. We don't let the user select the capabilities
-            // because... meh?
+            // Create session with all capabilities. We don't let the user select the
+            // capabilities because... meh?
             let capabilities =
                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen;
             let (session, _caps) = proxy
@@ -412,7 +413,8 @@ impl InputCapturePage {
         match eis_result {
             Ok(_fd) => {
                 self.info("Connected to EIS");
-                // We don't use EI in this demo, so we don't care if the fd gets closed
+                // We don't use EI in this demo, so we don't care if the fd gets
+                // closed
             }
             Err(err) => {
                 tracing::error!("Failed to connect to EIS: {err}");
@@ -425,7 +427,8 @@ impl InputCapturePage {
 }
 
 /// Calculate barriers on outside edges.
-/// Returns (barriers, barrier_positions) where barrier_positions maps barrier ID to position
+/// Returns (barriers, barrier_positions) where barrier_positions maps barrier
+/// ID to position
 fn calculate_outside_barriers(
     regions: &[ashpd::desktop::input_capture::Region],
 ) -> (

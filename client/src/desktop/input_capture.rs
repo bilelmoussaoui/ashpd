@@ -230,12 +230,12 @@
 //!             eprintln!("ei event: {ei_event:?}");
 //!             if let EiEvent::SeatAdded(seat_event) = &ei_event {
 //!                 seat_event.seat.bind_capabilities(
-//!                     DeviceCapability::Pointer |
-//!                     DeviceCapability::PointerAbsolute |
-//!                     DeviceCapability::Keyboard |
-//!                     DeviceCapability::Touch |
-//!                     DeviceCapability::Scroll |
-//!                     DeviceCapability::Button
+//!                     DeviceCapability::Pointer
+//!                         | DeviceCapability::PointerAbsolute
+//!                         | DeviceCapability::Keyboard
+//!                         | DeviceCapability::Touch
+//!                         | DeviceCapability::Scroll
+//!                         | DeviceCapability::Button,
 //!                 );
 //!                 context.flush().unwrap();
 //!             }
