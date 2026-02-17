@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[async_trait]
-pub trait PermissionStoreEmitter: Send + Sync {
+pub trait PermissionStoreSignalEmitter: Send + Sync {
     async fn emit_document_changed(
         &self,
         table: &str,
@@ -82,7 +82,7 @@ pub trait PermissionStoreImpl: Send + Sync {
     ) -> Result<(), PortalError>;
 
     // Set the signal emitter, allowing to notify of changes.
-    fn set_signal_emitter(&mut self, signal_emitter: Arc<dyn PermissionStoreEmitter>);
+    fn set_signal_emitter(&mut self, signal_emitter: Arc<dyn PermissionStoreSignalEmitter>);
 }
 
 pub(crate) struct PermissionStoreInterface {
@@ -127,7 +127,7 @@ impl PermissionStoreInterface {
 }
 
 #[async_trait]
-impl PermissionStoreEmitter for PermissionStoreInterface {
+impl PermissionStoreSignalEmitter for PermissionStoreInterface {
     #[doc(alias = "Changed")]
     async fn emit_document_changed(
         &self,
