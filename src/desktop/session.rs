@@ -1,10 +1,10 @@
 use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
-use futures_util::Stream;
+use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize, Serializer};
 use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type};
 
-use crate::{desktop::HandleToken, proxy::Proxy, Error};
+use crate::{Error, desktop::HandleToken, proxy::Proxy};
 
 /// Shared by all portal interfaces that involve long lived sessions.
 ///
@@ -58,7 +58,10 @@ where
     /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Session.html#org-freedesktop-portal-session-closed).
     #[doc(alias = "Closed")]
     pub async fn receive_closed(&self) -> Result<impl Stream<Item = ()>, Error> {
-        self.0.signal("Closed").await
+        self.0
+            .signal::<HashMap<String, OwnedValue>>("Closed")
+            .await
+            .map(|s| s.map(|_| ()))
     }
 
     /// Closes the portal session to which this object refers and ends all
