@@ -67,7 +67,9 @@ where
     ///
     /// See also [`Closed`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Session.html#org-freedesktop-portal-session-closed).
     #[doc(alias = "Closed")]
-    pub async fn receive_closed(&self) -> Result<impl Stream<Item = ()>, Error> {
+    pub async fn receive_closed(
+        &self,
+    ) -> Result<impl Stream<Item = HashMap<String, OwnedValue>>, Error> {
         self.0.signal("Closed").await
     }
 
