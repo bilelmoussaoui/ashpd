@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{
-    ActivationToken, AppID, PortalError, WindowIdentifierType,
+    ActivationToken, AppID, PortalError, Uri, WindowIdentifierType,
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
     zvariant::{
@@ -57,7 +57,7 @@ pub struct ChooserOptions {
     #[serde(default, with = "optional")]
     content_type: Option<String>,
     #[serde(default, with = "optional")]
-    uri: Option<String>,
+    uri: Option<Uri>,
     #[serde(default, with = "optional")]
     filename: Option<String>,
     #[serde(default, with = "optional")]
@@ -77,8 +77,8 @@ impl ChooserOptions {
         self.content_type.as_deref()
     }
 
-    pub fn uri(&self) -> Option<&str> {
-        self.uri.as_deref()
+    pub fn uri(&self) -> Option<&Uri> {
+        self.uri.as_ref()
     }
 
     pub fn filename(&self) -> Option<&str> {
