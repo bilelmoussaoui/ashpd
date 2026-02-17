@@ -230,8 +230,9 @@ impl FromStr for Priority {
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationDisplayHint"))]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Type)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Type, Serialize)]
 #[zvariant(signature = "s")]
+#[serde(rename_all = "kebab-case")]
 /// Ways to display a notification.
 pub enum DisplayHint {
     /// Transient.
@@ -252,23 +253,6 @@ pub enum DisplayHint {
     /// Show as new.
     #[doc(alias = "show-as-new")]
     ShowAsNew,
-}
-
-impl Serialize for DisplayHint {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let purpose = match self {
-            Self::Transient => "transient",
-            Self::Tray => "tray",
-            Self::Persistent => "persistent",
-            Self::HideOnLockScreen => "hide-on-lockscreen",
-            Self::HideContentOnLockScreen => "hide-content-on-lockscreen",
-            Self::ShowAsNew => "show-as-new",
-        };
-        serializer.serialize_str(purpose)
-    }
 }
 
 #[derive(Serialize, Type, Debug)]
@@ -556,7 +540,7 @@ impl Action {
     }
 
     /// The parameters passed to the action.
-    pub fn parameter(&self) -> &Vec<OwnedValue> {
+    pub fn parameter(&self) -> &[OwnedValue] {
         &self.2
     }
 }
