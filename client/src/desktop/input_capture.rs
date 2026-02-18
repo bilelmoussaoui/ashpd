@@ -84,7 +84,7 @@
 //!
 //! ```rust,no_run
 //! use ashpd::desktop::input_capture::{
-//!     Barrier, BarrierID, Capabilities, CreateSessionOptions, InputCapture,
+//!     Barrier, BarrierID, BarrierPosition, Capabilities, CreateSessionOptions, InputCapture,
 //! };
 //!
 //! #[allow(unused)]
@@ -121,10 +121,10 @@
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
-//!                 Position::Left => (x, y, x, y + height - 1), // start pos, end pos, inclusive
-//!                 Position::Right => (x + width, y, x + width, y + height - 1),
-//!                 Position::Top => (x, y, x + width - 1, y),
-//!                 Position::Bottom => (x, y + height, x + width - 1, y + height),
+//!                 Position::Left => BarrierPosition::new(x, y, x, y + height - 1), // start pos, end pos, inclusive
+//!                 Position::Right => BarrierPosition::new(x + width, y, x + width, y + height - 1),
+//!                 Position::Top => BarrierPosition::new(x, y, x + width - 1, y),
+//!                 Position::Bottom => BarrierPosition::new(x, y + height, x + width - 1, y + height),
 //!             };
 //!             Barrier::new(id, barrier_pos)
 //!         })
@@ -155,7 +155,7 @@
 //! use std::{collections::HashMap, os::unix::net::UnixStream, sync::OnceLock, time::Duration};
 //!
 //! use ashpd::desktop::input_capture::{
-//!     Barrier, BarrierID, Capabilities, CreateSessionOptions, InputCapture, ReleaseOptions,
+//!     Barrier, BarrierID, BarrierPosition, Capabilities, CreateSessionOptions, InputCapture, ReleaseOptions,
 //! };
 //! use futures_util::StreamExt;
 //! use reis::{
@@ -218,10 +218,10 @@
 //!             let (x, y) = (r.x_offset(), r.y_offset());
 //!             let (width, height) = (r.width() as i32, r.height() as i32);
 //!             let barrier_pos = match pos {
-//!                 Position::Left => (x, y, x, y + height - 1), // start pos, end pos, inclusive
-//!                 Position::Right => (x + width, y, x + width, y + height - 1),
-//!                 Position::Top => (x, y, x + width - 1, y),
-//!                 Position::Bottom => (x, y + height, x + width - 1, y + height),
+//!                 Position::Left => BarrierPosition::new(x, y, x, y + height - 1), // start pos, end pos, inclusive
+//!                 Position::Right => BarrierPosition::new(x + width, y, x + width, y + height - 1),
+//!                 Position::Top => BarrierPosition::new(x, y, x + width - 1, y),
+//!                 Position::Bottom => BarrierPosition::new(x, y + height, x + width - 1, y + height),
 //!             };
 //!             Barrier::new(id, barrier_pos)
 //!         })
@@ -658,6 +658,81 @@ impl Zones {
 /// A barrier ID.
 pub type BarrierID = NonZeroU32;
 
+/// Position of a barrier defined by two points (x1, y1) and (x2, y2).
+///
+/// Barriers are typically placed along screen edges.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
+#[zvariant(signature = "(iiii)")]
+pub struct BarrierPosition {
+    /// x coordinate of the first point
+    x1: i32,
+    /// y coordinate of the first point
+    y1: i32,
+    /// x coordinate of the second point
+    x2: i32,
+    /// y coordinate of the second point
+    y2: i32,
+}
+
+impl BarrierPosition {
+    /// Create a new barrier position represented by the
+    /// points x1/y1 to x2/y2.
+    pub fn new(x1: i32, y1: i32, x2: i32, y2: i32) -> Self {
+        Self { x1, y1, x2, y2 }
+    }
+
+    /// Convert to a tuple (x1, y1, x2, y2).
+    pub fn as_tuple(&self) -> (i32, i32, i32, i32) {
+        (self.x1, self.y1, self.x2, self.y2)
+    }
+
+    /// The x coordinate of the first point of the barrier.
+    pub fn x1(&self) -> i32 {
+        self.x1
+    }
+
+    /// The y coordinate of the second point of the barrier.
+    pub fn y1(&self) -> i32 {
+        self.y1
+    }
+
+    /// The x coordinate of the second point of the barrier.
+    pub fn x2(&self) -> i32 {
+        self.x2
+    }
+
+    /// The y coordinate of the second point of the barrier.
+    pub fn y2(&self) -> i32 {
+        self.y2
+    }
+}
+
+impl From<(i32, i32, i32, i32)> for BarrierPosition {
+    fn from(pos: (i32, i32, i32, i32)) -> Self {
+        Self {
+            x1: pos.0,
+            y1: pos.1,
+            x2: pos.2,
+            y2: pos.3,
+        }
+    }
+}
+
+impl From<BarrierPosition> for (i32, i32, i32, i32) {
+    fn from(pos: BarrierPosition) -> Self {
+        pos.as_tuple()
+    }
+}
+
+impl Serialize for BarrierPosition {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.as_tuple().serialize(serializer)
+    }
+}
+
 #[derive(Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 /// Input Barrier.
@@ -665,16 +740,26 @@ pub struct Barrier {
     #[serde(with = "as_value")]
     barrier_id: BarrierID,
     #[serde(with = "as_value")]
-    position: (i32, i32, i32, i32),
+    position: BarrierPosition,
 }
 
 impl Barrier {
     /// Create a new barrier.
-    pub fn new(barrier_id: BarrierID, position: (i32, i32, i32, i32)) -> Self {
+    pub fn new(barrier_id: BarrierID, position: impl Into<BarrierPosition>) -> Self {
         Self {
             barrier_id,
-            position,
+            position: position.into(),
         }
+    }
+
+    /// Get the barrier ID.
+    pub fn barrier_id(&self) -> BarrierID {
+        self.barrier_id
+    }
+
+    /// Get the barrier position.
+    pub fn position(&self) -> BarrierPosition {
+        self.position
     }
 }
 
@@ -949,3 +1034,24 @@ impl crate::Sealed for InputCapture {}
 impl SessionPortal for InputCapture {}
 #[cfg(feature = "clipboard")]
 impl crate::desktop::clipboard::IsClipboardSession for InputCapture {}
+
+#[cfg(test)]
+mod tests {
+    use super::BarrierPosition;
+
+    #[test]
+    fn test_barrier_position() {
+        let pos = BarrierPosition::new(1, 2, 3, 4);
+        assert_eq!(pos.as_tuple(), (1, 2, 3, 4));
+        assert_eq!(pos.x1(), 1);
+        assert_eq!(pos.y1(), 2);
+        assert_eq!(pos.x2(), 3);
+        assert_eq!(pos.y2(), 4);
+
+        let string = serde_json::to_string(&pos).unwrap();
+        assert_eq!(string, "[1,2,3,4]");
+
+        let pos2 = BarrierPosition::from((1, 2, 3, 4));
+        assert_eq!(pos, pos2);
+    }
+}
