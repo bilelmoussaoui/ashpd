@@ -6,8 +6,8 @@ use ashpd::{
     desktop::{
         Session,
         input_capture::{
-            Barrier, BarrierID, Capabilities, CreateSession2Options, CreateSessionOptions,
-            InputCapture, ReleaseOptions, StartOptions,
+            Barrier, BarrierID, BarrierPosition, Capabilities, CreateSession2Options,
+            CreateSessionOptions, InputCapture, ReleaseOptions, StartOptions,
         },
     },
 };
@@ -97,41 +97,13 @@ glib::wrapper! {
         @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
 }
 
-pub struct BarrierPosition {
-    x1: i32,
-    y1: i32,
-    x2: i32,
-    y2: i32,
-}
-
-impl BarrierPosition {
-    pub fn edge_name(&self) -> String {
-        if self.x1 == self.x2 {
-            if self.x1 == 0 {
-                "Left".to_string()
-            } else {
-                "Right".to_string()
-            }
-        } else if self.y1 == self.y2 {
-            if self.y1 == 0 {
-                "Top".to_string()
-            } else {
-                "Bottom".to_string()
-            }
-        } else {
-            "Unknown".to_string()
-        }
-    }
-}
-
-impl From<(i32, i32, i32, i32)> for BarrierPosition {
-    fn from(pos: (i32, i32, i32, i32)) -> Self {
-        BarrierPosition {
-            x1: pos.0,
-            y1: pos.1,
-            x2: pos.2,
-            y2: pos.3,
-        }
+pub fn edge_name(position: &BarrierPosition) -> &'static str {
+    if position.x1() == position.x2() {
+        if position.x1() == 0 { "Left" } else { "Right" }
+    } else if position.y1() == position.y2() {
+        if position.y1() == 0 { "Top" } else { "Bottom" }
+    } else {
+        "Unknown"
     }
 }
 
@@ -270,7 +242,7 @@ impl InputCapturePage {
                         // Look up the barrier position and calculate the name
                         let barrier_positions = widget.imp().barrier_positions.lock().await;
                         if let Some(position) = barrier_positions.get(&id.get()) {
-                            position.edge_name()
+                            edge_name(position).to_string()
                         } else {
                             format!("Barrier {}", id)
                         }
