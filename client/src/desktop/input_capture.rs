@@ -348,6 +348,46 @@ struct CreateSessionResponse {
     capabilities: BitFlags<Capabilities>,
 }
 
+#[derive(Debug, Serialize, Type, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`InputCapture::start`] request.
+pub struct StartOptions {
+    #[serde(with = "as_value")]
+    handle_token: HandleToken,
+    #[serde(with = "as_value")]
+    capabilities: BitFlags<Capabilities>,
+}
+
+impl StartOptions {
+    /// Request the specified capabilities.
+    pub fn set_capabilities(mut self, capabilities: BitFlags<Capabilities>) -> Self {
+        self.capabilities = capabilities;
+        self
+    }
+}
+
+#[derive(Debug, Deserialize, Type)]
+#[zvariant(signature = "dict")]
+/// Response of [`InputCapture::create_session`] request.
+pub struct StartResponse {
+    #[serde(with = "as_value")]
+    capabilities: BitFlags<Capabilities>,
+    #[serde(with = "as_value")]
+    clipboard_enabled: Option<bool>,
+}
+
+impl StartResponse {
+    /// The capabilities available to this session.
+    pub fn capabilities(&self) -> BitFlags<Capabilities> {
+        self.capabilities
+    }
+
+    /// Whether the clipboard was enabled.
+    pub fn is_clipboard_enabled(&self) -> bool {
+        self.clipboard_enabled.unwrap_or(false)
+    }
+}
+
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
 /// Specified options for a [`InputCapture::zones`] request.
@@ -687,6 +727,54 @@ impl InputCapture {
         Ok((proxy, response.capabilities))
     }
 
+    /// Create an input capture session.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`CreateSession2`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-createsession2).
+    #[doc(alias = "CreateSession2")]
+    pub async fn create_session2(
+        &self,
+        identifier: Option<&WindowIdentifier>,
+        options: crate::desktop::CreateSessionOptions,
+    ) -> Result<Session<Self>, Error> {
+        let identifier = Optional::from(identifier);
+        let (request, proxy) = futures_util::try_join!(
+            self.0.request_versioned(
+                &options.handle_token,
+                "CreateSession2",
+                (identifier, &options),
+                2
+            ),
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token),
+        )?;
+        let response: crate::desktop::session::CreateSessionResponse = request.response()?;
+        assert_eq!(proxy.path(), &response.session_handle.as_ref());
+        Ok(proxy)
+    }
+
+    /// Create an input capture session.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`Start`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-start).
+    #[doc(alias = "Start")]
+    pub async fn start(
+        &self,
+        session: &Session<Self>,
+        identifier: Option<&WindowIdentifier>,
+        options: StartOptions,
+    ) -> Result<Request<StartResponse>, Error> {
+        let identifier = Optional::from(identifier);
+        self.0
+            .request_versioned(
+                &options.handle_token,
+                "Start",
+                (session, identifier, &options),
+                2,
+            )
+            .await
+    }
     /// A set of currently available input zones for this session.
     ///
     /// # Specifications

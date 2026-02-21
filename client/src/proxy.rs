@@ -184,6 +184,25 @@ impl<'a> Proxy<'a> {
         )
         .await
     }
+
+    pub async fn request_versioned<T>(
+        &self,
+        handle_token: &HandleToken,
+        method_name: &'static str,
+        body: impl Serialize + Type + Debug,
+        req_version: u32,
+    ) -> Result<Request<T>, Error>
+    where
+        T: for<'de> Deserialize<'de> + Type + Debug,
+    {
+        let version = self.version();
+        if version >= req_version {
+            self.request(handle_token, method_name, body).await
+        } else {
+            Err(Error::RequiresVersion(req_version, version))
+        }
+    }
+
     pub async fn request<T>(
         &self,
         handle_token: &HandleToken,
