@@ -127,8 +127,8 @@ pub struct UsbDevice {
     )]
     device_file: Option<String>,
     /// Device properties
-    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
-    properties: Option<HashMap<String, OwnedValue>>,
+    #[serde(default, with = "as_value", skip_serializing_if = "HashMap::is_empty")]
+    properties: HashMap<String, OwnedValue>,
 }
 
 impl UsbDevice {
@@ -154,34 +154,30 @@ impl UsbDevice {
 
     /// Return the vendor string property for display.
     pub fn vendor(&self) -> Option<String> {
-        self.properties.as_ref().and_then(|properties| {
-            properties
-                .get("ID_VENDOR_FROM_DATABASE")
-                .or_else(|| properties.get("ID_VENDOR_ENC"))
-                .and_then(|v| v.downcast_ref::<String>().ok())
-        })
+        self.properties
+            .get("ID_VENDOR_FROM_DATABASE")
+            .or_else(|| self.properties.get("ID_VENDOR_ENC"))
+            .and_then(|v| v.downcast_ref::<String>().ok())
     }
 
     /// Return the model string property for display.
     pub fn model(&self) -> Option<String> {
-        self.properties.as_ref().and_then(|properties| {
-            properties
-                .get("ID_MODEL_FROM_DATABASE")
-                .or_else(|| properties.get("ID_MODEL_ENC"))
-                .and_then(|v| v.downcast_ref::<String>().ok())
-                .map(|model| {
-                    model
-                        .replace("\\x20", " ") // Unescape the literal \x20 to space
-                        .split_whitespace()
-                        .collect::<Vec<_>>()
-                        .join(" ")
-                })
-        })
+        self.properties
+            .get("ID_MODEL_FROM_DATABASE")
+            .or_else(|| self.properties.get("ID_MODEL_ENC"))
+            .and_then(|v| v.downcast_ref::<String>().ok())
+            .map(|model| {
+                model
+                    .replace("\\x20", " ") // Unescape the literal \x20 to space
+                    .split_whitespace()
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            })
     }
 
     /// Return the device properties.
-    pub fn properties(&self) -> Option<&HashMap<String, OwnedValue>> {
-        self.properties.as_ref()
+    pub fn properties(&self) -> &HashMap<String, OwnedValue> {
+        &self.properties
     }
 }
 
