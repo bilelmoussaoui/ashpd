@@ -50,7 +50,11 @@ use zbus::zvariant::{
 };
 
 use super::{HandleToken, PersistMode, Request, Session, session::SessionPortal};
-use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
+use crate::{
+    Error, WindowIdentifier,
+    desktop::session::{CreateSessionOptions, CreateSessionResponse},
+    proxy::Proxy,
+};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -85,16 +89,6 @@ pub enum CursorMode {
     /// The cursor is not part of the screen cast stream, but sent as PipeWire
     /// stream metadata.
     Metadata,
-}
-
-#[derive(Serialize, Deserialize, Type, Debug, Default)]
-/// Specified options for a [`Screencast::create_session`] request.
-#[zvariant(signature = "dict")]
-pub struct CreateSessionOptions {
-    #[serde(with = "as_value", skip_deserializing)]
-    handle_token: HandleToken,
-    #[serde(with = "as_value", skip_deserializing)]
-    session_handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]

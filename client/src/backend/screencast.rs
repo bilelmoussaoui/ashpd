@@ -12,12 +12,9 @@ use crate::{
         session::{CreateSessionResponse, Session, SessionImpl, SessionManager},
     },
     desktop::{
-        HandleToken,
+        CreateSessionOptions, HandleToken,
         request::Response,
-        screencast::{
-            CreateSessionOptions, CursorMode, SelectSourcesOptions, SourceType, StartCastOptions,
-            Streams,
-        },
+        screencast::{CursorMode, SelectSourcesOptions, SourceType, StartCastOptions, Streams},
     },
     zvariant::{Optional, OwnedObjectPath, Type},
 };

@@ -11,7 +11,9 @@ use zbus::zvariant::{
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
 use crate::{
-    ActivationToken, Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy,
+    ActivationToken, Error, WindowIdentifier,
+    desktop::session::{CreateSessionOptions, CreateSessionResponse},
+    proxy::Proxy,
 };
 
 #[derive(Clone, Serialize, Type, Debug, Default)]
@@ -87,18 +89,6 @@ impl Shortcut {
     pub fn trigger_description(&self) -> &str {
         &self.1.trigger_description
     }
-}
-
-#[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
-/// Specified options for a [`GlobalShortcuts::create_session`] request.
-pub struct CreateSessionOptions {
-    /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
-    handle_token: HandleToken,
-    /// A string that will be used as the last element of the session handle.
-    #[serde(with = "as_value")]
-    session_handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]

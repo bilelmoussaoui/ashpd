@@ -99,7 +99,11 @@ use zbus::zvariant::{
 use super::{
     HandleToken, PersistMode, Request, Session, screencast::Stream, session::SessionPortal,
 };
-use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, proxy::Proxy};
+use crate::{
+    Error, WindowIdentifier,
+    desktop::session::{CreateSessionOptions, CreateSessionResponse},
+    proxy::Proxy,
+};
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdKeyState"))]
@@ -146,16 +150,6 @@ pub enum Axis {
     #[doc(alias = "XDP_AXIS_HORIZONTAL_SCROLL")]
     /// Horizontal axis.
     Horizontal = 1,
-}
-
-#[derive(Serialize, Type, Debug, Default)]
-/// Specified options for a [`RemoteDesktop::create_session`] request.
-#[zvariant(signature = "dict")]
-pub struct CreateSessionOptions {
-    #[serde(with = "as_value")]
-    handle_token: HandleToken,
-    #[serde(with = "as_value")]
-    session_handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]

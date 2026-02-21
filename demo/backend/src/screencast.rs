@@ -7,10 +7,10 @@ use ashpd::{
         session::{CreateSessionResponse, SessionImpl},
     },
     desktop::{
-        HandleToken,
+        CreateSessionOptions, HandleToken,
         screencast::{
-            CreateSessionOptions, CursorMode, SelectSourcesOptions, SourceType, StartCastOptions,
-            StreamBuilder, Streams, StreamsBuilder,
+            CursorMode, SelectSourcesOptions, SourceType, StartCastOptions, StreamBuilder, Streams,
+            StreamsBuilder,
         },
     },
     enumflags2::BitFlags,

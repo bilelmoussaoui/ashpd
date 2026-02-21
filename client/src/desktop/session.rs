@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
 use futures_util::Stream;
 use serde::{Deserialize, Serialize, Serializer};
-use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type};
+use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type, as_value};
 
 use crate::{Error, desktop::HandleToken, proxy::Proxy};
 
@@ -158,4 +158,14 @@ impl<'de> Deserialize<'de> for CreateSessionResponse {
             session_handle: path.into(),
         })
     }
+}
+
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for creating a session.
+pub struct CreateSessionOptions {
+    #[serde(with = "as_value")]
+    pub(crate) handle_token: HandleToken,
+    #[serde(with = "as_value")]
+    pub(crate) session_handle_token: HandleToken,
 }

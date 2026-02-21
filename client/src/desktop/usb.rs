@@ -39,19 +39,9 @@ use zbus::zvariant::{
 
 use crate::{
     Error, WindowIdentifier,
-    desktop::{HandleToken, Session, SessionPortal},
+    desktop::{CreateSessionOptions, HandleToken, Session, SessionPortal},
     proxy::Proxy,
 };
-
-#[derive(Debug, Serialize, Type, Default)]
-#[zvariant(signature = "dict")]
-/// Specified options for a [`UsbProxy::create_session`] request.
-pub struct CreateSessionOptions {
-    #[serde(with = "as_value")]
-    handle_token: HandleToken,
-    #[serde(with = "as_value")]
-    session_handle_token: HandleToken,
-}
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize, Type, PartialEq, Eq)]
 #[zvariant(signature = "s")]

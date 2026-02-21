@@ -8,7 +8,7 @@ pub use self::handle_token::HandleToken;
 pub(crate) use self::handle_token::HandleToken;
 pub use self::{
     request::{Request, Response, ResponseError, ResponseType},
-    session::{Session, SessionPortal},
+    session::{CreateSessionOptions, Session, SessionPortal},
 };
 #[cfg(any(feature = "screenshot", feature = "settings"))]
 mod color;
