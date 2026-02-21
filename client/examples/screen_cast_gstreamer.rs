@@ -12,15 +12,18 @@ async fn open_portal() -> ashpd::Result<(Stream, OwnedFd)> {
         .select_sources(
             &session,
             SelectSourcesOptions::default()
-                .cursor_mode(CursorMode::Embedded)
-                .sources(SourceType::Monitor | SourceType::Window | SourceType::Virtual)
-                .multiple(false)
-                .restore_token(None)
-                .persist_mode(ashpd::desktop::PersistMode::ExplicitlyRevoked),
+                .set_cursor_mode(CursorMode::Embedded)
+                .set_sources(SourceType::Monitor | SourceType::Window | SourceType::Virtual)
+                .set_multiple(false)
+                .set_restore_token(None)
+                .set_persist_mode(ashpd::desktop::PersistMode::ExplicitlyRevoked),
         )
         .await?;
 
-    let response = proxy.start(&session, None).await?.response()?;
+    let response = proxy
+        .start(&session, None, Default::default())
+        .await?
+        .response()?;
     let stream = response
         .streams()
         .first()

@@ -12,7 +12,7 @@
 //!
 //! async fn watch_devices() -> ashpd::Result<()> {
 //!     let usb = UsbProxy::new().await?;
-//!     let session = usb.create_session().await?;
+//!     let session = usb.create_session(Default::default()).await?;
 //!     if let Some(response) = usb.receive_device_events().await?.next().await {
 //!         let events = response.events();
 //!         for ev in events {

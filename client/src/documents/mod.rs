@@ -523,9 +523,7 @@ impl std::ops::Deref for Documents {
 }
 
 /// Interact with `org.freedesktop.portal.FileTransfer` interface.
-mod file_transfer;
-
-pub use file_transfer::FileTransfer;
+pub mod file_transfer;
 
 #[cfg(test)]
 mod tests {

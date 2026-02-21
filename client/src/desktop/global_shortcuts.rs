@@ -136,7 +136,7 @@ pub struct ConfigureShortcutsOptions {
 impl ConfigureShortcutsOptions {
     /// Sets the token that can be used to activate the configuration dialog.
     #[must_use]
-    pub fn activation_token(
+    pub fn set_activation_token(
         mut self,
         activation_token: impl Into<Option<ActivationToken>>,
     ) -> Self {

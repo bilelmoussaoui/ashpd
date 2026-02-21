@@ -407,13 +407,13 @@ impl DynamicLauncherPage {
             imp.desktop_file_id_row.text()
         );
         let mut options = PrepareInstallOptions::default()
-            .modal(modal)
-            .editable_icon(editable_icon)
-            .editable_name(editable_name)
-            .launcher_type(launcher_type);
+            .set_modal(modal)
+            .set_editable_icon(editable_icon)
+            .set_editable_name(editable_name)
+            .set_launcher_type(launcher_type);
         if launcher_type == LauncherType::WebApplication {
             let target = imp.launcher_target_row.text();
-            options = options.target(&*target);
+            options = options.set_target(&*target);
         }
 
         let selected_file = imp.selected_icon.borrow().clone();

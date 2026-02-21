@@ -18,15 +18,17 @@
 //!         .select_sources(
 //!             &session,
 //!             SelectSourcesOptions::default()
-//!                 .cursor_mode(CursorMode::Metadata)
-//!                 .sources(SourceType::Monitor | SourceType::Window)
-//!                 .multiple(true)
-//!                 .restore_token(None)
-//!                 .persist_mode(PersistMode::DoNot),
+//!                 .set_cursor_mode(CursorMode::Metadata)
+//!                 .set_sources(SourceType::Monitor | SourceType::Window)
+//!                 .set_multiple(true)
+//!                 .set_persist_mode(PersistMode::DoNot),
 //!         )
 //!         .await?;
 //!
-//!     let response = proxy.start(&session, None).await?.response()?;
+//!     let response = proxy
+//!         .start(&session, None, Default::default())
+//!         .await?
+//!         .response()?;
 //!     response.streams().iter().for_each(|stream| {
 //!         println!("node id: {}", stream.pipe_wire_node_id());
 //!         println!("size: {:?}", stream.size());

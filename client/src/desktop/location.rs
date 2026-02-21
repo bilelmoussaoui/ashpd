@@ -1,18 +1,18 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::location::{Accuracy, LocationProxy};
+//! use ashpd::desktop::location::{Accuracy, CreateSessionOptions, LocationProxy};
 //! use futures_util::{FutureExt, StreamExt};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = LocationProxy::new().await?;
 //!     let session = proxy
-//!         .create_session(None, None, Some(Accuracy::Street))
+//!         .create_session(CreateSessionOptions::default().set_accuracy(Accuracy::Street))
 //!         .await?;
 //!     let mut stream = proxy.receive_location_updated().await?;
 //!     let (_, location) = futures_util::join!(
 //!         proxy
-//!             .start(&session, None)
+//!             .start(&session, None, Default::default())
 //!             .map(|e| e.expect("Couldn't start session")),
 //!         stream.next().map(|e| e.expect("Stream is exhausted"))
 //!     );
@@ -88,19 +88,19 @@ pub struct CreateSessionOptions {
 
 impl CreateSessionOptions {
     /// Distance threshold in meters. Default is 0.
-    pub fn distance_threshold(mut self, distance_threshold: impl Into<Option<u32>>) -> Self {
+    pub fn set_distance_threshold(mut self, distance_threshold: impl Into<Option<u32>>) -> Self {
         self.distance_threshold = distance_threshold.into();
         self
     }
 
     /// Time threshold in seconds. Default is 0.
-    pub fn time_threshold(mut self, time_threshold: impl Into<Option<u32>>) -> Self {
+    pub fn set_time_threshold(mut self, time_threshold: impl Into<Option<u32>>) -> Self {
         self.time_threshold = time_threshold.into();
         self
     }
 
     /// Requested accuracy. Default is `Accuracy::Exact`.
-    pub fn accuracy(mut self, accuracy: impl Into<Option<Accuracy>>) -> Self {
+    pub fn set_accuracy(mut self, accuracy: impl Into<Option<Accuracy>>) -> Self {
         self.accuracy = accuracy.into();
         self
     }

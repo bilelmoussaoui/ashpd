@@ -66,14 +66,14 @@ pub struct BackgroundRequestOptions {
 impl BackgroundRequestOptions {
     #[must_use]
     /// Sets whether to auto start the application or not.
-    pub fn auto_start(mut self, auto_start: impl Into<Option<bool>>) -> Self {
+    pub fn set_auto_start(mut self, auto_start: impl Into<Option<bool>>) -> Self {
         self.autostart = auto_start.into();
         self
     }
 
     #[must_use]
     /// Sets whether the application is dbus activatable.
-    pub fn dbus_activatable(mut self, dbus_activatable: impl Into<Option<bool>>) -> Self {
+    pub fn set_dbus_activatable(mut self, dbus_activatable: impl Into<Option<bool>>) -> Self {
         self.dbus_activatable = dbus_activatable.into();
         self
     }
@@ -82,7 +82,7 @@ impl BackgroundRequestOptions {
     /// Specifies the command line to execute.
     /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
     /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
-    pub fn command<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
+    pub fn set_command<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
         mut self,
         command: P,
     ) -> Self {
@@ -92,7 +92,7 @@ impl BackgroundRequestOptions {
 
     #[must_use]
     /// Sets a user-visible reason for the request.
-    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
         self.reason = reason.into().map(ToOwned::to_owned);
         self
     }

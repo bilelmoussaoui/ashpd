@@ -351,7 +351,7 @@ impl InputCapturePage {
             match proxy
                 .release(
                     session,
-                    ReleaseOptions::default().activation_id(activation_id),
+                    ReleaseOptions::default().set_activation_id(activation_id),
                 )
                 .await
             {
@@ -380,7 +380,7 @@ impl InputCapturePage {
             let (session, _caps) = proxy
                 .create_session(
                     identifier.as_ref(),
-                    CreateSessionOptions::default().capabilities(capabilities),
+                    CreateSessionOptions::default().set_capabilities(capabilities),
                 )
                 .await?;
 

@@ -214,7 +214,7 @@ impl InhibitPage {
                         .inhibit(
                             identifier.as_ref(),
                             flags,
-                            InhibitOptions::default().reason(&*reason),
+                            InhibitOptions::default().set_reason(&*reason),
                         )
                         .await?;
 

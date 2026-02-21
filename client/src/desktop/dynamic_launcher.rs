@@ -45,7 +45,7 @@
 //!         .install(&token, "some_file.desktop", desktop_entry, Default::default())
 //!         .await?;
 //!
-//!     proxy.uninstall("some_file.desktop").await?;
+//!     proxy.uninstall("some_file.desktop", Default::default()).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -133,32 +133,32 @@ pub struct PrepareInstallOptions {
 
 impl PrepareInstallOptions {
     /// Sets whether the dialog should be a modal.
-    pub fn modal(mut self, modal: impl Into<Option<bool>>) -> Self {
+    pub fn set_modal(mut self, modal: impl Into<Option<bool>>) -> Self {
         self.modal = modal.into();
         self
     }
 
     /// Sets the launcher type.
-    pub fn launcher_type(mut self, launcher_type: LauncherType) -> Self {
+    pub fn set_launcher_type(mut self, launcher_type: LauncherType) -> Self {
         self.launcher_type = launcher_type;
         self
     }
 
     /// The URL for a [`LauncherType::WebApplication`] otherwise it is not
     /// needed.
-    pub fn target<'a>(mut self, target: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_target<'a>(mut self, target: impl Into<Option<&'a str>>) -> Self {
         self.target = target.into().map(ToOwned::to_owned);
         self
     }
 
     /// Sets whether the name should be editable.
-    pub fn editable_name(mut self, editable_name: impl Into<Option<bool>>) -> Self {
+    pub fn set_editable_name(mut self, editable_name: impl Into<Option<bool>>) -> Self {
         self.editable_name = editable_name.into();
         self
     }
 
     /// Sets whether the icon should be editable.
-    pub fn editable_icon(mut self, editable_icon: impl Into<Option<bool>>) -> Self {
+    pub fn set_editable_icon(mut self, editable_icon: impl Into<Option<bool>>) -> Self {
         self.editable_icon = editable_icon.into();
         self
     }

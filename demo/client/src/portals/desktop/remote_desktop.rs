@@ -299,9 +299,9 @@ impl RemoteDesktopPage {
                     .select_devices(
                         &session,
                         SelectDevicesOptions::default()
-                            .devices(devices)
-                            .restore_token(prev_token.as_deref())
-                            .persist_mode(persist_mode),
+                            .set_devices(devices)
+                            .set_restore_token(prev_token.as_deref())
+                            .set_persist_mode(persist_mode),
                     )
                     .await?;
 

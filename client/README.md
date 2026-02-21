@@ -29,8 +29,8 @@ use ashpd::desktop::camera::Camera;
 pub async fn run() -> ashpd::Result<()> {
     let camera = Camera::new().await?;
     if camera.is_present().await? {
-        camera.request_access().await?;
-        let remote_fd = camera.open_pipe_wire_remote().await?;
+        camera.request_access(Default::default()).await?;
+        let remote_fd = camera.open_pipe_wire_remote(Default::default()).await?;
         // pass the remote fd to GStreamer for example
     }
     Ok(())

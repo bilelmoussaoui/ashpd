@@ -3,17 +3,25 @@
 //! ```rust,no_run
 //! use std::{fs::File, os::fd::AsFd};
 //!
-//! use ashpd::documents::FileTransfer;
+//! use ashpd::documents::file_transfer::{FileTransfer, StartTransferOptions};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = FileTransfer::new().await?;
 //!
-//!     let key = proxy.start_transfer(true, true).await?;
+//!     let key = proxy
+//!         .start_transfer(
+//!             StartTransferOptions::default()
+//!                 .set_writeable(true)
+//!                 .set_auto_stop(true),
+//!         )
+//!         .await?;
 //!     let file = File::open("/home/bilelmoussaoui/Downloads/adwaita-night.jpg").unwrap();
-//!     proxy.add_files(&key, &[&file.as_fd()]).await?;
+//!     proxy
+//!         .add_files(&key, &[&file.as_fd()], Default::default())
+//!         .await?;
 //!
 //!     // The files would be retrieved by another process
-//!     let files = proxy.retrieve_files(&key).await?;
+//!     let files = proxy.retrieve_files(&key, Default::default()).await?;
 //!     println!("{:#?}", files);
 //!
 //!     proxy.stop_transfer(&key).await?;
@@ -33,7 +41,7 @@ use crate::{Error, proxy::Proxy};
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`FileTransfer::start_transfer`] request.
 #[zvariant(signature = "dict")]
-pub struct TransferOptions {
+pub struct StartTransferOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     writeable: Option<bool>,
     #[serde(
@@ -44,10 +52,10 @@ pub struct TransferOptions {
     auto_stop: Option<bool>,
 }
 
-impl TransferOptions {
+impl StartTransferOptions {
     /// Sets whether the chosen application can write to the files or not.
     #[must_use]
-    pub fn writeable(mut self, writeable: impl Into<Option<bool>>) -> Self {
+    pub fn set_writeable(mut self, writeable: impl Into<Option<bool>>) -> Self {
         self.writeable = writeable.into();
         self
     }
@@ -55,7 +63,7 @@ impl TransferOptions {
     /// Whether to stop the transfer automatically after the first
     /// [`retrieve_files()`][`FileTransfer::retrieve_files`] call.
     #[must_use]
-    pub fn auto_stop(mut self, auto_stop: impl Into<Option<bool>>) -> Self {
+    pub fn set_auto_stop(mut self, auto_stop: impl Into<Option<bool>>) -> Self {
         self.auto_stop = auto_stop.into();
         self
     }
@@ -63,10 +71,12 @@ impl TransferOptions {
 
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
+/// Specified options for a [`FileTransfer::add_files`] request.
 pub struct AddFilesOptions {}
 
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
+/// Specified options for a [`FileTransfer::retrieve_files`] request.
 pub struct RetrieveFilesOptions {}
 
 /// The interface operates as a middle-man between apps when transferring files
@@ -180,7 +190,7 @@ impl FileTransfer {
     ///
     /// See also [`StartTransfer`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html#org-freedesktop-portal-filetransfer-starttransfer).
     #[doc(alias = "StartTransfer")]
-    pub async fn start_transfer(&self, options: TransferOptions) -> Result<String, Error> {
+    pub async fn start_transfer(&self, options: StartTransferOptions) -> Result<String, Error> {
         self.0.call("StartTransfer", &(options)).await
     }
 

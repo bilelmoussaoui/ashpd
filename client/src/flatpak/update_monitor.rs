@@ -10,10 +10,10 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Flatpak::new().await?;
 //!
-//!     let monitor = proxy.create_update_monitor().await?;
+//!     let monitor = proxy.create_update_monitor(Default::default()).await?;
 //!     let info = monitor.receive_update_available().await?;
 //!
-//!     monitor.update(None).await?;
+//!     monitor.update(None, Default::default()).await?;
 //!     let progress = monitor
 //!         .receive_progress()
 //!         .await?
@@ -38,10 +38,8 @@ use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.
-///
-/// Currently there are no possible options yet.
 #[zvariant(signature = "dict")]
-struct UpdateOptions {}
+pub struct UpdateOptions {}
 
 #[derive(Deserialize, Type, Debug)]
 /// A response containing the update information when an update is available.
@@ -182,8 +180,11 @@ impl UpdateMonitor {
     /// See also [`Update`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-method-org-freedesktop-portal-Flatpak-UpdateMonitor.Update).
     #[doc(alias = "Update")]
     #[doc(alias = "xdp_portal_update_install")]
-    pub async fn update(&self, identifier: Option<&WindowIdentifier>) -> Result<(), Error> {
-        let options = UpdateOptions::default();
+    pub async fn update(
+        &self,
+        identifier: Option<&WindowIdentifier>,
+        options: UpdateOptions,
+    ) -> Result<(), Error> {
         let identifier = Optional::from(identifier);
 
         self.0.call("Update", &(identifier, options)).await

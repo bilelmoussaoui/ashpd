@@ -37,19 +37,23 @@
 //! ```rust,no_run
 //! use std::os::fd::AsRawFd;
 //!
-//! use ashpd::desktop::input_capture::{Capabilities, InputCapture};
+//! use ashpd::desktop::input_capture::{Capabilities, CreateSessionOptions, InputCapture};
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let input_capture = InputCapture::new().await?;
 //!     let (session, capabilities) = input_capture
 //!         .create_session(
 //!             None,
-//!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!             CreateSessionOptions::default().set_capabilities(
+//!                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!             ),
 //!         )
 //!         .await?;
 //!     eprintln!("capabilities: {capabilities}");
 //!
-//!     let eifd = input_capture.connect_to_eis(&session).await?;
+//!     let eifd = input_capture
+//!         .connect_to_eis(&session, Default::default())
+//!         .await?;
 //!     eprintln!("eifd: {}", eifd.as_raw_fd());
 //!     Ok(())
 //! }
@@ -79,7 +83,9 @@
 //! and returned in the `failed_barrier_ids` vector.
 //!
 //! ```rust,no_run
-//! use ashpd::desktop::input_capture::{Barrier, BarrierID, Capabilities, InputCapture};
+//! use ashpd::desktop::input_capture::{
+//!     Barrier, BarrierID, Capabilities, CreateSessionOptions, InputCapture,
+//! };
 //!
 //! #[allow(unused)]
 //! enum Position {
@@ -94,12 +100,17 @@
 //!     let (session, _capabilities) = input_capture
 //!         .create_session(
 //!             None,
-//!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!             CreateSessionOptions::default().set_capabilities(
+//!                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!             ),
 //!         )
 //!         .await?;
 //!
 //!     let pos = Position::Left;
-//!     let zones = input_capture.zones(&session).await?.response()?;
+//!     let zones = input_capture
+//!         .zones(&session, Default::default())
+//!         .await?
+//!         .response()?;
 //!     eprintln!("zones: {zones:?}");
 //!     let barriers = zones
 //!         .regions()
@@ -122,7 +133,7 @@
 //!     eprintln!("requested barriers: {barriers:?}");
 //!
 //!     let request = input_capture
-//!         .set_pointer_barriers(&session, &barriers, zones.zone_set())
+//!         .set_pointer_barriers(&session, &barriers, zones.zone_set(), Default::default())
 //!         .await?;
 //!     let response = request.response()?;
 //!     let failed_barrier_ids = response.failed_barriers();
@@ -143,7 +154,9 @@
 //! ```rust,no_run
 //! use std::{collections::HashMap, os::unix::net::UnixStream, sync::OnceLock, time::Duration};
 //!
-//! use ashpd::desktop::input_capture::{Barrier, BarrierID, Capabilities, InputCapture};
+//! use ashpd::desktop::input_capture::{
+//!     Barrier, BarrierID, Capabilities, CreateSessionOptions, InputCapture, ReleaseOptions,
+//! };
 //! use futures_util::StreamExt;
 //! use reis::{
 //!     ei::{self, keyboard::KeyState},
@@ -166,12 +179,16 @@
 //!     let (session, _cap) = input_capture
 //!         .create_session(
 //!             None,
-//!             Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!             CreateSessionOptions::default().set_capabilities(
+//!                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!             ),
 //!         )
 //!         .await?;
 //!
 //!     // connect to eis server
-//!     let fd = input_capture.connect_to_eis(&session).await?;
+//!     let fd = input_capture
+//!         .connect_to_eis(&session, Default::default())
+//!         .await?;
 //!
 //!     // create unix stream from fd
 //!     let stream = UnixStream::from(fd);
@@ -187,7 +204,10 @@
 //!         .expect("ei handshake failed");
 //!
 //!     let pos = Position::Left;
-//!     let zones = input_capture.zones(&session).await?.response()?;
+//!     let zones = input_capture
+//!         .zones(&session, Default::default())
+//!         .await?
+//!         .response()?;
 //!     eprintln!("zones: {zones:?}");
 //!     let barriers = zones
 //!         .regions()
@@ -210,14 +230,14 @@
 //!     eprintln!("requested barriers: {barriers:?}");
 //!
 //!     let request = input_capture
-//!         .set_pointer_barriers(&session, &barriers, zones.zone_set())
+//!         .set_pointer_barriers(&session, &barriers, zones.zone_set(), Default::default())
 //!         .await?;
 //!     let response = request.response()?;
 //!     let failed_barrier_ids = response.failed_barriers();
 //!
 //!     eprintln!("failed barrier ids: {:?}", failed_barrier_ids);
 //!
-//!     input_capture.enable(&session).await?;
+//!     input_capture.enable(&session, Default::default()).await?;
 //!
 //!     let mut activate_stream = input_capture.receive_activated().await?;
 //!
@@ -261,7 +281,12 @@
 //!             Position::Bottom => (x, y + 1.),
 //!         };
 //!         input_capture
-//!             .release(&session, activated.activation_id(), Some(cursor_pos))
+//!             .release(
+//!                 &session,
+//!                 ReleaseOptions::default()
+//!                     .set_activation_id(activated.activation_id())
+//!                     .set_cursor_position(cursor_pos),
+//!             )
 //!             .await?;
 //!     }
 //! }
@@ -308,7 +333,7 @@ pub struct CreateSessionOptions {
 
 impl CreateSessionOptions {
     /// Request the specified capabilities.
-    pub fn capabilities(mut self, capabilities: BitFlags<Capabilities>) -> Self {
+    pub fn set_capabilities(mut self, capabilities: BitFlags<Capabilities>) -> Self {
         self.capabilities = capabilities;
         self
     }
@@ -362,14 +387,14 @@ pub struct ReleaseOptions {
 impl ReleaseOptions {
     /// The same activation_id number as in the corresponding "Activated"
     /// signal.
-    pub fn activation_id(mut self, activation_id: impl Into<Option<u32>>) -> Self {
+    pub fn set_activation_id(mut self, activation_id: impl Into<Option<u32>>) -> Self {
         self.activation_id = activation_id.into();
         self
     }
 
     /// The suggested cursor position within the Zones available in this
     /// session.
-    pub fn cursor_position(mut self, cursor_position: impl Into<Option<(f64, f64)>>) -> Self {
+    pub fn set_cursor_position(mut self, cursor_position: impl Into<Option<(f64, f64)>>) -> Self {
         self.cursor_position = cursor_position.into();
         self
     }

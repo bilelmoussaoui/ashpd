@@ -42,7 +42,7 @@ use zbus::zvariant::{
     as_value::{self, optional},
 };
 
-use crate::{Error, FilePath, Pid, proxy::Proxy};
+use crate::{Error, FilePath, Pid, flatpak::update_monitor::UpdateMonitor, proxy::Proxy};
 
 #[bitflags]
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
@@ -411,8 +411,7 @@ impl std::ops::Deref for Flatpak {
 }
 
 /// Monitor if there's an update it and install it.
-mod update_monitor;
-pub use update_monitor::{UpdateInfo, UpdateMonitor, UpdateProgress, UpdateStatus};
+pub mod update_monitor;
 
 /// Provide for a way to execute processes outside of the sandbox
 mod development;

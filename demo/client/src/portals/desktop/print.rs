@@ -379,70 +379,70 @@ impl PrintPage {
         let identifier = WindowIdentifier::from_native(&root).await;
 
         let settings = Settings::default()
-            .paper_format(paper_format.as_deref())
-            .paper_width(paper_width.as_deref())
-            .paper_height(paper_height.as_deref())
-            .n_copies(if n_copies > 0 { Some(n_copies) } else { None })
-            .default_source(default_source.as_deref())
-            .orientation(orientation)
-            .quality(quality)
-            .resolution(resolution.as_deref())
-            .resolution_x(if resolution_x > 0 {
+            .set_paper_format(paper_format.as_deref())
+            .set_paper_width(paper_width.as_deref())
+            .set_paper_height(paper_height.as_deref())
+            .set_n_copies(if n_copies > 0 { Some(n_copies) } else { None })
+            .set_default_source(default_source.as_deref())
+            .set_orientation(orientation)
+            .set_quality(quality)
+            .set_resolution(resolution.as_deref())
+            .set_resolution_x(if resolution_x > 0 {
                 Some(resolution_x)
             } else {
                 None
             })
-            .resolution_y(if resolution_y > 0 {
+            .set_resolution_y(if resolution_y > 0 {
                 Some(resolution_y)
             } else {
                 None
             })
-            .duplex(duplex)
-            .use_color(use_color)
-            .collate(collate)
-            .reverse(reverse)
-            .media_type(media_type.as_deref())
-            .dither(dither)
-            .scale(if scale > 0 { Some(scale) } else { None })
-            .print_pages(print_pages)
-            .page_ranges(page_ranges.as_deref())
-            .page_set(page_set)
-            .finishings(finishings.as_deref())
-            .number_up(if number_up > 0 { Some(number_up) } else { None })
-            .number_up_layout(number_up_layout)
-            .output_bin(output_bin.as_deref())
-            .printer_lpi(printer_lpi.as_deref())
-            .output_basename(output_basename.as_deref())
-            .output_file_format(output_file_format)
-            .output_uri(output_uri.as_ref());
+            .set_duplex(duplex)
+            .set_use_color(use_color)
+            .set_collate(collate)
+            .set_reverse(reverse)
+            .set_media_type(media_type.as_deref())
+            .set_dither(dither)
+            .set_scale(if scale > 0 { Some(scale) } else { None })
+            .set_print_pages(print_pages)
+            .set_page_ranges(page_ranges.as_deref())
+            .set_page_set(page_set)
+            .set_finishings(finishings.as_deref())
+            .set_number_up(if number_up > 0 { Some(number_up) } else { None })
+            .set_number_up_layout(number_up_layout)
+            .set_output_bin(output_bin.as_deref())
+            .set_printer_lpi(printer_lpi.as_deref())
+            .set_output_basename(output_basename.as_deref())
+            .set_output_file_format(output_file_format)
+            .set_output_uri(output_uri.as_ref());
 
         let page_setup = PageSetup::default()
-            .ppdname(ppdname.as_deref())
-            .name(page_setup_name.as_deref())
-            .display_name(display_name.as_deref())
-            .width(if width > 0.0 { Some(width) } else { None })
-            .height(if height > 0.0 { Some(height) } else { None })
-            .margin_top(if margin_top > 0.0 {
+            .set_ppdname(ppdname.as_deref())
+            .set_name(page_setup_name.as_deref())
+            .set_display_name(display_name.as_deref())
+            .set_width(if width > 0.0 { Some(width) } else { None })
+            .set_height(if height > 0.0 { Some(height) } else { None })
+            .set_margin_top(if margin_top > 0.0 {
                 Some(margin_top)
             } else {
                 None
             })
-            .margin_bottom(if margin_bottom > 0.0 {
+            .set_margin_bottom(if margin_bottom > 0.0 {
                 Some(margin_bottom)
             } else {
                 None
             })
-            .margin_left(if margin_left > 0.0 {
+            .set_margin_left(if margin_left > 0.0 {
                 Some(margin_left)
             } else {
                 None
             })
-            .margin_right(if margin_right > 0.0 {
+            .set_margin_right(if margin_right > 0.0 {
                 Some(margin_right)
             } else {
                 None
             })
-            .orientation(page_setup_orientation);
+            .set_orientation(page_setup_orientation);
 
         let prepare_options = PreparePrintOptions::default()
             .set_modal(modal)

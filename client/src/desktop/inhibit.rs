@@ -5,7 +5,7 @@
 //! ```rust,no_run
 //! use std::{thread, time};
 //!
-//! use ashpd::desktop::inhibit::{InhibitFlags, InhibitProxy, SessionState};
+//! use ashpd::desktop::inhibit::{InhibitFlags, InhibitOptions, InhibitProxy, SessionState};
 //! use futures_util::StreamExt;
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -20,7 +20,8 @@
 //!                 .inhibit(
 //!                     None,
 //!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
-//!                     "please save the opened project first",
+//!                     InhibitOptions::default()
+//!                         .set_reason("please save the opened project first"),
 //!                 )
 //!                 .await?;
 //!             thread::sleep(time::Duration::from_secs(1));
@@ -69,7 +70,7 @@ pub struct InhibitOptions {
 impl InhibitOptions {
     /// Sets a user-visible reason for the request.
     #[must_use]
-    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
         self.reason = reason.into().map(ToOwned::to_owned);
         self
     }

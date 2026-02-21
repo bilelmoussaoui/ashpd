@@ -12,16 +12,20 @@
 //!     proxy
 //!         .select_devices(
 //!             &session,
-//!             SelectDevicesOptions::default().devies(DeviceType::Keyboard | DeviceType::Pointer),
+//!             SelectDevicesOptions::default()
+//!                 .set_devices(DeviceType::Keyboard | DeviceType::Pointer),
 //!         )
 //!         .await?;
 //!
-//!     let response = proxy.start(&session, None).await?.response()?;
+//!     let response = proxy
+//!         .start(&session, None, Default::default())
+//!         .await?
+//!         .response()?;
 //!     println!("{:#?}", response.devices());
 //!
 //!     // 13 for Enter key code
 //!     proxy
-//!         .notify_keyboard_keycode(&session, 13, KeyState::Pressed)
+//!         .notify_keyboard_keycode(&session, 13, KeyState::Pressed, Default::default())
 //!         .await?;
 //!
 //!     Ok(())
@@ -44,33 +48,36 @@
 //! async fn run() -> ashpd::Result<()> {
 //!     let remote_desktop = RemoteDesktop::new().await?;
 //!     let screencast = Screencast::new().await?;
-//!     let session = remote_desktop.create_session().await?;
+//!     let session = remote_desktop.create_session(Default::default()).await?;
 //!
 //!     remote_desktop
 //!         .select_devices(
 //!             &session,
-//!             SelectDevicesOptions::default().devices(DeviceType::Keyboard | DeviceType::Pointer),
+//!             SelectDevicesOptions::default()
+//!                 .set_devices(DeviceType::Keyboard | DeviceType::Pointer),
 //!         )
 //!         .await?;
 //!     screencast
 //!         .select_sources(
 //!             &session,
 //!             SelectSourcesOptions::default()
-//!                 .cursor_mode(CursorMode::Metadata)
-//!                 .sources(SourceType::Monitor | SourceType::Window)
-//!                 .multiple(true)
-//!                 .restore_token(None)
-//!                 .persist_mode(PersistMode::DoNot),
+//!                 .set_cursor_mode(CursorMode::Metadata)
+//!                 .set_sources(SourceType::Monitor | SourceType::Window)
+//!                 .set_multiple(true)
+//!                 .set_persist_mode(PersistMode::DoNot),
 //!         )
 //!         .await?;
 //!
-//!     let response = remote_desktop.start(&session, None).await?.response()?;
+//!     let response = remote_desktop
+//!         .start(&session, None, Default::default())
+//!         .await?
+//!         .response()?;
 //!     println!("{:#?}", response.devices());
 //!     println!("{:#?}", response.streams());
 //!
 //!     // 13 for Enter key code
 //!     remote_desktop
-//!         .notify_keyboard_keycode(&session, 13, KeyState::Pressed)
+//!         .notify_keyboard_keycode(&session, 13, KeyState::Pressed, Default::default())
 //!         .await?;
 //!
 //!     Ok(())
@@ -208,7 +215,7 @@ pub struct NotifyPointerAxisOptions {
 
 impl NotifyPointerAxisOptions {
     /// Sets whether the axis event is the last one in a sequence.
-    pub fn finish(mut self, finish: bool) -> Self {
+    pub fn set_finish(mut self, finish: bool) -> Self {
         self.finish = finish;
         self
     }
@@ -230,19 +237,19 @@ pub struct SelectDevicesOptions {
 
 impl SelectDevicesOptions {
     /// Sets the device types to request remote controlling of.
-    pub fn devices(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
+    pub fn set_devices(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
         self.types = types.into();
         self
     }
 
     /// Sets the persist mode.
-    pub fn persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
+    pub fn set_persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
         self.persist_mode = persist_mode.into();
         self
     }
 
     /// Sets the restore token.
-    pub fn restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
+    pub fn set_restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
         self.restore_token = token.into().map(ToOwned::to_owned);
         self
     }

@@ -282,9 +282,9 @@ pub async fn locate(
         let session = proxy
             .create_session(
                 CreateSessionOptions::default()
-                    .distance_threshold(distance_threshold)
-                    .time_threshold(time_threshold)
-                    .accuracy(accuracy),
+                    .set_distance_threshold(distance_threshold)
+                    .set_time_threshold(time_threshold)
+                    .set_accuracy(accuracy),
             )
             .await?;
         proxy
