@@ -43,18 +43,18 @@ async-channel = "2.3"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 futures-util = "0.3"
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
-gst = { package = "gstreamer", version = "0.25.0-alpha" }
-gst4gtk = { package = "gst-plugin-gtk4", version = "0.15.0-alpha", features = [
+gst = { package = "gstreamer", version = "0.25" }
+gst4gtk = { package = "gst-plugin-gtk4", version = "0.15", features = [
     "wayland",
     "x11egl",
     "x11glx",
     "gtk_v4_14",
 ] }
-gtk = { package = "gtk4", version = "0.11.0-alpha", features = ["v4_14"] }
+gtk = { package = "gtk4", version = "0.11", features = ["v4_14"] }
 gvdb-macros = "0.1"
 rusb = "0.9.4"
 serde = { version = "1.0", features = ["derive"] }
-shumate = { version = "0.8.0-alpha", package = "libshumate" }
+shumate = { version = "0.8", package = "libshumate" }
 tokio = { version = "1.48", default-features = false, features = [
     "io-util",
     "net",
