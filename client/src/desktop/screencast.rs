@@ -45,7 +45,7 @@ use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    self, Optional, OwnedValue, Type, Value,
+    self, Optional, OwnedValue, Type,
     as_value::{self, optional},
 };
 
@@ -115,6 +115,7 @@ pub struct SelectSourcesOptions {
     )]
     restore_token: Option<String>,
     #[serde(default, with = "optional", skip_serializing)]
+    #[cfg_attr(not(feature = "backend"), allow(dead_code))]
     restore_data: Option<(String, u32, OwnedValue)>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     persist_mode: Option<PersistMode>,
@@ -182,7 +183,7 @@ impl SelectSourcesOptions {
 
     /// Gets the restore data.
     #[cfg(feature = "backend")]
-    pub fn restore_data<'a>(&'a self) -> Option<(&'a str, u32, &'a Value<'a>)> {
+    pub fn restore_data<'a>(&'a self) -> Option<(&'a str, u32, &'a zbus::zvariant::Value<'a>)> {
         use std::borrow::Borrow;
         match &self.restore_data {
             Some((key, version, data)) => Some((key.as_str(), *version, data.borrow())),
@@ -213,6 +214,7 @@ pub struct Streams {
     )]
     restore_token: Option<String>,
     #[serde(default, with = "optional", skip_serializing)]
+    #[cfg_attr(not(feature = "backend"), allow(dead_code))]
     restore_data: Option<(String, u32, OwnedValue)>,
 }
 

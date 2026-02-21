@@ -55,6 +55,7 @@ pub struct ScreenshotOptions {
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     interactive: Option<bool>,
     #[serde(default, with = "optional", skip_serializing)]
+    #[cfg_attr(not(feature = "backend"), allow(dead_code))]
     permission_store_checked: Option<bool>,
 }
 

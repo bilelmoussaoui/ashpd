@@ -60,6 +60,7 @@ pub struct EmailOptions {
     )]
     attachment_fds: Vec<zvariant::OwnedFd>,
     #[serde(default, with = "as_value", skip_serializing)]
+    #[cfg_attr(not(feature = "backend"), allow(dead_code))]
     attachments: Vec<Uri>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
