@@ -67,34 +67,49 @@ pub enum Accuracy {
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::create_session`] request.
 #[zvariant(signature = "dict")]
-struct CreateSessionOptions {
-    /// A string that will be used as the last element of the session handle.
+pub struct CreateSessionOptions {
     #[serde(with = "as_value")]
     session_handle_token: HandleToken,
-    /// Distance threshold in meters. Default is 0.
     #[serde(
         rename = "distance-threshold",
         with = "optional",
         skip_serializing_if = "Option::is_none"
     )]
     distance_threshold: Option<u32>,
-    /// Time threshold in seconds. Default is 0.
     #[serde(
         rename = "time-threshold",
         with = "optional",
         skip_serializing_if = "Option::is_none"
     )]
     time_threshold: Option<u32>,
-    /// Requested accuracy. Default is `Accuracy::Exact`.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     accuracy: Option<Accuracy>,
+}
+
+impl CreateSessionOptions {
+    /// Distance threshold in meters. Default is 0.
+    pub fn distance_threshold(mut self, distance_threshold: impl Into<Option<u32>>) -> Self {
+        self.distance_threshold = distance_threshold.into();
+        self
+    }
+
+    /// Time threshold in seconds. Default is 0.
+    pub fn time_threshold(mut self, time_threshold: impl Into<Option<u32>>) -> Self {
+        self.time_threshold = time_threshold.into();
+        self
+    }
+
+    /// Requested accuracy. Default is `Accuracy::Exact`.
+    pub fn accuracy(mut self, accuracy: impl Into<Option<Accuracy>>) -> Self {
+        self.accuracy = accuracy.into();
+        self
+    }
 }
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::start`] request.
 #[zvariant(signature = "dict")]
-struct SessionStartOptions {
-    /// A string that will be used as the last element of the handle.
+pub struct StartOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
@@ -261,16 +276,8 @@ impl LocationProxy {
     #[doc(alias = "CreateSession")]
     pub async fn create_session(
         &self,
-        distance_threshold: Option<u32>,
-        time_threshold: Option<u32>,
-        accuracy: Option<Accuracy>,
+        options: CreateSessionOptions,
     ) -> Result<Session<Self>, Error> {
-        let options = CreateSessionOptions {
-            distance_threshold,
-            time_threshold,
-            accuracy,
-            ..Default::default()
-        };
         let (path, proxy) = futures_util::try_join!(
             self.0.call::<OwnedObjectPath>("CreateSession", &(options)),
             Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token),
@@ -297,8 +304,8 @@ impl LocationProxy {
         &self,
         session: &Session<Self>,
         identifier: Option<&WindowIdentifier>,
+        options: StartOptions,
     ) -> Result<Request<()>, Error> {
-        let options = SessionStartOptions::default();
         let identifier = Optional::from(identifier);
         self.0
             .empty_request(

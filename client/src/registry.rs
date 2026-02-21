@@ -3,7 +3,7 @@ use zbus::zvariant;
 
 use crate::{AppID, Error, proxy::Proxy};
 
-#[derive(Debug, Serialize, zvariant::Type)]
+#[derive(Debug, Serialize, zvariant::Type, Default)]
 #[zvariant(signature = "dict")]
 struct RegisterOptions {}
 
@@ -22,8 +22,7 @@ impl RegistryProxy {
         Ok(Self(proxy))
     }
 
-    pub async fn register(&self, app_id: AppID) -> Result<(), Error> {
-        let options = RegisterOptions {};
+    pub async fn register(&self, app_id: AppID, options: RegisterOptions) -> Result<(), Error> {
         self.0.call_method("Register", &(&app_id, &options)).await?;
         Ok(())
     }
@@ -51,7 +50,7 @@ pub async fn register_host_app(app_id: AppID) -> crate::Result<()> {
         return Ok(());
     }
     let proxy = RegistryProxy::new().await?;
-    proxy.register(app_id).await?;
+    proxy.register(app_id, Default::default()).await?;
     Ok(())
 }
 
@@ -64,6 +63,6 @@ pub async fn register_host_app_with_connection(
         return Ok(());
     }
     let proxy = RegistryProxy::with_connection(connection).await?;
-    proxy.register(app_id).await?;
+    proxy.register(app_id, Default::default()).await?;
     Ok(())
 }

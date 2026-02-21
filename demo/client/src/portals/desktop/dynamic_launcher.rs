@@ -456,7 +456,12 @@ impl DynamicLauncherPage {
             let proxy = DynamicLauncherProxy::new().await?;
 
             proxy
-                .install(response.token(), &owned_desktop_id, &desktop_entry)
+                .install(
+                    response.token(),
+                    &owned_desktop_id,
+                    &desktop_entry,
+                    Default::default(),
+                )
                 .await
         })
         .await?;
@@ -472,7 +477,7 @@ impl DynamicLauncherPage {
         let owned_desktop_id = desktop_id.to_owned();
         spawn_tokio(async move {
             let proxy = DynamicLauncherProxy::new().await?;
-            proxy.uninstall(&owned_desktop_id).await
+            proxy.uninstall(&owned_desktop_id, Default::default()).await
         })
         .await?;
 

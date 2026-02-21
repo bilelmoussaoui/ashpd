@@ -41,7 +41,8 @@ use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct BackgroundOptions {
+/// Specified options for a [`BackgroundProxy::request_background`] request.
+pub struct BackgroundRequestOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -60,6 +61,41 @@ struct BackgroundOptions {
         skip_serializing_if = "Vec::is_empty"
     )]
     command: Vec<String>,
+}
+
+impl BackgroundRequestOptions {
+    #[must_use]
+    /// Sets whether to auto start the application or not.
+    pub fn auto_start(mut self, auto_start: impl Into<Option<bool>>) -> Self {
+        self.autostart = auto_start.into();
+        self
+    }
+
+    #[must_use]
+    /// Sets whether the application is dbus activatable.
+    pub fn dbus_activatable(mut self, dbus_activatable: impl Into<Option<bool>>) -> Self {
+        self.dbus_activatable = dbus_activatable.into();
+        self
+    }
+
+    #[must_use]
+    /// Specifies the command line to execute.
+    /// If this is not specified, the [`Exec`](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables) line from the [desktop
+    /// file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction)
+    pub fn command<P: IntoIterator<Item = I>, I: AsRef<str> + Type + Serialize>(
+        mut self,
+        command: P,
+    ) -> Self {
+        self.command = command.into_iter().map(|s| s.as_ref().to_owned()).collect();
+        self
+    }
+
+    #[must_use]
+    /// Sets a user-visible reason for the request.
+    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+        self.reason = reason.into().map(ToOwned::to_owned);
+        self
+    }
 }
 
 #[derive(Deserialize, Type, Debug)]
@@ -94,9 +130,18 @@ impl Background {
 
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct SetStatusOptions {
+/// Specified options for a [`BackgroundProxy::set_status`] request.
+pub struct SetStatusOptions {
     #[serde(with = "as_value")]
     message: String,
+}
+
+impl SetStatusOptions {
+    /// Sets the message to be displayed to the user.
+    pub fn set_message(mut self, message: &str) -> Self {
+        self.message = message.to_owned();
+        self
+    }
 }
 
 /// The interface lets sandboxed applications request that the application
@@ -143,23 +188,20 @@ impl BackgroundProxy {
     ///
     /// See also [`SetStatus`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html#org-freedesktop-portal-background-setstatus).
     #[doc(alias = "SetStatus")]
-    pub async fn set_status(&self, message: &str) -> Result<(), Error> {
-        self.0
-            .call_versioned(
-                "SetStatus",
-                &(SetStatusOptions {
-                    message: message.to_owned(),
-                }),
-                2,
-            )
-            .await
+    pub async fn set_status(&self, options: SetStatusOptions) -> Result<(), Error> {
+        self.0.call_versioned("SetStatus", &(options), 2).await
     }
 
+    ///  Request background access.
+    ///
+    /// # Specifications
+    ///
+    /// See also [`RequestBackground`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html#org-freedesktop-portal-background-requestbackground).
     #[doc(alias = "RequestBackground")]
-    async fn request_background(
+    pub async fn request_background(
         &self,
         identifier: Option<&WindowIdentifier>,
-        options: BackgroundOptions,
+        options: BackgroundRequestOptions,
     ) -> Result<Request<Background>, Error> {
         let identifier = Optional::from(identifier);
         self.0
@@ -187,7 +229,7 @@ impl std::ops::Deref for BackgroundProxy {
 #[derive(Debug, Default)]
 pub struct BackgroundRequest {
     identifier: Option<WindowIdentifier>,
-    options: BackgroundOptions,
+    options: BackgroundRequestOptions,
 }
 
 impl BackgroundRequest {

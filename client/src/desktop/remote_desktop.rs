@@ -3,18 +3,16 @@
 //! ```rust,no_run
 //! use ashpd::desktop::{
 //!     PersistMode,
-//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop},
+//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop, SelectDevicesOptions},
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = RemoteDesktop::new().await?;
-//!     let session = proxy.create_session().await?;
+//!     let session = proxy.create_session(Default::default()).await?;
 //!     proxy
 //!         .select_devices(
 //!             &session,
-//!             DeviceType::Keyboard | DeviceType::Pointer,
-//!             None,
-//!             PersistMode::DoNot,
+//!             SelectDevicesOptions::default().devies(DeviceType::Keyboard | DeviceType::Pointer),
 //!         )
 //!         .await?;
 //!
@@ -39,8 +37,8 @@
 //! ```rust,no_run
 //! use ashpd::desktop::{
 //!     PersistMode,
-//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop},
-//!     screencast::{CursorMode, Screencast, SourceType},
+//!     remote_desktop::{DeviceType, KeyState, RemoteDesktop, SelectDevicesOptions},
+//!     screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType},
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
@@ -51,19 +49,18 @@
 //!     remote_desktop
 //!         .select_devices(
 //!             &session,
-//!             DeviceType::Keyboard | DeviceType::Pointer,
-//!             None,
-//!             PersistMode::DoNot,
+//!             SelectDevicesOptions::default().devices(DeviceType::Keyboard | DeviceType::Pointer),
 //!         )
 //!         .await?;
 //!     screencast
 //!         .select_sources(
 //!             &session,
-//!             CursorMode::Metadata,
-//!             SourceType::Monitor | SourceType::Window,
-//!             true,
-//!             None,
-//!             PersistMode::DoNot,
+//!             SelectSourcesOptions::default()
+//!                 .cursor_mode(CursorMode::Metadata)
+//!                 .sources(SourceType::Monitor | SourceType::Window)
+//!                 .multiple(true)
+//!                 .restore_token(None)
+//!                 .persist_mode(PersistMode::DoNot),
 //!         )
 //!         .await?;
 //!
@@ -82,13 +79,13 @@
 //! [select_sources]: crate::desktop::screencast::Screencast::select_sources
 //! [create_session]: crate::desktop::remote_desktop::RemoteDesktop::create_session
 
-use std::{collections::HashMap, os::fd::OwnedFd};
+use std::os::fd::OwnedFd;
 
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    self, Optional, Type, Value,
+    self, Optional, Type,
     as_value::{self, optional},
 };
 
@@ -147,23 +144,82 @@ pub enum Axis {
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::create_session`] request.
 #[zvariant(signature = "dict")]
-struct CreateRemoteOptions {
-    /// A string that will be used as the last element of the handle.
+pub struct CreateSessionOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
-    /// A string that will be used as the last element of the session handle.
     #[serde(with = "as_value")]
     session_handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_keyboard_keycode`] request.
+pub struct NotifyKeyboardKeycodeOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_keyboard_keysym`] request.
+pub struct NotifyKeyboardKeysymOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_pointer_axis_discrete`]
+/// request.
+pub struct NotifyPointerAxisDiscreteOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_touch_up`] request.
+pub struct NotifyTouchUpOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_touch_down`] request.
+pub struct NotifyTouchDownOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_touch_motion`] request.
+pub struct NotifyTouchMotionOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_pointer_button`] request.
+pub struct NotifyPointerButtonOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_pointer_motion`] request.
+pub struct NotifyPointerMotionOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_pointer_motion_absolute`]
+/// request.
+pub struct NotifyPointerMotionAbsoluteOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::notify_pointer_axis`] request.
+pub struct NotifyPointerAxisOptions {
+    #[serde(with = "as_value")]
+    finish: bool,
+}
+
+impl NotifyPointerAxisOptions {
+    /// Sets whether the axis event is the last one in a sequence.
+    pub fn finish(mut self, finish: bool) -> Self {
+        self.finish = finish;
+        self
+    }
+}
+
+#[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::select_devices`] request.
 #[zvariant(signature = "dict")]
-struct SelectDevicesOptions {
-    /// A string that will be used as the last element of the handle.
+pub struct SelectDevicesOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
-    /// The device types to request remote controlling of. Default is all.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     types: Option<BitFlags<DeviceType>>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -174,16 +230,18 @@ struct SelectDevicesOptions {
 
 impl SelectDevicesOptions {
     /// Sets the device types to request remote controlling of.
-    pub fn types(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
+    pub fn devices(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
         self.types = types.into();
         self
     }
 
+    /// Sets the persist mode.
     pub fn persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
         self.persist_mode = persist_mode.into();
         self
     }
 
+    /// Sets the restore token.
     pub fn restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
         self.restore_token = token.into().map(ToOwned::to_owned);
         self
@@ -193,8 +251,7 @@ impl SelectDevicesOptions {
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::start`] request.
 #[zvariant(signature = "dict")]
-struct StartRemoteOptions {
-    /// A string that will be used as the last element of the handle.
+pub struct StartOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
@@ -235,6 +292,11 @@ impl SelectedDevices {
     }
 }
 
+#[derive(Default, Debug, Serialize, Type)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`RemoteDesktop::connect_to_eis`] request.
+pub struct ConnectToEISOptions {}
+
 /// The interface lets sandboxed applications create remote desktop sessions.
 ///
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.RemoteDesktop`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html).
@@ -271,8 +333,10 @@ impl RemoteDesktop {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html#org-freedesktop-portal-remotedesktop-createsession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_remote_desktop_session")]
-    pub async fn create_session(&self) -> Result<Session<Self>, Error> {
-        let options = CreateRemoteOptions::default();
+    pub async fn create_session(
+        &self,
+        options: CreateSessionOptions,
+    ) -> Result<Session<Self>, Error> {
         let (request, proxy) = futures_util::try_join!(
             self.0.request::<CreateSessionResponse>(
                 &options.handle_token,
@@ -300,14 +364,8 @@ impl RemoteDesktop {
     pub async fn select_devices(
         &self,
         session: &Session<Self>,
-        types: BitFlags<DeviceType>,
-        restore_token: Option<&str>,
-        persist_mode: PersistMode,
+        options: SelectDevicesOptions,
     ) -> Result<Request<()>, Error> {
-        let options = SelectDevicesOptions::default()
-            .types(types)
-            .persist_mode(persist_mode)
-            .restore_token(restore_token);
         self.0
             .empty_request(&options.handle_token, "SelectDevices", &(session, &options))
             .await
@@ -333,8 +391,8 @@ impl RemoteDesktop {
         &self,
         session: &Session<Self>,
         identifier: Option<&WindowIdentifier>,
+        options: StartOptions,
     ) -> Result<Request<SelectedDevices>, Error> {
-        let options = StartRemoteOptions::default();
         let identifier = Optional::from(identifier);
         self.0
             .request(
@@ -366,10 +424,8 @@ impl RemoteDesktop {
         session: &Session<Self>,
         keycode: i32,
         state: KeyState,
+        options: NotifyKeyboardKeycodeOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyKeyboardKeycode", &(session, options, keycode, state))
             .await
@@ -396,10 +452,8 @@ impl RemoteDesktop {
         session: &Session<Self>,
         keysym: i32,
         state: KeyState,
+        options: NotifyKeyboardKeysymOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyKeyboardKeysym", &(session, options, keysym, state))
             .await
@@ -420,10 +474,12 @@ impl RemoteDesktop {
     ///
     /// See also [`NotifyTouchUp`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html#org-freedesktop-portal-remotedesktop-notifytouchup).
     #[doc(alias = "NotifyTouchUp")]
-    pub async fn notify_touch_up(&self, session: &Session<Self>, slot: u32) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
+    pub async fn notify_touch_up(
+        &self,
+        session: &Session<Self>,
+        slot: u32,
+        options: NotifyTouchUpOptions,
+    ) -> Result<(), Error> {
         self.0
             .call("NotifyTouchUp", &(session, options, slot))
             .await
@@ -456,10 +512,8 @@ impl RemoteDesktop {
         slot: u32,
         x: f64,
         y: f64,
+        options: NotifyTouchDownOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyTouchDown", &(session, options, stream, slot, x, y))
             .await
@@ -492,10 +546,8 @@ impl RemoteDesktop {
         slot: u32,
         x: f64,
         y: f64,
+        options: NotifyTouchMotionOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyTouchMotion", &(session, options, stream, slot, x, y))
             .await
@@ -523,10 +575,8 @@ impl RemoteDesktop {
         stream: u32,
         x: f64,
         y: f64,
+        options: NotifyPointerMotionAbsoluteOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call(
                 "NotifyPointerMotionAbsolute",
@@ -555,10 +605,8 @@ impl RemoteDesktop {
         session: &Session<Self>,
         dx: f64,
         dy: f64,
+        options: NotifyPointerMotionOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyPointerMotion", &(session, options, dx, dy))
             .await
@@ -587,10 +635,8 @@ impl RemoteDesktop {
         session: &Session<Self>,
         button: i32,
         state: KeyState,
+        options: NotifyPointerButtonOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("NotifyPointerButton", &(session, options, button, state))
             .await
@@ -616,10 +662,8 @@ impl RemoteDesktop {
         session: &Session<Self>,
         axis: Axis,
         steps: i32,
+        options: NotifyPointerAxisDiscreteOptions,
     ) -> Result<(), Error> {
-        // The `notify` methods don't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L837-L838
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call(
                 "NotifyPointerAxisDiscrete",
@@ -654,11 +698,8 @@ impl RemoteDesktop {
         session: &Session<Self>,
         dx: f64,
         dy: f64,
-        finish: bool,
+        options: NotifyPointerAxisOptions,
     ) -> Result<(), Error> {
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L1025-L1027
-        let mut options: HashMap<&str, Value<'_>> = HashMap::new();
-        options.insert("finish", Value::Bool(finish));
         self.0
             .call("NotifyPointerAxis", &(session, options, dx, dy))
             .await
@@ -684,10 +725,11 @@ impl RemoteDesktop {
     ///
     /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html#org-freedesktop-portal-remotedesktop-connecttoeis).
     #[doc(alias = "ConnectToEIS")]
-    pub async fn connect_to_eis(&self, session: &Session<Self>) -> Result<OwnedFd, Error> {
-        // `ConnectToEIS` doesn't take any options for now
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/remote-desktop.c#L1457-L1458
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
+    pub async fn connect_to_eis(
+        &self,
+        session: &Session<Self>,
+        options: ConnectToEISOptions,
+    ) -> Result<OwnedFd, Error> {
         let fd = self
             .0
             .call_versioned::<zvariant::OwnedFd>("ConnectToEIS", &(session, options), 2)

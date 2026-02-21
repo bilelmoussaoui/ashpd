@@ -9,7 +9,7 @@
 //!     let secret = Secret::new().await?;
 //!
 //!     let (mut x1, x2) = std::os::unix::net::UnixStream::pair()?;
-//!     secret.retrieve(&x2).await?;
+//!     secret.retrieve(&x2, Default::default()).await?;
 //!     drop(x2);
 //!     let mut buf = Vec::new();
 //!     x1.read_to_end(&mut buf)?;
@@ -35,7 +35,7 @@ use crate::{Error, proxy::Proxy};
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.
 #[zvariant(signature = "dict")]
-struct RetrieveOptions {
+pub struct RetrieveOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     /// A string returned by a previous call to `retrieve`.
@@ -83,8 +83,11 @@ impl Secret {
     ///
     /// See also [`RetrieveSecret`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Secret.html#org-freedesktop-portal-secret-retrievesecret)
     #[doc(alias = "RetrieveSecret")]
-    pub async fn retrieve(&self, fd: &impl AsFd) -> Result<Request<()>, Error> {
-        let options = RetrieveOptions::default();
+    pub async fn retrieve(
+        &self,
+        fd: &impl AsFd,
+        options: RetrieveOptions,
+    ) -> Result<Request<()>, Error> {
         self.0
             .empty_request(
                 &options.handle_token,
@@ -110,7 +113,7 @@ pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
 
     let (mut x1, x2) = UnixStream::pair()?;
-    proxy.retrieve(&x2).await?;
+    proxy.retrieve(&x2, Default::default()).await?;
     drop(x2);
 
     // Read the secret on a blocking thread since it's a small amount of data

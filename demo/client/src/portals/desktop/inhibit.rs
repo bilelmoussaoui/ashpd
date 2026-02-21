@@ -5,7 +5,7 @@ use ashpd::{
     WindowIdentifier,
     desktop::{
         Session,
-        inhibit::{InhibitFlags, InhibitProxy, SessionState},
+        inhibit::{InhibitFlags, InhibitOptions, InhibitProxy, SessionState},
     },
     enumflags2::BitFlags,
 };
@@ -122,7 +122,9 @@ impl InhibitPage {
 
         let monitor = spawn_tokio(async move {
             let proxy = InhibitProxy::new().await?;
-            let monitor = proxy.create_monitor(identifier.as_ref()).await?;
+            let monitor = proxy
+                .create_monitor(identifier.as_ref(), Default::default())
+                .await?;
             ashpd::Result::Ok(monitor)
         })
         .await?;
@@ -208,7 +210,13 @@ impl InhibitPage {
                 let session = imp.session.clone();
                 let result = spawn_tokio(async move {
                     let proxy = InhibitProxy::new().await?;
-                    proxy.inhibit(identifier.as_ref(), flags, &reason).await?;
+                    proxy
+                        .inhibit(
+                            identifier.as_ref(),
+                            flags,
+                            InhibitOptions::default().reason(&*reason),
+                        )
+                        .await?;
 
                     if let Some(session) = session.lock().await.as_ref() {
                         proxy.query_end_response(session).await?;

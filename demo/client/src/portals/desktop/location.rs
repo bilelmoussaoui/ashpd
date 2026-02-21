@@ -5,7 +5,7 @@ use ashpd::{
     WindowIdentifier,
     desktop::{
         Session,
-        location::{Accuracy, Location, LocationProxy},
+        location::{Accuracy, CreateSessionOptions, Location, LocationProxy},
     },
 };
 use chrono::{DateTime, Local, TimeZone};
@@ -281,12 +281,15 @@ pub async fn locate(
         let proxy = LocationProxy::new().await?;
         let session = proxy
             .create_session(
-                Some(distance_threshold),
-                Some(time_threshold),
-                Some(accuracy),
+                CreateSessionOptions::default()
+                    .distance_threshold(distance_threshold)
+                    .time_threshold(time_threshold)
+                    .accuracy(accuracy),
             )
             .await?;
-        proxy.start(&session, identifier.as_ref()).await?;
+        proxy
+            .start(&session, identifier.as_ref(), Default::default())
+            .await?;
         ashpd::Result::Ok((session, proxy))
     })
     .await

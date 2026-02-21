@@ -192,8 +192,8 @@ impl CameraPage {
 async fn stream() -> ashpd::Result<std::os::fd::OwnedFd> {
     spawn_tokio(async move {
         let proxy = camera::Camera::new().await?;
-        proxy.request_access().await?;
-        proxy.open_pipe_wire_remote().await
+        proxy.request_access(Default::default()).await?;
+        proxy.open_pipe_wire_remote(Default::default()).await
     })
     .await
 }

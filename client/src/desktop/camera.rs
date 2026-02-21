@@ -34,17 +34,23 @@
 use std::{collections::HashMap, os::fd::OwnedFd};
 
 use serde::Serialize;
-use zbus::zvariant::{self, Type, Value, as_value};
+use zbus::zvariant::{self, Type, as_value};
 
 use super::{HandleToken, Request};
 use crate::{Error, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct CameraAccessOptions {
+/// Specified options for a [`Camera::request_access`] request.
+pub struct CameraAccessOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`Camera::open_pipe_wire_remote`] request.
+pub struct OpenPipeWireRemoteOptions {}
 
 /// The interface lets sandboxed applications access camera devices, such as web
 /// cams.
@@ -80,8 +86,7 @@ impl Camera {
     /// See also [`AccessCamera`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Camera.html#org-freedesktop-portal-camera-accesscamera).
     #[doc(alias = "AccessCamera")]
     #[doc(alias = "xdp_portal_access_camera")]
-    pub async fn request_access(&self) -> Result<Request<()>, Error> {
-        let options = CameraAccessOptions::default();
+    pub async fn request_access(&self, options: CameraAccessOptions) -> Result<Request<()>, Error> {
         self.0
             .empty_request(&options.handle_token, "AccessCamera", &options)
             .await
@@ -99,10 +104,10 @@ impl Camera {
     /// See also [`OpenPipeWireRemote`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Camera.html#org-freedesktop-portal-camera-openpipewireremote).
     #[doc(alias = "OpenPipeWireRemote")]
     #[doc(alias = "xdp_portal_open_pipewire_remote_for_camera")]
-    pub async fn open_pipe_wire_remote(&self) -> Result<OwnedFd, Error> {
-        // `options` parameter doesn't seems to be used yet
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/camera.c#L273
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
+    pub async fn open_pipe_wire_remote(
+        &self,
+        options: OpenPipeWireRemoteOptions,
+    ) -> Result<OwnedFd, Error> {
         let fd = self
             .0
             .call::<zvariant::OwnedFd>("OpenPipeWireRemote", &options)
@@ -271,9 +276,9 @@ pub async fn pipewire_streams(fd: OwnedFd) -> Result<Vec<Stream>, pipewire::Erro
 /// available.
 pub async fn request() -> Result<Option<OwnedFd>, Error> {
     let proxy = Camera::new().await?;
-    proxy.request_access().await?;
+    proxy.request_access(Default::default()).await?;
     if proxy.is_present().await? {
-        Ok(Some(proxy.open_pipe_wire_remote().await?))
+        Ok(Some(proxy.open_pipe_wire_remote(Default::default()).await?))
     } else {
         Ok(None)
     }
@@ -285,9 +290,9 @@ pub async fn request() -> Result<Option<OwnedFd>, Error> {
 /// available streams, one per camera.
 pub async fn request() -> Result<Option<(OwnedFd, Vec<Stream>)>, Error> {
     let proxy = Camera::new().await?;
-    proxy.request_access().await?;
+    proxy.request_access(Default::default()).await?;
     if proxy.is_present().await? {
-        let fd = proxy.open_pipe_wire_remote().await?;
+        let fd = proxy.open_pipe_wire_remote(Default::default()).await?;
         let streams = pipewire_streams(fd.try_clone()?).await?;
         Ok(Some((fd, streams)))
     } else {

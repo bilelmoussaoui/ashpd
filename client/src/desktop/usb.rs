@@ -33,7 +33,7 @@ use std::collections::HashMap;
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use zbus::zvariant::{
-    ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, Type, Value,
+    ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, Type,
     as_value::{self, optional},
 };
 
@@ -45,7 +45,8 @@ use crate::{
 
 #[derive(Debug, Serialize, Type, Default)]
 #[zvariant(signature = "dict")]
-struct CreateSessionOptions {
+/// Specified options for a [`UsbProxy::create_session`] request.
+pub struct CreateSessionOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "as_value")]
@@ -90,10 +91,20 @@ impl std::fmt::Display for DeviceID {
     }
 }
 
-/// Options for the USB portal.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct UsbEnumerateOptions {}
+/// Specified options for a [`UsbProxy::enumerate_devices`] request.
+pub struct EnumerateDevicesOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`UsbProxy::release_devices`] request.
+pub struct ReleaseDevicesOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`UsbProxy::finish_acquire_devices`] request.
+struct FinishAcquireDevicesOptions {}
 
 /// USB device description
 #[derive(Serialize, Deserialize, Clone, Type, Debug, Default)]
@@ -229,10 +240,10 @@ impl Device {
     }
 }
 
-/// Option for AcquireDevice call.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct AcquireOptions {
+/// Specified options for a [`UsbProxy::acquire_devices`] request.
+pub struct AcquireDevicesOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
@@ -334,8 +345,10 @@ impl UsbProxy {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-createsession).
     #[doc(alias = "CreateSession")]
-    pub async fn create_session(&self) -> Result<Session<Self>, Error> {
-        let options = CreateSessionOptions::default();
+    pub async fn create_session(
+        &self,
+        options: CreateSessionOptions,
+    ) -> Result<Session<Self>, Error> {
         let session: OwnedObjectPath = self.0.call("CreateSession", &(&options)).await?;
         Session::with_connection(self.0.connection().clone(), session).await
     }
@@ -348,8 +361,10 @@ impl UsbProxy {
     ///
     /// See also [`EnumerateDevices`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-enumeratedevices).
     #[doc(alias = "EnumerateDevices")]
-    pub async fn enumerate_devices(&self) -> Result<Vec<(DeviceID, UsbDevice)>, Error> {
-        let options = UsbEnumerateOptions::default();
+    pub async fn enumerate_devices(
+        &self,
+        options: EnumerateDevicesOptions,
+    ) -> Result<Vec<(DeviceID, UsbDevice)>, Error> {
         self.0.call("EnumerateDevices", &(&options)).await
     }
 
@@ -368,8 +383,8 @@ impl UsbProxy {
         &self,
         parent_window: Option<&WindowIdentifier>,
         devices: &[Device],
+        options: AcquireDevicesOptions,
     ) -> Result<Vec<(DeviceID, Result<OwnedFd, UsbError>)>, Error> {
-        let options = AcquireOptions::default();
         let parent_window = parent_window.map(|i| i.to_string()).unwrap_or_default();
         let acquire_devices: Vec<(DeviceID, AcquireDevice)> = devices
             .iter()
@@ -390,7 +405,9 @@ impl UsbProxy {
         if request.response().is_ok() {
             let path = request.path();
             loop {
-                let (mut new_devices, finished) = self.finish_acquire_devices(path).await?;
+                let (mut new_devices, finished) = self
+                    .finish_acquire_devices(path, Default::default())
+                    .await?;
                 devices.append(&mut new_devices);
                 if finished {
                     break;
@@ -410,8 +427,8 @@ impl UsbProxy {
     async fn finish_acquire_devices(
         &self,
         request_path: &ObjectPath<'_>,
+        options: FinishAcquireDevicesOptions,
     ) -> Result<(Vec<(DeviceID, Result<OwnedFd, UsbError>)>, bool), Error> {
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         self.0
             .call("FinishAcquireDevices", &(request_path, &options))
             .await
@@ -436,8 +453,11 @@ impl UsbProxy {
     ///
     /// See also [`ReleaseDevices`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-releasedevices).
     #[doc(alias = "ReleaseDevices")]
-    pub async fn release_devices(&self, devices: &[&DeviceID]) -> Result<(), Error> {
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
+    pub async fn release_devices(
+        &self,
+        devices: &[&DeviceID],
+        options: ReleaseDevicesOptions,
+    ) -> Result<(), Error> {
         self.0.call("ReleaseDevices", &(devices, &options)).await
     }
 

@@ -2,7 +2,9 @@ use std::os::fd::{IntoRawFd, OwnedFd};
 
 use ashpd::desktop::{
     PersistMode,
-    screencast::{CursorMode, Screencast, SourceType, Stream as ScreencastStream},
+    screencast::{
+        CursorMode, Screencast, SelectSourcesOptions, SourceType, Stream as ScreencastStream,
+    },
 };
 use pipewire as pw;
 use pw::{properties::properties, spa};
@@ -13,15 +15,16 @@ struct UserData {
 
 async fn open_portal() -> ashpd::Result<(ScreencastStream, OwnedFd)> {
     let proxy = Screencast::new().await?;
-    let session = proxy.create_session().await?;
+    let session = proxy.create_session(Default::default()).await?;
     proxy
         .select_sources(
             &session,
-            CursorMode::Hidden,
-            SourceType::Monitor.into(),
-            false,
-            None,
-            PersistMode::DoNot,
+            SelectSourcesOptions::default()
+                .cursor_mode(CursorMode::Hidden)
+                .sources(SourceType::Monitor)
+                .multiple(false)
+                .restore_token(None)
+                .persist_mode(PersistMode::DoNot),
         )
         .await?;
 
@@ -32,7 +35,9 @@ async fn open_portal() -> ashpd::Result<(ScreencastStream, OwnedFd)> {
         .expect("no stream found / selected")
         .to_owned();
 
-    let fd = proxy.open_pipe_wire_remote(&session).await?;
+    let fd = proxy
+        .open_pipe_wire_remote(&session, Default::default())
+        .await?;
 
     Ok((stream, fd))
 }

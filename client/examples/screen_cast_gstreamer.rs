@@ -1,19 +1,22 @@
 use std::os::fd::{AsRawFd, OwnedFd};
 
-use ashpd::desktop::screencast::{CursorMode, Screencast, SourceType, Stream};
+use ashpd::desktop::screencast::{
+    CursorMode, Screencast, SelectSourcesOptions, SourceType, Stream,
+};
 use gst::prelude::*;
 
 async fn open_portal() -> ashpd::Result<(Stream, OwnedFd)> {
     let proxy = Screencast::new().await?;
-    let session = proxy.create_session().await?;
+    let session = proxy.create_session(Default::default()).await?;
     proxy
         .select_sources(
             &session,
-            CursorMode::Embedded,
-            SourceType::Monitor | SourceType::Window | SourceType::Virtual,
-            false,
-            None,
-            ashpd::desktop::PersistMode::ExplicitlyRevoked,
+            SelectSourcesOptions::default()
+                .cursor_mode(CursorMode::Embedded)
+                .sources(SourceType::Monitor | SourceType::Window | SourceType::Virtual)
+                .multiple(false)
+                .restore_token(None)
+                .persist_mode(ashpd::desktop::PersistMode::ExplicitlyRevoked),
         )
         .await?;
 
@@ -24,7 +27,9 @@ async fn open_portal() -> ashpd::Result<(Stream, OwnedFd)> {
         .expect("No stream found or selected")
         .to_owned();
 
-    let fd = proxy.open_pipe_wire_remote(&session).await?;
+    let fd = proxy
+        .open_pipe_wire_remote(&session, Default::default())
+        .await?;
 
     Ok((stream, fd))
 }

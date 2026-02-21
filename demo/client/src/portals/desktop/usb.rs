@@ -61,7 +61,7 @@ mod imp {
         pub(super) async fn refresh_devices(&self) -> ashpd::Result<()> {
             let devices = spawn_tokio(async move {
                 let usb = UsbProxy::new().await?;
-                let devices = usb.enumerate_devices().await?;
+                let devices = usb.enumerate_devices(Default::default()).await?;
                 ashpd::Result::Ok(devices)
             })
             .await?;
@@ -158,7 +158,7 @@ mod imp {
         pub(super) async fn start_session(&self) -> ashpd::Result<()> {
             let (proxy, session) = spawn_tokio(async move {
                 let usb = UsbProxy::new().await?;
-                let session = usb.create_session().await?;
+                let session = usb.create_session(Default::default()).await?;
                 ashpd::Result::Ok((usb, session))
             })
             .await?;
@@ -360,6 +360,7 @@ impl UsbPage {
                 .acquire_devices(
                     identifier.as_ref(),
                     &[Device::new(owned_id, device_writable)],
+                    Default::default(),
                 )
                 .await?;
             ashpd::Result::Ok(devices)
@@ -374,7 +375,7 @@ impl UsbPage {
         let owned_id = device_id.clone();
         let result = spawn_tokio(async move {
             let usb = UsbProxy::new().await?;
-            usb.release_devices(&[&owned_id]).await
+            usb.release_devices(&[&owned_id], Default::default()).await
         })
         .await;
         if let Err(err) = result {

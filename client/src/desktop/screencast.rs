@@ -8,20 +8,21 @@
 //! ```rust,no_run
 //! use ashpd::desktop::{
 //!     PersistMode,
-//!     screencast::{CursorMode, Screencast, SourceType},
+//!     screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType},
 //! };
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = Screencast::new().await?;
-//!     let session = proxy.create_session().await?;
+//!     let session = proxy.create_session(Default::default()).await?;
 //!     proxy
 //!         .select_sources(
 //!             &session,
-//!             CursorMode::Metadata,
-//!             SourceType::Monitor | SourceType::Window,
-//!             true,
-//!             None,
-//!             PersistMode::DoNot,
+//!             SelectSourcesOptions::default()
+//!                 .cursor_mode(CursorMode::Metadata)
+//!                 .sources(SourceType::Monitor | SourceType::Window)
+//!                 .multiple(true)
+//!                 .restore_token(None)
+//!                 .persist_mode(PersistMode::DoNot),
 //!         )
 //!         .await?;
 //!
@@ -36,7 +37,7 @@
 //! ```
 //! An example on how to connect with Pipewire can be found [here](https://github.com/bilelmoussaoui/ashpd/blob/main/examples/screen_cast_pw.rs), and with GStreamer [here](https://github.com/bilelmoussaoui/ashpd/blob/main/examples/screen_cast_gstreamer.rs).
 
-use std::{collections::HashMap, fmt::Debug, os::fd::OwnedFd};
+use std::{fmt::Debug, os::fd::OwnedFd};
 
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
@@ -88,28 +89,27 @@ pub enum CursorMode {
 /// Specified options for a [`Screencast::create_session`] request.
 #[zvariant(signature = "dict")]
 pub struct CreateSessionOptions {
-    /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    /// A string that will be used as the last element of the session handle.
     #[serde(with = "as_value", skip_deserializing)]
     session_handle_token: HandleToken,
 }
+
+#[derive(Serialize, Type, Debug, Default)]
+/// Specified options for a [`Screencast::open_pipe_wire_remote`] request.
+#[zvariant(signature = "dict")]
+pub struct OpenPipeWireRemoteOptions {}
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::select_sources`] request.
 #[zvariant(signature = "dict")]
 pub struct SelectSourcesOptions {
-    /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
-    /// What types of content to record.
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     types: Option<BitFlags<SourceType>>,
-    /// Whether to allow selecting multiple sources.
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     multiple: Option<bool>,
-    /// Determines how the cursor will be drawn in the screen cast stream.
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     cursor_mode: Option<CursorMode>,
     #[serde(
@@ -153,14 +153,14 @@ impl SelectSourcesOptions {
 
     /// Sets the types of content to record.
     #[must_use]
-    pub fn set_types(mut self, types: impl Into<Option<BitFlags<SourceType>>>) -> Self {
+    pub fn set_sources(mut self, types: impl Into<Option<BitFlags<SourceType>>>) -> Self {
         self.types = types.into();
         self
     }
 
     /// Gets the types of content to record.
     #[cfg(feature = "backend")]
-    pub fn types(&self) -> Option<BitFlags<SourceType>> {
+    pub fn sources(&self) -> Option<BitFlags<SourceType>> {
         self.types
     }
 
@@ -199,7 +199,6 @@ impl SelectSourcesOptions {
 /// Specified options for a [`Screencast::start`] request.
 #[zvariant(signature = "dict")]
 pub struct StartCastOptions {
-    /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value", skip_deserializing)]
     handle_token: HandleToken,
 }
@@ -457,8 +456,10 @@ impl Screencast {
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-createsession).
     #[doc(alias = "CreateSession")]
     #[doc(alias = "xdp_portal_create_screencast_session")]
-    pub async fn create_session(&self) -> Result<Session<Self>, Error> {
-        let options = CreateSessionOptions::default();
+    pub async fn create_session(
+        &self,
+        options: CreateSessionOptions,
+    ) -> Result<Session<Self>, Error> {
         let (request, proxy) = futures_util::try_join!(
             self.0.request::<CreateSessionResponse>(
                 &options.handle_token,
@@ -490,10 +491,8 @@ impl Screencast {
     pub async fn open_pipe_wire_remote(
         &self,
         session: &Session<impl HasScreencastSession>,
+        options: OpenPipeWireRemoteOptions,
     ) -> Result<OwnedFd, Error> {
-        // `options` parameter doesn't seems to be used yet
-        // see https://github.com/flatpak/xdg-desktop-portal/blob/1.20.0/src/screen-cast.c#L940
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
         let fd = self
             .0
             .call::<zvariant::OwnedFd>("OpenPipeWireRemote", &(session, options))
@@ -524,18 +523,8 @@ impl Screencast {
     pub async fn select_sources(
         &self,
         session: &Session<impl HasScreencastSession>,
-        cursor_mode: CursorMode,
-        types: BitFlags<SourceType>,
-        multiple: bool,
-        restore_token: Option<&str>,
-        persist_mode: PersistMode,
+        options: SelectSourcesOptions,
     ) -> Result<Request<()>, Error> {
-        let options = SelectSourcesOptions::default()
-            .set_cursor_mode(cursor_mode)
-            .set_multiple(multiple)
-            .set_types(types)
-            .set_persist_mode(persist_mode)
-            .set_restore_token(restore_token);
         self.0
             .empty_request(&options.handle_token, "SelectSources", &(session, &options))
             .await
@@ -566,8 +555,8 @@ impl Screencast {
         &self,
         session: &Session<impl HasScreencastSession>,
         identifier: Option<&WindowIdentifier>,
+        options: StartCastOptions,
     ) -> Result<Request<Streams>, Error> {
-        let options = StartCastOptions::default();
         let identifier = Optional::from(identifier);
         self.0
             .request(

@@ -274,7 +274,7 @@ use futures_util::Stream;
 use serde::{Deserialize, Serialize, de::Visitor};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zbus::zvariant::{
-    self, ObjectPath, Optional, OwnedObjectPath, OwnedValue, Type, Value,
+    self, ObjectPath, Optional, OwnedObjectPath, OwnedValue, Type,
     as_value::{self, optional},
 };
 
@@ -294,15 +294,24 @@ pub enum Capabilities {
     Touchscreen,
 }
 
-#[derive(Debug, Serialize, Type)]
+#[derive(Debug, Serialize, Type, Default)]
 #[zvariant(signature = "dict")]
-struct CreateSessionOptions {
+/// Specified options for a [`InputCapture::create_session`] request.
+pub struct CreateSessionOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
     #[serde(with = "as_value")]
     session_handle_token: HandleToken,
     #[serde(with = "as_value")]
     capabilities: BitFlags<Capabilities>,
+}
+
+impl CreateSessionOptions {
+    /// Request the specified capabilities.
+    pub fn capabilities(mut self, capabilities: BitFlags<Capabilities>) -> Self {
+        self.capabilities = capabilities;
+        self
+    }
 }
 
 #[derive(Debug, Deserialize, Type)]
@@ -316,34 +325,60 @@ struct CreateSessionResponse {
 
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
-struct GetZonesOptions {
+/// Specified options for a [`InputCapture::zones`] request.
+pub struct GetZonesOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
-struct SetPointerBarriersOptions {
+/// Specified options for a [`InputCapture::set_pointer_barriers`] request.
+pub struct SetPointerBarriersOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
 }
 
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
-struct EnableOptions {}
+/// Specified options for a [`InputCapture::enable`] request.
+pub struct EnableOptions {}
 
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
-struct DisableOptions {}
+/// Specified options for a [`InputCapture::disable`] request.
+pub struct DisableOptions {}
 
 #[derive(Default, Debug, Serialize, Type)]
 #[zvariant(signature = "dict")]
-struct ReleaseOptions {
+/// Specified options for a [`InputCapture::release`] request.
+pub struct ReleaseOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_id: Option<u32>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     cursor_position: Option<(f64, f64)>,
 }
+
+impl ReleaseOptions {
+    /// The same activation_id number as in the corresponding "Activated"
+    /// signal.
+    pub fn activation_id(mut self, activation_id: impl Into<Option<u32>>) -> Self {
+        self.activation_id = activation_id.into();
+        self
+    }
+
+    /// The suggested cursor position within the Zones available in this
+    /// session.
+    pub fn cursor_position(mut self, cursor_position: impl Into<Option<(f64, f64)>>) -> Self {
+        self.cursor_position = cursor_position.into();
+        self
+    }
+}
+
+#[derive(Default, Debug, Serialize, Type)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`InputCapture::connect_to_eis`] request.
+pub struct ConnectToEISOptions {}
 
 /// Indicates that an input capturing session was disabled.
 #[derive(Debug, Deserialize, Type)]
@@ -611,13 +646,8 @@ impl InputCapture {
     pub async fn create_session(
         &self,
         identifier: Option<&WindowIdentifier>,
-        capabilities: BitFlags<Capabilities>,
+        options: CreateSessionOptions,
     ) -> Result<(Session<Self>, BitFlags<Capabilities>), Error> {
-        let options = CreateSessionOptions {
-            handle_token: Default::default(),
-            session_handle_token: Default::default(),
-            capabilities,
-        };
         let identifier = Optional::from(identifier);
         let (request, proxy) = futures_util::try_join!(
             self.0.request::<CreateSessionResponse>(
@@ -638,8 +668,11 @@ impl InputCapture {
     ///
     /// See also [`GetZones`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-getzones).
     #[doc(alias = "GetZones")]
-    pub async fn zones(&self, session: &Session<Self>) -> Result<Request<Zones>, Error> {
-        let options = GetZonesOptions::default();
+    pub async fn zones(
+        &self,
+        session: &Session<Self>,
+        options: GetZonesOptions,
+    ) -> Result<Request<Zones>, Error> {
         self.0
             .request(&options.handle_token, "GetZones", (session, &options))
             .await
@@ -656,8 +689,8 @@ impl InputCapture {
         session: &Session<Self>,
         barriers: &[Barrier],
         zone_set: u32,
+        options: SetPointerBarriersOptions,
     ) -> Result<Request<SetPointerBarriersResponse>, Error> {
-        let options = SetPointerBarriersOptions::default();
         self.0
             .request(
                 &options.handle_token,
@@ -673,8 +706,11 @@ impl InputCapture {
     ///
     /// See also [`Enable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-enable).
     #[doc(alias = "Enable")]
-    pub async fn enable(&self, session: &Session<Self>) -> Result<(), Error> {
-        let options = EnableOptions::default();
+    pub async fn enable(
+        &self,
+        session: &Session<Self>,
+        options: EnableOptions,
+    ) -> Result<(), Error> {
         self.0.call("Enable", &(session, &options)).await
     }
 
@@ -684,8 +720,11 @@ impl InputCapture {
     ///
     /// See also [`Disable`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-disable).
     #[doc(alias = "Disable")]
-    pub async fn disable(&self, session: &Session<Self>) -> Result<(), Error> {
-        let options = DisableOptions::default();
+    pub async fn disable(
+        &self,
+        session: &Session<Self>,
+        options: DisableOptions,
+    ) -> Result<(), Error> {
         self.0.call("Disable", &(session, &options)).await
     }
 
@@ -698,13 +737,8 @@ impl InputCapture {
     pub async fn release(
         &self,
         session: &Session<Self>,
-        activation_id: Option<u32>,
-        cursor_position: Option<(f64, f64)>,
+        options: ReleaseOptions,
     ) -> Result<(), Error> {
-        let options = ReleaseOptions {
-            activation_id,
-            cursor_position,
-        };
         self.0.call("Release", &(session, &options)).await
     }
 
@@ -714,9 +748,11 @@ impl InputCapture {
     ///
     /// See also [`ConnectToEIS`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-connecttoeis).
     #[doc(alias = "ConnectToEIS")]
-    pub async fn connect_to_eis(&self, session: &Session<Self>) -> Result<OwnedFd, Error> {
-        // `ConnectToEIS` doesn't take any options for now
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
+    pub async fn connect_to_eis(
+        &self,
+        session: &Session<Self>,
+        options: ConnectToEISOptions,
+    ) -> Result<OwnedFd, Error> {
         let fd = self
             .0
             .call::<zvariant::OwnedFd>("ConnectToEIS", &(session, options))

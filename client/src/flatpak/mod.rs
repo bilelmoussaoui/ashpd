@@ -241,10 +241,8 @@ impl SpawnOptions {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::create_update_monitor`] request.
-///
-/// Currently there are no possible options yet.
 #[zvariant(signature = "dict")]
-struct CreateMonitorOptions {}
+pub struct CreateUpdateMonitorOptions {}
 
 /// The interface exposes some interactions with Flatpak on the host to the
 /// sandbox. For example, it allows you to restart the applications or start a
@@ -289,8 +287,10 @@ impl Flatpak {
     /// See also [`CreateUpdateMonitor`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-method-org-freedesktop-portal-Flatpak.CreateUpdateMonitor).
     #[doc(alias = "CreateUpdateMonitor")]
     #[doc(alias = "xdp_portal_update_monitor_start")]
-    pub async fn create_update_monitor(&self) -> Result<UpdateMonitor, Error> {
-        let options = CreateMonitorOptions::default();
+    pub async fn create_update_monitor(
+        &self,
+        options: CreateUpdateMonitorOptions,
+    ) -> Result<UpdateMonitor, Error> {
         let path = self
             .0
             .call_versioned::<OwnedObjectPath>("CreateUpdateMonitor", &(options), 2)

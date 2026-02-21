@@ -3,22 +3,26 @@
 //! The portal is mostly meant to be used along with
 //! [`RemoteDesktop`]
 
-use std::collections::HashMap;
-
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{OwnedFd, OwnedObjectPath, Type, Value, as_value, as_value::optional};
+use zbus::zvariant::{OwnedFd, OwnedObjectPath, Type, as_value, as_value::optional};
 
 use super::{Session, remote_desktop::RemoteDesktop};
 use crate::{Result, proxy::Proxy};
 
-#[derive(Debug, Type, Serialize)]
+#[derive(Debug, Type, Serialize, Default)]
 #[zvariant(signature = "dict")]
-struct SetSelectionOptions<'a> {
+/// Specified options for a [`Clipboard::set_selection`] request.
+pub struct SetSelectionOptions<'a> {
     #[serde(borrow)]
     #[serde(with = "as_value", skip_serializing_if = "<[_]>::is_empty")]
     mime_types: &'a [&'a str],
 }
+
+#[derive(Debug, Type, Serialize, Default)]
+#[zvariant(signature = "dict")]
+/// Specified options for a [`Clipboard::request`] request.
+pub struct RequestClipboardOptions {}
 
 #[derive(Debug, Type, Deserialize, Default)]
 #[zvariant(signature = "dict")]
@@ -71,8 +75,11 @@ impl Clipboard {
     ///
     /// See also [`RequestClipboard`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-requestclipboard).
     #[doc(alias = "RequestClipboard")]
-    pub async fn request(&self, session: &Session<RemoteDesktop>) -> Result<()> {
-        let options: HashMap<&str, Value<'_>> = HashMap::default();
+    pub async fn request(
+        &self,
+        session: &Session<RemoteDesktop>,
+        options: RequestClipboardOptions,
+    ) -> Result<()> {
         self.0
             .call_method("RequestClipboard", &(session, options))
             .await?;
@@ -83,12 +90,11 @@ impl Clipboard {
     ///
     /// See also [`SetSelection`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Clipboard.html#org-freedesktop-portal-clipboard-setselection).
     #[doc(alias = "SetSelection")]
-    pub async fn set_selection(
+    pub async fn set_selection<'a>(
         &self,
         session: &Session<RemoteDesktop>,
-        mime_types: &[&str],
+        options: SetSelectionOptions<'a>,
     ) -> Result<()> {
-        let options = SetSelectionOptions { mime_types };
         self.0
             .call::<()>("SetSelection", &(session, options))
             .await?;

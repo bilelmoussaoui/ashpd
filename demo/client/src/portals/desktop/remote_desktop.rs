@@ -6,8 +6,8 @@ use ashpd::{
     desktop::{
         PersistMode, Session,
         clipboard::Clipboard,
-        remote_desktop::{DeviceType, RemoteDesktop},
-        screencast::{CursorMode, Screencast, SourceType, Stream},
+        remote_desktop::{DeviceType, RemoteDesktop, SelectDevicesOptions},
+        screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType, Stream},
     },
     enumflags2::BitFlags,
 };
@@ -272,11 +272,11 @@ impl RemoteDesktopPage {
         let (response_devices, response_streams, session, new_token, clipboard_enabled) =
             spawn_tokio(async move {
                 let proxy = RemoteDesktop::new().await?;
-                let session = proxy.create_session().await?;
+                let session = proxy.create_session(Default::default()).await?;
 
                 if proxy.version() >= 2 {
                     let clipboard = Clipboard::new().await?;
-                    if let Err(e) = clipboard.request(&session).await {
+                    if let Err(e) = clipboard.request(&session, Default::default()).await {
                         tracing::error!("failed to request clipboard access: {}", e);
                     }
                 }
@@ -286,20 +286,27 @@ impl RemoteDesktopPage {
                     screencast_proxy
                         .select_sources(
                             &session,
-                            cursor_mode,
-                            sources,
-                            multiple_sources,
-                            None,
-                            PersistMode::default(),
+                            SelectSourcesOptions::default()
+                                .set_cursor_mode(cursor_mode)
+                                .set_sources(sources)
+                                .set_multiple(multiple_sources)
+                                .set_restore_token(None)
+                                .set_persist_mode(PersistMode::DoNot),
                         )
                         .await?;
                 }
                 proxy
-                    .select_devices(&session, devices, prev_token.as_deref(), persist_mode)
+                    .select_devices(
+                        &session,
+                        SelectDevicesOptions::default()
+                            .devices(devices)
+                            .restore_token(prev_token.as_deref())
+                            .persist_mode(persist_mode),
+                    )
                     .await?;
 
                 let response = proxy
-                    .start(&session, identifier.as_ref())
+                    .start(&session, identifier.as_ref(), Default::default())
                     .await?
                     .response()?;
 

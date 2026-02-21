@@ -131,9 +131,14 @@ impl GlobalShortcutsPage {
             Some(shortcuts) => {
                 let result = spawn_tokio(async move {
                     let global_shortcuts = GlobalShortcuts::new().await?;
-                    let session = global_shortcuts.create_session().await?;
+                    let session = global_shortcuts.create_session(Default::default()).await?;
                     let request = global_shortcuts
-                        .bind_shortcuts(&session, &shortcuts[..], identifier.as_ref())
+                        .bind_shortcuts(
+                            &session,
+                            &shortcuts[..],
+                            identifier.as_ref(),
+                            Default::default(),
+                        )
                         .await?;
                     let shortcuts_data = request.response().map(|resp| {
                         resp.shortcuts()

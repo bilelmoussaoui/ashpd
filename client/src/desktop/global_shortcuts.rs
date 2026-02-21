@@ -89,10 +89,10 @@ impl Shortcut {
     }
 }
 
-/// Specified options for a [`GlobalShortcuts::create_session`] request.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct CreateSessionOptions {
+/// Specified options for a [`GlobalShortcuts::create_session`] request.
+pub struct CreateSessionOptions {
     /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value")]
     handle_token: HandleToken,
@@ -101,10 +101,10 @@ struct CreateSessionOptions {
     session_handle_token: HandleToken,
 }
 
-/// Specified options for a [`GlobalShortcuts::bind_shortcuts`] request.
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct BindShortcutsOptions {
+/// Specified options for a [`GlobalShortcuts::bind_shortcuts`] request.
+pub struct BindShortcutsOptions {
     /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value")]
     handle_token: HandleToken,
@@ -127,15 +127,28 @@ impl BindShortcuts {
 
 #[derive(Serialize, Type, Debug)]
 #[zvariant(signature = "dict")]
-struct ConfigureShortcutsOptions {
+/// Specified options for a [`GlobalShortcuts::configure_shortcuts`] request.
+pub struct ConfigureShortcutsOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
 }
 
-/// Specified options for a [`GlobalShortcuts::list_shortcuts`] request.
+impl ConfigureShortcutsOptions {
+    /// Sets the token that can be used to activate the configuration dialog.
+    #[must_use]
+    pub fn activation_token(
+        mut self,
+        activation_token: impl Into<Option<ActivationToken>>,
+    ) -> Self {
+        self.activation_token = activation_token.into();
+        self
+    }
+}
+
 #[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
-struct ListShortcutsOptions {
+/// Specified options for a [`GlobalShortcuts::list_shortcuts`] request.
+pub struct ListShortcutsOptions {
     /// A string that will be used as the last element of the handle.
     #[serde(with = "as_value")]
     handle_token: HandleToken,
@@ -259,8 +272,10 @@ impl GlobalShortcuts {
     ///
     /// See also [`CreateSession`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html#org-freedesktop-portal-globalshortcuts-createsession).
     #[doc(alias = "CreateSession")]
-    pub async fn create_session(&self) -> Result<Session<Self>, Error> {
-        let options = CreateSessionOptions::default();
+    pub async fn create_session(
+        &self,
+        options: CreateSessionOptions,
+    ) -> Result<Session<Self>, Error> {
         let (request, proxy) = futures_util::try_join!(
             self.0.request::<CreateSessionResponse>(
                 &options.handle_token,
@@ -284,8 +299,8 @@ impl GlobalShortcuts {
         session: &Session<Self>,
         shortcuts: &[NewShortcut],
         identifier: Option<&WindowIdentifier>,
+        options: BindShortcutsOptions,
     ) -> Result<Request<BindShortcuts>, Error> {
-        let options = BindShortcutsOptions::default();
         let identifier = Optional::from(identifier);
         self.0
             .request(
@@ -305,8 +320,8 @@ impl GlobalShortcuts {
     pub async fn list_shortcuts(
         &self,
         session: &Session<Self>,
+        options: ListShortcutsOptions,
     ) -> Result<Request<ListShortcuts>, Error> {
-        let options = ListShortcutsOptions::default();
         self.0
             .request(&options.handle_token, "ListShortcuts", &(session, &options))
             .await
@@ -323,11 +338,8 @@ impl GlobalShortcuts {
         &self,
         session: &Session<Self>,
         identifier: Option<&WindowIdentifier>,
-        activation_token: impl Into<Option<ActivationToken>>,
+        options: ConfigureShortcutsOptions,
     ) -> Result<(), Error> {
-        let options = ConfigureShortcutsOptions {
-            activation_token: activation_token.into(),
-        };
         let identifier = Optional::from(identifier);
 
         self.0

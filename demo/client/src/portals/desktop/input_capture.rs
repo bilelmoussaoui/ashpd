@@ -5,7 +5,9 @@ use ashpd::{
     WindowIdentifier,
     desktop::{
         Session,
-        input_capture::{Barrier, BarrierID, Capabilities, InputCapture},
+        input_capture::{
+            Barrier, BarrierID, Capabilities, CreateSessionOptions, InputCapture, ReleaseOptions,
+        },
     },
 };
 use async_channel;
@@ -196,7 +198,7 @@ impl InputCapturePage {
 
         let session_guard = imp.session.lock().await;
         if let Some(session) = session_guard.as_ref() {
-            match proxy.enable(session).await {
+            match proxy.enable(session, Default::default()).await {
                 Ok(_) => {
                     self.success("Input capture enabled - move cursor to screen edge");
                     imp.status_label.set_text("Enabled");
@@ -231,7 +233,7 @@ impl InputCapturePage {
 
         let session_guard = imp.session.lock().await;
         if let Some(session) = session_guard.as_ref() {
-            match proxy.disable(session).await {
+            match proxy.disable(session, Default::default()).await {
                 Ok(_) => {
                     self.success("Input capture disabled");
                     self.action_set_enabled("input_capture.enable", true);
@@ -346,7 +348,13 @@ impl InputCapturePage {
         let activation_id = imp.activation_id.lock().await.take();
 
         if let Some(session) = session_guard.as_ref() {
-            match proxy.release(session, activation_id, None).await {
+            match proxy
+                .release(
+                    session,
+                    ReleaseOptions::default().activation_id(activation_id),
+                )
+                .await
+            {
                 Ok(_) => {
                     self.info("Input capture released");
                 }
@@ -370,15 +378,18 @@ impl InputCapturePage {
             let capabilities =
                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen;
             let (session, _caps) = proxy
-                .create_session(identifier.as_ref(), capabilities)
+                .create_session(
+                    identifier.as_ref(),
+                    CreateSessionOptions::default().capabilities(capabilities),
+                )
                 .await?;
 
-            let zones_response = proxy.zones(&session).await?;
+            let zones_response = proxy.zones(&session, Default::default()).await?;
             let zones = zones_response.response()?;
             let (barriers, barrier_positions) = calculate_outside_barriers(zones.regions());
 
             let failed_barriers = match proxy
-                .set_pointer_barriers(&session, &barriers, zones.zone_set())
+                .set_pointer_barriers(&session, &barriers, zones.zone_set(), Default::default())
                 .await
             {
                 Ok(response) => match response.response() {
@@ -395,7 +406,7 @@ impl InputCapturePage {
             };
 
             // Connect to EIS, we don't actually care about EI events though
-            let eis_result = proxy.connect_to_eis(&session).await;
+            let eis_result = proxy.connect_to_eis(&session, Default::default()).await;
 
             ashpd::Result::Ok((session, failed_barriers, eis_result, barrier_positions))
         })

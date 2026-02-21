@@ -8,7 +8,7 @@ use ashpd::{
     WindowIdentifier,
     desktop::{
         PersistMode, Session,
-        screencast::{CursorMode, Screencast, SourceType, Stream},
+        screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType, Stream},
     },
     enumflags2::BitFlags,
 };
@@ -259,23 +259,26 @@ impl ScreenCastPage {
         self.info("Starting a screen cast session");
         let (streams, fd, session, new_token) = spawn_tokio(async move {
             let proxy = Screencast::new().await?;
-            let session = proxy.create_session().await?;
+            let session = proxy.create_session(Default::default()).await?;
             proxy
                 .select_sources(
                     &session,
-                    cursor_mode,
-                    sources,
-                    multiple,
-                    prev_token.as_deref(),
-                    persist_mode,
+                    SelectSourcesOptions::default()
+                        .set_cursor_mode(cursor_mode)
+                        .set_sources(sources)
+                        .set_multiple(multiple)
+                        .set_restore_token(prev_token.as_deref())
+                        .set_persist_mode(persist_mode),
                 )
                 .await?;
             let response = proxy
-                .start(&session, identifier.as_ref())
+                .start(&session, identifier.as_ref(), Default::default())
                 .await?
                 .response()?;
 
-            let fd = proxy.open_pipe_wire_remote(&session).await?;
+            let fd = proxy
+                .open_pipe_wire_remote(&session, Default::default())
+                .await?;
             ashpd::Result::Ok((
                 response.streams().to_owned(),
                 fd,

@@ -6,7 +6,7 @@
 //! use std::io::Read;
 //! use ashpd::{
 //!     desktop::{
-//!         dynamic_launcher::{DynamicLauncherProxy, PrepareInstallOptions},
+//!         dynamic_launcher::DynamicLauncherProxy,
 //!         Icon,
 //!     },
 //!     WindowIdentifier,
@@ -27,7 +27,7 @@
 //!             None,
 //!             "SomeApp",
 //!             icon,
-//!             PrepareInstallOptions::default()
+//!             Default::default()
 //!         )
 //!         .await?
 //!         .response()?;
@@ -42,15 +42,13 @@
 //!         Type=Application
 //!     "#;
 //!     proxy
-//!         .install(&token, "some_file.desktop", desktop_entry)
+//!         .install(&token, "some_file.desktop", desktop_entry, Default::default())
 //!         .await?;
 //!
 //!     proxy.uninstall("some_file.desktop").await?;
 //!     Ok(())
 //! }
 //! ```
-
-use std::collections::HashMap;
 
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
@@ -226,6 +224,22 @@ impl LaunchOptions {
     }
 }
 
+#[derive(Serialize, Type, Debug, Default)]
+/// Specified options for a [`DynamicLauncherProxy::install`] request.
+#[zvariant(signature = "dict")]
+pub struct InstallOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+/// Specified options for a [`DynamicLauncherProxy::uninstall`] request.
+#[zvariant(signature = "dict")]
+pub struct UninstallOptions {}
+
+#[derive(Serialize, Type, Debug, Default)]
+/// Specified options for a [`DynamicLauncherProxy::request_install_token`]
+/// request.
+#[zvariant(signature = "dict")]
+pub struct RequestInstallTokenOptions {}
+
 #[derive(Debug)]
 /// Wrong type of [`crate::desktop::Icon`] was used.
 pub struct UnexpectedIconError;
@@ -302,13 +316,16 @@ impl DynamicLauncherProxy {
     /// See also [`RequestInstallToken`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-requestinstalltoken).
     #[doc(alias = "RequestInstallToken")]
     #[doc(alias = "xdp_portal_dynamic_launcher_request_install_token")]
-    pub async fn request_install_token(&self, name: &str, icon: Icon) -> Result<String, Error> {
+    pub async fn request_install_token(
+        &self,
+        name: &str,
+        icon: Icon,
+        options: RequestInstallTokenOptions,
+    ) -> Result<String, Error> {
         if !icon.is_bytes() {
             return Err(UnexpectedIconError {}.into());
         }
 
-        // No supported options for now
-        let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
         self.0
             .call::<String>("RequestInstallToken", &(name, icon.as_value(), options))
             .await
@@ -324,9 +341,8 @@ impl DynamicLauncherProxy {
         token: &str,
         desktop_file_id: &str,
         desktop_entry: &str,
+        options: InstallOptions,
     ) -> Result<(), Error> {
-        // No supported options for now
-        let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
         self.0
             .call::<()>("Install", &(token, desktop_file_id, desktop_entry, options))
             .await
@@ -337,9 +353,11 @@ impl DynamicLauncherProxy {
     /// See also [`Uninstall`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-uninstall).
     #[doc(alias = "Uninstall")]
     #[doc(alias = "xdp_portal_dynamic_launcher_uninstall")]
-    pub async fn uninstall(&self, desktop_file_id: &str) -> Result<(), Error> {
-        // No supported options for now
-        let options: HashMap<&str, zvariant::Value<'_>> = HashMap::new();
+    pub async fn uninstall(
+        &self,
+        desktop_file_id: &str,
+        options: UninstallOptions,
+    ) -> Result<(), Error> {
         self.0
             .call::<()>("Uninstall", &(desktop_file_id, options))
             .await

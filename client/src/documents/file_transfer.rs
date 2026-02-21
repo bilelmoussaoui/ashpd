@@ -22,23 +22,20 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, os::fd::AsFd};
+use std::os::fd::AsFd;
 
 use futures_util::Stream;
 use serde::Serialize;
-use zbus::zvariant::{Fd, Type, Value, as_value::optional};
+use zbus::zvariant::{Fd, Type, as_value::optional};
 
 use crate::{Error, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`FileTransfer::start_transfer`] request.
 #[zvariant(signature = "dict")]
-struct TransferOptions {
-    /// Whether to allow the chosen application to write to the files.
+pub struct TransferOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     writeable: Option<bool>,
-    /// Whether to stop the transfer automatically after the first
-    /// [`retrieve_files()`][`FileTransfer::retrieve_files`] call.
     #[serde(
         rename = "autostop",
         with = "optional",
@@ -63,6 +60,14 @@ impl TransferOptions {
         self
     }
 }
+
+#[derive(Default, Debug, Serialize, Type)]
+#[zvariant(signature = "dict")]
+pub struct AddFilesOptions {}
+
+#[derive(Default, Debug, Serialize, Type)]
+#[zvariant(signature = "dict")]
+pub struct RetrieveFilesOptions {}
 
 /// The interface operates as a middle-man between apps when transferring files
 /// via drag-and-drop or copy-paste, taking care of the necessary exporting of
@@ -117,9 +122,12 @@ impl FileTransfer {
     ///
     /// See also [`AddFiles`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html#org-freedesktop-portal-filetransfer-addfiles).
     #[doc(alias = "AddFiles")]
-    pub async fn add_files(&self, key: &str, fds: &[impl AsFd]) -> Result<(), Error> {
-        // `options` parameter doesn't seems to be used yet
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
+    pub async fn add_files(
+        &self,
+        key: &str,
+        fds: &[impl AsFd],
+        options: AddFilesOptions,
+    ) -> Result<(), Error> {
         let files: Vec<Fd> = fds.iter().map(Fd::from).collect();
 
         self.0.call("AddFiles", &(key, files, options)).await
@@ -143,11 +151,11 @@ impl FileTransfer {
     ///
     /// See also [`RetrieveFiles`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html#org-freedesktop-portal-filetransfer-retrievefiles).
     #[doc(alias = "RetrieveFiles")]
-    pub async fn retrieve_files(&self, key: &str) -> Result<Vec<String>, Error> {
-        // `options` parameter doesn't seems to be used yet
-        // see https://github.com/GNOME/gtk/blob/4.16.12/gdk/filetransferportal.c#L288
-        let options: HashMap<&str, Value<'_>> = HashMap::new();
-
+    pub async fn retrieve_files(
+        &self,
+        key: &str,
+        options: RetrieveFilesOptions,
+    ) -> Result<Vec<String>, Error> {
         self.0.call("RetrieveFiles", &(key, options)).await
     }
 
@@ -172,10 +180,7 @@ impl FileTransfer {
     ///
     /// See also [`StartTransfer`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileTransfer.html#org-freedesktop-portal-filetransfer-starttransfer).
     #[doc(alias = "StartTransfer")]
-    pub async fn start_transfer(&self, writeable: bool, auto_stop: bool) -> Result<String, Error> {
-        let options = TransferOptions::default()
-            .writeable(writeable)
-            .auto_stop(auto_stop);
+    pub async fn start_transfer(&self, options: TransferOptions) -> Result<String, Error> {
         self.0.call("StartTransfer", &(options)).await
     }
 

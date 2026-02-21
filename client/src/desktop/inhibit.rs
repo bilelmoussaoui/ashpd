@@ -10,7 +10,7 @@
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = InhibitProxy::new().await?;
-//!     let session = proxy.create_monitor(None).await?;
+//!     let session = proxy.create_monitor(None, Default::default()).await?;
 //!
 //!     let state = proxy.receive_state_changed().await?.next().await.unwrap();
 //!     match state.session_state() {
@@ -49,25 +49,30 @@ use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, pr
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
 #[zvariant(signature = "dict")]
-struct CreateMonitorOptions {
-    /// A string that will be used as the last element of the handle.
+pub struct CreateMonitorOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
-    /// A string that will be used as the last element of the session handle.
     #[serde(with = "as_value")]
     session_handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-/// Specified options for a [`InhibitProxy::inhibit`] request.
 #[zvariant(signature = "dict")]
-struct InhibitOptions {
-    /// A string that will be used as the last element of the handle.
+/// Specified options for a [`InhibitProxy::inhibit`] request.
+pub struct InhibitOptions {
     #[serde(with = "as_value")]
     handle_token: HandleToken,
-    /// User-visible reason for the inhibition.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
+}
+
+impl InhibitOptions {
+    /// Sets a user-visible reason for the request.
+    #[must_use]
+    pub fn reason<'a>(mut self, reason: impl Into<Option<&'a str>>) -> Self {
+        self.reason = reason.into().map(ToOwned::to_owned);
+        self
+    }
 }
 
 #[bitflags]
@@ -183,8 +188,8 @@ impl InhibitProxy {
     pub async fn create_monitor(
         &self,
         identifier: Option<&WindowIdentifier>,
+        options: CreateMonitorOptions,
     ) -> Result<Session<Self>, Error> {
-        let options = CreateMonitorOptions::default();
         let identifier = Optional::from(identifier);
         let body = &(identifier, &options);
         let (monitor, proxy) = futures_util::try_join!(
@@ -202,7 +207,6 @@ impl InhibitProxy {
     ///
     /// * `identifier` - The application window identifier.
     /// * `flags` - The flags determine what changes are inhibited.
-    /// * `reason` - User-visible reason for the inhibition.
     ///
     /// # Specifications
     ///
@@ -213,12 +217,8 @@ impl InhibitProxy {
         &self,
         identifier: Option<&WindowIdentifier>,
         flags: BitFlags<InhibitFlags>,
-        reason: &str,
+        options: InhibitOptions,
     ) -> Result<Request<()>, Error> {
-        let options = InhibitOptions {
-            reason: Some(reason.to_owned()),
-            handle_token: Default::default(),
-        };
         let identifier = Optional::from(identifier);
         self.0
             .empty_request(
