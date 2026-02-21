@@ -14,6 +14,16 @@ rust-version.workspace = true
 async-io = ["zbus/async-io", "futures-util/io"]
 default = ["tokio"]
 
+frontend = [
+    "account", "background", "camera", "clipboard",
+    "dynamic_launcher", "email", "file_chooser", "game_mode",
+    "global_shortcuts", "inhibit", "input_capture", "location",
+    "memory_monitor", "network_monitor", "notification", "open_uri",
+    "power_profile_monitor", "print", "proxy_resolver",
+    "realtime", "remote_desktop", "screencast", "screenshot",
+    "secret", "settings", "trash", "usb", "wallpaper",
+    "flatpak", "documents",
+]
 backend = ["dep:async-trait"]
 
 account = []
