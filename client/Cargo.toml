@@ -63,7 +63,7 @@ gtk4_x11 = ["gdk4x11", "glib", "dep:gtk4", "dep:futures-channel"]
 raw_handle = ["raw-window-handle"]
 tokio = ["zbus/tokio", "dep:tokio"]
 glib = ["dep:glib"]
-wayland = ["wayland-client", "wayland-protocols", "wayland-backend"]
+wayland = ["wayland-client", "wayland-protocols", "wayland-backend", "dep:futures-channel"]
 pipewire = ["dep:pipewire", "dep:futures-channel"]
 
 [dependencies]
