@@ -11,7 +11,7 @@ exclude = ["interfaces/*.xml", "ashpd-demo/"]
 keywords = ["portal", "flatpak", "xdg", "desktop", "dbus"]
 license = "MIT"
 repository = "https://github.com/bilelmoussaoui/ashpd"
-version = "0.13.1"
+version = "0.13.2"
 rust-version = "1.92"
 
 [workspace.dependencies]
