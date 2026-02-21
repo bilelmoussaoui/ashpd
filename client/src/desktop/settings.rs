@@ -333,7 +333,7 @@ impl Settings {
         &self,
         namespace: &str,
         key: &str,
-    ) -> Result<impl Stream<Item = Result<T, Error>>, Error>
+    ) -> Result<impl Stream<Item = Result<T, Error>> + use<T>, Error>
     where
         T: TryFrom<OwnedValue>,
         Error: From<<T as TryFrom<OwnedValue>>::Error>,
