@@ -288,7 +288,7 @@ impl SelectedDevices {
     }
 
     /// Whether the clipboard was enabled.
-    pub fn clipboard_enabled(&self) -> bool {
+    pub fn is_clipboard_enabled(&self) -> bool {
         self.clipboard_enabled.unwrap_or(false)
     }
 }

@@ -315,7 +315,7 @@ impl RemoteDesktopPage {
                     response.streams().to_owned(),
                     session,
                     response.restore_token().map(ToOwned::to_owned),
-                    response.clipboard_enabled(),
+                    response.is_clipboard_enabled(),
                 ))
             })
             .await?;
