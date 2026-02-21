@@ -261,7 +261,7 @@ pub async fn pipewire_streams(fd: OwnedFd) -> Result<Vec<Stream>, pipewire::Erro
 
     let mut streams = vec![];
     let mut seen_node_ids = std::collections::HashSet::new();
-    while let Ok(Some(stream)) = streams_receiver.try_next() {
+    while let Ok(stream) = streams_receiver.try_recv() {
         if seen_node_ids.insert(stream.node_id) {
             streams.push(stream);
         }
