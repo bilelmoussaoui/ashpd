@@ -19,6 +19,14 @@ pub struct SetSelectionOptions<'a> {
     mime_types: &'a [&'a str],
 }
 
+impl<'a> SetSelectionOptions<'a> {
+    /// Sets the mime types for the clipboard selection.
+    pub fn mime_types(mut self, mime_types: &'a [&'a str]) -> Self {
+        self.mime_types = mime_types;
+        self
+    }
+}
+
 #[derive(Debug, Type, Serialize, Default)]
 #[zvariant(signature = "dict")]
 /// Specified options for a [`Clipboard::request`] request.
