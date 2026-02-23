@@ -744,6 +744,53 @@ impl InputCapture {
 
     /// Create an input capture session.
     ///
+    /// The session must be started with [`start`][`InputCapture::start`]
+    /// before using methods which take a session.
+    ///
+    /// This method was added in version 2 of the interface.
+    ///
+    /// # Example
+    ///
+    /// Use the following approach to start a session and fall back to
+    /// the legacy [`create_session`][`InputCapture::create_session`]
+    /// for portals that only implement version 1.
+    ///
+    /// ```rust,no_run
+    /// use ashpd::desktop::input_capture::{
+    ///      Capabilities,
+    ///      InputCapture,
+    ///      StartOptions
+    /// };
+    /// use ashpd::desktop::PersistMode;
+    /// use ashpd::Error;
+    ///
+    /// # async fn run() -> ashpd::Result<()> {
+    /// let input_capture = InputCapture::new().await?;
+    /// let opts = ashpd::desktop::input_capture::CreateSession2Options::default();
+    ///
+    /// let session = match input_capture.create_session2(opts).await {
+    ///     Ok(sess) => {
+    ///         // Version 2: explicitly start the session
+    ///         let opts  = StartOptions::default().set_capabilities(
+    ///            Capabilities::Keyboard | Capabilities::Pointer
+    ///         );
+    ///         input_capture.start(&sess, None, opts).await?;
+    ///         sess
+    ///     }
+    ///     Err(Error::RequiresVersion(_, _)) => {
+    ///         // Version 1: fallback to legacy API, starts implicitly
+    ///         let opts = ashpd::desktop::input_capture::CreateSessionOptions::default().set_capabilities(
+    ///            Capabilities::Keyboard | Capabilities::Pointer
+    ///         );
+    ///         let (session, _capabilities) = input_capture.create_session(None, opts).await?;
+    ///         session
+    ///     }
+    ///     Err(e) => return Err(e),
+    /// };
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     /// # Specifications
     ///
     /// See also [`CreateSession2`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-createsession2).
@@ -763,7 +810,23 @@ impl InputCapture {
         Ok(proxy)
     }
 
-    /// Create an input capture session.
+    /// Start the input capture session.
+    ///
+    /// This will typically result in the portal presenting a dialog letting
+    /// the user decide whether they want to allow the input of the session
+    /// to be captured, and what capabilities to support.
+    ///
+    /// This method may only be called once on a session previously created
+    /// with [`create_session2`][`InputCapture::create_session2`].
+    ///
+    /// This method was added in version 2 of the interface.
+    ///
+    /// # Arguments
+    ///
+    /// * `session` - A [`Session`], created with
+    ///   [`create_session2()`][`InputCapture::create_session2`].
+    /// * `identifier` - Identifier for the application window.
+    /// * `capabilities` - Bitmask of requested capabilities.
     ///
     /// # Specifications
     ///
