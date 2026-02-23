@@ -1,7 +1,8 @@
 //! Interact with the clipboard.
 //!
 //! The portal is mostly meant to be used along with
-//! [`RemoteDesktop`] or [`InputCapture`].
+//! [`RemoteDesktop`](crate::desktop::remote_desktop::RemoteDesktop) or
+//! [`InputCapture`](crate::desktop::input_capture::InputCapture).
 
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
