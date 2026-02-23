@@ -488,7 +488,7 @@ impl Screencast {
     #[doc(alias = "OpenPipeWireRemote")]
     pub async fn open_pipe_wire_remote(
         &self,
-        session: &Session<impl HasScreencastSession>,
+        session: &Session<impl IsScreencastSession>,
         options: OpenPipeWireRemoteOptions,
     ) -> Result<OwnedFd, Error> {
         let fd = self
@@ -520,7 +520,7 @@ impl Screencast {
     #[doc(alias = "SelectSources")]
     pub async fn select_sources(
         &self,
-        session: &Session<impl HasScreencastSession>,
+        session: &Session<impl IsScreencastSession>,
         options: SelectSourcesOptions,
     ) -> Result<Request<()>, Error> {
         self.0
@@ -551,7 +551,7 @@ impl Screencast {
     #[doc(alias = "Start")]
     pub async fn start(
         &self,
-        session: &Session<impl HasScreencastSession>,
+        session: &Session<impl IsScreencastSession>,
         identifier: Option<&WindowIdentifier>,
         options: StartCastOptions,
     ) -> Result<Request<Streams>, Error> {
@@ -598,7 +598,5 @@ impl crate::Sealed for Screencast {}
 impl SessionPortal for Screencast {}
 
 /// Defines which portals session can be used in a screen-cast.
-pub trait HasScreencastSession: SessionPortal {}
-impl HasScreencastSession for Screencast {}
-#[cfg(feature = "remote_desktop")]
-impl HasScreencastSession for super::remote_desktop::RemoteDesktop {}
+pub trait IsScreencastSession: SessionPortal {}
+impl IsScreencastSession for Screencast {}

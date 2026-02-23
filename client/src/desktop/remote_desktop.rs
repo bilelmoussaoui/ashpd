@@ -761,3 +761,5 @@ impl crate::Sealed for RemoteDesktop {}
 impl SessionPortal for RemoteDesktop {}
 #[cfg(feature = "clipboard")]
 impl crate::desktop::clipboard::IsClipboardSession for RemoteDesktop {}
+#[cfg(feature = "screencast")]
+impl crate::desktop::screencast::IsScreencastSession for RemoteDesktop {}
