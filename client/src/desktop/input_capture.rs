@@ -350,6 +350,21 @@ struct CreateSessionResponse {
 
 #[derive(Debug, Serialize, Type, Default)]
 #[zvariant(signature = "dict")]
+/// Specified options for a [`InputCapture::create_session2`] request.
+pub struct CreateSession2Options {
+    #[serde(with = "as_value")]
+    session_handle_token: HandleToken,
+}
+
+#[derive(Debug, Deserialize, Type)]
+#[zvariant(signature = "dict")]
+struct CreateSession2Results {
+    #[serde(with = "as_value")]
+    session_handle: OwnedObjectPath,
+}
+
+#[derive(Debug, Serialize, Type, Default)]
+#[zvariant(signature = "dict")]
 /// Specified options for a [`InputCapture::start`] request.
 pub struct StartOptions {
     #[serde(with = "as_value")]
@@ -735,20 +750,15 @@ impl InputCapture {
     #[doc(alias = "CreateSession2")]
     pub async fn create_session2(
         &self,
-        identifier: Option<&WindowIdentifier>,
-        options: crate::desktop::CreateSessionOptions,
+        options: CreateSession2Options,
     ) -> Result<Session<Self>, Error> {
-        let identifier = Optional::from(identifier);
-        let (request, proxy) = futures_util::try_join!(
-            self.0.request_versioned(
-                &options.handle_token,
-                "CreateSession2",
-                (identifier, &options),
-                2
-            ),
-            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token),
-        )?;
-        let response: crate::desktop::session::CreateSessionResponse = request.response()?;
+        let proxy =
+            Session::from_unique_name(self.0.connection().clone(), &options.session_handle_token)
+                .await?;
+        let response = self
+            .0
+            .call_versioned::<CreateSession2Results>("CreateSession2", &options, 2)
+            .await?;
         assert_eq!(proxy.path(), &response.session_handle.as_ref());
         Ok(proxy)
     }
