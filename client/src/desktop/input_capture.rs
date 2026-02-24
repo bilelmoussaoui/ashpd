@@ -387,7 +387,7 @@ impl StartOptions {
 pub struct StartResponse {
     #[serde(with = "as_value")]
     capabilities: BitFlags<Capabilities>,
-    #[serde(with = "optional")]
+    #[serde(default, with = "optional")]
     clipboard_enabled: Option<bool>,
 }
 
