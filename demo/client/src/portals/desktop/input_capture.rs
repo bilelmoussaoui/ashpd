@@ -2,11 +2,12 @@ use std::sync::Arc;
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    WindowIdentifier,
+    Error, WindowIdentifier,
     desktop::{
         Session,
         input_capture::{
-            Barrier, BarrierID, Capabilities, CreateSessionOptions, InputCapture, ReleaseOptions,
+            Barrier, BarrierID, Capabilities, CreateSession2Options, CreateSessionOptions,
+            InputCapture, ReleaseOptions, StartOptions,
         },
     },
 };
@@ -377,12 +378,36 @@ impl InputCapturePage {
             // capabilities because... meh?
             let capabilities =
                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen;
-            let (session, _caps) = proxy
-                .create_session(
-                    identifier.as_ref(),
-                    CreateSessionOptions::default().set_capabilities(capabilities),
-                )
-                .await?;
+
+            // Try create_session2 + start first, fall back to legacy
+            let session = match proxy
+                .create_session2(CreateSession2Options::default())
+                .await
+            {
+                Ok(session) => {
+                    let start_request = proxy
+                        .start(
+                            &session,
+                            identifier.as_ref(),
+                            StartOptions::default().set_capabilities(capabilities),
+                        )
+                        .await?;
+                    let _start_response = start_request.response()?;
+                    session
+                }
+                Err(Error::RequiresVersion(_want, _have)) => {
+                    let (session, _caps) = proxy
+                        .create_session(
+                            identifier.as_ref(),
+                            CreateSessionOptions::default().set_capabilities(capabilities),
+                        )
+                        .await?;
+                    session
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            };
 
             let zones_response = proxy.zones(&session, Default::default()).await?;
             let zones = zones_response.response()?;
