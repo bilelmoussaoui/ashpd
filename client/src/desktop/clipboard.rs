@@ -25,7 +25,7 @@ pub struct SetSelectionOptions<'a> {
 
 impl<'a> SetSelectionOptions<'a> {
     /// Sets the mime types for the clipboard selection.
-    pub fn mime_types(mut self, mime_types: &'a [&'a str]) -> Self {
+    pub fn set_mime_types(mut self, mime_types: &'a [&'a str]) -> Self {
         self.mime_types = mime_types;
         self
     }
