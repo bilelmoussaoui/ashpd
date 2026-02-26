@@ -10,6 +10,7 @@ use ashpd::{
             InputCapture, ReleaseOptions, StartOptions,
         },
     },
+    enumflags2::BitFlag,
 };
 use async_channel;
 use futures_util::{StreamExt, lock::Mutex};
@@ -29,7 +30,11 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/input_capture.ui")]
     pub struct InputCapturePage {
         #[template_child]
-        pub status_label: TemplateChild<gtk::Label>,
+        pub keyboard_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub pointer_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub touchscreen_check: TemplateChild<gtk::CheckButton>,
         pub session: Arc<Mutex<Option<Session<InputCapture>>>>,
         pub activation_id: Arc<Mutex<Option<u32>>>,
         pub barrier_positions: Arc<Mutex<HashMap<u32, BarrierPosition>>>,
@@ -69,6 +74,32 @@ mod imp {
             obj.action_set_enabled("input_capture.stop", false);
             obj.action_set_enabled("input_capture.enable", false);
             obj.action_set_enabled("input_capture.disable", false);
+
+            // Connect to capability checkboxes to enable/disable start button
+            let update_start_action = glib::clone!(
+                #[weak]
+                obj,
+                move || {
+                    let imp = obj.imp();
+                    let has_capability = imp.keyboard_check.is_active()
+                        || imp.pointer_check.is_active()
+                        || imp.touchscreen_check.is_active();
+                    obj.action_set_enabled("input_capture.start", has_capability);
+                }
+            );
+
+            self.keyboard_check.connect_active_notify(glib::clone!(
+                #[strong]
+                update_start_action,
+                move |_| update_start_action()
+            ));
+            self.pointer_check.connect_active_notify(glib::clone!(
+                #[strong]
+                update_start_action,
+                move |_| update_start_action()
+            ));
+            self.touchscreen_check
+                .connect_active_notify(move |_| update_start_action());
         }
     }
     impl WidgetImpl for InputCapturePage {
@@ -154,7 +185,6 @@ impl InputCapturePage {
                     .await;
                 }
 
-                imp.status_label.set_text("Started");
                 self.action_set_enabled("input_capture.enable", true);
             }
             Err(err) => {
@@ -179,7 +209,6 @@ impl InputCapturePage {
             .await;
         }
 
-        imp.status_label.set_text("Not active");
         imp.barrier_positions.lock().await.clear();
 
         self.info("Input capture session stopped");
@@ -202,7 +231,6 @@ impl InputCapturePage {
             match proxy.enable(session, Default::default()).await {
                 Ok(_) => {
                     self.success("Input capture enabled - move cursor to screen edge");
-                    imp.status_label.set_text("Enabled");
                     self.action_set_enabled("input_capture.enable", false);
                     self.action_set_enabled("input_capture.disable", true);
 
@@ -239,7 +267,6 @@ impl InputCapturePage {
                     self.success("Input capture disabled");
                     self.action_set_enabled("input_capture.enable", true);
                     self.action_set_enabled("input_capture.disable", false);
-                    imp.status_label.set_text("Disabled");
                 }
                 Err(err) => {
                     tracing::error!("Failed to disable input capture: {err}");
@@ -293,7 +320,7 @@ impl InputCapturePage {
                 let barrier_text = barrier_base_text.clone();
                 glib::spawn_future_local(async move {
                     for remaining in (1..=5).rev() {
-                        widget_clone.imp().status_label.set_text(&format!(
+                        widget_clone.info(&format!(
                             "{} activated, releasing in {}s",
                             barrier_text, remaining,
                         ));
@@ -302,7 +329,6 @@ impl InputCapturePage {
 
                     // Release and re-enable the Enable button
                     widget_clone.release().await;
-                    widget_clone.imp().status_label.set_text("Disabled");
                     widget_clone.action_set_enabled("input_capture.enable", true);
                     widget_clone.action_set_enabled("input_capture.disable", false);
                 });
@@ -371,13 +397,20 @@ impl InputCapturePage {
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
 
+        let imp = self.imp();
+        let mut capabilities = Capabilities::empty();
+        if imp.keyboard_check.is_active() {
+            capabilities |= Capabilities::Keyboard;
+        }
+        if imp.pointer_check.is_active() {
+            capabilities |= Capabilities::Pointer;
+        }
+        if imp.touchscreen_check.is_active() {
+            capabilities |= Capabilities::Touchscreen;
+        }
+
         let (session, failed_barriers, eis_result, barrier_positions) = spawn_tokio(async move {
             let proxy = InputCapture::new().await?;
-
-            // Create session with all capabilities. We don't let the user select the
-            // capabilities because... meh?
-            let capabilities =
-                Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen;
 
             // Try create_session2 + start first, fall back to legacy
             let session = match proxy
