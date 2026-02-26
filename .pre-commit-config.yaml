@@ -1,0 +1,59 @@
+# Run `pre-commit install` to enable this configuration
+repos:
+  # Rust formatting and linting (using local toolchain)
+  - repo: local
+    hooks:
+      # Check that code is formatted with rustfmt
+      - id: fmt
+        name: cargo fmt
+        entry: cargo fmt -- --check
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+      # Run clippy on most of the Rust code
+      #
+      # We can't use --all-features here because async-io and tokio
+      # are mutually exclusive. And we don't want to run with all features
+      # anyway, it would require every developer to have all dependencies
+      # locally
+      - id: clippy
+        name: cargo clippy
+        entry: >
+          cargo clippy
+            --no-deps --all-targets
+            --no-default-features
+            --features tokio,backend,frontend,tracing
+            -- -D warnings
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Prevent committing large files
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+      # Check for files that would conflict in case-insensitive filesystems
+      - id: check-case-conflict
+
+      # Check for merge conflicts
+      - id: check-merge-conflict
+
+      # Check YAML syntax
+      - id: check-yaml
+        exclude: ^\.github/workflows/
+
+      # Check TOML syntax
+      - id: check-toml
+
+      # Ensure files end with a newline
+      - id: end-of-file-fixer
+        exclude: '\.txt$'
+
+      # Remove trailing whitespace
+      - id: trailing-whitespace
+        exclude: '\.md$'

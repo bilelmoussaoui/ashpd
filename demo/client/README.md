@@ -12,4 +12,3 @@
 <div align="center">
 <img src="data/resources/screenshots/screenshot1.png" />
 </div>
-
