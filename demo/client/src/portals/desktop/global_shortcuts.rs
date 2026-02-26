@@ -354,8 +354,8 @@ impl GlobalShortcutsPage {
         let text: Vec<String> = triggers
             .into_iter()
             .map(|shortcut| {
-                let id = glib::markup_escape_text(&shortcut.id());
-                let activation = glib::markup_escape_text(&shortcut.trigger_description());
+                let id = glib::markup_escape_text(shortcut.id());
+                let activation = glib::markup_escape_text(shortcut.trigger_description());
                 if activations.contains(&*id) {
                     format!("<b>{}: {}</b>", id, activation)
                 } else {
