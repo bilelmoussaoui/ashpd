@@ -133,7 +133,7 @@ impl AccessInterface {
 impl AccessInterface {
     #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
-        1 // TODO: Is this correct?
+        1
     }
 
     #[allow(clippy::too_many_arguments)]
