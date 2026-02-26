@@ -16,16 +16,51 @@
                   <object class="AdwPreferencesGroup">
                     <property name="title" translatable="yes">Input Capture</property>
                     <property name="description" translatable="yes">Communicates with org.freedesktop.portal.InputCapture</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="description" translatable="yes">Capabilities to Capture</property>
                     <child>
                       <object class="AdwActionRow">
-                        <property name="title" translatable="yes">Status</property>
+                        <property name="title" translatable="yes">Keyboard</property>
+                        <property name="activatable-widget">keyboard_check</property>
                         <child>
-                          <object class="GtkLabel" id="status_label">
-                            <property name="label">Not active</property>
-                            <property name="halign">start</property>
-                            <property name="selectable">True</property>
+                          <object class="GtkCheckButton" id="keyboard_check">
+                            <property name="active">True</property>
+                            <property name="valign">center</property>
                             <style>
-                              <class name="dim-label"/>
+                              <class name="selection-mode" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Pointer</property>
+                        <property name="activatable-widget">pointer_check</property>
+                        <child>
+                          <object class="GtkCheckButton" id="pointer_check">
+                            <property name="active">True</property>
+                            <property name="valign">center</property>
+                            <style>
+                              <class name="selection-mode" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Touchscreen</property>
+                        <property name="activatable-widget">touchscreen_check</property>
+                        <child>
+                          <object class="GtkCheckButton" id="touchscreen_check">
+                            <property name="active">True</property>
+                            <property name="valign">center</property>
+                            <style>
+                              <class name="selection-mode" />
                             </style>
                           </object>
                         </child>
@@ -34,37 +69,32 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwPreferencesGroup">
-                    <property name="title" translatable="yes">Session</property>
-                    <property name="description" translatable="yes">Create and manage input capture session</property>
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
                     <child>
-                      <object class="GtkBox">
-                        <property name="orientation">horizontal</property>
-                        <property name="spacing">6</property>
-                        <child>
-                          <object class="GtkButton">
-                            <property name="label" translatable="yes">_Start Session</property>
-                            <property name="use-underline">True</property>
-                            <property name="halign">start</property>
-                            <property name="action-name">input_capture.start</property>
-                            <style>
-                              <class name="pill" />
-                              <class name="suggested-action" />
-                            </style>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkButton">
-                            <property name="label" translatable="yes">_Close Session</property>
-                            <property name="use-underline">True</property>
-                            <property name="halign">start</property>
-                            <property name="action-name">input_capture.stop</property>
-                            <style>
-                              <class name="pill" />
-                              <class name="destructive-action" />
-                            </style>
-                          </object>
-                        </child>
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">_Start Session</property>
+                        <property name="use-underline">True</property>
+                        <property name="halign">start</property>
+                        <property name="action-name">input_capture.start</property>
+                        <style>
+                          <class name="pill" />
+                          <class name="suggested-action" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">_Close Session</property>
+                        <property name="use-underline">True</property>
+                        <property name="halign">start</property>
+                        <property name="action-name">input_capture.stop</property>
+                        <property name="halign">end</property>
+                        <property name="hexpand">True</property>
+                        <style>
+                          <class name="pill" />
+                          <class name="destructive-action" />
+                        </style>
                       </object>
                     </child>
                   </object>
