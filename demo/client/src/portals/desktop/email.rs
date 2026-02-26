@@ -158,21 +158,17 @@ impl EmailPage {
         let attachments = self.attachments();
 
         let response = spawn_tokio(async move {
-            let mut request = EmailRequest::default()
+            EmailRequest::default()
                 .identifier(identifier)
                 .subject(subject.as_deref())
                 .addresses::<Vec<_>, String>(addresses)
                 .cc::<Vec<_>, String>(cc)
                 .bcc::<Vec<_>, String>(bcc)
                 .body(body.as_deref())
-                .activation_token(activation_token);
-            if !attachments.is_empty() {
-                // TODO: add a request.set_attachments helper method
-                attachments.into_iter().for_each(|attachment| {
-                    request.add_attachment(OwnedFd::from(attachment));
-                });
-            }
-            request.send().await?;
+                .activation_token(activation_token)
+                .attach_multiple(attachments)
+                .send()
+                .await?;
 
             ashpd::Result::Ok(())
         })
