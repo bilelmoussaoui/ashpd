@@ -320,7 +320,6 @@ impl Stream {
         self.1.id.as_deref()
     }
 
-    // TODO Added in version 5 of the interface.
     /// The stream mapping id.
     pub fn mapping_id(&self) -> Option<&str> {
         self.1.mapping_id.as_deref()
