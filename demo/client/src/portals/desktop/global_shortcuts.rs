@@ -21,12 +21,6 @@ use crate::{
     widgets::{PortalPage, PortalPageExt, PortalPageImpl},
 };
 
-#[derive(Debug, Clone)]
-pub struct RegisteredShortcut {
-    id: String,
-    activation: String,
-}
-
 mod imp {
     use super::*;
 
@@ -44,7 +38,7 @@ mod imp {
         pub rebind_count: Arc<Mutex<u32>>,
         pub session: Arc<Mutex<Option<Session<GlobalShortcuts>>>>,
         pub task_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
-        pub triggers: Arc<Mutex<Vec<RegisteredShortcut>>>,
+        pub triggers: Arc<Mutex<Vec<Shortcut>>>,
         pub activations: Arc<Mutex<HashSet<String>>>,
     }
 
@@ -140,15 +134,7 @@ impl GlobalShortcutsPage {
                             Default::default(),
                         )
                         .await?;
-                    let shortcuts_data = request.response().map(|resp| {
-                        resp.shortcuts()
-                            .iter()
-                            .map(|s: &Shortcut| RegisteredShortcut {
-                                id: s.id().to_owned(),
-                                activation: s.trigger_description().to_owned(),
-                            })
-                            .collect::<Vec<_>>()
-                    });
+                    let shortcuts_data = request.response().map(|resp| resp.shortcuts().to_vec());
                     ashpd::Result::Ok((global_shortcuts, session, shortcuts_data))
                 })
                 .await?;
@@ -367,10 +353,10 @@ impl GlobalShortcutsPage {
         let triggers = self.imp().triggers.lock().await.clone();
         let text: Vec<String> = triggers
             .into_iter()
-            .map(|RegisteredShortcut { id, activation }| {
+            .map(|shortcut| {
                 let escape = |s: &str| glib::markup_escape_text(s).to_string();
-                let id = escape(&id);
-                let activation = escape(&activation);
+                let id = escape(&shortcut.id());
+                let activation = escape(&shortcut.trigger_description());
                 if activations.contains(&id) {
                     format!("<b>{}: {}</b>", id, activation)
                 } else {
@@ -403,14 +389,7 @@ impl GlobalShortcutsPage {
     }
 
     async fn on_changed(&self, change: ShortcutsChanged) {
-        *self.imp().triggers.lock().await = change
-            .shortcuts()
-            .iter()
-            .map(|s| RegisteredShortcut {
-                id: s.id().to_owned(),
-                activation: s.trigger_description().to_owned(),
-            })
-            .collect();
+        *self.imp().triggers.lock().await = change.shortcuts().to_vec();
         *self.imp().rebind_count.lock().await += 1;
         self.set_rebind_count(Some(*self.imp().rebind_count.lock().await));
         self.display_activations().await
