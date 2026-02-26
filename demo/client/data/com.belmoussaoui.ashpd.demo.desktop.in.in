@@ -10,4 +10,3 @@ Keywords=Gnome;GTK;ASHPD;Portals;Demo;
 Icon=@icon@
 StartupNotify=true
 DBusActivatable=true
-
