@@ -1,4 +1,4 @@
-use std::{fs::File, os::fd::OwnedFd};
+use std::fs::File;
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
