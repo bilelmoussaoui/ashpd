@@ -303,7 +303,7 @@ use zbus::zvariant::{
     as_value::{self, optional},
 };
 
-use super::{HandleToken, Request, Session, session::SessionPortal};
+use super::{HandleToken, PersistMode, Request, Session, session::SessionPortal};
 use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
@@ -371,6 +371,10 @@ pub struct StartOptions {
     handle_token: HandleToken,
     #[serde(with = "as_value")]
     capabilities: BitFlags<Capabilities>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    restore_token: Option<String>,
+    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    persist_mode: Option<PersistMode>,
 }
 
 impl StartOptions {
@@ -379,16 +383,37 @@ impl StartOptions {
         self.capabilities = capabilities;
         self
     }
+
+    /// Sets the restore token from a previous session.
+    ///
+    /// If the stored session cannot be restored, this value is ignored
+    /// and the user will be prompted normally.
+    ///
+    /// The restore token is invalidated after using it once. To restore
+    /// the same session again, use the new restore token sent in the
+    /// [`StartResponse`].
+    pub fn set_restore_token<'a>(mut self, token: impl Into<Option<&'a str>>) -> Self {
+        self.restore_token = token.into().map(ToOwned::to_owned);
+        self
+    }
+
+    /// Sets the persist mode for this session.
+    pub fn set_persist_mode(mut self, persist_mode: impl Into<Option<PersistMode>>) -> Self {
+        self.persist_mode = persist_mode.into();
+        self
+    }
 }
 
 #[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
-/// Response of [`InputCapture::create_session`] request.
+/// Response of [`InputCapture::start`] request.
 pub struct StartResponse {
     #[serde(with = "as_value")]
     capabilities: BitFlags<Capabilities>,
     #[serde(default, with = "optional")]
     clipboard_enabled: Option<bool>,
+    #[serde(default, with = "optional")]
+    restore_token: Option<String>,
 }
 
 impl StartResponse {
@@ -400,6 +425,15 @@ impl StartResponse {
     /// Whether the clipboard was enabled.
     pub fn is_clipboard_enabled(&self) -> bool {
         self.clipboard_enabled.unwrap_or(false)
+    }
+
+    /// The session restore token, if the session was started with a
+    /// [`PersistMode`] other than [`PersistMode::DoNot`].
+    ///
+    /// This token can be passed to [`StartOptions::set_restore_token`] to
+    /// restore the session without prompting the user again.
+    pub fn restore_token(&self) -> Option<&str> {
+        self.restore_token.as_deref()
     }
 }
 
