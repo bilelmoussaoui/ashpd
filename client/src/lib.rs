@@ -129,21 +129,20 @@ mod tests {
                     // Handle both Start and Empty events
                     if let Some(Ok(attr)) = e
                         .attributes()
-                        .find(|a| a.as_ref().map_or(false, |a| a.key.as_ref() == b"name"))
+                        .find(|a| a.as_ref().is_ok_and(|a| a.key.as_ref() == b"name"))
+                        && let Ok(value) = attr.decode_and_unescape_value(reader.decoder())
                     {
-                        if let Ok(value) = attr.decode_and_unescape_value(reader.decoder()) {
-                            match e.name().as_ref() {
-                                b"interface" => {
-                                    current_interface_name = value.to_string();
-                                    current_names.clear();
-                                }
-                                b"method" | b"property" | b"signal" => {
-                                    if value != "version" {
-                                        current_names.push(value.to_string());
-                                    }
-                                }
-                                _ => (),
+                        match e.name().as_ref() {
+                            b"interface" => {
+                                current_interface_name = value.to_string();
+                                current_names.clear();
                             }
+                            b"method" | b"property" | b"signal" => {
+                                if value != "version" {
+                                    current_names.push(value.to_string());
+                                }
+                            }
+                            _ => (),
                         }
                     }
                 }
@@ -179,7 +178,7 @@ mod tests {
 
         for entry in entries.filter_map(|e| e.ok()) {
             let path = entry.path();
-            if path.is_file() && path.extension().map_or(false, |ext| ext == "xml") {
+            if path.is_file() && path.extension().is_some_and(|ext| ext == "xml") {
                 println!("Checking XML file: {}", path.display());
 
                 let xml_content = fs::read_to_string(&path).unwrap();
