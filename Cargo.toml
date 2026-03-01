@@ -30,5 +30,5 @@ tempfile = "3.23"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 zbus = { version = "5.13.2", default-features = false }
-zbus_macros = { version = "5.13", features = ["gvariant"] }
+zbus_macros = { version = "5.14", features = ["gvariant"] }
 zeroize = { version = "1", features = ["zeroize_derive"] }
