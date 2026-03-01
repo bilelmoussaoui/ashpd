@@ -115,7 +115,7 @@ impl BindShortcuts {
     }
 }
 
-#[derive(Serialize, Type, Debug)]
+#[derive(Serialize, Type, Debug, Default)]
 #[zvariant(signature = "dict")]
 /// Specified options for a [`GlobalShortcuts::configure_shortcuts`] request.
 pub struct ConfigureShortcutsOptions {
