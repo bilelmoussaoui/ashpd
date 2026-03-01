@@ -39,8 +39,10 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            klass.install_action("update.install", None, |win, _, _| {
-                win.start_install();
+            klass.install_action_async("update.install", None, |win, _, _| async move {
+                let root = win.native().unwrap();
+                let window_identifier = ashpd::WindowIdentifier::from_native(&root).await;
+                win.start_install(window_identifier);
             });
         }
 
@@ -102,7 +104,7 @@ impl UpdateWindow {
         window
     }
 
-    fn start_install(&self) {
+    fn start_install(&self, window_identifier: Option<ashpd::WindowIdentifier>) {
         let imp = self.imp();
         let Some(monitor) = imp.monitor.borrow().clone() else {
             return;
@@ -129,7 +131,10 @@ impl UpdateWindow {
 
         // Spawn tokio task to start update and listen for progress
         crate::portals::RUNTIME.spawn(async move {
-            if let Err(err) = monitor.update(None, Default::default()).await {
+            if let Err(err) = monitor
+                .update(window_identifier.as_ref(), Default::default())
+                .await
+            {
                 tracing::error!("Failed to start update: {err}");
                 let _ = sender
                     .send(Err(format!("Failed to start update: {err}")))
