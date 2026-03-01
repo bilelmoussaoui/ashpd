@@ -4,7 +4,7 @@ use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     Error, WindowIdentifier,
     desktop::{
-        Session,
+        PersistMode, Session,
         input_capture::{
             Barrier, BarrierID, BarrierPosition, Capabilities, CreateSession2Options,
             CreateSessionOptions, InputCapture, ReleaseOptions, StartOptions,
@@ -35,9 +35,14 @@ mod imp {
         pub pointer_check: TemplateChild<gtk::CheckButton>,
         #[template_child]
         pub touchscreen_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub persist_mode_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub persist_mode_combo: TemplateChild<adw::ComboRow>,
         pub session: Arc<Mutex<Option<Session<InputCapture>>>>,
         pub activation_id: Arc<Mutex<Option<u32>>>,
         pub barrier_positions: Arc<Mutex<HashMap<u32, BarrierPosition>>>,
+        pub session_token: Arc<Mutex<Option<String>>>,
     }
 
     #[glib::object_subclass]
@@ -112,7 +117,11 @@ mod imp {
                 obj,
                 async move {
                     if let Ok(proxy) = spawn_tokio(async { InputCapture::new().await }).await {
-                        obj.set_property("portal-version", proxy.version());
+                        let version = proxy.version();
+                        obj.set_property("portal-version", version);
+
+                        // Show persist mode group if version >= 2
+                        obj.imp().persist_mode_group.set_visible(version >= 2);
                     }
                 }
             ));
@@ -139,6 +148,15 @@ pub fn edge_name(position: &BarrierPosition) -> &'static str {
 }
 
 impl InputCapturePage {
+    fn selected_persist_mode(&self) -> PersistMode {
+        match self.imp().persist_mode_combo.selected() {
+            0 => PersistMode::DoNot,
+            1 => PersistMode::Application,
+            2 => PersistMode::ExplicitlyRevoked,
+            _ => unreachable!(),
+        }
+    }
+
     async fn start_session(&self) {
         let imp = self.imp();
 
@@ -381,66 +399,85 @@ impl InputCapturePage {
             capabilities |= Capabilities::Touchscreen;
         }
 
-        let (session, failed_barriers, eis_result, barrier_positions) = spawn_tokio(async move {
-            let proxy = InputCapture::new().await?;
+        let persist_mode = self.selected_persist_mode();
+        let prev_token = imp.session_token.lock().await.clone();
 
-            // Try create_session2 + start first, fall back to legacy
-            let session = match proxy
-                .create_session2(CreateSession2Options::default())
-                .await
-            {
-                Ok(session) => {
-                    let start_request = proxy
-                        .start(
-                            &session,
-                            identifier.as_ref(),
-                            StartOptions::default().set_capabilities(capabilities),
-                        )
-                        .await?;
-                    let _start_response = start_request.response()?;
-                    session
-                }
-                Err(Error::RequiresVersion(_want, _have)) => {
-                    let (session, _caps) = proxy
-                        .create_session(
-                            identifier.as_ref(),
-                            CreateSessionOptions::default().set_capabilities(capabilities),
-                        )
-                        .await?;
-                    session
-                }
-                Err(err) => {
-                    return Err(err);
-                }
-            };
+        let (session, failed_barriers, eis_result, barrier_positions, new_token) =
+            spawn_tokio(async move {
+                let proxy = InputCapture::new().await?;
 
-            let zones_response = proxy.zones(&session, Default::default()).await?;
-            let zones = zones_response.response()?;
-            let (barriers, barrier_positions) = calculate_outside_barriers(zones.regions());
-
-            let failed_barriers = match proxy
-                .set_pointer_barriers(&session, &barriers, zones.zone_set(), Default::default())
-                .await
-            {
-                Ok(response) => match response.response() {
-                    Ok(result) => result.failed_barriers().to_vec(),
+                // Try create_session2 + start first, fall back to legacy
+                let (session, restore_token) = match proxy
+                    .create_session2(CreateSession2Options::default())
+                    .await
+                {
+                    Ok(session) => {
+                        let start_request = proxy
+                            .start(
+                                &session,
+                                identifier.as_ref(),
+                                StartOptions::default()
+                                    .set_capabilities(capabilities)
+                                    .set_persist_mode(persist_mode)
+                                    .set_restore_token(prev_token),
+                            )
+                            .await?;
+                        let start_response = start_request.response()?;
+                        let restore_token = start_response.restore_token().map(ToOwned::to_owned);
+                        (session, restore_token)
+                    }
+                    Err(Error::RequiresVersion(_want, _have)) => {
+                        let (session, _caps) = proxy
+                            .create_session(
+                                identifier.as_ref(),
+                                CreateSessionOptions::default().set_capabilities(capabilities),
+                            )
+                            .await?;
+                        (session, None)
+                    }
                     Err(err) => {
-                        tracing::error!("Failed to parse barrier response: {err}");
+                        return Err(err);
+                    }
+                };
+
+                let zones_response = proxy.zones(&session, Default::default()).await?;
+                let zones = zones_response.response()?;
+                let (barriers, barrier_positions) = calculate_outside_barriers(zones.regions());
+
+                let failed_barriers = match proxy
+                    .set_pointer_barriers(&session, &barriers, zones.zone_set(), Default::default())
+                    .await
+                {
+                    Ok(response) => match response.response() {
+                        Ok(result) => result.failed_barriers().to_vec(),
+                        Err(err) => {
+                            tracing::error!("Failed to parse barrier response: {err}");
+                            vec![]
+                        }
+                    },
+                    Err(err) => {
+                        tracing::error!("Failed to set barriers: {err}");
                         vec![]
                     }
-                },
-                Err(err) => {
-                    tracing::error!("Failed to set barriers: {err}");
-                    vec![]
-                }
-            };
+                };
 
-            // Connect to EIS, we don't actually care about EI events though
-            let eis_result = proxy.connect_to_eis(&session, Default::default()).await;
+                // Connect to EIS, we don't actually care about EI events though
+                let eis_result = proxy.connect_to_eis(&session, Default::default()).await;
 
-            ashpd::Result::Ok((session, failed_barriers, eis_result, barrier_positions))
-        })
-        .await?;
+                ashpd::Result::Ok((
+                    session,
+                    failed_barriers,
+                    eis_result,
+                    barrier_positions,
+                    restore_token,
+                ))
+            })
+            .await?;
+
+        // Store the restore token if present
+        if let Some(token) = new_token {
+            *imp.session_token.lock().await = Some(token);
+        }
 
         // Store barrier positions for later use
         *self.imp().barrier_positions.lock().await = barrier_positions;

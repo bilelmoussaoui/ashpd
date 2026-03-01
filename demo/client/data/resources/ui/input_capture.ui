@@ -69,6 +69,27 @@
                   </object>
                 </child>
                 <child>
+                  <object class="AdwPreferencesGroup" id="persist_mode_group">
+                    <property name="title" translatable="yes">Session Persistence</property>
+                    <property name="visible">False</property>
+                    <child>
+                      <object class="AdwComboRow" id="persist_mode_combo">
+                        <property name="title" translatable="yes">Persist Session Mode</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item translatable="yes">Do Not</item>
+                              <item translatable="yes">Application</item>
+                              <item translatable="yes">Explicitly Revoked</item>
+                            </items>
+                          </object>
+                        </property>
+                        <property name="selected">0</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
                   <object class="GtkBox">
                     <property name="orientation">horizontal</property>
                     <child>
