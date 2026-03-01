@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="UpdateWindow" parent="AdwWindow">
+    <property name="default-width">450</property>
+    <property name="default-height">500</property>
+    <property name="modal">True</property>
+    <property name="content">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="GtkStack" id="stack">
+            <property name="transition-type">crossfade</property>
+
+            <!-- Update Available Page -->
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">available</property>
+                <property name="child">
+                  <object class="AdwStatusPage">
+                    <property name="title" translatable="yes">Update Available</property>
+                    <property name="description" bind-source="UpdateWindow" bind-property="update-description" bind-flags="sync-create"/>
+                    <property name="icon-name">software-update-available-symbolic</property>
+                    <property name="child">
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <property name="spacing">12</property>
+                        <property name="halign">center</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">Cancel</property>
+                            <property name="action-name">window.close</property>
+                            <style>
+                              <class name="pill"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">Install Update</property>
+                            <property name="action-name">update.install</property>
+                            <style>
+                              <class name="pill"/>
+                              <class name="suggested-action"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+
+            <!-- Installing Page -->
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">installing</property>
+                <property name="child">
+                  <object class="AdwStatusPage">
+                    <property name="title" translatable="yes">Installing Update</property>
+                    <property name="description" bind-source="UpdateWindow" bind-property="progress-description" bind-flags="sync-create"/>
+                    <property name="icon-name">update-symbolic</property>
+                    <property name="child">
+                      <object class="GtkProgressBar" id="progress_bar">
+                        <property name="width-request">300</property>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+
+            <!-- Done Page -->
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">done</property>
+                <property name="child">
+                  <object class="AdwStatusPage">
+                    <property name="title" translatable="yes">Update Installed</property>
+                    <property name="description" translatable="yes">Update installed successfully! Restart the application to use the new version.</property>
+                    <property name="icon-name">check-plain-symbolic</property>
+                    <property name="child">
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <property name="spacing">12</property>
+                        <property name="halign">center</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">Later</property>
+                            <property name="action-name">window.close</property>
+                            <style>
+                              <class name="pill"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">Restart Now</property>
+                            <property name="action-name">app.restart</property>
+                            <style>
+                              <class name="pill"/>
+                              <class name="suggested-action"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+
+            <!-- Failed Page -->
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">failed</property>
+                <property name="child">
+                  <object class="AdwStatusPage">
+                    <property name="title" translatable="yes">Update Failed</property>
+                    <property name="description" bind-source="UpdateWindow" bind-property="error-description" bind-flags="sync-create"/>
+                    <property name="icon-name">dialog-error-symbolic</property>
+                    <property name="child">
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">Close</property>
+                        <property name="action-name">window.close</property>
+                        <property name="halign">center</property>
+                        <style>
+                          <class name="pill"/>
+                        </style>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+
+          </object>
+        </property>
+      </object>
+    </property>
+  </template>
+</interface>

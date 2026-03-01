@@ -9,6 +9,7 @@ mod config;
 mod config;
 
 mod portals;
+mod update_window;
 mod widgets;
 mod window;
 

@@ -1,20 +1,25 @@
-use std::{collections::HashMap, convert::TryFrom, str::FromStr};
+use std::{collections::HashMap, convert::TryFrom, str::FromStr, sync::Arc};
 
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    flatpak::{Flatpak, SpawnFlags, SpawnOptions},
+    flatpak::{
+        Flatpak, SpawnFlags, SpawnOptions,
+        update_monitor::{UpdateInfo, UpdateMonitor},
+    },
     zbus, zvariant,
 };
+use futures_util::StreamExt;
 use gtk::{
     gio,
     glib::{self, clone},
 };
 
-use crate::{config, portals::spawn_tokio, window::ApplicationWindow};
+use crate::{config, portals::spawn_tokio, update_window::UpdateWindow, window::ApplicationWindow};
 
 mod imp {
     use std::cell::OnceCell;
 
+    use futures_util::lock::Mutex;
     use glib::WeakRef;
 
     use super::*;
@@ -22,6 +27,8 @@ mod imp {
     #[derive(Debug, Default)]
     pub struct Application {
         pub window: OnceCell<WeakRef<ApplicationWindow>>,
+        pub update_monitor: Arc<Mutex<Option<Arc<UpdateMonitor>>>>,
+        pub update_info: Arc<Mutex<Option<UpdateInfo>>>,
     }
 
     #[glib::object_subclass]
@@ -64,6 +71,7 @@ mod imp {
 
             app.setup_gactions();
             app.setup_accels();
+            app.setup_update_monitor();
 
             app.main_window().present();
         }
@@ -123,10 +131,34 @@ impl Application {
             })
             .build();
 
-        self.add_action_entries([about_action, quit_action, restart_action]);
+        let install_update_action = gio::ActionEntry::builder("install-update")
+            .activate(move |app: &Self, _, _| {
+                glib::spawn_future_local(clone!(
+                    #[weak]
+                    app,
+                    async move {
+                        app.show_update_dialog().await;
+                    }
+                ));
+            })
+            .build();
+
+        self.add_action_entries([
+            about_action,
+            quit_action,
+            restart_action,
+            install_update_action,
+        ]);
 
         // The restart app requires the Flatpak portal
         self.lookup_action("restart")
+            .and_downcast_ref::<gio::SimpleAction>()
+            .unwrap()
+            .set_enabled(ashpd::is_sandboxed());
+
+        // Install update requires Flatpak and is disabled by default until an update is
+        // available
+        self.lookup_action("install-update")
             .and_downcast_ref::<gio::SimpleAction>()
             .unwrap()
             .set_enabled(ashpd::is_sandboxed());
@@ -204,6 +236,99 @@ impl Application {
         })
         .await?;
         Ok(())
+    }
+
+    fn setup_update_monitor(&self) {
+        if !ashpd::is_sandboxed() {
+            tracing::debug!("Not sandboxed, skipping update monitor");
+            return;
+        }
+
+        let imp = self.imp();
+        let update_info = imp.update_info.clone();
+        let update_monitor = imp.update_monitor.clone();
+
+        let (sender, mut receiver) = tokio::sync::mpsc::channel::<UpdateInfo>(10);
+
+        let app = self.clone();
+        glib::spawn_future_local(async move {
+            while let Some(info) = receiver.recv().await {
+                tracing::info!(
+                    "Update available: running={}, remote={}",
+                    info.running_commit(),
+                    info.remote_commit()
+                );
+
+                *update_info.lock().await = Some(info);
+
+                app.lookup_action("install-update")
+                    .and_downcast_ref::<gio::SimpleAction>()
+                    .unwrap()
+                    .set_enabled(true);
+            }
+        });
+
+        crate::portals::RUNTIME.spawn(async move {
+            let monitor = match Flatpak::new().await {
+                Ok(proxy) => match proxy.create_update_monitor(Default::default()).await {
+                    Ok(m) => m,
+                    Err(err) => {
+                        tracing::error!("Failed to create update monitor: {err}");
+                        return;
+                    }
+                },
+                Err(err) => {
+                    tracing::error!("Failed to create Flatpak proxy: {err}");
+                    return;
+                }
+            };
+
+            let monitor = Arc::new(monitor);
+            *update_monitor.lock().await = Some(monitor.clone());
+
+            let mut stream = match monitor.receive_update_available().await {
+                Ok(stream) => stream,
+                Err(err) => {
+                    tracing::error!("Failed to receive update_available stream: {err}");
+                    return;
+                }
+            };
+
+            while let Some(info) = stream.next().await {
+                if sender.send(info).await.is_err() {
+                    break;
+                }
+            }
+        });
+    }
+
+    async fn show_update_dialog(&self) {
+        let imp = self.imp();
+
+        let (running_commit, remote_commit) = {
+            let update_info = imp.update_info.lock().await;
+            if let Some(ref info) = *update_info {
+                (
+                    Some(info.running_commit().to_string()),
+                    Some(info.remote_commit().to_string()),
+                )
+            } else {
+                (None, None)
+            }
+        };
+
+        let monitor = {
+            let monitor_guard = imp.update_monitor.lock().await;
+            monitor_guard.clone()
+        };
+
+        let window = UpdateWindow::new(
+            &self.main_window(),
+            monitor,
+            running_commit.as_deref(),
+            remote_commit.as_deref(),
+        );
+        window.present();
     }
 
     pub fn run() -> glib::ExitCode {

@@ -4,6 +4,11 @@
     <section>
       <item>
         <attribute name="hidden-when">action-disabled</attribute>
+        <attribute name="label" translatable="yes">_Install Update</attribute>
+        <attribute name="action">app.install-update</attribute>
+      </item>
+      <item>
+        <attribute name="hidden-when">action-disabled</attribute>
         <attribute name="label" translatable="yes">_Restart</attribute>
         <attribute name="action">app.restart</attribute>
       </item>
