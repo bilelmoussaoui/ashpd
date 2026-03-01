@@ -26,6 +26,10 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/window.ui")]
     pub struct ApplicationWindow {
         pub(super) version_binding: RefCell<Option<glib::Binding>>,
+        pub(super) docs_url_binding: RefCell<Option<glib::Binding>>,
+        pub(super) docs_button_handler: RefCell<Option<glib::SignalHandlerId>>,
+        #[template_child]
+        pub docs_button: TemplateChild<gtk::Button>,
         #[template_child]
         pub account: TemplateChild<AccountPage>,
         #[template_child]
@@ -143,7 +147,16 @@ mod imp {
                             binding.unbind();
                         }
 
-                        // Bind portal version to subtitle
+                        // Unbind previous docs URL binding if it exists
+                        if let Some(binding) = window.docs_url_binding.borrow_mut().take() {
+                            binding.unbind();
+                        }
+
+                        if let Some(handler_id) = window.docs_button_handler.borrow_mut().take() {
+                            window.docs_button.disconnect(handler_id);
+                        }
+
+                        // Bind portal version to subtitle and docs URL to button
                         if let Some(portal_page) = page.downcast_ref::<PortalPage>() {
                             let binding = portal_page
                                 .bind_property("portal-version", &window_title, "subtitle")
@@ -157,8 +170,37 @@ mod imp {
                                 .sync_create()
                                 .build();
                             window.version_binding.replace(Some(binding));
+
+                            let docs_binding = portal_page
+                                .bind_property(
+                                    "portal-docs-url",
+                                    &window.docs_button.get(),
+                                    "visible",
+                                )
+                                .transform_to(|_, url: Option<String>| Some(url.is_some()))
+                                .sync_create()
+                                .build();
+                            window.docs_url_binding.replace(Some(docs_binding));
+
+                            let handler_id = window.docs_button.connect_clicked(glib::clone!(
+                                #[weak]
+                                window,
+                                #[weak]
+                                portal_page,
+                                move |_| {
+                                    if let Some(url) = portal_page.portal_docs_url() {
+                                        gtk::UriLauncher::new(&url).launch(
+                                            Some(&*window.obj()),
+                                            gio::Cancellable::NONE,
+                                            |_| {},
+                                        );
+                                    }
+                                }
+                            ));
+                            window.docs_button_handler.replace(Some(handler_id));
                         } else {
                             window_title.set_subtitle("");
+                            window.docs_button.set_visible(false);
                         }
                     }
                 }

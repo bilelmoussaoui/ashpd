@@ -14,6 +14,8 @@ mod imp {
     pub struct PortalPage {
         #[property(get, set)]
         portal_version: Cell<u32>,
+        #[property(get, set, nullable)]
+        portal_docs_url: std::cell::RefCell<Option<String>>,
         #[template_child]
         pub notification: TemplateChild<Notification>,
         #[template_child]

@@ -75,14 +75,13 @@
                       <object class="AdwWindowTitle" id="window_title" />
                     </property>
                     <child type="start">
-                      <object class="GtkRevealer">
-                        <property name="transition-type">crossfade</property>
-                        <child>
-                          <object class="GtkButton">
-                            <property name="icon-name">go-previous-symbolic</property>
-                            <property name="action-name">win.back</property>
-                          </object>
-                        </child>
+                      <object class="GtkButton" id="docs_button">
+                        <property name="icon-name">help-about-symbolic</property>
+                        <property name="tooltip-text" translatable="yes">View Documentation</property>
+                        <property name="visible">False</property>
+                        <style>
+                          <class name="flat"/>
+                        </style>
                       </object>
                     </child>
                   </object>

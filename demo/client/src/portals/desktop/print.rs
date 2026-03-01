@@ -244,6 +244,11 @@ mod imp {
             self.parent_map();
             let obj = self.obj();
 
+            obj.set_property(
+                "portal-docs-url",
+                "https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Print.html",
+            );
+
             glib::spawn_future_local(glib::clone!(
                 #[weak]
                 obj,
