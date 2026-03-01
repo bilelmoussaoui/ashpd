@@ -15,7 +15,7 @@ version = "0.13.0"
 rust-version = "1.92"
 
 [workspace.dependencies]
-zvariant = { version = "5.8", default-features = false, features = [
+zvariant = { version = "5.10", default-features = false, features = [
     "gvariant",
 ] }
 ashpd = { path = "client", version = "0.13.0", default-features = false }
