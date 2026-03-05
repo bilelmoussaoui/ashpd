@@ -157,9 +157,3 @@ impl NetworkMonitorPage {
         Ok(())
     }
 }
-
-impl Default for NetworkMonitorPage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}

@@ -110,9 +110,3 @@ impl ProxyResolverPage {
         Ok(())
     }
 }
-
-impl Default for ProxyResolverPage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}

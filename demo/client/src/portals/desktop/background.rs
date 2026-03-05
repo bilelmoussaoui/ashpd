@@ -126,9 +126,3 @@ impl BackgroundPage {
         }
     }
 }
-
-impl Default for BackgroundPage {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
