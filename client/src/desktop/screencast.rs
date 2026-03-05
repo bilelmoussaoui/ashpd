@@ -206,12 +206,7 @@ pub struct StartCastOptions {
 pub struct Streams {
     #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
     streams: Vec<Stream>,
-    #[serde(
-        default,
-        with = "optional",
-        skip_serializing_if = "Option::is_none",
-        skip_deserializing
-    )]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
     #[serde(default, with = "optional", skip_serializing)]
     #[cfg_attr(not(feature = "backend"), allow(dead_code))]
