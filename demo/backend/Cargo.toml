@@ -6,7 +6,7 @@ license.workspace = true
 
 [dependencies]
 async-trait = "0.1.60"
-tokio = { version = "1.0", features = [
+tokio = { version = "1.50", features = [
     "io-util",
     "net",
     "time",
