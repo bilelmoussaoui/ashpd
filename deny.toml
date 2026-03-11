@@ -26,6 +26,6 @@ wildcards = "deny"
 highlight = "all"
 skip = [
     { name = "itertools", version = "0.13.0" },
-    { name = "quick-xml", version = "0.37.5" },
+    { name = "quick-xml", version = "0.38.4" },
     { name = "nom", version = "7.1.3" },
 ]
