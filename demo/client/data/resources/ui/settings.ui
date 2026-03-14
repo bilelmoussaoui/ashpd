@@ -59,6 +59,22 @@
                         </child>
                       </object>
                     </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Reduced Motion</property>
+                        <property name="subtitle" translatable="yes">System's reduced motion preference</property>
+                        <child>
+                          <object class="GtkLabel" id="reduced_motion_label">
+                            <property name="label">Loading…</property>
+                            <property name="halign">start</property>
+                            <property name="selectable">True</property>
+                            <style>
+                              <class name="dim-label"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
