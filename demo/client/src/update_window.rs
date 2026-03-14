@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use adw::subclass::prelude::*;
 use ashpd::flatpak::update_monitor::{UpdateMonitor, UpdateProgress, UpdateStatus};
+use formatx::formatx;
+use gettextrs::gettext;
 use gtk::{
     glib::{self, clone},
     prelude::*,
@@ -112,7 +114,7 @@ impl UpdateWindow {
 
         // Switch to installing page
         imp.stack.set_visible_child_name("installing");
-        self.set_progress_description(Some("Starting update…".to_string()));
+        self.set_progress_description(Some(gettext("Starting update…")));
         imp.progress_bar.set_fraction(0.0);
 
         let (sender, mut receiver) =
@@ -175,10 +177,9 @@ impl UpdateWindow {
                         let n_ops = progress.n_ops().unwrap_or(0);
                         let pct = progress.progress().unwrap_or(0);
 
-                        self.set_progress_description(Some(format!(
-                            "Operation {} of {}",
-                            op, n_ops
-                        )));
+                        self.set_progress_description(Some(
+                            formatx!(gettext("Operation {} of {}"), op, n_ops).unwrap(),
+                        ));
 
                         if n_ops > 0 {
                             imp.progress_bar.set_fraction(pct as f64 / 100.0);
