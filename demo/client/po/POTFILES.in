@@ -21,4 +21,5 @@ src/main.rs
 src/portals/desktop/file_chooser.rs
 src/portals/desktop/notification.rs
 src/portals/desktop/settings.rs
+src/portals/desktop/wallpaper.rs
 src/update_window.rs
