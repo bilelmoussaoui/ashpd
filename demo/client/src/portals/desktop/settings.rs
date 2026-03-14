@@ -1,8 +1,9 @@
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
-    desktop::settings::{APPEARANCE_NAMESPACE, ColorScheme, Contrast, Settings},
+    desktop::settings::{APPEARANCE_NAMESPACE, ColorScheme, Contrast, ReducedMotion, Settings},
     zvariant::Value,
 };
+use gettextrs::gettext;
 use gtk::{
     gdk,
     glib::{self, clone},
@@ -27,6 +28,8 @@ mod imp {
         pub accent_color_widget: TemplateChild<ColorWidget>,
         #[template_child]
         pub contrast_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub reduced_motion_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub all_settings_group: TemplateChild<adw::PreferencesGroup>,
 
@@ -104,14 +107,22 @@ glib::wrapper! {
 
 impl SettingsPage {
     async fn load_settings(&self) -> ashpd::Result<()> {
-        let (settings, color_scheme, accent_color, contrast, all_settings) =
+        let (settings, color_scheme, accent_color, contrast, reduced_motion, all_settings) =
             spawn_tokio(async move {
                 let settings = Settings::new().await?;
                 let color_scheme = settings.color_scheme().await?;
                 let accent_color = settings.accent_color().await?;
                 let contrast = settings.contrast().await?;
+                let reduced_motion = settings.reduced_motion().await?;
                 let all_settings = settings.read_all(&[""]).await?;
-                ashpd::Result::Ok((settings, color_scheme, accent_color, contrast, all_settings))
+                ashpd::Result::Ok((
+                    settings,
+                    color_scheme,
+                    accent_color,
+                    contrast,
+                    reduced_motion,
+                    all_settings,
+                ))
             })
             .await?;
 
@@ -121,6 +132,11 @@ impl SettingsPage {
         imp.accent_color_widget
             .set_rgba(gdk::RGBA::from(accent_color));
         imp.contrast_label.set_text(&format_contrast(contrast));
+        if matches!(reduced_motion, ReducedMotion::ReducedMotion) {
+            imp.reduced_motion_label.set_text(&gettext("Enabled"));
+        } else {
+            imp.reduced_motion_label.set_text(&gettext("Disabled"));
+        }
 
         // Display all settings grouped by namespace
         for (namespace, settings_map) in all_settings {
