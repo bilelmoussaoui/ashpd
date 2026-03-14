@@ -99,6 +99,7 @@ dependencies = [
  "ashpd",
  "async-channel",
  "chrono",
+ "formatx",
  "futures-util",
  "gettext-rs",
  "gst-plugin-gtk4",
@@ -572,6 +573,12 @@ name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
+
+[[package]]
+name = "formatx"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8866fac38f53fc87fa3ae1b09ddd723e0482f8fa74323518b4c59df2c55a00a"
 
 [[package]]
 name = "futures"

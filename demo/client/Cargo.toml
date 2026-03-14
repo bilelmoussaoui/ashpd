@@ -41,6 +41,7 @@ ashpd = { path = "../../client", version = "0.13.0", default-features = false, f
 ] }
 async-channel = "2.3"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
+formatx = "0.2"
 futures-util = "0.3"
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 gst = { package = "gstreamer", version = "0.25" }
