@@ -22,7 +22,7 @@
                         <property name="subtitle" translatable="yes">System's preferred color scheme</property>
                         <child>
                           <object class="GtkLabel" id="color_scheme_label">
-                            <property name="label">Loading...</property>
+                            <property name="label">Loading…</property>
                             <property name="halign">start</property>
                             <property name="selectable">True</property>
                             <style>
@@ -49,7 +49,7 @@
                         <property name="subtitle" translatable="yes">System's preferred contrast level</property>
                         <child>
                           <object class="GtkLabel" id="contrast_label">
-                            <property name="label">Loading...</property>
+                            <property name="label">Loading…</property>
                             <property name="halign">start</property>
                             <property name="selectable">True</property>
                             <style>

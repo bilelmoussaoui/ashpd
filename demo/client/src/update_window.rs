@@ -112,7 +112,7 @@ impl UpdateWindow {
 
         // Switch to installing page
         imp.stack.set_visible_child_name("installing");
-        self.set_progress_description(Some("Starting update...".to_string()));
+        self.set_progress_description(Some("Starting update…".to_string()));
         imp.progress_bar.set_fraction(0.0);
 
         let (sender, mut receiver) =
