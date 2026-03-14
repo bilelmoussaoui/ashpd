@@ -11,7 +11,7 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <property name="title" translatable="yes">Set a File as a Wallpaper</property>
-                <property name="description">Calls SetWallpaperURI on org.freedesktop.portal.Wallpaper</property>
+                <property name="description" translatable="yes">Calls SetWallpaperURI on org.freedesktop.portal.Wallpaper</property>
                 <child>
                   <object class="AdwSwitchRow" id="preview_switch">
                     <property name="title" translatable="yes">Show Preview</property>

@@ -3,6 +3,7 @@ use ashpd::{
     WindowIdentifier,
     desktop::wallpaper::{self, WallpaperProxy},
 };
+use gettextrs::gettext;
 use gtk::{gio, glib};
 
 use crate::{
@@ -77,14 +78,14 @@ impl WallpaperPage {
         let root = self.native().unwrap();
         let filter = gtk::FileFilter::new();
         filter.add_pixbuf_formats();
-        filter.set_name(Some("images"));
+        filter.set_name(Some(&gettext("Images")));
 
         let filters = gio::ListStore::new::<gtk::FileFilter>();
         filters.append(&filter);
 
         let dialog = gtk::FileDialog::builder()
             .modal(true)
-            .accept_label("Select")
+            .accept_label(gettext("Select"))
             .filters(&filters)
             .build();
 
