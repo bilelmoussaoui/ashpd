@@ -18,6 +18,7 @@ data/resources/ui/shortcuts.ui
 data/resources/ui/wallpaper.ui
 data/resources/ui/window.ui
 src/main.rs
+src/portals/desktop/file_chooser.rs
 src/portals/desktop/notification.rs
 src/portals/desktop/settings.rs
 src/update_window.rs

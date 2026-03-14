@@ -5,6 +5,7 @@ use ashpd::{
         Choice, FileChooserProxy, FileFilter, OpenFileRequest, SaveFileRequest, SaveFilesRequest,
     },
 };
+use gettextrs::gettext;
 use gtk::glib;
 
 use self::choice_widget::ChoiceWidget;
@@ -128,15 +129,17 @@ mod choice_widget {
             let list_box = gtk::ListBox::new();
             list_box.add_css_class("boxed-list");
 
-            imp.id_row.set_title("Choice ID");
+            imp.id_row.set_title(&gettext("Choice ID"));
             list_box.append(&imp.id_row);
 
-            imp.label_row.set_title("Label");
+            imp.label_row.set_title(&gettext("Label"));
             list_box.append(&imp.label_row);
 
-            imp.type_combo.set_title("Type");
-            imp.type_combo
-                .set_model(Some(&gtk::StringList::new(&["Boolean", "Dropdown"])));
+            imp.type_combo.set_title(&gettext("Type"));
+            imp.type_combo.set_model(Some(&gtk::StringList::new(&[
+                &gettext("Boolean"),
+                &gettext("Dropdown"),
+            ])));
             imp.type_combo.connect_selected_notify(glib::clone!(
                 #[weak(rename_to = obj)]
                 self,
@@ -148,11 +151,11 @@ mod choice_widget {
             ));
             list_box.append(&imp.type_combo);
 
-            imp.boolean_switch.set_title("Initial State");
+            imp.boolean_switch.set_title(&gettext("Initial State"));
             imp.boolean_switch.set_visible(true); // Boolean is default
             list_box.append(&imp.boolean_switch);
 
-            imp.initial_entry.set_title("Initial Selection");
+            imp.initial_entry.set_title(&gettext("Initial Selection"));
             imp.initial_entry.set_text("utf8");
             imp.initial_entry.set_visible(false); // Hidden by default
             list_box.append(&imp.initial_entry);
@@ -161,8 +164,8 @@ mod choice_widget {
 
             // Options section for dropdown
             let options_expander = adw::ExpanderRow::builder()
-                .title("Options")
-                .subtitle("One option per line: key=value")
+                .title(gettext("Options"))
+                .subtitle(gettext("One option per line: key=value"))
                 .visible(false) // Hidden by default
                 .build();
 
@@ -200,7 +203,7 @@ mod choice_widget {
                 .halign(gtk::Align::End)
                 .valign(gtk::Align::Center)
                 .margin_top(6)
-                .label("Remove")
+                .label(gettext("Remove"))
                 .margin_bottom(12)
                 .build();
             remove_button.add_css_class("destructive-action");
@@ -329,7 +332,10 @@ mod imp {
             // Add default choice for open file
             let open_choice = ChoiceWidget::default();
             open_choice.imp().id_row.set_text("encoding");
-            open_choice.imp().label_row.set_text("File Encoding");
+            open_choice
+                .imp()
+                .label_row
+                .set_text(&gettext("File Encoding"));
             open_choice.imp().type_combo.set_selected(1);
             open_choice.connect_removed(glib::clone!(
                 #[weak]
@@ -343,7 +349,10 @@ mod imp {
             // Add default choice for save file
             let save_file_choice = ChoiceWidget::default();
             save_file_choice.imp().id_row.set_text("compress");
-            save_file_choice.imp().label_row.set_text("Compress File");
+            save_file_choice
+                .imp()
+                .label_row
+                .set_text(&gettext("Compress File"));
             save_file_choice.imp().type_combo.set_selected(0); // Boolean
             save_file_choice.imp().boolean_switch.set_active(false);
             save_file_choice.connect_removed(glib::clone!(
@@ -358,7 +367,10 @@ mod imp {
             // Add default choice for save files
             let save_files_choice = ChoiceWidget::default();
             save_files_choice.imp().id_row.set_text("archive");
-            save_files_choice.imp().label_row.set_text("Create Archive");
+            save_files_choice
+                .imp()
+                .label_row
+                .set_text(&gettext("Create Archive"));
             save_files_choice.imp().type_combo.set_selected(0); // Boolean
             save_files_choice.imp().boolean_switch.set_active(true);
             save_files_choice.connect_removed(glib::clone!(
@@ -441,16 +453,16 @@ impl FileChooserPage {
 
         if pos > 0 {
             filters.push(
-                FileFilter::new("Text files")
+                FileFilter::new(&gettext("Text files"))
                     .mimetype("text/*")
                     .glob("*.txt"),
             );
         };
         if pos > 1 {
-            filters.push(FileFilter::new("Images").mimetype("image/*"));
+            filters.push(FileFilter::new(&gettext("Images")).mimetype("image/*"));
         };
         if pos > 2 {
-            filters.push(FileFilter::new("Videos").mimetype("video/*"));
+            filters.push(FileFilter::new(&gettext("Videos")).mimetype("video/*"));
         };
         filters
     }
