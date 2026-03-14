@@ -21,13 +21,13 @@
                 <child>
                   <object class="AdwEntryRow" id="title_entry">
                     <property name="title" translatable="yes">Title</property>
-                    <property name="text">Test Notification</property>
+                    <property name="text" translatable="yes">Test Notification</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="body_entry">
                     <property name="title" translatable="yes">Body</property>
-                    <property name="text">This is a test notification from ASHPD Demo</property>
+                    <property name="text" translatable="yes">This is a test notification from ASHPD Demo</property>
                   </object>
                 </child>
                 <child>

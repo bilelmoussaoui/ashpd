@@ -6,6 +6,7 @@ use ashpd::desktop::{
     notification::{Button, Category, DisplayHint, Notification, NotificationProxy, Priority},
 };
 use futures_util::stream::StreamExt;
+use gettextrs::gettext;
 use gtk::{gio, glib};
 
 use self::button::NotificationButton;
@@ -108,7 +109,7 @@ mod imp {
 
             // Add default buttons
             let button1 = NotificationButton::default();
-            button1.imp().label_row.set_text("View");
+            button1.imp().label_row.set_text(&gettext("View"));
             button1.imp().action_row.set_text("app.view-notification");
             button1.imp().target_row.set_text("notification-id");
             button1.connect_removed(glib::clone!(
@@ -121,7 +122,7 @@ mod imp {
             self.buttons_box.append(&button1);
 
             let button2 = NotificationButton::default();
-            button2.imp().label_row.set_text("Dismiss");
+            button2.imp().label_row.set_text(&gettext("Dismiss"));
             button2
                 .imp()
                 .action_row
@@ -173,16 +174,16 @@ impl NotificationPage {
         let imp = self.imp();
         let filter = gtk::FileFilter::new();
         filter.add_mime_type("audio/*");
-        filter.set_name(Some("Audio files"));
+        filter.set_name(Some(&gettext("Audio files")));
 
         let filters = gio::ListStore::new::<gtk::FileFilter>();
         filters.append(&filter);
 
         let root = self.native().unwrap();
         let file = gtk::FileDialog::builder()
-            .accept_label("Select")
+            .accept_label(gettext("Select"))
             .modal(true)
-            .title("Notification Sound")
+            .title(gettext("Notification Sound"))
             .filters(&filters)
             .build()
             .open_future(root.downcast_ref::<gtk::Window>())
@@ -320,7 +321,7 @@ impl NotificationPage {
         .await;
         match response {
             Ok(proxy) => {
-                self.success("Notification sent");
+                self.success(&gettext("Notification sent"));
                 let action = spawn_tokio(async move {
                     let action = proxy
                         .receive_action_invoked()
@@ -442,23 +443,23 @@ mod button {
             let list_box = gtk::ListBox::new();
             list_box.add_css_class("boxed-list");
 
-            imp.label_row.set_title("Label");
+            imp.label_row.set_title(&gettext("Label"));
             list_box.append(&imp.label_row);
-            imp.action_row.set_title("Action");
+            imp.action_row.set_title(&gettext("Action"));
             list_box.append(&imp.action_row);
-            imp.target_row.set_title("Action Target");
+            imp.target_row.set_title(&gettext("Action Target"));
             list_box.append(&imp.target_row);
 
-            imp.purpose_combo.set_title("Purpose");
+            imp.purpose_combo.set_title(&gettext("Purpose"));
             imp.purpose_combo.set_model(Some(&gtk::StringList::new(&[
-                "None",
-                "IM Reply with Text",
-                "Call Accept",
-                "Call Decline",
-                "Call Hang Up",
-                "Call Enable Speakerphone",
-                "Call Disable Speakerphone",
-                "System Custom Alert",
+                &gettext("None"),
+                &gettext("IM Reply with Text"),
+                &gettext("Call Accept"),
+                &gettext("Call Decline"),
+                &gettext("Call Hang Up"),
+                &gettext("Call Enable Speakerphone"),
+                &gettext("Call Disable Speakerphone"),
+                &gettext("System Custom Alert"),
             ])));
             list_box.append(&imp.purpose_combo);
 
@@ -468,7 +469,7 @@ mod button {
                 .halign(gtk::Align::End)
                 .valign(gtk::Align::Center)
                 .margin_top(6)
-                .label("Remove")
+                .label(gettext("Remove"))
                 .margin_bottom(12)
                 .build();
             remove_button.add_css_class("destructive-action");
