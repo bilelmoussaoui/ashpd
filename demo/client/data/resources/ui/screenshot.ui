@@ -11,7 +11,7 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <property name="title" translatable="yes">Take a Screenshot</property>
-                <property name="description">Calls Screenshot on org.freedesktop.portal.Screenshot</property>
+                <property name="description" translatable="yes">Calls Screenshot on org.freedesktop.portal.Screenshot</property>
                 <child>
                   <object class="AdwSwitchRow" id="interactive_switch">
                     <property name="title" translatable="yes">Interactive</property>

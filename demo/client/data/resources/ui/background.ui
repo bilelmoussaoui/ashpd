@@ -11,11 +11,11 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <property name="title" translatable="yes">Run the Application in the Background</property>
-                <property name="description">Calls RequestBackground on org.freedesktop.portal.Background</property>
+                <property name="description" translatable="yes">Calls RequestBackground on org.freedesktop.portal.Background</property>
                 <child>
                   <object class="AdwEntryRow" id="reason_entry">
                     <property name="title" translatable="yes">Reason</property>
-                    <property name="text">To continue syncing your files</property>
+                    <property name="text" translatable="yes">To continue syncing your files</property>
                   </object>
                 </child>
                 <child>
