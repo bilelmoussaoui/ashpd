@@ -11,7 +11,7 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <property name="title" translatable="yes">Open a URI</property>
-                <property name="description">Calls OpenURI on org.freedesktop.portal.OpenURI</property>
+                <property name="description" translatable="yes">Calls OpenURI on org.freedesktop.portal.OpenURI</property>
                 <child>
                   <object class="AdwEntryRow" id="uri_entry">
                     <property name="title" translatable="yes">URI</property>
