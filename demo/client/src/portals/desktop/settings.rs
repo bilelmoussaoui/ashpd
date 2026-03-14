@@ -133,20 +133,13 @@ impl SettingsPage {
             let group = adw::PreferencesGroup::builder().title(&namespace).build();
 
             for (key, value) in settings_map {
-                let row = adw::ActionRow::builder().title(&key).build();
-
                 let formatted_value = format_value(&value);
 
-                let value_label = gtk::Label::builder()
-                    .label(formatted_value)
-                    .halign(gtk::Align::Start)
-                    .valign(gtk::Align::Center)
-                    .selectable(true)
-                    .ellipsize(gtk::pango::EllipsizeMode::End)
-                    .xalign(0.0)
+                let row = adw::ActionRow::builder()
+                    .title(&key)
+                    .subtitle(&formatted_value)
                     .build();
-                value_label.add_css_class("dim-label");
-                row.add_suffix(&value_label);
+                row.add_css_class("property");
 
                 group.add(&row);
             }
