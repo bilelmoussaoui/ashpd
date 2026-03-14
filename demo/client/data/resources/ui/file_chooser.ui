@@ -15,13 +15,13 @@
                 <child>
                   <object class="AdwEntryRow" id="open_title_entry">
                     <property name="title" translatable="yes">Title</property>
-                    <property name="text">Select a File</property>
+                    <property name="text" translatable="yes">Select a File</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="open_accept_label_entry">
                     <property name="title" translatable="yes">Accept Label</property>
-                    <property name="text">Open</property>
+                    <property name="text" translatable="yes">Open</property>
                   </object>
                 </child>
                 <child>
@@ -99,13 +99,13 @@
                 <child>
                   <object class="AdwEntryRow" id="save_file_title_entry">
                     <property name="title" translatable="yes">Title</property>
-                    <property name="text">Save File</property>
+                    <property name="text" translatable="yes">Save File</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="save_file_accept_label_entry">
                     <property name="title" translatable="yes">Accept Label</property>
-                    <property name="text">Save</property>
+                    <property name="text" translatable="yes">Save</property>
                   </object>
                 </child>
                 <child>
@@ -121,7 +121,7 @@
                 <child>
                   <object class="AdwEntryRow" id="save_file_current_name_entry">
                     <property name="title" translatable="yes">Current Name</property>
-                    <property name="text">document.txt</property>
+                    <property name="text" translatable="yes">document.txt</property>
                   </object>
                 </child>
                 <child>
@@ -184,18 +184,18 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <property name="title" translatable="yes">Save Files</property>
-                <property name="description">Calls SaveFiles on org.freedesktop.portal.FileChooser</property>
+                <property name="description" translatable="yes">Calls SaveFiles on org.freedesktop.portal.FileChooser</property>
                 <property name="margin-top">24</property>
                 <child>
                   <object class="AdwEntryRow" id="save_files_title_entry">
                     <property name="title" translatable="yes">Title</property>
-                    <property name="text">Save Multiple Files</property>
+                    <property name="text" translatable="yes">Save Multiple Files</property>
                   </object>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="save_files_accept_label_entry">
                     <property name="title" translatable="yes">Accept Label</property>
-                    <property name="text">Save</property>
+                    <property name="text" translatable="yes">Save</property>
                   </object>
                 </child>
                 <child>
