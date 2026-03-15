@@ -37,6 +37,16 @@
     <control>touch</control>
   </recommends>
   <releases>
+  <release version="0.6.0" date="2026-03-15">
+    <description>
+      <ul>
+        <li>Input Capture portal support</li>
+        <li>Settings portal support</li>
+        <li>De-duplicate cameras</li>
+        <li>Update monitor support</li>
+      </ul>
+    </description>
+  </release>
     <release version="0.5.0" date="2025-04-19">
       <description>
         <ul>
