@@ -3,6 +3,7 @@ authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
 edition = "2024"
 license = "MIT"
 name = "ashpd-demo"
+rust-version = "1.92"
 version = "0.1.0"
 
 [dependencies]
