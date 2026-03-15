@@ -6,10 +6,24 @@ export DIST="$1"
 export SOURCE_ROOT="$2"
 
 cd "$SOURCE_ROOT"
+# Create a temporary directory outside the workspace to avoid conflicts
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+# Remove path dependency from ashpd to use crates.io version in dist
+sed 's|path = "../../client", ||g' Cargo.toml > "$TMPDIR"/Cargo.toml
+
+# Copy necessary files for cargo to work
+cp -r src "$TMPDIR"/
+cp -r data "$TMPDIR"/
+
 mkdir "$DIST"/.cargo
 # cargo-vendor-filterer can be found at https://github.com/coreos/cargo-vendor-filterer
 # It is also part of the Rust SDK extension.
+cd "$TMPDIR"
 cargo vendor-filterer --platform=x86_64-unknown-linux-gnu --platform=aarch64-unknown-linux-gnu > "$DIST"/.cargo/config.toml
+# Copy the modified Cargo.toml to dist
+cp Cargo.toml "$DIST"/Cargo.toml
 set -- vendor/gettext-sys/gettext-*.tar.*
 TARBALL_PATH=$1
 TARBALL_NAME=$(basename "$TARBALL_PATH")

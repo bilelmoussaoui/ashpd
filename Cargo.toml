@@ -1,7 +1,8 @@
 [workspace]
 resolver = "3"
 
-members = ["client", "demo/client", "demo/backend"]
+members = ["client", "demo/backend"]
+exclude = ["demo/client"]
 
 [workspace.package]
 authors = ["Bilal Elmoussaoui <bil.elmoussaoui@gmail.com>"]
