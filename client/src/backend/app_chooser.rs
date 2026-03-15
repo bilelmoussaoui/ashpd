@@ -28,6 +28,15 @@ impl DesktopID {
     }
 }
 
+impl Serialize for DesktopID {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_str())
+    }
+}
+
 impl<'de> Deserialize<'de> for DesktopID {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -94,13 +103,13 @@ impl ChooserOptions {
 #[zvariant(signature = "dict")]
 pub struct Choice {
     #[serde(with = "as_value")]
-    choice: AppID,
+    choice: DesktopID,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
 }
 
 impl Choice {
-    pub fn new(choice: AppID) -> Self {
+    pub fn new(choice: DesktopID) -> Self {
         Self {
             choice,
             activation_token: None,
