@@ -16,7 +16,7 @@ tokio = { version = "1.50", features = [
 futures-util = "0.3.25"
 libc = "0.2"
 tracing = "0.1"
-tracing-subscriber = "0.3.16"
+tracing-subscriber = "0.3.23"
 zbus = "5.13"
 
 [dependencies.ashpd]
