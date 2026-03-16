@@ -237,9 +237,7 @@ impl InhibitProxy {
     /// See also [`StateChanged`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Inhibit.html#org-freedesktop-portal-inhibit-statechanged).
     #[doc(alias = "StateChanged")]
     #[doc(alias = "XdpPortal::session-state-changed")]
-    pub async fn receive_state_changed(
-        &self,
-    ) -> Result<impl Stream<Item = InhibitState> + use<'_>, Error> {
+    pub async fn receive_state_changed(&self) -> Result<impl Stream<Item = InhibitState>, Error> {
         self.0.signal("StateChanged").await
     }
 

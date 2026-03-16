@@ -254,9 +254,7 @@ impl LocationProxy {
     /// See also [`LocationUpdated`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Location.html#org-freedesktop-portal-location-locationupdated).
     #[doc(alias = "LocationUpdated")]
     #[doc(alias = "XdpPortal::location-updated")]
-    pub async fn receive_location_updated(
-        &self,
-    ) -> Result<impl Stream<Item = Location> + use<'_>, Error> {
+    pub async fn receive_location_updated(&self) -> Result<impl Stream<Item = Location>, Error> {
         self.0.signal("LocationUpdated").await
     }
 
