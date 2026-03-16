@@ -455,9 +455,7 @@ impl UsbProxy {
     ///
     /// See also [`DeviceEvents`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Usb.html#org-freedesktop-portal-usb-deviceevents).
     #[doc(alias = "DeviceEvents")]
-    pub async fn receive_device_events(
-        &self,
-    ) -> Result<impl Stream<Item = UsbDeviceEvent> + use<'_>, Error> {
+    pub async fn receive_device_events(&self) -> Result<impl Stream<Item = UsbDeviceEvent>, Error> {
         self.0.signal("DeviceEvents").await
     }
 }
