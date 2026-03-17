@@ -1,0 +1,177 @@
+# Slovenian translation for ashpd.
+# Copyright (C) 2026 ashpd's COPYRIGHT HOLDER
+# This file is distributed under the same license as the ashpd package.
+# Martin <miles@filmsi.net>,  2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ashpd main\n"
+"Report-Msgid-Bugs-To: https://github.com/bilelmoussaoui/ashpd/issues\n"
+"POT-Creation-Date: 2026-03-17 19:18+0000\n"
+"PO-Revision-Date: 2026-03-17 21:00+0100\n"
+"Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
+"Language-Team: Slovenian GNOME Translation Team <gnome-si@googlegroups.com>\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n%100==4 ? 3 : 0);\n"
+"X-Generator: Poedit 3.8\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: ../src/main.rs:40
+msgid "ASHPD Demo"
+msgstr "Demo ASHPD"
+
+#: ../src/portals/desktop/file_chooser.rs:132
+msgid "Choice ID"
+msgstr "ID izbire"
+
+#: ../src/portals/desktop/file_chooser.rs:135
+#: ../src/portals/desktop/notification.rs:446
+msgid "Label"
+msgstr "Oznaka"
+
+#: ../src/portals/desktop/file_chooser.rs:138
+msgid "Type"
+msgstr "Vrsta"
+
+#: ../src/portals/desktop/file_chooser.rs:140
+msgid "Boolean"
+msgstr "Boolova vrednost"
+
+#: ../src/portals/desktop/file_chooser.rs:141
+msgid "Dropdown"
+msgstr "Spustni meni"
+
+#: ../src/portals/desktop/file_chooser.rs:154
+msgid "Initial State"
+msgstr "Začetno stanje"
+
+#: ../src/portals/desktop/file_chooser.rs:158
+msgid "Initial Selection"
+msgstr "Začetni izbor"
+
+#: ../src/portals/desktop/file_chooser.rs:167
+msgid "Options"
+msgstr "Možnosti"
+
+#: ../src/portals/desktop/file_chooser.rs:168
+msgid "One option per line: key=value"
+msgstr "Ena možnost na vrstico: ključ=vrednost"
+
+#: ../src/portals/desktop/file_chooser.rs:206
+#: ../src/portals/desktop/notification.rs:472
+msgid "Remove"
+msgstr "Odstrani"
+
+#: ../src/portals/desktop/file_chooser.rs:338
+msgid "File Encoding"
+msgstr "Kodiranje datoteke"
+
+#: ../src/portals/desktop/file_chooser.rs:355
+msgid "Compress File"
+msgstr "Stisni datoteko"
+
+#: ../src/portals/desktop/file_chooser.rs:373
+msgid "Create Archive"
+msgstr "Ustvari arhiv"
+
+#: ../src/portals/desktop/file_chooser.rs:456
+msgid "Text files"
+msgstr "Besedilne datoteke"
+
+#: ../src/portals/desktop/file_chooser.rs:462
+#: ../src/portals/desktop/wallpaper.rs:81
+msgid "Images"
+msgstr "Slike"
+
+#: ../src/portals/desktop/file_chooser.rs:465
+msgid "Videos"
+msgstr "Videoposnetki"
+
+#: ../src/portals/desktop/notification.rs:112
+msgid "View"
+msgstr "Pogled"
+
+#: ../src/portals/desktop/notification.rs:125
+msgid "Dismiss"
+msgstr "Opusti"
+
+#: ../src/portals/desktop/notification.rs:177
+msgid "Audio files"
+msgstr "Zvočne datoteke"
+
+#: ../src/portals/desktop/notification.rs:184
+#: ../src/portals/desktop/wallpaper.rs:88
+msgid "Select"
+msgstr "Izberite"
+
+#: ../src/portals/desktop/notification.rs:186
+msgid "Notification Sound"
+msgstr "Zvok obvestila"
+
+#: ../src/portals/desktop/notification.rs:324
+msgid "Notification sent"
+msgstr "Poslano obvestilo"
+
+#: ../src/portals/desktop/notification.rs:448
+msgid "Action"
+msgstr "Dejanje"
+
+#: ../src/portals/desktop/notification.rs:450
+msgid "Action Target"
+msgstr "Cilj dejanja"
+
+#: ../src/portals/desktop/notification.rs:453
+msgid "Purpose"
+msgstr "Namen"
+
+#: ../src/portals/desktop/notification.rs:455
+msgid "None"
+msgstr "Brez"
+
+#: ../src/portals/desktop/notification.rs:456
+msgid "IM Reply with Text"
+msgstr "Odgovor v klepetu z besedilom"
+
+#: ../src/portals/desktop/notification.rs:457
+msgid "Call Accept"
+msgstr "Sprejmi klic"
+
+#: ../src/portals/desktop/notification.rs:458
+msgid "Call Decline"
+msgstr "Odkloni klic"
+
+#: ../src/portals/desktop/notification.rs:459
+msgid "Call Hang Up"
+msgstr "Klic - Prekini"
+
+#: ../src/portals/desktop/notification.rs:460
+msgid "Call Enable Speakerphone"
+msgstr "Klic - Omogočen zvočnik telefona"
+
+#: ../src/portals/desktop/notification.rs:461
+msgid "Call Disable Speakerphone"
+msgstr "Klic - Onemogočen zvočnik telefona"
+
+#: ../src/portals/desktop/notification.rs:462
+msgid "System Custom Alert"
+msgstr "Opozorilo sistema po meri"
+
+#: ../src/portals/desktop/settings.rs:136
+msgid "Enabled"
+msgstr "Omogočeno"
+
+#: ../src/portals/desktop/settings.rs:138
+msgid "Disabled"
+msgstr "Onemogočeno"
+
+#: ../src/update_window.rs:117
+msgid "Starting update…"
+msgstr "Začetek posodobitve …"
+
+#: ../src/update_window.rs:181
+#, rust-format
+msgid "Operation {} of {}"
+msgstr "Operacija {} od {}"
