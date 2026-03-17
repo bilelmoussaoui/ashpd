@@ -1,0 +1,175 @@
+# Brazilian Portuguese translation for ashpd.
+# Copyright (C) 2026 ashpd's COPYRIGHT HOLDER
+# This file is distributed under the same license as the ashpd package.
+# Rafael Fontenelle <rafaelff@gnome.org>,  2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ashpd main\n"
+"Report-Msgid-Bugs-To: https://github.com/bilelmoussaoui/ashpd/issues\n"
+"POT-Creation-Date: 2026-03-14 19:36+0000\n"
+"PO-Revision-Date: 2026-03-14 19:36+0000\n"
+"Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
+"Language-Team: Brazilian Portuguese <https://br.gnome.org/traducao/>\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/main.rs:40
+msgid "ASHPD Demo"
+msgstr "ASHPD Demo"
+
+#: ../src/portals/desktop/file_chooser.rs:132
+msgid "Choice ID"
+msgstr "ID de escolha"
+
+#: ../src/portals/desktop/file_chooser.rs:135
+#: ../src/portals/desktop/notification.rs:446
+msgid "Label"
+msgstr "Rótulo"
+
+#: ../src/portals/desktop/file_chooser.rs:138
+msgid "Type"
+msgstr "Tipo"
+
+#: ../src/portals/desktop/file_chooser.rs:140
+msgid "Boolean"
+msgstr "Booleano"
+
+#: ../src/portals/desktop/file_chooser.rs:141
+msgid "Dropdown"
+msgstr "Menu suspenso"
+
+#: ../src/portals/desktop/file_chooser.rs:154
+msgid "Initial State"
+msgstr "Estado inicial"
+
+#: ../src/portals/desktop/file_chooser.rs:158
+msgid "Initial Selection"
+msgstr "Seleção inicial"
+
+#: ../src/portals/desktop/file_chooser.rs:167
+msgid "Options"
+msgstr "Opções"
+
+#: ../src/portals/desktop/file_chooser.rs:168
+msgid "One option per line: key=value"
+msgstr "Uma opção por linha: chave=valor"
+
+#: ../src/portals/desktop/file_chooser.rs:206
+#: ../src/portals/desktop/notification.rs:472
+msgid "Remove"
+msgstr "Remover"
+
+#: ../src/portals/desktop/file_chooser.rs:338
+msgid "File Encoding"
+msgstr "Codificação do arquivo"
+
+#: ../src/portals/desktop/file_chooser.rs:355
+msgid "Compress File"
+msgstr "Compactar arquivo"
+
+#: ../src/portals/desktop/file_chooser.rs:373
+msgid "Create Archive"
+msgstr "Criar arquivo"
+
+#: ../src/portals/desktop/file_chooser.rs:456
+msgid "Text files"
+msgstr "Arquivos texto"
+
+#: ../src/portals/desktop/file_chooser.rs:462
+#: ../src/portals/desktop/wallpaper.rs:81
+msgid "Images"
+msgstr "Imagens"
+
+#: ../src/portals/desktop/file_chooser.rs:465
+msgid "Videos"
+msgstr "Vídeos"
+
+#: ../src/portals/desktop/notification.rs:112
+msgid "View"
+msgstr "Ver"
+
+#: ../src/portals/desktop/notification.rs:125
+msgid "Dismiss"
+msgstr "Descartar"
+
+#: ../src/portals/desktop/notification.rs:177
+msgid "Audio files"
+msgstr "Arquivos de áudio"
+
+#: ../src/portals/desktop/notification.rs:184
+#: ../src/portals/desktop/wallpaper.rs:88
+msgid "Select"
+msgstr "Selecionar"
+
+#: ../src/portals/desktop/notification.rs:186
+msgid "Notification Sound"
+msgstr "Som de notificação"
+
+#: ../src/portals/desktop/notification.rs:324
+msgid "Notification sent"
+msgstr "Notificação enviada"
+
+#: ../src/portals/desktop/notification.rs:448
+msgid "Action"
+msgstr "Ação"
+
+#: ../src/portals/desktop/notification.rs:450
+msgid "Action Target"
+msgstr "Alvo da ação"
+
+#: ../src/portals/desktop/notification.rs:453
+msgid "Purpose"
+msgstr "Propósito"
+
+#: ../src/portals/desktop/notification.rs:455
+msgid "None"
+msgstr "Nenhum"
+
+#: ../src/portals/desktop/notification.rs:456
+msgid "IM Reply with Text"
+msgstr "Resposta de mensageria instantânea com texto"
+
+#: ../src/portals/desktop/notification.rs:457
+msgid "Call Accept"
+msgstr "Aceitar ligação"
+
+#: ../src/portals/desktop/notification.rs:458
+msgid "Call Decline"
+msgstr "Recusar chamada"
+
+#: ../src/portals/desktop/notification.rs:459
+msgid "Call Hang Up"
+msgstr "Encerrar a ligação"
+
+#: ../src/portals/desktop/notification.rs:460
+msgid "Call Enable Speakerphone"
+msgstr "Ligação habilitou viva-voz"
+
+#: ../src/portals/desktop/notification.rs:461
+msgid "Call Disable Speakerphone"
+msgstr "Ligação desabilitou viva-voz"
+
+#: ../src/portals/desktop/notification.rs:462
+msgid "System Custom Alert"
+msgstr "Alerta personalizado do sistema"
+
+#: ../src/portals/desktop/settings.rs:136
+msgid "Enabled"
+msgstr "Habilitado"
+
+#: ../src/portals/desktop/settings.rs:138
+msgid "Disabled"
+msgstr "Desabilitado"
+
+#: ../src/update_window.rs:117
+msgid "Starting update…"
+msgstr "Iniciando atualização…"
+
+#: ../src/update_window.rs:181
+#, rust-format
+msgid "Operation {} of {}"
+msgstr "Operação {} de {}"
