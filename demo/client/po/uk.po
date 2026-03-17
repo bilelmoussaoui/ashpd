@@ -1,0 +1,177 @@
+# Ukrainian translation for ashpd.
+# Copyright (C) 2026 ashpd's COPYRIGHT HOLDER
+# This file is distributed under the same license as the ashpd package.
+#
+# Yuri Chornoivan <yurchor@ukr.net>,  2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: ashpd main\n"
+"Report-Msgid-Bugs-To: https://github.com/bilelmoussaoui/ashpd/issues\n"
+"POT-Creation-Date: 2026-03-17 20:00+0000\n"
+"PO-Revision-Date: 2026-03-17 23:19+0200\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=n==1 ? 3 : n%10==1 && n%100!=11 ? 0 : n"
+"%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Lokalize 23.04.3\n"
+
+#: ../src/main.rs:40
+msgid "ASHPD Demo"
+msgstr "Демонстрація ASHPD"
+
+#: ../src/portals/desktop/file_chooser.rs:132
+msgid "Choice ID"
+msgstr "Ід. вибору"
+
+#: ../src/portals/desktop/file_chooser.rs:135
+#: ../src/portals/desktop/notification.rs:446
+msgid "Label"
+msgstr "Мітка"
+
+#: ../src/portals/desktop/file_chooser.rs:138
+msgid "Type"
+msgstr "Тип"
+
+#: ../src/portals/desktop/file_chooser.rs:140
+msgid "Boolean"
+msgstr "Булеве значення"
+
+#: ../src/portals/desktop/file_chooser.rs:141
+msgid "Dropdown"
+msgstr "Спадний список"
+
+#: ../src/portals/desktop/file_chooser.rs:154
+msgid "Initial State"
+msgstr "Початковий стан"
+
+#: ../src/portals/desktop/file_chooser.rs:158
+msgid "Initial Selection"
+msgstr "Початковий вибір"
+
+#: ../src/portals/desktop/file_chooser.rs:167
+msgid "Options"
+msgstr "Параметри"
+
+#: ../src/portals/desktop/file_chooser.rs:168
+msgid "One option per line: key=value"
+msgstr "По одному параметру на рядок: ключ=значення"
+
+#: ../src/portals/desktop/file_chooser.rs:206
+#: ../src/portals/desktop/notification.rs:472
+msgid "Remove"
+msgstr "Вилучити"
+
+#: ../src/portals/desktop/file_chooser.rs:338
+msgid "File Encoding"
+msgstr "Кодування файла"
+
+#: ../src/portals/desktop/file_chooser.rs:355
+msgid "Compress File"
+msgstr "Стиснутий файл"
+
+#: ../src/portals/desktop/file_chooser.rs:373
+msgid "Create Archive"
+msgstr "Створити архів"
+
+#: ../src/portals/desktop/file_chooser.rs:456
+msgid "Text files"
+msgstr "Текстові файли"
+
+#: ../src/portals/desktop/file_chooser.rs:462
+#: ../src/portals/desktop/wallpaper.rs:81
+msgid "Images"
+msgstr "Зображення"
+
+#: ../src/portals/desktop/file_chooser.rs:465
+msgid "Videos"
+msgstr "Відео"
+
+#: ../src/portals/desktop/notification.rs:112
+msgid "View"
+msgstr "Перегляд"
+
+#: ../src/portals/desktop/notification.rs:125
+msgid "Dismiss"
+msgstr "Відкинути"
+
+#: ../src/portals/desktop/notification.rs:177
+msgid "Audio files"
+msgstr "Файли звукових даних"
+
+#: ../src/portals/desktop/notification.rs:184
+#: ../src/portals/desktop/wallpaper.rs:88
+msgid "Select"
+msgstr "Вибрати"
+
+#: ../src/portals/desktop/notification.rs:186
+msgid "Notification Sound"
+msgstr "Звук сповіщення"
+
+#: ../src/portals/desktop/notification.rs:324
+msgid "Notification sent"
+msgstr "Надіслано сповіщення"
+
+#: ../src/portals/desktop/notification.rs:448
+msgid "Action"
+msgstr "Дія"
+
+#: ../src/portals/desktop/notification.rs:450
+msgid "Action Target"
+msgstr "Ціль дії"
+
+#: ../src/portals/desktop/notification.rs:453
+msgid "Purpose"
+msgstr "Призначення"
+
+#: ../src/portals/desktop/notification.rs:455
+msgid "None"
+msgstr "Немає"
+
+#: ../src/portals/desktop/notification.rs:456
+msgid "IM Reply with Text"
+msgstr "Відповідь текстовим повідомленням"
+
+#: ../src/portals/desktop/notification.rs:457
+msgid "Call Accept"
+msgstr "Виклик — Прийняти"
+
+#: ../src/portals/desktop/notification.rs:458
+msgid "Call Decline"
+msgstr "Виклик — Відхилити"
+
+#: ../src/portals/desktop/notification.rs:459
+msgid "Call Hang Up"
+msgstr "Виклик — Завершити"
+
+#: ../src/portals/desktop/notification.rs:460
+msgid "Call Enable Speakerphone"
+msgstr "Виклик — Увімкнути динамік"
+
+#: ../src/portals/desktop/notification.rs:461
+msgid "Call Disable Speakerphone"
+msgstr "Виклик — Вимкнути динамік"
+
+#: ../src/portals/desktop/notification.rs:462
+msgid "System Custom Alert"
+msgstr "Нетиповий сигнал системи"
+
+#: ../src/portals/desktop/settings.rs:136
+msgid "Enabled"
+msgstr "Увімкнено"
+
+#: ../src/portals/desktop/settings.rs:138
+msgid "Disabled"
+msgstr "Вимкнено"
+
+#: ../src/update_window.rs:117
+msgid "Starting update…"
+msgstr "Починаємо оновлення…"
+
+#: ../src/update_window.rs:181
+#, rust-format
+msgid "Operation {} of {}"
+msgstr "Дія {} з {}"
