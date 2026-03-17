@@ -63,6 +63,12 @@ The library comes with a [demo](./demo/client) built using the [GTK 4 Rust bindi
 <img src="https://flathub.org/api/badge?svg&locale=en&light" width="190px" />
 </a>
 
+## Translations
+
+Helping to translate ASHPD Demo or add support to a new language is very welcome. You
+can find everything you need at:
+[l10n.gnome.org/module/ashpd/](https://l10n.gnome.org/module/ashpd/)
+
 ## Backend demo
 
 The library also comes with a [backend demo](./demo/backend/README.md) that exemplifies how to implement [a portal backend](https://flatpak.github.io/xdg-desktop-portal/docs/impl-dbus-interfaces.html).
