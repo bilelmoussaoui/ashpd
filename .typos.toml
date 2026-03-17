@@ -2,3 +2,7 @@
 # Ignore false-positives
 eis = "eis"
 datas = "datas"
+
+[files]
+# Ignore translation files in demo/client/po/
+extend-exclude = ["demo/client/po/"]
