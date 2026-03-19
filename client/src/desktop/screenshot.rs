@@ -180,12 +180,7 @@ impl ScreenshotProxy {
     ) -> Result<Request<Color>, Error> {
         let identifier = Optional::from(identifier);
         self.0
-            .request_versioned(
-                &options.handle_token,
-                "PickColor",
-                &(identifier, &options),
-                2,
-            )
+            .request(&options.handle_token, "PickColor", &(identifier, &options))
             .await
     }
 
