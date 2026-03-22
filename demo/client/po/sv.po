@@ -1,0 +1,175 @@
+# Swedish translation for ashpd.
+# Copyright © 2026 ashpd's COPYRIGHT HOLDER
+# This file is distributed under the same license as the ashpd package.
+# Anders Jonsson <anders.jonsson@norsjovallen.se>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ashpd main\n"
+"Report-Msgid-Bugs-To: https://github.com/bilelmoussaoui/ashpd/issues\n"
+"POT-Creation-Date: 2026-03-16 03:24+0000\n"
+"PO-Revision-Date: 2026-03-16 14:02+0100\n"
+"Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
+"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: ../src/main.rs:40
+msgid "ASHPD Demo"
+msgstr "ASHPD-demo"
+
+#: ../src/portals/desktop/file_chooser.rs:132
+msgid "Choice ID"
+msgstr "Val-ID"
+
+#: ../src/portals/desktop/file_chooser.rs:135
+#: ../src/portals/desktop/notification.rs:446
+msgid "Label"
+msgstr "Etikett"
+
+#: ../src/portals/desktop/file_chooser.rs:138
+msgid "Type"
+msgstr "Typ"
+
+#: ../src/portals/desktop/file_chooser.rs:140
+msgid "Boolean"
+msgstr "Boolesk"
+
+#: ../src/portals/desktop/file_chooser.rs:141
+msgid "Dropdown"
+msgstr "Rullgardinsmeny"
+
+#: ../src/portals/desktop/file_chooser.rs:154
+msgid "Initial State"
+msgstr "Initialt tillstånd"
+
+#: ../src/portals/desktop/file_chooser.rs:158
+msgid "Initial Selection"
+msgstr "Initialt val"
+
+#: ../src/portals/desktop/file_chooser.rs:167
+msgid "Options"
+msgstr "Alternativ"
+
+#: ../src/portals/desktop/file_chooser.rs:168
+msgid "One option per line: key=value"
+msgstr "Ett alternativ per rad: nyckel=värde"
+
+#: ../src/portals/desktop/file_chooser.rs:206
+#: ../src/portals/desktop/notification.rs:472
+msgid "Remove"
+msgstr "Ta bort"
+
+#: ../src/portals/desktop/file_chooser.rs:338
+msgid "File Encoding"
+msgstr "Filkodning"
+
+#: ../src/portals/desktop/file_chooser.rs:355
+msgid "Compress File"
+msgstr "Komprimera fil"
+
+#: ../src/portals/desktop/file_chooser.rs:373
+msgid "Create Archive"
+msgstr "Skapa arkiv"
+
+#: ../src/portals/desktop/file_chooser.rs:456
+msgid "Text files"
+msgstr "Textfiler"
+
+#: ../src/portals/desktop/file_chooser.rs:462
+#: ../src/portals/desktop/wallpaper.rs:81
+msgid "Images"
+msgstr "Bilder"
+
+#: ../src/portals/desktop/file_chooser.rs:465
+msgid "Videos"
+msgstr "Videor"
+
+#: ../src/portals/desktop/notification.rs:112
+msgid "View"
+msgstr "Visa"
+
+#: ../src/portals/desktop/notification.rs:125
+msgid "Dismiss"
+msgstr "Avfärda"
+
+#: ../src/portals/desktop/notification.rs:177
+msgid "Audio files"
+msgstr "Ljudfiler"
+
+#: ../src/portals/desktop/notification.rs:184
+#: ../src/portals/desktop/wallpaper.rs:88
+msgid "Select"
+msgstr "Välj"
+
+#: ../src/portals/desktop/notification.rs:186
+msgid "Notification Sound"
+msgstr "Aviseringsljud"
+
+#: ../src/portals/desktop/notification.rs:324
+msgid "Notification sent"
+msgstr "Avisering skickad"
+
+#: ../src/portals/desktop/notification.rs:448
+msgid "Action"
+msgstr "Åtgärd"
+
+#: ../src/portals/desktop/notification.rs:450
+msgid "Action Target"
+msgstr "Åtgärdsmål"
+
+#: ../src/portals/desktop/notification.rs:453
+msgid "Purpose"
+msgstr "Syfte"
+
+#: ../src/portals/desktop/notification.rs:455
+msgid "None"
+msgstr "Inget"
+
+#: ../src/portals/desktop/notification.rs:456
+msgid "IM Reply with Text"
+msgstr "Snabbmeddelandesvar med text"
+
+#: ../src/portals/desktop/notification.rs:457
+msgid "Call Accept"
+msgstr "Acceptera samtal"
+
+#: ../src/portals/desktop/notification.rs:458
+msgid "Call Decline"
+msgstr "Neka samtal"
+
+#: ../src/portals/desktop/notification.rs:459
+msgid "Call Hang Up"
+msgstr "Lägg på samtal"
+
+#: ../src/portals/desktop/notification.rs:460
+msgid "Call Enable Speakerphone"
+msgstr "Aktivera högtalartelefon för samtal"
+
+#: ../src/portals/desktop/notification.rs:461
+msgid "Call Disable Speakerphone"
+msgstr "Inaktivera högtalartelefon för samtal"
+
+#: ../src/portals/desktop/notification.rs:462
+msgid "System Custom Alert"
+msgstr "Anpassad systemvarning"
+
+#: ../src/portals/desktop/settings.rs:136
+msgid "Enabled"
+msgstr "Aktiverad"
+
+#: ../src/portals/desktop/settings.rs:138
+msgid "Disabled"
+msgstr "Inaktiverad"
+
+#: ../src/update_window.rs:117
+msgid "Starting update…"
+msgstr "Startar uppdatering…"
+
+#: ../src/update_window.rs:181
+msgid "Operation {} of {}"
+msgstr "Åtgärd {} av {}"
