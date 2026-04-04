@@ -28,6 +28,12 @@ impl DesktopID {
     }
 }
 
+impl From<AppID> for DesktopID {
+    fn from(value: AppID) -> Self {
+        Self(Ok(value))
+    }
+}
+
 impl Serialize for DesktopID {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
