@@ -34,6 +34,18 @@ impl From<AppID> for DesktopID {
     }
 }
 
+impl From<String> for DesktopID {
+    fn from(value: String) -> Self {
+        Self(value.parse::<AppID>().or(Err(value)))
+    }
+}
+
+impl From<&str> for DesktopID {
+    fn from(value: &str) -> Self {
+        Self(value.parse::<AppID>().or(Err(String::from(value))))
+    }
+}
+
 impl Serialize for DesktopID {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
