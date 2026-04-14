@@ -208,7 +208,10 @@ pub struct Streams {
     streams: Vec<Stream>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
-    #[serde(default, with = "optional", skip_serializing)]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(not(feature = "backend"), allow(dead_code))]
+    persist_mode: Option<PersistMode>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     #[cfg_attr(not(feature = "backend"), allow(dead_code))]
     restore_data: Option<(String, u32, OwnedValue)>,
 }
@@ -222,6 +225,12 @@ impl Streams {
     /// The list of streams.
     pub fn streams(&self) -> &[Stream] {
         &self.streams
+    }
+
+    /// The session's persist mode.
+    #[cfg(feature = "backend")]
+    pub fn persist_mode(&self) -> Option<PersistMode> {
+        self.persist_mode
     }
 
     /// The session restore data.
@@ -259,9 +268,16 @@ impl StreamsBuilder {
             streams: Streams {
                 streams,
                 restore_token: None,
+                persist_mode: None,
                 restore_data: None,
             },
         }
+    }
+
+    /// Set the streams' persist mode.
+    pub fn persist_mode(mut self, data: Option<impl Into<PersistMode>>) -> Self {
+        self.streams.persist_mode = data.map(|m| m.into());
+        self
     }
 
     /// Set the streams' optional restore data.
