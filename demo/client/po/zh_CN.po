@@ -1,0 +1,176 @@
+# Chinese (China) translation for ashpd.
+# Copyright (C) 2026 ashpd's COPYRIGHT HOLDER
+# This file is distributed under the same license as the ashpd package.
+# lumingzh <lumingzh@qq.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ashpd main\n"
+"Report-Msgid-Bugs-To: https://github.com/bilelmoussaoui/ashpd/issues\n"
+"POT-Creation-Date: 2026-04-18 15:24+0000\n"
+"PO-Revision-Date: 2026-04-19 09:17+0800\n"
+"Last-Translator: lumingzh <lumingzh@qq.com>\n"
+"Language-Team: Chinese (China) <i18n-zh@googlegroups.com>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Gtranslator 50.0\n"
+
+#: ../src/main.rs:40
+msgid "ASHPD Demo"
+msgstr "ASHPD 演示"
+
+#: ../src/portals/desktop/file_chooser.rs:132
+msgid "Choice ID"
+msgstr "选择 ID"
+
+#: ../src/portals/desktop/file_chooser.rs:135
+#: ../src/portals/desktop/notification.rs:446
+msgid "Label"
+msgstr "标签"
+
+#: ../src/portals/desktop/file_chooser.rs:138
+msgid "Type"
+msgstr "类型"
+
+#: ../src/portals/desktop/file_chooser.rs:140
+msgid "Boolean"
+msgstr "布尔型"
+
+#: ../src/portals/desktop/file_chooser.rs:141
+msgid "Dropdown"
+msgstr "下拉菜单"
+
+#: ../src/portals/desktop/file_chooser.rs:154
+msgid "Initial State"
+msgstr "初始状态"
+
+#: ../src/portals/desktop/file_chooser.rs:158
+msgid "Initial Selection"
+msgstr "初始选择"
+
+#: ../src/portals/desktop/file_chooser.rs:167
+msgid "Options"
+msgstr "选项"
+
+#: ../src/portals/desktop/file_chooser.rs:168
+msgid "One option per line: key=value"
+msgstr "每个选项一行：设置键=选项值"
+
+#: ../src/portals/desktop/file_chooser.rs:206
+#: ../src/portals/desktop/notification.rs:472
+msgid "Remove"
+msgstr "移除"
+
+#: ../src/portals/desktop/file_chooser.rs:338
+msgid "File Encoding"
+msgstr "文件编码"
+
+#: ../src/portals/desktop/file_chooser.rs:355
+msgid "Compress File"
+msgstr "压缩文件"
+
+#: ../src/portals/desktop/file_chooser.rs:373
+msgid "Create Archive"
+msgstr "创建归档"
+
+#: ../src/portals/desktop/file_chooser.rs:456
+msgid "Text files"
+msgstr "文本文件"
+
+#: ../src/portals/desktop/file_chooser.rs:462
+#: ../src/portals/desktop/wallpaper.rs:81
+msgid "Images"
+msgstr "图像"
+
+#: ../src/portals/desktop/file_chooser.rs:465
+msgid "Videos"
+msgstr "视频"
+
+#: ../src/portals/desktop/notification.rs:112
+msgid "View"
+msgstr "查看"
+
+#: ../src/portals/desktop/notification.rs:125
+msgid "Dismiss"
+msgstr "忽略"
+
+#: ../src/portals/desktop/notification.rs:177
+msgid "Audio files"
+msgstr "音频文件"
+
+#: ../src/portals/desktop/notification.rs:184
+#: ../src/portals/desktop/wallpaper.rs:88
+msgid "Select"
+msgstr "选择"
+
+#: ../src/portals/desktop/notification.rs:186
+msgid "Notification Sound"
+msgstr "通知铃声"
+
+#: ../src/portals/desktop/notification.rs:324
+msgid "Notification sent"
+msgstr "通知已发送"
+
+#: ../src/portals/desktop/notification.rs:448
+msgid "Action"
+msgstr "动作"
+
+#: ../src/portals/desktop/notification.rs:450
+msgid "Action Target"
+msgstr "动作目标"
+
+#: ../src/portals/desktop/notification.rs:453
+msgid "Purpose"
+msgstr "目的"
+
+#: ../src/portals/desktop/notification.rs:455
+msgid "None"
+msgstr "无"
+
+#: ../src/portals/desktop/notification.rs:456
+msgid "IM Reply with Text"
+msgstr "用文字回复消息"
+
+#: ../src/portals/desktop/notification.rs:457
+msgid "Call Accept"
+msgstr "接受通话"
+
+#: ../src/portals/desktop/notification.rs:458
+msgid "Call Decline"
+msgstr "拒绝通话"
+
+#: ../src/portals/desktop/notification.rs:459
+msgid "Call Hang Up"
+msgstr "挂断通话"
+
+#: ../src/portals/desktop/notification.rs:460
+msgid "Call Enable Speakerphone"
+msgstr "启用扬声器通话"
+
+#: ../src/portals/desktop/notification.rs:461
+msgid "Call Disable Speakerphone"
+msgstr "禁用扬声器通话"
+
+#: ../src/portals/desktop/notification.rs:462
+msgid "System Custom Alert"
+msgstr "系统自定义铃声"
+
+#: ../src/portals/desktop/settings.rs:136
+msgid "Enabled"
+msgstr "已启用"
+
+#: ../src/portals/desktop/settings.rs:138
+msgid "Disabled"
+msgstr "已禁用"
+
+#: ../src/update_window.rs:117
+msgid "Starting update…"
+msgstr "正在开始更新…"
+
+#: ../src/update_window.rs:181
+#, rust-format
+msgid "Operation {} of {}"
+msgstr "操作 {} 共 {}"
