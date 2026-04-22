@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    ActivationToken, AppID, PortalError, Uri, WindowIdentifierType,
+    ActivationToken, MaybeAppID, PortalError, Uri, WindowIdentifierType,
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
     zvariant::{
@@ -13,72 +13,11 @@ use crate::{
     },
 };
 
-/// The desktop ID of an application.
-///
-/// This is the name of application's desktop entry file without the `.desktop`
-/// suffix. This ID may or may not follow the [application ID
-/// guidelines](https://developer.gnome.org/documentation/tutorials/application-id.html).
-#[derive(Debug, Type)]
-#[zvariant(signature = "s")]
-pub struct DesktopID(Result<AppID, String>);
-
-impl DesktopID {
-    pub fn inner(&self) -> &Result<AppID, String> {
-        &self.0
-    }
-}
-
-impl From<AppID> for DesktopID {
-    fn from(value: AppID) -> Self {
-        Self(Ok(value))
-    }
-}
-
-impl From<String> for DesktopID {
-    fn from(value: String) -> Self {
-        Self(value.parse::<AppID>().or(Err(value)))
-    }
-}
-
-impl From<&str> for DesktopID {
-    fn from(value: &str) -> Self {
-        Self(value.parse::<AppID>().or(Err(String::from(value))))
-    }
-}
-
-impl Serialize for DesktopID {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(self.to_string().as_str())
-    }
-}
-
-impl<'de> Deserialize<'de> for DesktopID {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let inner = String::deserialize(deserializer)?;
-        Ok(Self(inner.parse::<AppID>().or(Err(inner))))
-    }
-}
-
-impl std::fmt::Display for DesktopID {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.0 {
-            Ok(app_id) => f.write_str(app_id),
-            Err(app_id) => f.write_str(app_id),
-        }
-    }
-}
-
 #[derive(Debug, Deserialize, Type)]
 #[zvariant(signature = "dict")]
 pub struct ChooserOptions {
     #[serde(default, with = "optional")]
-    last_choice: Option<DesktopID>,
+    last_choice: Option<MaybeAppID>,
     #[serde(default, with = "optional")]
     modal: Option<bool>,
     #[serde(default, with = "optional")]
@@ -92,7 +31,7 @@ pub struct ChooserOptions {
 }
 
 impl ChooserOptions {
-    pub fn last_choice(&self) -> Option<&DesktopID> {
+    pub fn last_choice(&self) -> Option<&MaybeAppID> {
         self.last_choice.as_ref()
     }
 
@@ -121,13 +60,13 @@ impl ChooserOptions {
 #[zvariant(signature = "dict")]
 pub struct Choice {
     #[serde(with = "as_value")]
-    choice: DesktopID,
+    choice: MaybeAppID,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,
 }
 
 impl Choice {
-    pub fn new(choice: DesktopID) -> Self {
+    pub fn new(choice: MaybeAppID) -> Self {
         Self {
             choice,
             activation_token: None,
@@ -150,9 +89,9 @@ pub trait AppChooserImpl: RequestImpl {
     async fn choose_application(
         &self,
         token: HandleToken,
-        app_id: Option<AppID>,
+        app_id: Option<MaybeAppID>,
         parent_window: Option<WindowIdentifierType>,
-        choices: Vec<DesktopID>,
+        choices: Vec<MaybeAppID>,
         options: ChooserOptions,
     ) -> Result<Choice, PortalError>;
 
@@ -160,7 +99,7 @@ pub trait AppChooserImpl: RequestImpl {
     async fn update_choices(
         &self,
         token: HandleToken,
-        choices: Vec<DesktopID>,
+        choices: Vec<MaybeAppID>,
     ) -> Result<(), PortalError>;
 }
 
@@ -191,9 +130,9 @@ impl AppChooserInterface {
     async fn choose_application(
         &self,
         handle: OwnedObjectPath,
-        app_id: Optional<AppID>,
+        app_id: Optional<MaybeAppID>,
         parent_window: Optional<WindowIdentifierType>,
-        choices: Vec<DesktopID>,
+        choices: Vec<MaybeAppID>,
         options: ChooserOptions,
     ) -> Result<Response<Choice>, PortalError> {
         let imp = Arc::clone(&self.imp);
@@ -221,7 +160,7 @@ impl AppChooserInterface {
     async fn update_choices(
         &self,
         handle: OwnedObjectPath,
-        choices: Vec<DesktopID>,
+        choices: Vec<MaybeAppID>,
     ) -> Result<(), PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("AppChooser::UpdateChoices");

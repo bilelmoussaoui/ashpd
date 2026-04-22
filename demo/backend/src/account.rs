@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, Uri, WindowIdentifierType,
+    MaybeAppID, Uri, WindowIdentifierType,
     backend::{Result, account::AccountImpl, request::RequestImpl},
     desktop::{
         HandleToken,
@@ -39,7 +39,7 @@ impl AccountImpl for Account {
     async fn get_user_information(
         &self,
         _token: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: UserInformationOptions,
     ) -> Result<UserInformation> {

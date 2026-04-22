@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, WindowIdentifierType,
+    MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
         access::{AccessImpl, AccessOptions, AccessResponse},
@@ -24,7 +24,7 @@ impl AccessImpl for Access {
     async fn access_dialog(
         &self,
         _handle: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _title: String,
         _subtitle: String,

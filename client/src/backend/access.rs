@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AppID, WindowIdentifierType,
+    MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
         request::{Request, RequestImpl},
@@ -104,7 +104,7 @@ pub trait AccessImpl: RequestImpl {
     async fn access_dialog(
         &self,
         token: HandleToken,
-        app_id: Option<AppID>,
+        app_id: Option<MaybeAppID>,
         window_identifier: Option<WindowIdentifierType>,
         title: String,
         subtitle: String,
@@ -141,7 +141,7 @@ impl AccessInterface {
     async fn access_dialog(
         &self,
         handle: OwnedObjectPath,
-        app_id: Optional<AppID>,
+        app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         title: String,
         subtitle: String,
