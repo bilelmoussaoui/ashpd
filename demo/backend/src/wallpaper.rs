@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, Uri, WindowIdentifierType,
+    MaybeAppID, Uri, WindowIdentifierType,
     backend::{Result, request::RequestImpl, wallpaper::WallpaperImpl},
     desktop::{HandleToken, wallpaper::WallpaperOptions},
 };
@@ -20,7 +20,7 @@ impl WallpaperImpl for Wallpaper {
     async fn with_uri(
         &self,
         _token: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _uri: Uri,
         _options: WallpaperOptions,

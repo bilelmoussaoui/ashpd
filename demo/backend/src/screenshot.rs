@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, Uri, WindowIdentifierType,
+    MaybeAppID, Uri, WindowIdentifierType,
     backend::{Result, request::RequestImpl, screenshot::ScreenshotImpl},
     desktop::{
         Color, HandleToken,
@@ -23,7 +23,7 @@ impl ScreenshotImpl for Screenshot {
     async fn screenshot(
         &self,
         _token: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ScreenshotOptions,
     ) -> Result<ScreenshotResponse> {
@@ -35,7 +35,7 @@ impl ScreenshotImpl for Screenshot {
     async fn pick_color(
         &self,
         _token: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: ColorOptions,
     ) -> Result<Color> {

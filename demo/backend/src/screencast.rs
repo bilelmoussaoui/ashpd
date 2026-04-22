@@ -1,5 +1,5 @@
 use ashpd::{
-    AppID, WindowIdentifierType,
+    MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
         request::RequestImpl,
@@ -41,7 +41,7 @@ impl ScreencastImpl for Screencast {
         &self,
         _token: HandleToken,
         session_token: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _options: CreateSessionOptions,
     ) -> Result<CreateSessionResponse> {
         tracing::debug!("IN Screencast::create_session(): {session_token}");
@@ -51,7 +51,7 @@ impl ScreencastImpl for Screencast {
     async fn select_sources(
         &self,
         session_token: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _options: SelectSourcesOptions,
     ) -> Result<SelectSourcesResponse> {
         tracing::debug!("IN Screencast::select_sources(): {session_token}");
@@ -61,7 +61,7 @@ impl ScreencastImpl for Screencast {
     async fn start_cast(
         &self,
         session_token: HandleToken,
-        _app_id: Option<AppID>,
+        _app_id: Option<MaybeAppID>,
         _window_identifier: Option<WindowIdentifierType>,
         _options: StartCastOptions,
     ) -> Result<Streams> {
