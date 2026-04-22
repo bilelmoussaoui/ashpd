@@ -3,7 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::{
-    AppID, WindowIdentifierType,
+    MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
         request::{Request, RequestImpl},
@@ -22,7 +22,7 @@ pub trait ScreenshotImpl: RequestImpl {
     async fn screenshot(
         &self,
         token: HandleToken,
-        app_id: Option<AppID>,
+        app_id: Option<MaybeAppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ScreenshotOptions,
     ) -> Result<ScreenshotResponse>;
@@ -31,7 +31,7 @@ pub trait ScreenshotImpl: RequestImpl {
     async fn pick_color(
         &self,
         token: HandleToken,
-        app_id: Option<AppID>,
+        app_id: Option<MaybeAppID>,
         window_identifier: Option<WindowIdentifierType>,
         options: ColorOptions,
     ) -> Result<Color>;
@@ -65,7 +65,7 @@ impl ScreenshotInterface {
     async fn screenshot(
         &self,
         handle: OwnedObjectPath,
-        app_id: Optional<AppID>,
+        app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: ScreenshotOptions,
     ) -> Result<Response<ScreenshotResponse>> {
@@ -95,7 +95,7 @@ impl ScreenshotInterface {
     async fn pick_color(
         &self,
         handle: OwnedObjectPath,
-        app_id: Optional<AppID>,
+        app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: ColorOptions,
     ) -> Result<Response<Color>> {

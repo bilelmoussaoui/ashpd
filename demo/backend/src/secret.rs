@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ashpd::{
-    AppID,
+    MaybeAppID,
     backend::{Result, request::RequestImpl, secret::SecretImpl},
     desktop::HandleToken,
     zbus::zvariant::OwnedValue,
@@ -23,7 +23,7 @@ impl SecretImpl for Secret {
     async fn retrieve(
         &self,
         _token: HandleToken,
-        _app_id: AppID,
+        _app_id: MaybeAppID,
         _fd: std::os::fd::OwnedFd,
     ) -> Result<HashMap<String, OwnedValue>> {
         Ok(Default::default())
