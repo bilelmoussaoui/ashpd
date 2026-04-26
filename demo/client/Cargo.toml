@@ -57,7 +57,7 @@ gvdb-macros = "0.1"
 rusb = "0.9.4"
 serde = { version = "1.0", features = ["derive"] }
 shumate = { version = "0.8", package = "libshumate" }
-tokio = { version = "1.51", default-features = false, features = [
+tokio = { version = "1.52", default-features = false, features = [
     "io-util",
     "net",
     "time",
