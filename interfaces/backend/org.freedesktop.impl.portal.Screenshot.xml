@@ -19,6 +19,7 @@
       <arg type="u" name="response" direction="out"/>
       <arg type="a{sv}" name="results" direction="out"/>
     </method>
+    <property name="AvailableTargets" type="u" access="read"/>
     <property name="version" type="u" access="read"/>
   </interface>
 </node>
