@@ -67,7 +67,7 @@ impl<'a> Clipboard<'a> {
     #[doc(alias = "SetSelection")]
     pub async fn set_selection(&self, session: &Session<'_>, mime_types: &[&str]) -> Result<()> {
         let options = SetSelectionOptions { mime_types };
-        self.0.call("SetSelection", &(session, options)).await?;
+        self.0.call::<()>("SetSelection", &(session, options)).await?;
 
         Ok(())
     }
