@@ -81,7 +81,7 @@ pub struct OpenFileOptions {
     handle_token: HandleToken,
     /// Whether the file should be writable.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    pub writeable: Option<bool>,
+    pub writable: Option<bool>,
     /// Whether to ask the user.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     pub ask: Option<bool>,
@@ -259,9 +259,9 @@ impl OpenFileRequest {
     }
 
     #[must_use]
-    /// Whether the file should be writeable or not.
-    pub fn writeable(mut self, writeable: impl Into<Option<bool>>) -> Self {
-        self.options.writeable = writeable.into();
+    /// Whether the file should be writable or not.
+    pub fn writable(mut self, writable: impl Into<Option<bool>>) -> Self {
+        self.options.writable = writable.into();
         self
     }
 

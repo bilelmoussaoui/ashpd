@@ -19,9 +19,9 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwSwitchRow" id="writeable_switch">
-                    <property name="title" translatable="yes">Writeable</property>
-                    <property name="subtitle" translatable="yes">Whether the file should be writeable or not</property>
+                  <object class="AdwSwitchRow" id="writable_switch">
+                  <property name="title" translatable="yes">writable</property>
+                  <property name="subtitle" translatable="yes">Whether the file should be writable or not</property>
                   </object>
                 </child>
                 <child>

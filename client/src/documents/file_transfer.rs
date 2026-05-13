@@ -11,7 +11,7 @@
 //!     let key = proxy
 //!         .start_transfer(
 //!             StartTransferOptions::default()
-//!                 .set_writeable(true)
+//!                 .set_writable(true)
 //!                 .set_auto_stop(true),
 //!         )
 //!         .await?;
@@ -43,7 +43,7 @@ use crate::{Error, proxy::Proxy};
 #[zvariant(signature = "dict")]
 pub struct StartTransferOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    writeable: Option<bool>,
+    writable: Option<bool>,
     #[serde(
         rename = "autostop",
         with = "optional",
@@ -55,8 +55,8 @@ pub struct StartTransferOptions {
 impl StartTransferOptions {
     /// Sets whether the chosen application can write to the files or not.
     #[must_use]
-    pub fn set_writeable(mut self, writeable: impl Into<Option<bool>>) -> Self {
-        self.writeable = writeable.into();
+    pub fn set_writable(mut self, writable: impl Into<Option<bool>>) -> Self {
+        self.writable = writable.into();
         self
     }
 
@@ -146,7 +146,7 @@ impl FileTransfer {
     /// Retrieves files that were previously added to the session with
     /// [`add_files()`][`FileTransfer::add_files`]. The files will be
     /// exported in the document portal as-needed for the caller, and they
-    /// will be writeable if the owner of the session allowed it.
+    /// will be writable if the owner of the session allowed it.
     ///
     /// # Arguments
     ///
@@ -175,7 +175,7 @@ impl FileTransfer {
     ///
     /// # Arguments
     ///
-    /// * `writeable` - Sets whether the chosen application can write to the
+    /// * `writable` - Sets whether the chosen application can write to the
     ///   files or not.
     /// * `auto_stop` - Whether to stop the transfer automatically after the
     ///   first [`retrieve_files()`][`FileTransfer::retrieve_files`] call.

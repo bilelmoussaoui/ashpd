@@ -16,7 +16,7 @@ mod imp {
     #[template(resource = "/com/belmoussaoui/ashpd/demo/open_uri.ui")]
     pub struct OpenUriPage {
         #[template_child]
-        pub writeable_switch: TemplateChild<adw::SwitchRow>,
+        pub writable_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub ask_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
@@ -78,7 +78,7 @@ glib::wrapper! {
 impl OpenUriPage {
     async fn open_uri(&self) {
         let imp = self.imp();
-        let writeable = imp.writeable_switch.is_active();
+        let writable = imp.writable_switch.is_active();
         let ask = imp.ask_switch.is_active();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -88,7 +88,7 @@ impl OpenUriPage {
                 let response = spawn_tokio(async move {
                     let request = open_uri::OpenFileRequest::default()
                         .ask(ask)
-                        .writeable(writeable)
+                        .writable(writable)
                         .identifier(identifier)
                         .activation_token(activation_token);
                     let glib_uri = glib::Uri::try_from(&uri).expect("Valid URI");
