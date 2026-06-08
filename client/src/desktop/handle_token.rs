@@ -53,28 +53,33 @@ impl Default for HandleToken {
 }
 
 #[derive(Debug)]
-pub struct HandleInvalidCharacter(char);
+pub enum HandleTokenParseError {
+    InvalidCharacter(char),
+    Empty,
+}
 
-impl std::fmt::Display for HandleInvalidCharacter {
+impl std::fmt::Display for HandleTokenParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("Invalid Character {}", self.0))
+        match self {
+            Self::InvalidCharacter(c) => f.write_fmt(format_args!("Invalid Character {c}")),
+            Self::Empty => f.write_str("Empty HandleToken"),
+        }
     }
 }
 
-impl std::error::Error for HandleInvalidCharacter {}
+impl std::error::Error for HandleTokenParseError {}
 
 impl std::str::FromStr for HandleToken {
-    type Err = HandleInvalidCharacter;
+    type Err = HandleTokenParseError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         if value.is_empty() {
-            // Temporary value for backward compatibility
-            return Err(HandleInvalidCharacter('\0'));
+            return Err(HandleTokenParseError::Empty);
         }
 
         for char in value.chars() {
             if !char.is_ascii_alphanumeric() && char != '_' {
-                return Err(HandleInvalidCharacter(char));
+                return Err(HandleTokenParseError::InvalidCharacter(char));
             }
         }
 
@@ -83,7 +88,7 @@ impl std::str::FromStr for HandleToken {
 }
 
 impl TryFrom<String> for HandleToken {
-    type Error = HandleInvalidCharacter;
+    type Error = HandleTokenParseError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         value.parse::<Self>()
@@ -91,7 +96,7 @@ impl TryFrom<String> for HandleToken {
 }
 
 impl TryFrom<&str> for HandleToken {
-    type Error = HandleInvalidCharacter;
+    type Error = HandleTokenParseError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         value.parse::<Self>()
@@ -100,7 +105,7 @@ impl TryFrom<&str> for HandleToken {
 
 #[cfg(feature = "backend")]
 impl TryFrom<&zbus::zvariant::OwnedObjectPath> for HandleToken {
-    type Error = HandleInvalidCharacter;
+    type Error = HandleTokenParseError;
 
     fn try_from(value: &zbus::zvariant::OwnedObjectPath) -> Result<Self, Self::Error> {
         let base_segment = value
