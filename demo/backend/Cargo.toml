@@ -14,7 +14,6 @@ tokio = { version = "1.51", features = [
     "macros",
     "rt-multi-thread",
 ] }
-futures-util = "0.3.25"
 libc = "0.2"
 tracing = "0.1"
 tracing-subscriber = "0.3.23"

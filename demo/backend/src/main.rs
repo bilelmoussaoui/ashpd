@@ -1,4 +1,3 @@
-use futures_util::future::pending;
 mod access;
 mod account;
 mod screencast;
@@ -34,9 +33,6 @@ async fn main() -> ashpd::Result<()> {
         .settings(Settings::default())
         .wallpaper(Wallpaper)
         .build()
-        .await?;
-
-    loop {
-        pending::<()>().await;
-    }
+        .await
+        .map_err(From::from)
 }
