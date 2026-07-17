@@ -63,7 +63,7 @@ dependencies = [
  "gstreamer",
  "gtk4",
  "pipewire",
- "quick-xml 0.40.1",
+ "quick-xml 0.41.0",
  "raw-window-handle",
  "reis",
  "serde",
@@ -554,9 +554,9 @@ dependencies = [
 
 [[package]]
 name = "formatx"
-version = "0.3.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c40f9ee993b100102723f778c82d3daf1808c494ce2fd6e9a06d58d6e8e59748"
+checksum = "1144371193022ef5985fbe5edd35ca9112e778393b7ecd60600bcbae2583cc77"
 
 [[package]]
 name = "futures-channel"
@@ -1812,9 +1812,9 @@ dependencies = [
 
 [[package]]
 name = "quick-xml"
-version = "0.40.1"
+version = "0.41.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2474bd2e5029e7ccb6abb2ba48cf2383a333851dedf495901544281590c7da7f"
+checksum = "e660451e55124f798a69a5af3f49ccfbefbd41910eefd25caf2393e1f3473ec1"
 dependencies = [
  "memchr",
 ]
