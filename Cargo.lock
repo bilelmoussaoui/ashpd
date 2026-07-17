@@ -50,7 +50,7 @@ checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "ashpd"
-version = "0.13.12"
+version = "0.13.13"
 dependencies = [
  "async-trait",
  "enumflags2",
