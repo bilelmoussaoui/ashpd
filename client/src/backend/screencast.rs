@@ -43,6 +43,7 @@ pub trait ScreencastImpl: RequestImpl + SessionImpl {
     #[doc(alias = "SelectSources")]
     async fn select_sources(
         &self,
+        token: HandleToken,
         session_token: HandleToken,
         app_id: Option<MaybeAppID>,
         options: SelectSourcesOptions,
@@ -51,6 +52,7 @@ pub trait ScreencastImpl: RequestImpl + SessionImpl {
     #[doc(alias = "Start")]
     async fn start_cast(
         &self,
+        token: HandleToken,
         session_token: HandleToken,
         app_id: Option<MaybeAppID>,
         window_identifier: Option<WindowIdentifierType>,
@@ -195,8 +197,13 @@ impl ScreencastInterface {
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),
             async move {
-                imp.select_sources(session_token, app_id.into(), options)
-                    .await
+                imp.select_sources(
+                    HandleToken::try_from(&handle).unwrap(),
+                    session_token,
+                    app_id.into(),
+                    options,
+                )
+                .await
             },
         )
         .await
@@ -227,6 +234,7 @@ impl ScreencastInterface {
             Arc::clone(&self.spawn),
             async move {
                 imp.start_cast(
+                    HandleToken::try_from(&handle).unwrap(),
                     session_token,
                     app_id.into(),
                     window_identifier.into(),
