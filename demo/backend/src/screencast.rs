@@ -50,6 +50,7 @@ impl ScreencastImpl for Screencast {
 
     async fn select_sources(
         &self,
+        _token: HandleToken,
         session_token: HandleToken,
         _app_id: Option<MaybeAppID>,
         _options: SelectSourcesOptions,
@@ -60,6 +61,7 @@ impl ScreencastImpl for Screencast {
 
     async fn start_cast(
         &self,
+        _token: HandleToken,
         session_token: HandleToken,
         _app_id: Option<MaybeAppID>,
         _window_identifier: Option<WindowIdentifierType>,
