@@ -103,7 +103,7 @@ impl ScreencastInterface {
 
     #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
-        5
+        6
     }
 
     #[zbus(name = "CreateSession")]

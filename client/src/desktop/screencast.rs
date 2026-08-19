@@ -33,6 +33,7 @@
 //!         println!("node id: {}", stream.pipe_wire_node_id());
 //!         println!("size: {:?}", stream.size());
 //!         println!("position: {:?}", stream.position());
+//!         println!("pipewire serial: {:?}", stream.pipewire_serial());
 //!     });
 //!     Ok(())
 //! }
@@ -335,6 +336,19 @@ impl Stream {
     pub fn mapping_id(&self) -> Option<&str> {
         self.1.mapping_id.as_deref()
     }
+
+    /// The PipeWire object serial for this stream's node.
+    ///
+    /// Unlike the node ID returned by [`Stream::pipe_wire_node_id`], which
+    /// can be reused after the node is destroyed, this is a monotonically
+    /// increasing 64-bit identifier that is never reused. Prefer this,
+    /// together with `PW_KEY_TARGET_OBJECT`, over the node ID when
+    /// connecting to the stream, to avoid misidentifying it across monitor
+    /// hotplug, resolution changes, or suspend/resume. Only available since
+    /// interface version 6.
+    pub fn pipewire_serial(&self) -> Option<u64> {
+        self.1.pipewire_serial
+    }
 }
 
 impl Debug for Stream {
@@ -362,6 +376,8 @@ struct StreamProperties {
     source_type: Option<SourceType>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     mapping_id: Option<String>,
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    pipewire_serial: Option<u64>,
 }
 
 /// A [builder-pattern] type to construct a PipeWire stream [`Stream`].
@@ -387,6 +403,7 @@ impl StreamBuilder {
                     size: None,
                     source_type: None,
                     mapping_id: None,
+                    pipewire_serial: None,
                 },
             ),
         }
@@ -421,6 +438,12 @@ impl StreamBuilder {
     /// aspects of the resource this stream corresponds to).
     pub fn mapping_id(mut self, mapping_id: impl Into<Option<String>>) -> Self {
         self.stream.1.mapping_id = mapping_id.into();
+        self
+    }
+
+    /// Set the stream's optional PipeWire object serial.
+    pub fn pipewire_serial(mut self, pipewire_serial: impl Into<Option<u64>>) -> Self {
+        self.stream.1.pipewire_serial = pipewire_serial.into();
         self
     }
 
