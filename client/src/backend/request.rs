@@ -6,10 +6,12 @@ use futures_util::{
     lock::Mutex,
     task::SpawnExt,
 };
+use zbus::message::Header;
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
 use crate::{
     PortalError,
+    backend::caller::CallerAuthorization,
     desktop::{HandleToken, Response},
 };
 
@@ -25,6 +27,7 @@ pub struct Request {
     abort_handle: AbortHandle,
     #[allow(dead_code)]
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl Request {
@@ -35,6 +38,7 @@ impl Request {
     pub(crate) async fn spawn<T, R>(
         _method: &'static str,
         cnx: &zbus::Connection,
+        caller_authorization: Arc<CallerAuthorization>,
         path: OwnedObjectPath,
         imp: Arc<R>,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
@@ -57,7 +61,13 @@ impl Request {
                 let _ = err;
             }
         };
-        let request = Request::new(close_cb, path.clone(), abort_handle, cnx.clone());
+        let request = Request::new(
+            close_cb,
+            path.clone(),
+            abort_handle,
+            cnx.clone(),
+            caller_authorization,
+        );
         let server = cnx.object_server();
         #[cfg(feature = "tracing")]
         tracing::debug!(
@@ -94,12 +104,14 @@ impl Request {
         path: OwnedObjectPath,
         abort_handle: AbortHandle,
         cnx: zbus::Connection,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
         Self {
             close_cb: Mutex::new(Some(Box::new(close_cb))),
             path,
             abort_handle,
             cnx,
+            caller_authorization,
         }
     }
 }
@@ -116,7 +128,12 @@ impl Request {
     async fn close(
         &self,
         #[zbus(object_server)] server: &zbus::ObjectServer,
+        #[zbus(connection)] connection: &zbus::Connection,
+        #[zbus(header)] header: Header<'_>,
     ) -> zbus::fdo::Result<()> {
+        self.caller_authorization
+            .authorize_fdo(connection, &header)
+            .await?;
         self.abort_handle.abort();
         if let Some(close_cb) = self.close_cb.lock().await.take() {
             close_cb();

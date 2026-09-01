@@ -4,10 +4,14 @@ use async_trait::async_trait;
 use enumflags2::{BitFlags, bitflags};
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, PortalError,
-    backend::request::{Request, RequestImpl},
+    backend::{
+        caller::CallerAuthorization,
+        request::{Request, RequestImpl},
+    },
     desktop::{HandleToken, Response},
     zbus::object_server::SignalEmitter,
     zvariant::{OwnedObjectPath, Type, as_value},
@@ -85,6 +89,7 @@ pub(crate) struct BackgroundInterface {
     imp: Arc<dyn BackgroundImpl>,
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl BackgroundInterface {
@@ -92,8 +97,14 @@ impl BackgroundInterface {
         imp: Arc<dyn BackgroundImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 
     pub async fn changed(&self) -> zbus::Result<()> {
@@ -120,7 +131,13 @@ impl BackgroundInterface {
     }
 
     #[zbus(out_args("apps"))]
-    async fn get_app_state(&self) -> Result<HashMap<MaybeAppID, AppState>, PortalError> {
+    async fn get_app_state(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+    ) -> Result<HashMap<MaybeAppID, AppState>, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Background::GetAppState");
 
@@ -137,12 +154,17 @@ impl BackgroundInterface {
         handle: OwnedObjectPath,
         app_id: MaybeAppID,
         name: String,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Background>, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Background::NotifyBackground",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),
@@ -161,7 +183,11 @@ impl BackgroundInterface {
         enable: bool,
         commandline: Vec<String>,
         flags: BitFlags<AutoStartFlags>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<bool, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Background::EnableAutostart");
 

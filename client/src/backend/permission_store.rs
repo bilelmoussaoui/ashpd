@@ -1,9 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, PortalError,
+    backend::caller::CallerAuthorization,
     documents::{DocumentID, Permission},
     zbus::object_server::SignalEmitter,
     zvariant::{OwnedValue, Value},
@@ -91,6 +93,7 @@ pub(crate) struct PermissionStoreInterface {
     cnx: zbus::Connection,
     #[allow(dead_code)]
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl PermissionStoreInterface {
@@ -98,8 +101,14 @@ impl PermissionStoreInterface {
         imp: Arc<dyn PermissionStoreImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 
     pub async fn document_changed(
@@ -154,7 +163,11 @@ impl PermissionStoreInterface {
         &self,
         table: &str,
         id: DocumentID,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<(HashMap<MaybeAppID, Vec<Permission>>, OwnedValue), PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::Lookup");
 
@@ -172,7 +185,11 @@ impl PermissionStoreInterface {
         id: DocumentID,
         app_permissions: HashMap<MaybeAppID, Vec<Permission>>,
         data: Value<'_>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<(), PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::Set");
 
@@ -189,7 +206,11 @@ impl PermissionStoreInterface {
         create: bool,
         id: DocumentID,
         data: Value<'_>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<(), PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::SetValue");
 
@@ -201,7 +222,14 @@ impl PermissionStoreInterface {
     }
 
     #[zbus(out_args("ids"))]
-    async fn list(&self, table: &str) -> Result<Vec<DocumentID>, PortalError> {
+    async fn list(
+        &self,
+        table: &str,
+        #[zbus(header)] header: Header<'_>,
+    ) -> Result<Vec<DocumentID>, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::List");
 
@@ -218,7 +246,11 @@ impl PermissionStoreInterface {
         table: &str,
         id: DocumentID,
         app: MaybeAppID,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Vec<Permission>, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::GetPermission");
 
@@ -236,7 +268,11 @@ impl PermissionStoreInterface {
         id: DocumentID,
         app: MaybeAppID,
         permissions: Vec<Permission>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<(), PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::SetPermission");
 
@@ -255,7 +291,11 @@ impl PermissionStoreInterface {
         table: &str,
         id: DocumentID,
         app: MaybeAppID,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<(), PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::DeletePermission");
 
@@ -266,7 +306,15 @@ impl PermissionStoreInterface {
         response
     }
 
-    async fn delete(&self, table: &str, id: DocumentID) -> Result<(), PortalError> {
+    async fn delete(
+        &self,
+        table: &str,
+        id: DocumentID,
+        #[zbus(header)] header: Header<'_>,
+    ) -> Result<(), PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::Delete");
 

@@ -4,11 +4,18 @@ use enumflags2::BitFlags;
 use futures_util::{StreamExt, task::SpawnExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
-use crate::backend::{Result, session::SessionManager};
+use crate::{
+    backend::{Result, caller::CallerAuthorization, session::SessionManager},
+    proxy::DESKTOP_DESTINATION,
+};
 
 pub struct Builder {
     name: OwnedWellKnownName,
     flags: BitFlags<zbus::fdo::RequestNameFlags>,
+    caller_authorization: CallerAuthorization,
+    lockdown_caller_authorization: Option<CallerAuthorization>,
+    #[cfg(feature = "documents")]
+    permission_store_caller_authorization: CallerAuthorization,
     #[cfg(feature = "account")]
     account_impl: Option<Arc<dyn crate::backend::account::AccountImpl>>,
     access_impl: Option<Arc<dyn crate::backend::access::AccessImpl>>,
@@ -53,6 +60,11 @@ impl Builder {
             // same flags as zbus::Connection::request_name
             flags: zbus::fdo::RequestNameFlags::ReplaceExisting
                 | zbus::fdo::RequestNameFlags::DoNotQueue,
+            caller_authorization: CallerAuthorization::require_name(DESKTOP_DESTINATION)
+                .expect("valid portal frontend bus name"),
+            lockdown_caller_authorization: None,
+            #[cfg(feature = "documents")]
+            permission_store_caller_authorization: CallerAuthorization::allow_all(),
             #[cfg(feature = "account")]
             account_impl: None,
             access_impl: None,
@@ -103,6 +115,43 @@ impl Builder {
 
     pub fn with_name_lost(mut self, name_lost: impl Fn() + Send + Sync + 'static) -> Self {
         self.name_lost = Some(Arc::new(name_lost));
+        self
+    }
+
+    /// Set the caller policy for frontend-facing portal interfaces.
+    ///
+    /// By default, only the current owner of
+    /// `org.freedesktop.portal.Desktop` is allowed. Lockdown inherits this
+    /// policy unless overridden with
+    /// [`Self::with_lockdown_caller_authorization`].
+    pub fn with_caller_authorization(mut self, authorization: CallerAuthorization) -> Self {
+        self.caller_authorization = authorization;
+        self
+    }
+
+    /// Set the caller policy for the Lockdown backend interface.
+    ///
+    /// Lockdown can be shared by multiple portal frontends. By default it
+    /// inherits the frontend-facing policy.
+    pub fn with_lockdown_caller_authorization(
+        mut self,
+        authorization: CallerAuthorization,
+    ) -> Self {
+        self.lockdown_caller_authorization = Some(authorization);
+        self
+    }
+
+    /// Set the caller policy for the PermissionStore backend interface.
+    ///
+    /// PermissionStore has legitimate callers outside the portal frontend,
+    /// including the document portal and PipeWire's permission manager. It
+    /// therefore allows all callers by default.
+    #[cfg(feature = "documents")]
+    pub fn with_permission_store_caller_authorization(
+        mut self,
+        authorization: CallerAuthorization,
+    ) -> Self {
+        self.permission_store_caller_authorization = authorization;
         self
     }
 
@@ -241,12 +290,21 @@ impl Builder {
         }
 
         let object_server = connection.object_server();
+        let caller_authorization = Arc::new(self.caller_authorization);
+        let lockdown_caller_authorization = Arc::new(
+            self.lockdown_caller_authorization
+                .unwrap_or_else(|| (*caller_authorization).clone()),
+        );
+        #[cfg(feature = "documents")]
+        let permission_store_caller_authorization =
+            Arc::new(self.permission_store_caller_authorization);
         #[cfg(feature = "account")]
         if let Some(imp) = self.account_impl {
             let portal = crate::backend::account::AccountInterface::new(
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Account`");
@@ -260,6 +318,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Access`");
@@ -273,6 +332,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.AppChooser`");
@@ -287,6 +347,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Background`");
@@ -301,6 +362,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Email`");
@@ -315,6 +377,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.FileChooser`");
@@ -328,6 +391,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&lockdown_caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Lockdown`");
@@ -342,6 +406,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&permission_store_caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.PermissionStore`");
@@ -356,6 +421,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Print`");
@@ -371,6 +437,7 @@ impl Builder {
                 connection.clone(),
                 Arc::clone(&spawn),
                 Arc::clone(&self.sessions),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.ScreenCast`");
@@ -385,6 +452,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Screenshot`");
@@ -399,6 +467,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Secret`");
@@ -413,6 +482,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Settings`");
@@ -427,6 +497,7 @@ impl Builder {
                 imp,
                 connection.clone(),
                 Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
             );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Wallpaper`");
@@ -437,8 +508,12 @@ impl Builder {
 
         #[cfg(feature = "usb")]
         if let Some(imp) = self.usb_impl {
-            let portal =
-                crate::backend::usb::UsbInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::usb::UsbInterface::new(
+                imp,
+                connection.clone(),
+                Arc::clone(&spawn),
+                Arc::clone(&caller_authorization),
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Usb`");
             object_server
