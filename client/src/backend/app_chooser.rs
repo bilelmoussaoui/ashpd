@@ -2,10 +2,14 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use zbus::message::Header;
 
 use crate::{
     ActivationToken, MaybeAppID, PortalError, Uri, WindowIdentifierType,
-    backend::request::{Request, RequestImpl},
+    backend::{
+        caller::CallerAuthorization,
+        request::{Request, RequestImpl},
+    },
     desktop::{HandleToken, Response},
     zvariant::{
         Optional, OwnedObjectPath, Type,
@@ -107,6 +111,7 @@ pub(crate) struct AppChooserInterface {
     imp: Arc<dyn AppChooserImpl>,
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl AppChooserInterface {
@@ -114,8 +119,14 @@ impl AppChooserInterface {
         imp: Arc<dyn AppChooserImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 }
 
@@ -134,12 +145,17 @@ impl AppChooserInterface {
         parent_window: Optional<WindowIdentifierType>,
         choices: Vec<MaybeAppID>,
         options: ChooserOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Choice>, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "AppChooser::ChooseApplication",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),
@@ -161,7 +177,11 @@ impl AppChooserInterface {
         &self,
         handle: OwnedObjectPath,
         choices: Vec<MaybeAppID>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<(), PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("AppChooser::UpdateChoices");
 

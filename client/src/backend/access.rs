@@ -2,11 +2,13 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
+        caller::CallerAuthorization,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Icon, request::Response},
@@ -117,6 +119,7 @@ pub(crate) struct AccessInterface {
     imp: Arc<dyn AccessImpl>,
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl AccessInterface {
@@ -124,8 +127,14 @@ impl AccessInterface {
         imp: Arc<dyn AccessImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 }
 
@@ -147,12 +156,17 @@ impl AccessInterface {
         subtitle: String,
         body: String,
         options: AccessOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<AccessResponse>> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Access::AccessDialog",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),

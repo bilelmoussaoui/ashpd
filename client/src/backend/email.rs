@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
+        caller::CallerAuthorization,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, email::EmailOptions, request::Response},
@@ -28,6 +30,7 @@ pub(crate) struct EmailInterface {
     imp: Arc<dyn EmailImpl>,
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl EmailInterface {
@@ -35,8 +38,14 @@ impl EmailInterface {
         imp: Arc<dyn EmailImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 }
 
@@ -54,12 +63,17 @@ impl EmailInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: EmailOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<()>> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Email::ComposeEmail",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),
