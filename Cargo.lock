@@ -554,9 +554,9 @@ dependencies = [
 
 [[package]]
 name = "formatx"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1144371193022ef5985fbe5edd35ca9112e778393b7ecd60600bcbae2583cc77"
+checksum = "c59d4b42303d6fdd5f2e058d7a420103752ec6c4bf260c08abd86a14ea5223a3"
 
 [[package]]
 name = "futures-channel"
