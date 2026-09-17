@@ -77,10 +77,32 @@ impl<'a> Proxy<'a> {
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
+        Self::build(
+            connection,
+            interface,
+            path,
+            destination,
+            zbus::proxy::CacheProperties::Yes,
+        )
+        .await
+    }
+
+    async fn build<P>(
+        connection: zbus::Connection,
+        interface: &'a str,
+        path: P,
+        destination: &'a str,
+        cache_properties: zbus::proxy::CacheProperties,
+    ) -> Result<Proxy<'a>, Error>
+    where
+        P: TryInto<ObjectPath<'a>>,
+        P::Error: Into<zbus::Error>,
+    {
         let inner: zbus::Proxy = zbus::proxy::Builder::new(&connection)
             .interface(interface)?
             .path(path)?
             .destination(destination)?
+            .cache_properties(cache_properties)
             .build()
             .await?;
 
@@ -106,6 +128,7 @@ impl<'a> Proxy<'a> {
         Ok(Self { inner, version })
     }
 
+    /// `Request` / `Session` objects have no properties to cache.
     pub async fn new_desktop_with_path<P>(
         connection: zbus::Connection,
         interface: &'a str,
@@ -115,7 +138,14 @@ impl<'a> Proxy<'a> {
         P: TryInto<ObjectPath<'a>>,
         P::Error: Into<zbus::Error>,
     {
-        Self::with_connection(connection, interface, path, DESKTOP_DESTINATION).await
+        Self::build(
+            connection,
+            interface,
+            path,
+            DESKTOP_DESTINATION,
+            zbus::proxy::CacheProperties::No,
+        )
+        .await
     }
 
     pub async fn new_desktop(interface: &'a str) -> Result<Proxy<'a>, Error> {
