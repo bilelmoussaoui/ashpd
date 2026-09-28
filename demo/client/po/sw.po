@@ -1,0 +1,174 @@
+# Swahili translation for ashpd.
+# Copyright (C) 2026 ashpd's COPYRIGHT HOLDER
+# This file is distributed under the same license as the ashpd package.
+# Wycliffe A. Onyango <wycliffealphus7@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ashpd main\n"
+"Report-Msgid-Bugs-To: https://github.com\n"
+"POT-Creation-Date: 2026-08-26 03:25+0000\n"
+"PO-Revision-Date: 2026-08-26 03:25+0000\n"
+"Last-Translator: Wycliffe Alphus Onyango <wycliffealphus7@gmail.com>\n"
+"Language-Team: Swahili <Swahili>\n"
+"Language: sw\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/main.rs:40
+msgid "ASHPD Demo"
+msgstr "Demo ya ASHPD"
+
+#: ../src/portals/desktop/file_chooser.rs:132
+msgid "Choice ID"
+msgstr "Kitambulisho cha Chaguo"
+
+#: ../src/portals/desktop/file_chooser.rs:135
+#: ../src/portals/desktop/notification.rs:446
+msgid "Label"
+msgstr "Lebo"
+
+#: ../src/portals/desktop/file_chooser.rs:138
+msgid "Type"
+msgstr "Aina"
+
+#: ../src/portals/desktop/file_chooser.rs:140
+msgid "Boolean"
+msgstr "Boolean"
+
+#: ../src/portals/desktop/file_chooser.rs:141
+msgid "Dropdown"
+msgstr "Orodha kunjuzi"
+
+#: ../src/portals/desktop/file_chooser.rs:154
+msgid "Initial State"
+msgstr "Hali ya Awali"
+
+#: ../src/portals/desktop/file_chooser.rs:158
+msgid "Initial Selection"
+msgstr "Chaguo la Awali"
+
+#: ../src/portals/desktop/file_chooser.rs:167
+msgid "Options"
+msgstr "Chaguzi"
+
+#: ../src/portals/desktop/file_chooser.rs:168
+msgid "One option per line: key=value"
+msgstr "Chaguo moja kwa kila mstari: key=value"
+
+#: ../src/portals/desktop/file_chooser.rs:206
+#: ../src/portals/desktop/notification.rs:472
+msgid "Remove"
+msgstr "Ondoa"
+
+#: ../src/portals/desktop/file_chooser.rs:338
+msgid "File Encoding"
+msgstr "Usimbaji wa Faili"
+
+#: ../src/portals/desktop/file_chooser.rs:355
+msgid "Compress File"
+msgstr "Bana Faili"
+
+#: ../src/portals/desktop/file_chooser.rs:373
+msgid "Create Archive"
+msgstr "Unda Jalada"
+
+#: ../src/portals/desktop/file_chooser.rs:456
+msgid "Text files"
+msgstr "Faili za Maandishi"
+
+#: ../src/portals/desktop/file_chooser.rs:462
+#: ../src/portals/desktop/wallpaper.rs:81
+msgid "Images"
+msgstr "Picha"
+
+#: ../src/portals/desktop/file_chooser.rs:465
+msgid "Videos"
+msgstr "Video"
+
+#: ../src/portals/desktop/notification.rs:112
+msgid "View"
+msgstr "Angalia"
+
+#: ../src/portals/desktop/notification.rs:125
+msgid "Dismiss"
+msgstr "Puuza"
+
+#: ../src/portals/desktop/notification.rs:177
+msgid "Audio files"
+msgstr "Faili za Sauti"
+
+#: ../src/portals/desktop/notification.rs:184
+#: ../src/portals/desktop/wallpaper.rs:88
+msgid "Select"
+msgstr "Chagua"
+
+#: ../src/portals/desktop/notification.rs:186
+msgid "Notification Sound"
+msgstr "Sauti ya Arifa"
+
+#: ../src/portals/desktop/notification.rs:324
+msgid "Notification sent"
+msgstr "Arifa imetumwa"
+
+#: ../src/portals/desktop/notification.rs:448
+msgid "Action"
+msgstr "Kitendo"
+
+#: ../src/portals/desktop/notification.rs:450
+msgid "Action Target"
+msgstr "Lengo la Kitendo"
+
+#: ../src/portals/desktop/notification.rs:453
+msgid "Purpose"
+msgstr "Kusudi"
+
+#: ../src/portals/desktop/notification.rs:455
+msgid "None"
+msgstr "Hakuna"
+
+#: ../src/portals/desktop/notification.rs:456
+msgid "IM Reply with Text"
+msgstr "Jibu kwa Maandishi"
+
+#: ../src/portals/desktop/notification.rs:457
+msgid "Call Accept"
+msgstr "Kubali Simu"
+
+#: ../src/portals/desktop/notification.rs:458
+msgid "Call Decline"
+msgstr "Kataa Simu"
+
+#: ../src/portals/desktop/notification.rs:459
+msgid "Call Hang Up"
+msgstr "Kata Simu"
+
+#: ../src/portals/desktop/notification.rs:460
+msgid "Call Enable Speakerphone"
+msgstr "Washa Spika ya Simu"
+
+#: ../src/portals/desktop/notification.rs:461
+msgid "Call Disable Speakerphone"
+msgstr "Zima Spika ya Simu"
+
+#: ../src/portals/desktop/notification.rs:462
+msgid "System Custom Alert"
+msgstr "Tahadhari Maalum ya Mfumo"
+
+#: ../src/portals/desktop/settings.rs:136
+msgid "Enabled"
+msgstr "Imewashwa"
+
+#: ../src/portals/desktop/settings.rs:138
+msgid "Disabled"
+msgstr "Imezimwa"
+
+#: ../src/update_window.rs:117
+msgid "Starting update…"
+msgstr "Inaanza kusasisha…"
+
+#: ../src/update_window.rs:181
+#, rust-format
+msgid "Operation {} of {}"
+msgstr "Hatua ya {} kati ya {}"
