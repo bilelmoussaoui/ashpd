@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
+        caller::CallerAuthorization,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -32,6 +34,7 @@ pub(crate) struct AccountInterface {
     imp: Arc<dyn AccountImpl>,
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl AccountInterface {
@@ -39,8 +42,14 @@ impl AccountInterface {
         imp: Arc<dyn AccountImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 }
 
@@ -59,12 +68,17 @@ impl AccountInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: UserInformationOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<UserInformation>> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Account::GetUserInformation",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),

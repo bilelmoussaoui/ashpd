@@ -2,11 +2,13 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
+        caller::CallerAuthorization,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::Response, usb::UsbDevice},
@@ -53,6 +55,7 @@ pub(crate) struct UsbInterface {
     imp: Arc<dyn UsbImpl>,
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl UsbInterface {
@@ -60,8 +63,14 @@ impl UsbInterface {
         imp: Arc<dyn UsbImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 }
 
@@ -81,12 +90,17 @@ impl UsbInterface {
         app_id: Optional<MaybeAppID>,
         devices: Vec<(String, UsbDevice, AccessOptions)>,
         options: AcquireDevicesOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Vec<(String, AccessOptions)>>> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Usb::AcquireDevices",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),

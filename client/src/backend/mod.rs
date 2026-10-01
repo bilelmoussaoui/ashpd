@@ -10,6 +10,8 @@ pub mod app_chooser;
 pub mod background;
 mod builder;
 pub use builder::Builder;
+mod caller;
+pub use caller::CallerAuthorization;
 #[cfg(feature = "email")]
 #[cfg_attr(docsrs, doc(cfg(feature = "email")))]
 pub mod email;

@@ -2,11 +2,13 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use enumflags2::BitFlags;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
         Result,
+        caller::CallerAuthorization,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -47,6 +49,7 @@ pub(crate) struct ScreenshotInterface {
     imp: Arc<dyn ScreenshotImpl>,
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl ScreenshotInterface {
@@ -54,8 +57,14 @@ impl ScreenshotInterface {
         imp: Arc<dyn ScreenshotImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 }
 
@@ -79,12 +88,17 @@ impl ScreenshotInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: ScreenshotOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<ScreenshotResponse>> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Screenshot::Screenshot",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),
@@ -109,12 +123,17 @@ impl ScreenshotInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: ColorOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Color>> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Screenshot::PickColor",
             &self.cnx,
+            Arc::clone(&self.caller_authorization),
             handle.clone(),
             Arc::clone(&self.imp),
             Arc::clone(&self.spawn),

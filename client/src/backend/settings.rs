@@ -1,9 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     PortalError,
+    backend::caller::CallerAuthorization,
     desktop::{
         Color,
         settings::{
@@ -44,6 +46,7 @@ pub(crate) struct SettingsInterface {
     cnx: zbus::Connection,
     #[allow(dead_code)]
     spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl SettingsInterface {
@@ -51,8 +54,14 @@ impl SettingsInterface {
         imp: Arc<dyn SettingsImpl>,
         cnx: zbus::Connection,
         spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
-        Self { imp, cnx, spawn }
+        Self {
+            imp,
+            cnx,
+            spawn,
+            caller_authorization,
+        }
     }
 
     pub async fn changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
@@ -121,7 +130,11 @@ impl SettingsInterface {
     async fn read_all(
         &self,
         namespaces: Vec<String>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<HashMap<String, Namespace>, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::ReadAll");
 
@@ -133,7 +146,15 @@ impl SettingsInterface {
     }
 
     #[zbus(out_args("value"))]
-    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError> {
+    async fn read(
+        &self,
+        namespace: &str,
+        key: &str,
+        #[zbus(header)] header: Header<'_>,
+    ) -> Result<OwnedValue, PortalError> {
+        self.caller_authorization
+            .authorize(&self.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::Read");
 
