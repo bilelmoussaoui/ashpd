@@ -8,10 +8,10 @@ license.workspace = true
 name = "ashpd"
 repository.workspace = true
 version.workspace = true
-rust-version = "1.87"
+rust-version = "1.89"
 
 [features]
-async-io = ["zbus/async-io", "futures-util/io"]
+async-io = ["zbus/default-rt", "futures-util/io"]
 default = ["tokio"]
 
 frontend = [
@@ -24,7 +24,7 @@ frontend = [
     "secret", "settings", "trash", "usb", "wallpaper",
     "flatpak", "documents",
 ]
-backend = ["dep:async-trait"]
+backend = ["dep:async-trait", "zbus/service"]
 
 account = []
 background = []
@@ -91,7 +91,7 @@ wayland-protocols = { version = "0.32", optional = true, features = [
     "client",
     "staging",
 ] }
-zbus = { version = "5.16", default-features = false }
+zbus = { version = "6.0", default-features = false, features = ["proxy"] }
 
 [dev-dependencies]
 serde_json = "1.0"

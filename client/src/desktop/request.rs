@@ -13,7 +13,7 @@ use serde::{
 };
 use zbus::{
     proxy::SignalStream,
-    zvariant::{ObjectPath, Type, Value},
+    wire::{ObjectPath, Type, Variant},
 };
 
 use crate::{Error, desktop::HandleToken, proxy::Proxy};
@@ -21,7 +21,7 @@ use crate::{Error, desktop::HandleToken, proxy::Proxy};
 /// A typical response returned by the [`Request::response`].
 /// of a [`Request`].
 #[derive(Debug, Type)]
-#[zvariant(signature = "(ua{sv})")]
+#[zbus(signature = "(ua{sv})")]
 pub enum Response<T> {
     /// Success, the request is carried out.
     Ok(T),
@@ -118,7 +118,7 @@ where
         match self {
             Self::Err(err) => {
                 map.serialize_element(&ResponseType::from(*err))?;
-                map.serialize_element(&HashMap::<&str, Value<'_>>::new())?;
+                map.serialize_element(&HashMap::<&str, Variant<'_>>::new())?;
             }
             Self::Ok(response) => {
                 map.serialize_element(&ResponseType::Success)?;
@@ -264,8 +264,8 @@ where
     /// See also [`Response`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Request.html#org-freedesktop-portal-request-response).
     #[doc(alias = "Response")]
     pub fn response(&self) -> Result<T, Error> {
-        // It should be safe to unwrap here as we are sure we have received a response
-        // by the time the user calls response
+        // It should be safe to unwrap here as we are sure we have received a
+        // response by the time the user calls response
         self.2.lock().unwrap().take().unwrap()
     }
 
@@ -300,7 +300,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use zbus::zvariant::Value;
+    use zbus::wire::Variant;
 
     use super::*;
 
@@ -309,7 +309,7 @@ mod tests {
     fn response_signature() {
         use crate::desktop::account::UserInformation;
         assert_eq!(
-            <(ResponseType, HashMap<&str, Value<'_>>)>::SIGNATURE,
+            <(ResponseType, HashMap<&str, Variant<'_>>)>::SIGNATURE,
             Response::<()>::SIGNATURE,
         );
         assert_eq!(

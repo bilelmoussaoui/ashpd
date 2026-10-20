@@ -29,28 +29,28 @@
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     ObjectPath, Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`UpdateMonitor::update`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct UpdateOptions {}
 
 #[derive(Deserialize, Type, Debug)]
 /// A response containing the update information when an update is available.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct UpdateInfo {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     running_commit: String,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     local_commit: String,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     remote_commit: String,
 }
 
@@ -93,7 +93,7 @@ pub enum UpdateStatus {
 
 #[derive(Deserialize, Type, Debug)]
 /// A response of the update progress signal.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct UpdateProgress {
     #[serde(default, with = "optional")]
     n_ops: Option<u32>,

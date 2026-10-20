@@ -5,7 +5,7 @@ use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")]
 use zbus::Message;
-use zbus::zvariant::{ObjectPath, OwnedValue, Type};
+use zbus::wire::{ObjectPath, Type};
 
 use crate::{
     Error, PortalError,
@@ -99,9 +99,9 @@ impl<'a> Proxy<'a> {
         P::Error: Into<zbus::Error>,
     {
         let inner: zbus::Proxy = zbus::proxy::Builder::new(&connection)
-            .interface(interface)?
-            .path(path)?
-            .destination(destination)?
+            .interface(interface)
+            .path(path)
+            .destination(destination)
             .cache_properties(cache_properties)
             .build()
             .await?;
@@ -308,8 +308,7 @@ impl<'a> Proxy<'a> {
 
     pub async fn property<T>(&self, property_name: &'static str) -> Result<T, Error>
     where
-        T: TryFrom<OwnedValue>,
-        zbus::Error: From<<T as TryFrom<OwnedValue>>::Error>,
+        T: serde::de::DeserializeOwned + Type,
     {
         self.inner
             .get_property::<T>(property_name)
@@ -323,8 +322,7 @@ impl<'a> Proxy<'a> {
         req_version: u32,
     ) -> Result<T, Error>
     where
-        T: TryFrom<OwnedValue>,
-        zbus::Error: From<<T as TryFrom<OwnedValue>>::Error>,
+        T: serde::de::DeserializeOwned + Type,
     {
         let version = self.version();
         if version >= req_version {
@@ -332,6 +330,25 @@ impl<'a> Proxy<'a> {
         } else {
             Err(Error::RequiresVersion(req_version, version))
         }
+    }
+
+    pub(crate) async fn property_flags<F: enumflags2::BitFlag<Numeric = u32>>(
+        &self,
+        property_name: &'static str,
+    ) -> Result<enumflags2::BitFlags<F>, Error> {
+        crate::flags::from_bits(self.property::<u32>(property_name).await?).map_err(From::from)
+    }
+
+    pub(crate) async fn property_flags_versioned<F: enumflags2::BitFlag<Numeric = u32>>(
+        &self,
+        property_name: &'static str,
+        req_version: u32,
+    ) -> Result<enumflags2::BitFlags<F>, Error> {
+        crate::flags::from_bits(
+            self.property_versioned::<u32>(property_name, req_version)
+                .await?,
+        )
+        .map_err(From::from)
     }
 
     pub(crate) async fn signal_with_args<I>(

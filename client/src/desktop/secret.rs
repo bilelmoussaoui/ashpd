@@ -24,9 +24,9 @@ use std::{
 };
 
 use serde::Serialize;
-use zbus::zvariant::{
+use zbus::wire::{
     Fd, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request};
@@ -34,9 +34,9 @@ use crate::{Error, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct RetrieveOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
     /// A string returned by a previous call to `retrieve`.
     /// TODO: seems to not be used by the portal...

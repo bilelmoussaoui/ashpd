@@ -37,9 +37,9 @@ use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     self, Fd, OwnedObjectPath, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use crate::{Error, FilePath, Pid, flatpak::update_monitor::UpdateMonitor, proxy::Proxy};
@@ -107,39 +107,42 @@ pub enum SupportsFlags {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::spawn`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     sandbox_expose: Vec<String>,
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, read-only.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     sandbox_expose_ro: Vec<String>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
-    sandbox_expose_fd: Vec<zvariant::OwnedFd>,
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose_fd: Vec<wire::OwnedFd>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, read-only.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
-    sandbox_expose_fd_ro: Vec<zvariant::OwnedFd>,
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose_fd_ro: Vec<wire::OwnedFd>,
     /// Flags affecting the created sandbox.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "crate::flags::optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     sandbox_flags: Option<BitFlags<SandboxFlags>>,
     /// A list of environment variables to remove.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     unset_env: Vec<String>,
     /// A file descriptor of the directory that  will be used as `/usr` in the
     /// new sandbox.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    usr_fd: Option<zvariant::OwnedFd>,
+    usr_fd: Option<wire::OwnedFd>,
     /// A file descriptor of the directory that  will be used as `/app` in the
     /// new sandbox.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    app_fd: Option<zvariant::OwnedFd>,
+    app_fd: Option<wire::OwnedFd>,
 }
 
 impl SpawnOptions {
@@ -180,7 +183,7 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose_fd = sandbox_expose_fd
             .into()
-            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect())
+            .map(|a| a.into_iter().map(wire::OwnedFd::from).collect())
             .unwrap_or_default();
         self
     }
@@ -194,7 +197,7 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose_fd_ro = sandbox_expose_fd_ro
             .into()
-            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect())
+            .map(|a| a.into_iter().map(wire::OwnedFd::from).collect())
             .unwrap_or_default();
         self
     }
@@ -241,7 +244,7 @@ impl SpawnOptions {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::create_update_monitor`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct CreateUpdateMonitorOptions {}
 
 /// The interface exposes some interactions with Flatpak on the host to the
@@ -360,7 +363,7 @@ impl Flatpak {
             .collect::<Result<Vec<FilePath>, _>>()?;
         let fds: HashMap<u32, Fd> = fds.iter().map(|(k, val)| (*k, Fd::from(val))).collect();
         self.0
-            .call("Spawn", &(cwd_path, argv, fds, envs, flags, options))
+            .call("Spawn", &(cwd_path, argv, fds, envs, flags.bits(), options))
             .await
     }
 
@@ -397,7 +400,7 @@ impl Flatpak {
     #[doc(alias = "supports")]
     pub async fn supported_features(&self) -> Result<BitFlags<SupportsFlags>, Error> {
         self.0
-            .property_versioned::<BitFlags<SupportsFlags>>("supports", 3)
+            .property_flags_versioned::<SupportsFlags>("supports", 3)
             .await
     }
 }

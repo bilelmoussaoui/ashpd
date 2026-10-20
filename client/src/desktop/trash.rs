@@ -43,7 +43,7 @@
 use std::os::fd::AsFd;
 
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, Type};
+use zbus::wire::{Fd, Type};
 
 use crate::{Error, error::PortalError, proxy::Proxy};
 

@@ -16,11 +16,11 @@ use crate::{
         request::Response,
         screencast::{CursorMode, SelectSourcesOptions, SourceType, StartCastOptions, Streams},
     },
-    zvariant::{Optional, OwnedObjectPath, Type},
+    wire::{Optional, OwnedObjectPath, Type},
 };
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SelectSourcesResponse {}
 
 #[async_trait]

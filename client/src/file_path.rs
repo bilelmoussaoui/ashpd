@@ -5,11 +5,11 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::Type;
+use zbus::wire::Type;
 
 /// A file name represented as a nul-terminated byte array.
 #[derive(Type, Debug, Default, PartialEq)]
-#[zvariant(signature = "ay")]
+#[zbus(signature = "ay")]
 pub struct FilePath(CString);
 
 impl AsRef<Path> for FilePath {
@@ -51,7 +51,7 @@ impl<'de> Deserialize<'de> for FilePath {
 
 #[cfg(test)]
 mod tests {
-    use zbus::zvariant::{
+    use zbus::wire::{
         Endian,
         serialized::{Context, Data},
         to_bytes,
@@ -69,7 +69,7 @@ mod tests {
 
         assert_eq!(c_string.as_bytes_with_nul(), &bytes);
 
-        let ctxt = Context::new_dbus(Endian::Little, 0);
+        let ctxt = Context::new(Endian::Little, 0);
         let file_path = FilePath(c_string);
 
         let file_path_2 = FilePath::new("abc").unwrap();
@@ -78,7 +78,8 @@ mod tests {
         let encoded_filename_2 = to_bytes(ctxt, &file_path_2).unwrap().to_vec();
         let encoded_bytes = to_bytes(ctxt, &bytes).unwrap().to_vec();
 
-        // It does not matter whether we use new("abc") or deserialize from b"abc\0".
+        // It does not matter whether we use new("abc") or deserialize from
+        // b"abc\0".
         assert_eq!(encoded_filename, encoded_bytes);
         assert_eq!(encoded_filename_2, encoded_bytes);
 

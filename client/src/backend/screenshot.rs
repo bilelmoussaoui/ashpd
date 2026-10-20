@@ -16,7 +16,7 @@ use crate::{
             AvailableTargets, ColorOptions, Screenshot as ScreenshotResponse, ScreenshotOptions,
         },
     },
-    zvariant::{Optional, OwnedObjectPath},
+    wire::{Optional, OwnedObjectPath},
 };
 
 #[async_trait]

@@ -32,9 +32,9 @@ use std::collections::HashMap;
 
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{
-    ObjectPath, OwnedFd, OwnedObjectPath, OwnedValue, Type,
-    as_value::{self, optional},
+use zbus::wire::{
+    ObjectPath, OwnedFd, OwnedObjectPath, OwnedVariant, Type,
+    as_variant::{self, optional},
 };
 
 use crate::{
@@ -44,7 +44,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize, Type, PartialEq, Eq)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 /// A device identifier.
 pub struct DeviceID(String);
 
@@ -82,23 +82,23 @@ impl std::fmt::Display for DeviceID {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`UsbProxy::enumerate_devices`] request.
 pub struct EnumerateDevicesOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`UsbProxy::release_devices`] request.
 pub struct ReleaseDevicesOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`UsbProxy::finish_acquire_devices`] request.
 struct FinishAcquireDevicesOptions {}
 
 /// USB device description
 #[derive(Serialize, Deserialize, Clone, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct UsbDevice {
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     parent: Option<DeviceID>,
@@ -117,8 +117,12 @@ pub struct UsbDevice {
     )]
     device_file: Option<String>,
     /// Device properties
-    #[serde(default, with = "as_value", skip_serializing_if = "HashMap::is_empty")]
-    properties: HashMap<String, OwnedValue>,
+    #[serde(
+        default,
+        with = "as_variant",
+        skip_serializing_if = "HashMap::is_empty"
+    )]
+    properties: HashMap<String, OwnedVariant>,
 }
 
 impl UsbDevice {
@@ -166,7 +170,7 @@ impl UsbDevice {
     }
 
     /// Return the device properties.
-    pub fn properties(&self) -> &HashMap<String, OwnedValue> {
+    pub fn properties(&self) -> &HashMap<String, OwnedVariant> {
         &self.properties
     }
 }
@@ -199,9 +203,9 @@ impl From<AcquiredDevice> for Result<OwnedFd, UsbError> {
 
 /// Device to acquire.
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct AcquireDevice {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     writable: bool,
 }
 
@@ -227,18 +231,18 @@ impl Device {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`UsbProxy::acquire_devices`] request.
 pub struct AcquireDevicesOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
 /// Finished device acquired.
 #[derive(Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct AcquiredDevice {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     success: bool,
     #[serde(default, with = "optional")]
     fd: Option<OwnedFd>,
@@ -253,7 +257,7 @@ struct AcquiredDevice {
 pub struct UsbEvent(UsbEventAction, DeviceID, UsbDevice);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Deserialize, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// A USB event action.
 pub enum UsbEventAction {

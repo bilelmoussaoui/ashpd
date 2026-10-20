@@ -6,7 +6,7 @@ use ashpd::{
         Flatpak, SpawnFlags, SpawnOptions,
         update_monitor::{UpdateInfo, UpdateMonitor},
     },
-    zbus, zvariant,
+    wire, zbus,
 };
 use futures_util::StreamExt;
 use gtk::{
@@ -156,8 +156,8 @@ impl Application {
             .unwrap()
             .set_enabled(ashpd::is_sandboxed());
 
-        // Install update requires Flatpak and is disabled by default until an update is
-        // available
+        // Install update requires Flatpak and is disabled by default until an
+        // update is available
         self.lookup_action("install-update")
             .and_downcast_ref::<gio::SimpleAction>()
             .unwrap()
@@ -171,21 +171,21 @@ impl Application {
                 .path(format!(
                     "/{}",
                     config::APP_ID.split('.').collect::<Vec<_>>().join("/")
-                ))?
-                .interface("org.gtk.Actions")?
-                .destination(config::APP_ID)?
+                ))
+                .interface("org.gtk.Actions")
+                .destination(config::APP_ID)
                 .build()
                 .await?;
             #[derive(Debug, serde::Serialize)]
             pub struct Params(
                 String,
-                Vec<zvariant::OwnedValue>,
-                HashMap<String, zvariant::OwnedValue>,
+                Vec<wire::OwnedVariant>,
+                HashMap<String, wire::OwnedVariant>,
             );
 
-            impl zvariant::DynamicType for Params {
-                fn signature(&self) -> zvariant::Signature {
-                    zvariant::Signature::from_str("(sava{sv})").unwrap()
+            impl wire::DynamicType for Params {
+                fn signature(&self) -> wire::Signature {
+                    wire::Signature::from_str("(sava{sv})").unwrap()
                 }
             }
 

@@ -21,8 +21,7 @@ impl RequestImpl for Account {
 mod fdo_account {
     #[zbus::proxy(
         default_service = "org.freedesktop.Accounts",
-        interface = "org.freedesktop.Accounts.User",
-        gen_blocking = false
+        interface = "org.freedesktop.Accounts.User"
     )]
     pub trait Accounts {
         #[zbus(property, name = "IconFile")]
@@ -49,7 +48,7 @@ impl AccountImpl for Account {
         let uid = unsafe { libc::getuid() };
         let path = format!("/org/freedesktop/Accounts/User{uid}");
         let proxy = fdo_account::AccountsProxy::builder(&cnx)
-            .path(path)?
+            .path(path)
             .build()
             .await?;
 

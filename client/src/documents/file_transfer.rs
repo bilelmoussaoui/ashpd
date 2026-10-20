@@ -34,13 +34,13 @@ use std::os::fd::AsFd;
 
 use futures_util::Stream;
 use serde::Serialize;
-use zbus::zvariant::{Fd, Type, as_value::optional};
+use zbus::wire::{Fd, Type, as_variant::optional};
 
 use crate::{Error, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`FileTransfer::start_transfer`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct StartTransferOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     writable: Option<bool>,
@@ -70,12 +70,12 @@ impl StartTransferOptions {
 }
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`FileTransfer::add_files`] request.
 pub struct AddFilesOptions {}
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`FileTransfer::retrieve_files`] request.
 pub struct RetrieveFilesOptions {}
 

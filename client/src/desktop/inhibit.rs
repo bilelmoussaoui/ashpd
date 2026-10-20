@@ -39,9 +39,9 @@ use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     ObjectPath, Optional, OwnedObjectPath, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
@@ -49,19 +49,19 @@ use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, pr
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct CreateMonitorOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InhibitProxy::inhibit`] request.
 pub struct InhibitOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
@@ -97,12 +97,12 @@ pub enum InhibitFlags {
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 struct State {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     screensaver_active: bool,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_state: SessionState,
 }
 
@@ -225,7 +225,7 @@ impl InhibitProxy {
             .empty_request(
                 &options.handle_token,
                 "Inhibit",
-                &(identifier, flags, &options),
+                &(identifier, flags.bits(), &options),
             )
             .await
     }

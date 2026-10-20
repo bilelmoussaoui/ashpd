@@ -6,8 +6,6 @@
     html_favicon_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/main/ashpd-demo/data/icons/com.belmoussaoui.ashpd.demo-symbolic.svg"
 )]
 #![doc = include_str!("../README.md")]
-#[cfg(all(all(feature = "tokio", feature = "async-io"), not(doc)))]
-compile_error!("You can't enable both async-io & tokio features at once");
 #[cfg(all(not(feature = "tokio"), not(feature = "async-io"), not(doc)))]
 compile_error!("Either the `async-io` or the `tokio` feature has to be enabled");
 
@@ -39,6 +37,7 @@ pub use self::{
     uri::Uri,
 };
 mod file_path;
+mod flags;
 pub use self::file_path::FilePath;
 
 mod proxy;
@@ -61,7 +60,7 @@ use std::sync::OnceLock;
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 pub use async_trait;
 pub use enumflags2;
-pub use zbus::{self, zvariant};
+pub use zbus::{self, wire};
 
 /// Check whether the application is running inside a sandbox.
 ///

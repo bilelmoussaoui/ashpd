@@ -7,7 +7,7 @@ use std::{collections::HashMap, os::fd::AsFd, path::Path};
 use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, Type};
+use zbus::wire::{Fd, Type};
 
 use crate::{Error, FilePath, Pid, proxy::Proxy};
 
@@ -96,7 +96,7 @@ impl Development {
             .collect::<Result<Vec<FilePath>, _>>()?;
         let fds: HashMap<u32, Fd> = fds.iter().map(|(k, val)| (*k, Fd::from(val))).collect();
         self.0
-            .call("HostCommand", &(cwd_path, argv, fds, envs, flags))
+            .call("HostCommand", &(cwd_path, argv, fds, envs, flags.bits()))
             .await
     }
 

@@ -13,7 +13,7 @@ use ashpd::{
         Session,
         usb::{Device, DeviceID, UsbError, UsbProxy},
     },
-    zbus::zvariant::OwnedFd,
+    zbus::wire::OwnedFd,
 };
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
