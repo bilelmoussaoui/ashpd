@@ -97,9 +97,10 @@ impl CameraPaintable {
         let sink = gst::ElementFactory::make("gtk4paintablesink").build()?;
         let paintable = sink.property::<gdk::Paintable>("paintable");
 
-        // create the appropriate sink depending on the environment we are running
-        // Check if the paintablesink initialized a gl-context, and if so put it
-        // behind a glsinkbin so we keep the buffers on the gpu
+        // create the appropriate sink depending on the environment we are
+        // running Check if the paintablesink initialized a gl-context,
+        // and if so put it behind a glsinkbin so we keep the buffers on
+        // the gpu
         let sink = if paintable
             .property::<Option<gdk::GLContext>>("gl-context")
             .is_some()

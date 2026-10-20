@@ -120,6 +120,7 @@ mod imp {
         type ParentType = PortalPage;
 
         fn class_init(klass: &mut Self::Class) {
+            gtk::EnumList::ensure_type();
             Dither::ensure_type();
             Duplex::ensure_type();
             NumberUpLayout::ensure_type();
@@ -147,7 +148,7 @@ mod imp {
     #[gtk::template_callbacks]
     impl PrintPage {
         #[template_callback]
-        fn orientation_name(item: &adw::EnumListItem) -> String {
+        fn orientation_name(item: &gtk::EnumListItem) -> String {
             let orientation = unsafe { Orientation::from_glib(item.value()) };
             match orientation {
                 Orientation::Landscape => String::from("Landscape"),
@@ -158,7 +159,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn quality_name(item: &adw::EnumListItem) -> String {
+        fn quality_name(item: &gtk::EnumListItem) -> String {
             let quality = unsafe { Quality::from_glib(item.value()) };
             match quality {
                 Quality::Draft => String::from("Draft"),
@@ -169,7 +170,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn duplex_name(item: &adw::EnumListItem) -> String {
+        fn duplex_name(item: &gtk::EnumListItem) -> String {
             let duplex = unsafe { Duplex::from_glib(item.value()) };
             match duplex {
                 Duplex::Simplex => String::from("Simplex"),
@@ -179,7 +180,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn dither_name(item: &adw::EnumListItem) -> String {
+        fn dither_name(item: &gtk::EnumListItem) -> String {
             let dither = unsafe { Dither::from_glib(item.value()) };
             match dither {
                 Dither::Fine => String::from("Fine"),
@@ -192,7 +193,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn print_pages_name(item: &adw::EnumListItem) -> String {
+        fn print_pages_name(item: &gtk::EnumListItem) -> String {
             let print_pages = unsafe { PrintPages::from_glib(item.value()) };
             match print_pages {
                 PrintPages::All => String::from("All"),
@@ -203,7 +204,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn page_set_name(item: &adw::EnumListItem) -> String {
+        fn page_set_name(item: &gtk::EnumListItem) -> String {
             let page_set = unsafe { PageSet::from_glib(item.value()) };
             match page_set {
                 PageSet::All => String::from("All"),
@@ -213,7 +214,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn number_up_layout_name(item: &adw::EnumListItem) -> String {
+        fn number_up_layout_name(item: &gtk::EnumListItem) -> String {
             let layout = unsafe { NumberUpLayout::from_glib(item.value()) };
             match layout {
                 NumberUpLayout::Lrtb => String::from("Left to Right, Top to Bottom"),
@@ -228,7 +229,7 @@ mod imp {
         }
 
         #[template_callback]
-        fn output_file_format_name(item: &adw::EnumListItem) -> String {
+        fn output_file_format_name(item: &gtk::EnumListItem) -> String {
             let format = unsafe { OutputFileFormat::from_glib(item.value()) };
             match format {
                 OutputFileFormat::Pdf => String::from("PDF"),
@@ -282,17 +283,17 @@ impl PrintPage {
         let orientation = imp
             .orientation_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { Orientation::from_glib(item.value()) });
         let quality = imp
             .quality_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { Quality::from_glib(item.value()) });
         let duplex = imp
             .duplex_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { Duplex::from_glib(item.value()) });
         let use_color = imp.use_color_switch.is_active();
         let collate = imp.collate_switch.is_active();
@@ -300,29 +301,29 @@ impl PrintPage {
         let dither = imp
             .dither_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { Dither::from_glib(item.value()) });
         let scale = imp.scale_spin.value() as u32;
         let print_pages = imp
             .print_pages_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { PrintPages::from_glib(item.value()) });
         let page_set = imp
             .page_set_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { PageSet::from_glib(item.value()) });
         let number_up = imp.number_up_spin.value() as u32;
         let number_up_layout = imp
             .number_up_layout_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { NumberUpLayout::from_glib(item.value()) });
         let output_file_format = imp
             .output_file_format_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { OutputFileFormat::from_glib(item.value()) });
 
         // Collect string Settings values
@@ -355,7 +356,7 @@ impl PrintPage {
         let page_setup_orientation = imp
             .page_setup_orientation_combo
             .selected_item()
-            .and_downcast::<adw::EnumListItem>()
+            .and_downcast::<gtk::EnumListItem>()
             .map(|item| unsafe { Orientation::from_glib(item.value()) });
 
         // PreparePrintOptions values
@@ -363,7 +364,11 @@ impl PrintPage {
         let has_selected_pages = imp.has_selected_pages_switch.is_active();
 
         let filter = gtk::FileFilter::new();
-        filter.add_pixbuf_formats();
+        for format in gtk::gdk_pixbuf::Pixbuf::formats() {
+            for mime_type in format.mime_types() {
+                filter.add_mime_type(&mime_type);
+            }
+        }
         filter.set_name(Some("images"));
 
         let filters = gio::ListStore::new::<gtk::FileFilter>();

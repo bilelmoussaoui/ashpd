@@ -42,10 +42,10 @@ async fn main() -> ashpd::Result<()> {
     let zones = zones_response.response()?;
     println!("Available Zones: {:?}", zones);
 
-    // Set up barriers on all edges of each zone, even the overlapping ones (if we
-    // have multiple zones). Those will fail and that's fine. The alternative is
-    // a more sophisticated algorithm to only set up barriers on the outside
-    // edges.
+    // Set up barriers on all edges of each zone, even the overlapping ones (if
+    // we have multiple zones). Those will fail and that's fine. The
+    // alternative is a more sophisticated algorithm to only set up barriers
+    // on the outside edges.
     let barriers: Vec<Barrier> =
         zones
             .regions()

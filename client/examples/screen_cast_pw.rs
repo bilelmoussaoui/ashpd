@@ -223,7 +223,7 @@ async fn main() {
     println!(
         "node id {}, fd {}",
         pipewire_node_id,
-        &fd.try_clone().unwrap().into_raw_fd()
+        fd.try_clone().unwrap().into_raw_fd()
     );
 
     if let Err(e) = start_streaming(pipewire_node_id, fd).await {

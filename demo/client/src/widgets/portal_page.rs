@@ -54,7 +54,8 @@ mod imp {
             if self.obj().first_child().is_none() {
                 self.parent_add_child(builder, child, type_);
             } else {
-                // We first check if the main child `box_` has already been bound.
+                // We first check if the main child `box_` has already been
+                // bound.
                 self.container
                     .append(child.downcast_ref::<gtk::Widget>().unwrap());
             }
