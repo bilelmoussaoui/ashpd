@@ -1,7 +1,7 @@
 use adw::{prelude::*, subclass::prelude::*};
 use ashpd::{
     desktop::settings::{APPEARANCE_NAMESPACE, ColorScheme, Contrast, ReducedMotion, Settings},
-    zvariant::Value,
+    wire::Variant,
 };
 use gettextrs::gettext;
 use gtk::{
@@ -140,7 +140,8 @@ impl SettingsPage {
 
         // Display all settings grouped by namespace
         for (namespace, settings_map) in all_settings {
-            // Skip appearance namespace as we handle those with dedicated getters
+            // Skip appearance namespace as we handle those with dedicated
+            // getters
             if namespace == APPEARANCE_NAMESPACE {
                 continue;
             }
@@ -185,23 +186,25 @@ fn format_contrast(contrast: Contrast) -> String {
     }
 }
 
-fn format_value(value: &ashpd::zvariant::OwnedValue) -> String {
-    if let Ok(inner) = value.downcast_ref::<Value>() {
+fn format_value(value: &ashpd::wire::OwnedVariant) -> String {
+    if let Ok(inner) = value.downcast_ref::<Variant>() {
         match inner {
-            Value::U8(v) => v.to_string(),
-            Value::Bool(v) => v.to_string(),
-            Value::I16(v) => v.to_string(),
-            Value::U16(v) => v.to_string(),
-            Value::I32(v) => v.to_string(),
-            Value::U32(v) => v.to_string(),
-            Value::I64(v) => v.to_string(),
-            Value::U64(v) => v.to_string(),
-            Value::F64(v) => v.to_string(),
-            Value::Str(v) => v.to_string(),
-            Value::Signature(v) => v.to_string(),
-            Value::ObjectPath(v) => v.to_string(),
-            Value::Value(v) => format_value(&v.try_to_owned().unwrap_or_else(|_| value.clone())),
-            Value::Array(arr) => {
+            Variant::U8(v) => v.to_string(),
+            Variant::Bool(v) => v.to_string(),
+            Variant::I16(v) => v.to_string(),
+            Variant::U16(v) => v.to_string(),
+            Variant::I32(v) => v.to_string(),
+            Variant::U32(v) => v.to_string(),
+            Variant::I64(v) => v.to_string(),
+            Variant::U64(v) => v.to_string(),
+            Variant::F64(v) => v.to_string(),
+            Variant::Str(v) => v.to_string(),
+            Variant::Signature(v) => v.to_string(),
+            Variant::ObjectPath(v) => v.to_string(),
+            Variant::Variant(v) => {
+                format_value(&v.try_to_owned().unwrap_or_else(|_| value.clone()))
+            }
+            Variant::Array(arr) => {
                 let len = arr.len();
                 if len == 0 {
                     "[]".to_string()
@@ -213,7 +216,7 @@ fn format_value(value: &ashpd::zvariant::OwnedValue) -> String {
                     format!("[{}]", items.join(", "))
                 }
             }
-            Value::Dict(dict) => {
+            Variant::Dict(dict) => {
                 let entries: Vec<String> = dict
                     .iter()
                     .map(|(k, v)| {
@@ -230,7 +233,7 @@ fn format_value(value: &ashpd::zvariant::OwnedValue) -> String {
                     format!("{{{}}}", entries.join(", "))
                 }
             }
-            Value::Structure(s) => {
+            Variant::Structure(s) => {
                 let fields = s.fields();
                 if fields.is_empty() {
                     "()".to_string()
@@ -242,7 +245,7 @@ fn format_value(value: &ashpd::zvariant::OwnedValue) -> String {
                     format!("({})", formatted.join(", "))
                 }
             }
-            Value::Fd(_) => "<file descriptor>".to_string(),
+            Variant::Fd(_) => "<file descriptor>".to_string(),
         }
     } else {
         // Fall back to debug representation

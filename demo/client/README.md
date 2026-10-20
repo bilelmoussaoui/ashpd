@@ -7,6 +7,8 @@
 <img src="data/icons/com.belmoussaoui.ashpd.demo.svg" width="128" height="128" />
 <p>Play with the portals</p>
 
+Building requires GTK 4.24 or newer. Building with Cargo also requires `glib-compile-resources` on `PATH` to compile the embedded UI resources.
+
 ## Screenshots
 
 <div align="center">

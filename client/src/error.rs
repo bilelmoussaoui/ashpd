@@ -137,12 +137,6 @@ impl From<zbus::Error> for Error {
     }
 }
 
-impl From<zbus::zvariant::Error> for Error {
-    fn from(e: zbus::zvariant::Error) -> Self {
-        Self::Zbus(zbus::Error::Variant(e))
-    }
-}
-
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
         Self::IO(e)

@@ -36,21 +36,21 @@ use std::collections::HashMap;
 use std::os::fd::OwnedFd;
 
 use serde::Serialize;
-use zbus::zvariant::{self, Type, as_value};
+use zbus::wire::{self, Type, as_variant};
 
 use super::{HandleToken, Request};
 use crate::{Error, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`Camera::request_access`] request.
 pub struct CameraAccessOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`Camera::open_pipe_wire_remote`] request.
 pub struct OpenPipeWireRemoteOptions {}
 
@@ -112,7 +112,7 @@ impl Camera {
     ) -> Result<OwnedFd, Error> {
         let fd = self
             .0
-            .call::<zvariant::OwnedFd>("OpenPipeWireRemote", &options)
+            .call::<wire::OwnedFd>("OpenPipeWireRemote", &options)
             .await?;
         Ok(fd.into())
     }

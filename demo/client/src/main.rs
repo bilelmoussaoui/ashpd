@@ -17,23 +17,20 @@ use application::Application;
 use config::{GETTEXT_PACKAGE, LOCALEDIR};
 use gettextrs::*;
 use gtk::{gio, glib};
-use gvdb_macros::include_gresource_from_xml;
 
 use crate::portals::spawn_tokio_blocking;
 
-#[cfg(workspace_build)]
-static GRESOURCE_BYTES: &[u8] =
-    include_gresource_from_xml!("demo/client/data/resources.gresource.xml");
-
-#[cfg(not(workspace_build))]
-static GRESOURCE_BYTES: &[u8] = include_gresource_from_xml!("data/resources.gresource.xml");
-
 fn main() -> glib::ExitCode {
+    // SAFETY: Locale initialization runs before any threads or signal handlers
+    // are started.
+    unsafe {
+        setlocale(LocaleCategory::LcAll, "");
+    }
+
     // Initialize logger, debug is carried out via debug!, info!, and warn!.
     tracing_subscriber::fmt::init();
 
     // Prepare i18n
-    setlocale(LocaleCategory::LcAll, "");
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).unwrap();
     textdomain(GETTEXT_PACKAGE).unwrap();
 
@@ -42,8 +39,7 @@ fn main() -> glib::ExitCode {
 
     gst4gtk::plugin_register_static().expect("Failed to register gstgtk4 plugin");
 
-    let res = gio::Resource::from_data(&glib::Bytes::from_static(GRESOURCE_BYTES)).unwrap();
-    gio::resources_register(&res);
+    gio::resources_register_include!("ashpd-demo.gresource").unwrap();
 
     spawn_tokio_blocking(async move {
         if let Err(err) = ashpd::register_host_app(config::APP_ID.try_into().unwrap()).await {

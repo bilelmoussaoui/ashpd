@@ -83,9 +83,9 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request};
@@ -228,9 +228,9 @@ impl Choice {
 
 /// Options for opening a file.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct OpenFileOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
@@ -240,11 +240,11 @@ pub struct OpenFileOptions {
     multiple: Option<bool>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     directory: Option<bool>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     filters: Vec<FileFilter>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_filter: Option<FileFilter>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<Choice>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
@@ -358,9 +358,9 @@ impl OpenFileOptions {
 
 /// Options for saving a file.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SaveFileOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
@@ -372,11 +372,11 @@ pub struct SaveFileOptions {
     current_folder: Option<FilePath>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_file: Option<FilePath>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     filters: Vec<FileFilter>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_filter: Option<FileFilter>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<Choice>,
 }
 
@@ -488,19 +488,19 @@ impl SaveFileOptions {
 
 /// Options for saving multiple files.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SaveFilesOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     accept_label: Option<String>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<Choice>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     current_folder: Option<FilePath>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     files: Vec<FilePath>,
 }
 
@@ -574,11 +574,11 @@ impl SaveFilesOptions {
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// A response of [`OpenFileRequest`], [`SaveFileRequest`] or
 /// [`SaveFilesRequest`].
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SelectedFiles {
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     uris: Vec<Uri>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<(String, String)>,
     // Backend-only fields
     /// Not relevant for SaveFiles

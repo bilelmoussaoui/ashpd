@@ -9,7 +9,7 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, email::EmailOptions, request::Response},
-    zvariant::{Optional, OwnedObjectPath},
+    wire::{Optional, OwnedObjectPath},
 };
 
 #[async_trait]

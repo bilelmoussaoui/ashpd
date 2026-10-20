@@ -27,9 +27,9 @@
 use std::os::fd::OwnedFd;
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{
+use zbus::wire::{
     self, Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request};
@@ -37,29 +37,29 @@ use crate::{ActivationToken, Error, Uri, WindowIdentifier, proxy::Proxy};
 
 /// Options for composing an email.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct EmailOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     address: Option<String>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     addresses: Vec<String>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     cc: Vec<String>,
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     bcc: Vec<String>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     subject: Option<String>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     body: Option<String>,
     #[serde(
-        with = "as_value",
+        with = "as_variant",
         skip_serializing_if = "Vec::is_empty",
         skip_deserializing
     )]
-    attachment_fds: Vec<zvariant::OwnedFd>,
-    #[serde(default, with = "as_value", skip_serializing)]
+    attachment_fds: Vec<wire::OwnedFd>,
+    #[serde(default, with = "as_variant", skip_serializing)]
     #[cfg_attr(not(feature = "backend"), allow(dead_code))]
     attachments: Vec<Uri>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
@@ -262,7 +262,7 @@ impl EmailRequest {
     ) -> Self {
         self.options.attachment_fds = attachments
             .into_iter()
-            .map(|fd| zvariant::OwnedFd::from(fd.into()))
+            .map(|fd| wire::OwnedFd::from(fd.into()))
             .collect();
         self
     }
@@ -286,7 +286,7 @@ impl EmailRequest {
 
     /// A different variant of [`Self::attach`].
     pub fn add_attachment(&mut self, attachment: OwnedFd) {
-        let attachment = zvariant::OwnedFd::from(attachment);
+        let attachment = wire::OwnedFd::from(attachment);
         self.options.attachment_fds.push(attachment);
     }
 

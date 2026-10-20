@@ -31,16 +31,16 @@ use std::{collections::HashMap, convert::TryFrom, fmt::Debug, future::ready};
 
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{OwnedValue, Type, Value};
+use zbus::wire::{OwnedVariant, Type, Variant};
 
 use crate::{Error, desktop::Color, proxy::Proxy};
 
 /// A HashMap of the <key, value> settings found on a specific namespace.
-pub type Namespace = HashMap<String, OwnedValue>;
+pub type Namespace = HashMap<String, OwnedVariant>;
 
 #[derive(Deserialize, Type)]
 /// A specific `namespace.key = value` setting.
-pub struct Setting(String, String, OwnedValue);
+pub struct Setting(String, String, OwnedVariant);
 
 impl Setting {
     /// The setting namespace.
@@ -54,7 +54,7 @@ impl Setting {
     }
 
     /// The setting value.
-    pub fn value(&self) -> &OwnedValue {
+    pub fn value(&self) -> &OwnedVariant {
         &self.2
     }
 }
@@ -83,7 +83,7 @@ pub enum ColorScheme {
     PreferLight,
 }
 
-impl From<ColorScheme> for OwnedValue {
+impl From<ColorScheme> for OwnedVariant {
     fn from(value: ColorScheme) -> Self {
         match value {
             ColorScheme::PreferDark => 1,
@@ -94,18 +94,18 @@ impl From<ColorScheme> for OwnedValue {
     }
 }
 
-impl TryFrom<OwnedValue> for ColorScheme {
+impl TryFrom<OwnedVariant> for ColorScheme {
     type Error = Error;
 
-    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
-        TryFrom::<Value>::try_from(value.into())
+    fn try_from(value: OwnedVariant) -> Result<Self, Self::Error> {
+        TryFrom::<Variant>::try_from(value.into())
     }
 }
 
-impl TryFrom<Value<'_>> for ColorScheme {
+impl TryFrom<Variant<'_>> for ColorScheme {
     type Error = Error;
 
-    fn try_from(value: Value) -> Result<Self, Self::Error> {
+    fn try_from(value: Variant) -> Result<Self, Self::Error> {
         Ok(match u32::try_from(value)? {
             1 => Self::PreferDark,
             2 => Self::PreferLight,
@@ -126,7 +126,7 @@ pub enum Contrast {
     High,
 }
 
-impl From<Contrast> for OwnedValue {
+impl From<Contrast> for OwnedVariant {
     fn from(value: Contrast) -> Self {
         match value {
             Contrast::High => 1,
@@ -136,18 +136,18 @@ impl From<Contrast> for OwnedValue {
     }
 }
 
-impl TryFrom<OwnedValue> for Contrast {
+impl TryFrom<OwnedVariant> for Contrast {
     type Error = Error;
 
-    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
-        TryFrom::<Value>::try_from(value.into())
+    fn try_from(value: OwnedVariant) -> Result<Self, Self::Error> {
+        TryFrom::<Variant>::try_from(value.into())
     }
 }
 
-impl TryFrom<Value<'_>> for Contrast {
+impl TryFrom<Variant<'_>> for Contrast {
     type Error = Error;
 
-    fn try_from(value: Value) -> Result<Self, Self::Error> {
+    fn try_from(value: Variant) -> Result<Self, Self::Error> {
         Ok(match u32::try_from(value)? {
             1 => Self::High,
             _ => Self::NoPreference,
@@ -167,7 +167,7 @@ pub enum ReducedMotion {
     ReducedMotion,
 }
 
-impl From<ReducedMotion> for OwnedValue {
+impl From<ReducedMotion> for OwnedVariant {
     fn from(value: ReducedMotion) -> Self {
         match value {
             ReducedMotion::ReducedMotion => 1,
@@ -177,18 +177,18 @@ impl From<ReducedMotion> for OwnedValue {
     }
 }
 
-impl TryFrom<OwnedValue> for ReducedMotion {
+impl TryFrom<OwnedVariant> for ReducedMotion {
     type Error = Error;
 
-    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
-        TryFrom::<Value>::try_from(value.into())
+    fn try_from(value: OwnedVariant) -> Result<Self, Self::Error> {
+        TryFrom::<Variant>::try_from(value.into())
     }
 }
 
-impl TryFrom<Value<'_>> for ReducedMotion {
+impl TryFrom<Variant<'_>> for ReducedMotion {
     type Error = Error;
 
-    fn try_from(value: Value) -> Result<Self, Self::Error> {
+    fn try_from(value: Variant) -> Result<Self, Self::Error> {
         Ok(match u32::try_from(value)? {
             1 => Self::ReducedMotion,
             _ => Self::NoPreference,
@@ -270,7 +270,7 @@ impl Settings {
     ///
     /// # Returns
     ///
-    /// The value for `key` as a `zvariant::OwnedValue`.
+    /// The value for `key` as a `wire::OwnedVariant`.
     ///
     /// # Specifications
     ///
@@ -279,11 +279,14 @@ impl Settings {
     #[doc(alias = "ReadOne")]
     pub async fn read<T>(&self, namespace: &str, key: &str) -> Result<T, Error>
     where
-        T: TryFrom<OwnedValue>,
-        Error: From<<T as TryFrom<OwnedValue>>::Error>,
+        T: TryFrom<OwnedVariant>,
+        Error: From<<T as TryFrom<OwnedVariant>>::Error>,
     {
-        let value = self.0.call::<OwnedValue>("Read", &(namespace, key)).await?;
-        if let Ok(v) = value.downcast_ref::<Value>() {
+        let value = self
+            .0
+            .call::<OwnedVariant>("Read", &(namespace, key))
+            .await?;
+        if let Ok(v) = value.downcast_ref::<Variant>() {
             T::try_from(v.try_to_owned()?).map_err(From::from)
         } else {
             T::try_from(value).map_err(From::from)
@@ -394,8 +397,8 @@ impl Settings {
         key: &str,
     ) -> Result<impl Stream<Item = Result<T, Error>> + use<T>, Error>
     where
-        T: TryFrom<OwnedValue>,
-        Error: From<<T as TryFrom<OwnedValue>>::Error>,
+        T: TryFrom<OwnedVariant>,
+        Error: From<<T as TryFrom<OwnedVariant>>::Error>,
     {
         Ok(self
             .0

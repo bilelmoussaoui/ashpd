@@ -45,9 +45,9 @@ use std::{fmt::Debug, os::fd::OwnedFd};
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
-    self, Optional, OwnedValue, Type,
-    as_value::{self, optional},
+use zbus::wire::{
+    self, Optional, OwnedVariant, Type,
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, PersistMode, Request, Session, session::SessionPortal};
@@ -94,16 +94,20 @@ pub enum CursorMode {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::open_pipe_wire_remote`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct OpenPipeWireRemoteOptions {}
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::select_sources`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SelectSourcesOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
-    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        with = "crate::flags::optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     types: Option<BitFlags<SourceType>>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     multiple: Option<bool>,
@@ -117,7 +121,7 @@ pub struct SelectSourcesOptions {
     restore_token: Option<String>,
     #[serde(default, with = "optional", skip_serializing)]
     #[cfg_attr(not(feature = "backend"), allow(dead_code))]
-    restore_data: Option<(String, u32, OwnedValue)>,
+    restore_data: Option<(String, u32, OwnedVariant)>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     persist_mode: Option<PersistMode>,
 }
@@ -184,7 +188,7 @@ impl SelectSourcesOptions {
 
     /// Gets the restore data.
     #[cfg(feature = "backend")]
-    pub fn restore_data<'a>(&'a self) -> Option<(&'a str, u32, &'a zbus::zvariant::Value<'a>)> {
+    pub fn restore_data<'a>(&'a self) -> Option<(&'a str, u32, &'a zbus::wire::Variant<'a>)> {
         use std::borrow::Borrow;
         match &self.restore_data {
             Some((key, version, data)) => Some((key.as_str(), *version, data.borrow())),
@@ -195,17 +199,17 @@ impl SelectSourcesOptions {
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`Screencast::start`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct StartCastOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
 }
 
 #[derive(Default, Serialize, Deserialize, Type)]
 /// A response to a [`Screencast::start`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct Streams {
-    #[serde(default, with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     streams: Vec<Stream>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
@@ -214,7 +218,7 @@ pub struct Streams {
     persist_mode: Option<PersistMode>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     #[cfg_attr(not(feature = "backend"), allow(dead_code))]
-    restore_data: Option<(String, u32, OwnedValue)>,
+    restore_data: Option<(String, u32, OwnedVariant)>,
 }
 
 impl Streams {
@@ -236,7 +240,7 @@ impl Streams {
 
     /// The session restore data.
     #[cfg(feature = "backend")]
-    pub fn restore_data(&self) -> Option<&(String, u32, OwnedValue)> {
+    pub fn restore_data(&self) -> Option<&(String, u32, OwnedVariant)> {
         self.restore_data.as_ref()
     }
 }
@@ -282,7 +286,7 @@ impl StreamsBuilder {
     }
 
     /// Set the streams' optional restore data.
-    pub fn restore_data(mut self, data: Option<(String, u32, impl Into<OwnedValue>)>) -> Self {
+    pub fn restore_data(mut self, data: Option<(String, u32, impl Into<OwnedVariant>)>) -> Self {
         self.streams.restore_data = data.map(|(s, u, d)| (s, u, d.into()));
         self
     }
@@ -364,7 +368,7 @@ impl Debug for Stream {
 }
 #[derive(Clone, Serialize, Deserialize, Type, Debug)]
 /// The stream properties.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct StreamProperties {
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     id: Option<String>,
@@ -526,7 +530,7 @@ impl Screencast {
     ) -> Result<OwnedFd, Error> {
         let fd = self
             .0
-            .call::<zvariant::OwnedFd>("OpenPipeWireRemote", &(session, options))
+            .call::<wire::OwnedFd>("OpenPipeWireRemote", &(session, options))
             .await?;
         Ok(fd.into())
     }
@@ -605,7 +609,9 @@ impl Screencast {
     /// See also [`AvailableCursorModes`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-availablecursormodes).
     #[doc(alias = "AvailableCursorModes")]
     pub async fn available_cursor_modes(&self) -> Result<BitFlags<CursorMode>, Error> {
-        self.0.property_versioned("AvailableCursorModes", 2).await
+        self.0
+            .property_flags_versioned("AvailableCursorModes", 2)
+            .await
     }
 
     /// Available source types.
@@ -615,7 +621,7 @@ impl Screencast {
     /// See also [`AvailableSourceTypes`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.ScreenCast.html#org-freedesktop-portal-screencast-availablesourcetypes).
     #[doc(alias = "AvailableSourceTypes")]
     pub async fn available_source_types(&self) -> Result<BitFlags<SourceType>, Error> {
-        self.0.property("AvailableSourceTypes").await
+        self.0.property_flags("AvailableSourceTypes").await
     }
 }
 

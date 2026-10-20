@@ -1,7 +1,7 @@
 use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Deserializer, Serialize};
-use zbus::zvariant::{self, Basic, Type};
+use zbus::wire::{self, Basic, Type};
 
 /// The application ID.
 ///
@@ -14,7 +14,7 @@ impl Basic for AppID {
     const SIGNATURE_STR: &'static str = String::SIGNATURE_STR;
 }
 
-impl zvariant::NoneValue for AppID {
+impl wire::NoneValue for AppID {
     type NoneType = String;
 
     fn null_value() -> String {
@@ -93,8 +93,13 @@ impl<'de> Deserialize<'de> for AppID {
 /// this type allows the backend implementation to fallback to the inner string
 /// without causing an error and manually handle those applications.
 #[derive(Debug, Eq, Hash, PartialEq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 pub struct MaybeAppID(Result<AppID, String>);
+
+impl Basic for MaybeAppID {
+    const SIGNATURE_CHAR: char = <str as Basic>::SIGNATURE_CHAR;
+    const SIGNATURE_STR: &'static str = <str as Basic>::SIGNATURE_STR;
+}
 
 impl MaybeAppID {
     /// Returns the inner value. If the ID is valid, then `Ok` contains the
@@ -104,7 +109,7 @@ impl MaybeAppID {
     }
 }
 
-impl zvariant::NoneValue for MaybeAppID {
+impl wire::NoneValue for MaybeAppID {
     type NoneType = String;
 
     fn null_value() -> String {

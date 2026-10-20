@@ -12,8 +12,8 @@ base_id = 'com.belmoussaoui.ashpd.demo'
 
 dependency('glib-2.0', version: '>= 2.66')
 dependency('gio-2.0', version: '>= 2.66')
-dependency('gtk4', version: '>= 4.16.0')
-dependency('libadwaita-1', version: '>= 1.9.alpha')
+dependency('gtk4', version: '>= 4.24')
+dependency('libadwaita-1', version: '>= 1.10')
 dependency('shumate-1.0')
 
 glib_compile_schemas = find_program('glib-compile-schemas')

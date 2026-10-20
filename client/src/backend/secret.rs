@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use zbus::zvariant::{self, OwnedValue};
+use zbus::wire::{self, OwnedVariant};
 
 use crate::{
     MaybeAppID,
@@ -20,7 +20,7 @@ pub trait SecretImpl: RequestImpl {
         token: HandleToken,
         app_id: MaybeAppID,
         fd: std::os::fd::OwnedFd,
-    ) -> Result<HashMap<String, OwnedValue>>;
+    ) -> Result<HashMap<String, OwnedVariant>>;
 }
 
 pub(crate) struct SecretInterface {
@@ -49,11 +49,11 @@ impl SecretInterface {
     #[zbus(out_args("response", "results"))]
     async fn retrieve_secret(
         &self,
-        handle: zvariant::OwnedObjectPath,
+        handle: wire::OwnedObjectPath,
         app_id: MaybeAppID,
-        fd: zvariant::OwnedFd,
-        _options: HashMap<String, OwnedValue>,
-    ) -> Result<Response<HashMap<String, OwnedValue>>> {
+        fd: wire::OwnedFd,
+        _options: HashMap<String, OwnedVariant>,
+    ) -> Result<Response<HashMap<String, OwnedVariant>>> {
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

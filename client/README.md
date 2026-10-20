@@ -43,7 +43,7 @@ pub async fn run() -> ashpd::Result<()> {
 | ---     | ----------- | ------- |
 | tracing | Record various debug information using the `tracing` library | No |
 | tokio | Enable tokio runtime on zbus dependency | Yes |
-| async-io | Enable the use of the async-io crates, compatible with runtimes such smol or glib | No |
+| async-io | Enable zbus's default runtime; drive the async code with `zbus::block_on` | No |
 | backend | *unstable* Enables APIs useful for writing portals implementations | No |
 | glib | Make all the enums derive `glib::Enum`. Flags are not supported yet | No |
 | gtk4 | Implement `From<Color>` for [`gdk4::RGBA`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gdk4/struct.RGBA.html) Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) | No |
@@ -53,6 +53,8 @@ pub async fn run() -> ashpd::Result<()> {
 | raw_handle | Provides `WindowIdentifier::from_raw_handle` and `WindowIdentifier::as_raw_handle` for [raw-window-handle](https://lib.rs/crates/raw-window-handle) crate | No |
 | wayland | Provides `WindowIdentifier::from_wayland` for [wayland-client](https://lib.rs/crates/wayland-client) crate | No |
 | backend | Enables portal backend implementation supoport | No |
+
+Both runtime features can be enabled together. When `tokio` is enabled, run ASHPD's runtime-specific helpers inside a Tokio runtime.
 
 ## Demo
 

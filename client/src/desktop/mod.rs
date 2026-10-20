@@ -149,7 +149,7 @@ pub mod wallpaper;
     Debug,
     Copy,
     Clone,
-    zbus::zvariant::Type,
+    zbus::wire::Type,
 )]
 #[cfg_attr(
     docsrs,

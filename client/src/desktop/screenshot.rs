@@ -38,9 +38,9 @@ use std::fmt::Debug;
 use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request};
@@ -63,9 +63,9 @@ pub enum AvailableTargets {
 
 /// Options for taking a screenshot.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct ScreenshotOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
@@ -126,10 +126,10 @@ impl ScreenshotOptions {
 }
 
 #[derive(Serialize, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// The response of a [`ScreenshotRequest`] request.
 pub struct Screenshot {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     uri: Uri,
 }
 
@@ -163,9 +163,9 @@ impl Debug for Screenshot {
 
 /// Options for picking a color.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct ColorOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
 }
 
@@ -253,7 +253,7 @@ impl ScreenshotProxy {
     #[doc(alias = "AvailableTargets")]
     pub async fn available_targets(&self) -> Result<BitFlags<AvailableTargets>, Error> {
         self.0
-            .property_versioned::<BitFlags<AvailableTargets>>("AvailableTargets", 3)
+            .property_flags_versioned::<AvailableTargets>("AvailableTargets", 3)
             .await
     }
 }

@@ -4,7 +4,7 @@ use ashpd::{
     MaybeAppID,
     backend::{Result, request::RequestImpl, secret::SecretImpl},
     desktop::HandleToken,
-    zbus::zvariant::OwnedValue,
+    zbus::wire::OwnedVariant,
 };
 use async_trait::async_trait;
 
@@ -25,7 +25,7 @@ impl SecretImpl for Secret {
         _token: HandleToken,
         _app_id: MaybeAppID,
         _fd: std::os::fd::OwnedFd,
-    ) -> Result<HashMap<String, OwnedValue>> {
+    ) -> Result<HashMap<String, OwnedVariant>> {
         Ok(Default::default())
     }
 }

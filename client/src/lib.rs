@@ -6,8 +6,6 @@
     html_favicon_url = "https://raw.githubusercontent.com/bilelmoussaoui/ashpd/main/ashpd-demo/data/icons/com.belmoussaoui.ashpd.demo-symbolic.svg"
 )]
 #![doc = include_str!("../README.md")]
-#[cfg(all(all(feature = "tokio", feature = "async-io"), not(doc)))]
-compile_error!("You can't enable both async-io & tokio features at once");
 #[cfg(all(not(feature = "tokio"), not(feature = "async-io"), not(doc)))]
 compile_error!("Either the `async-io` or the `tokio` feature has to be enabled");
 
@@ -39,6 +37,7 @@ pub use self::{
     uri::Uri,
 };
 mod file_path;
+mod flags;
 pub use self::file_path::FilePath;
 
 mod proxy;
@@ -61,7 +60,7 @@ use std::sync::OnceLock;
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 pub use async_trait;
 pub use enumflags2;
-pub use zbus::{self, zvariant};
+pub use zbus::{self, wire};
 
 /// Check whether the application is running inside a sandbox.
 ///
@@ -97,7 +96,7 @@ pub type Pid = u32;
 mod tests {
     use std::{collections::HashMap, fs, path::PathBuf};
 
-    use quick_xml::{Reader, events::Event};
+    use quick_xml::{Reader, XmlVersion, events::Event};
 
     // Helper to convert PascalCase to snake_case
     fn pascal_to_snake_case(s: &str) -> String {
@@ -131,27 +130,23 @@ mod tests {
                     // Handle both Start and Empty events
                     if let Some(Ok(attr)) = e
                         .attributes()
-                        .find(|a| a.as_ref().is_ok_and(|a| a.key.as_ref() == b"name"))
-                        && let Ok(value) = attr.decode_and_unescape_value(reader.decoder())
+                        .find(|a| a.as_ref().is_ok_and(|a| a.key.as_ref() == "name"))
+                        && let Ok(value) = attr.normalized_value(XmlVersion::Implicit1_0)
                     {
                         match e.name().as_ref() {
-                            b"interface" => {
+                            "interface" => {
                                 current_interface_name = value.to_string();
                                 current_names.clear();
                             }
-                            b"method" | b"property" | b"signal" => {
-                                if value != "version" {
-                                    current_names.push(value.to_string());
-                                }
+                            "method" | "property" | "signal" if value != "version" => {
+                                current_names.push(value.to_string());
                             }
                             _ => (),
                         }
                     }
                 }
-                Ok(Event::End(e)) => {
-                    if e.name().as_ref() == b"interface" {
-                        interfaces.insert(current_interface_name.clone(), current_names.clone());
-                    }
+                Ok(Event::End(e)) if e.name().as_ref() == "interface" => {
+                    interfaces.insert(current_interface_name.clone(), current_names.clone());
                 }
                 _ => (),
             }
@@ -187,7 +182,8 @@ mod tests {
                 let interfaces = extract_names_from_xml(&xml_content);
 
                 for (interface_name, names_to_check) in interfaces {
-                    // Map the D-Bus interface name to the corresponding Rust file path
+                    // Map the D-Bus interface name to the corresponding Rust
+                    // file path
                     let interface_name_suffix = interface_name
                         .strip_prefix(config.interface_prefix)
                         .expect("Interface name does not have the expected prefix.");

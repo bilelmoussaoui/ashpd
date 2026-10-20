@@ -29,9 +29,9 @@ use std::fmt::Debug;
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
-use zbus::zvariant::{
+use zbus::wire::{
     ObjectPath, Optional, OwnedObjectPath, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
@@ -66,9 +66,9 @@ pub enum Accuracy {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::create_session`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct CreateSessionOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_handle_token: HandleToken,
     #[serde(
         rename = "distance-threshold",
@@ -108,9 +108,9 @@ impl CreateSessionOptions {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`LocationProxy::start`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct StartOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
@@ -198,24 +198,24 @@ impl Debug for Location {
 }
 
 #[derive(Debug, Serialize, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "PascalCase")]
 struct LocationInner {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     accuracy: f64,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     altitude: f64,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     speed: f64,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     heading: f64,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     description: String,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     latitude: f64,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     longitude: f64,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     timestamp: (u64, u64),
 }
 

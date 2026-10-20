@@ -77,7 +77,11 @@ impl WallpaperPage {
     async fn open_file(&self) -> anyhow::Result<ashpd::Uri> {
         let root = self.native().unwrap();
         let filter = gtk::FileFilter::new();
-        filter.add_pixbuf_formats();
+        for format in gtk::gdk_pixbuf::Pixbuf::formats() {
+            for mime_type in format.mime_types() {
+                filter.add_mime_type(&mime_type);
+            }
+        }
         filter.set_name(Some(&gettext("Images")));
 
         let filters = gio::ListStore::new::<gtk::FileFilter>();
