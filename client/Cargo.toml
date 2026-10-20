@@ -80,7 +80,7 @@ pipewire = { version = "0.10", optional = true }
 raw-window-handle = { version = "0.6", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_repr = { version = "0.1", optional = true }
-tokio = { version = "1.51", optional = true, default-features = false }
+tokio = { version = "1.54", optional = true, default-features = false }
 tracing = { version = "0.1", optional = true }
 wayland-backend = { version = "0.3", optional = true, features = [
     "client_system",
@@ -96,10 +96,10 @@ zbus = { version = "5.16", default-features = false }
 [dev-dependencies]
 serde_json = "1.0"
 reis = { version = "0.7", features = ["tokio"] }
-pipewire = "0.10.0"
-tokio = { version = "1.51", features = [ "rt-multi-thread", "macros" ] }
+pipewire = "0.10"
+tokio = { version = "1.54", features = [ "rt-multi-thread", "macros" ] }
 gst = { package = "gstreamer", version = "0.25" }
-quick-xml = "0.41"
+quick-xml = "0.42"
 
 [package.metadata.docs.rs]
 features = ["backend", "gtk4", "raw_handle",

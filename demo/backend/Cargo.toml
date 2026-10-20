@@ -6,8 +6,8 @@ rust-version = "1.87"
 license.workspace = true
 
 [dependencies]
-async-trait = "0.1.60"
-tokio = { version = "1.51", features = [
+async-trait = "0.1"
+tokio = { version = "1.54", features = [
     "io-util",
     "net",
     "time",
