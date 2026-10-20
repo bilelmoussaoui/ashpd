@@ -40,11 +40,11 @@ ashpd = { path = "../../client", version = "0.13.0", default-features = false, f
     "documents",
     "print",
 ] }
-async-channel = "2.3"
+async-channel = "2.5"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 formatx = "0.4"
 futures-util = "0.3"
-gettext-rs = { version = "0.7", features = ["gettext-system"] }
+gettext-rs = { version = "0.8", features = ["gettext-system"] }
 gst = { package = "gstreamer", version = "0.25" }
 gst4gtk = { package = "gst-plugin-gtk4", version = "0.15", features = [
     "wayland",
@@ -53,11 +53,10 @@ gst4gtk = { package = "gst-plugin-gtk4", version = "0.15", features = [
     "gtk_v4_14",
 ] }
 gtk = { package = "gtk4", version = "0.11", features = ["v4_14"] }
-gvdb-macros = "0.1"
 rusb = "0.9.4"
 serde = { version = "1.0", features = ["derive"] }
 shumate = { version = "0.8", package = "libshumate" }
-tokio = { version = "1.51", default-features = false, features = [
+tokio = { version = "1.54", default-features = false, features = [
     "io-util",
     "net",
     "time",
@@ -66,3 +65,6 @@ tokio = { version = "1.51", default-features = false, features = [
 ] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
+
+[build-dependencies]
+glib-build-tools = "0.22"

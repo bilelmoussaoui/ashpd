@@ -7,6 +7,8 @@
 <img src="data/icons/com.belmoussaoui.ashpd.demo.svg" width="128" height="128" />
 <p>Play with the portals</p>
 
+Building with Cargo requires `glib-compile-resources` on `PATH` to compile the embedded UI resources.
+
 ## Screenshots
 
 <div align="center">
