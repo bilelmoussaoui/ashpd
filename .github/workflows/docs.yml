@@ -29,7 +29,6 @@ jobs:
         env:
           RUSTDOCFLAGS: --cfg docsrs -Z unstable-options --extern-html-root-url=zbus=https://docs.rs/zbus/latest/
               --extern-html-root-url=pipewire=https://pipewire.pages.freedesktop.org/pipewire-rs/
-              --extern-html-root-url=zvariant=https://docs.rs/zvariant/latest/
               --extern-html-root-url=enumflags2=https://docs.rs/enumflags2/latest/
         with:
           command: doc

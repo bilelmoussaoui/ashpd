@@ -6,7 +6,7 @@
 
 use futures_util::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{OwnedFd, OwnedObjectPath, Type, as_value, as_value::optional};
+use zbus::wire::{OwnedFd, OwnedObjectPath, Type, as_variant, as_variant::optional};
 
 use super::{Session, SessionPortal};
 use crate::{Result, proxy::Proxy};
@@ -15,11 +15,11 @@ use crate::{Result, proxy::Proxy};
 pub trait IsClipboardSession: SessionPortal {}
 
 #[derive(Debug, Type, Serialize, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`Clipboard::set_selection`] request.
 pub struct SetSelectionOptions<'a> {
     #[serde(borrow)]
-    #[serde(with = "as_value", skip_serializing_if = "<[_]>::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "<[_]>::is_empty")]
     mime_types: &'a [&'a str],
 }
 
@@ -32,15 +32,15 @@ impl<'a> SetSelectionOptions<'a> {
 }
 
 #[derive(Debug, Type, Serialize, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`Clipboard::request`] request.
 pub struct RequestClipboardOptions {}
 
 #[derive(Debug, Type, Deserialize, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// The details of a new clipboard selection.
 pub struct SelectionOwnerChanged {
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     mime_types: Vec<String>,
     #[serde(default, with = "optional")]
     session_is_owner: Option<bool>,

@@ -13,7 +13,7 @@ use crate::{
         print::{PageSetup, PreparePrint, PreparePrintOptions, PrintOptions, Settings},
         request::Response,
     },
-    zvariant::{self, Optional, OwnedObjectPath},
+    wire::{self, Optional, OwnedObjectPath},
 };
 
 #[async_trait]
@@ -38,7 +38,7 @@ pub trait PrintImpl: RequestImpl {
         app_id: Option<MaybeAppID>,
         parent_window: Option<WindowIdentifierType>,
         title: String,
-        fd: zvariant::OwnedFd,
+        fd: wire::OwnedFd,
         options: PrintOptions,
     ) -> Result<()>;
 }
@@ -110,7 +110,7 @@ impl PrintInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         title: String,
-        fd: zvariant::OwnedFd,
+        fd: wire::OwnedFd,
         options: PrintOptions,
     ) -> Result<Response<()>> {
         let imp = Arc::clone(&self.imp);

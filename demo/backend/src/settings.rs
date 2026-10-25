@@ -10,7 +10,7 @@ use ashpd::{
         HandleToken,
         settings::{APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY, ColorScheme, Namespace},
     },
-    zbus::zvariant::OwnedValue,
+    zbus::wire::OwnedVariant,
 };
 use async_trait::async_trait;
 
@@ -37,16 +37,16 @@ impl SettingsImpl for Settings {
         let mut namespace_map = HashMap::new();
         namespace_map.insert(
             COLOR_SCHEME_KEY.to_owned(),
-            OwnedValue::from(self.color_scheme),
+            OwnedVariant::from(self.color_scheme),
         );
         let mut map = HashMap::new();
         map.insert(APPEARANCE_NAMESPACE.to_owned(), namespace_map);
         Ok(map)
     }
 
-    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError> {
+    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedVariant, PortalError> {
         if namespace == APPEARANCE_NAMESPACE && key == COLOR_SCHEME_KEY {
-            Ok(OwnedValue::from(self.color_scheme))
+            Ok(OwnedVariant::from(self.color_scheme))
         } else {
             Err(PortalError::Failed(format!(
                 "Unsupported namespace=`{namespace}` & key=`{key}`"

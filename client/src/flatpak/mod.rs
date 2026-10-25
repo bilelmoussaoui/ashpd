@@ -17,7 +17,7 @@
 //!             &["contrast"],
 //!             fds,
 //!             HashMap::new(),
-//!             SpawnFlags::ClearEnv | SpawnFlags::NoNetwork,
+//!             SpawnFlags::CLEAR_ENV | SpawnFlags::NO_NETWORK,
 //!             SpawnOptions::default(),
 //!         )
 //!         .await?;
@@ -33,113 +33,117 @@ use std::{
     path::Path,
 };
 
-use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
-use serde::Serialize;
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use serde::{Deserialize, Serialize};
+use zbus::wire::{
     self, Fd, OwnedObjectPath, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use crate::{Error, FilePath, Pid, flatpak::update_monitor::UpdateMonitor, proxy::Proxy};
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
-#[repr(u32)]
 /// A bitmask representing the "permissions" of a newly created sandbox.
-pub enum SandboxFlags {
-    /// Share the display access (X11, Wayland) with the caller.
-    DisplayAccess,
-    /// Share the sound access (PulseAudio) with the caller.
-    SoundAccess,
-    /// Share the gpu access with the caller.
-    GpuAccess,
-    /// Allow sandbox access to (filtered) session bus.
-    SessionBusAccess,
-    /// Allow sandbox access to accessibility bus.
-    AccessibilityBusAccess,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct SandboxFlags(u32);
+
+bitflags::bitflags! {
+    impl SandboxFlags: u32 {
+        /// Share the display access (X11, Wayland) with the caller.
+        const DISPLAY_ACCESS = 1;
+        /// Share the sound access (PulseAudio) with the caller.
+        const SOUND_ACCESS = 2;
+        /// Share the gpu access with the caller.
+        const GPU_ACCESS = 4;
+        /// Allow sandbox access to (filtered) session bus.
+        const SESSION_BUS_ACCESS = 8;
+        /// Allow sandbox access to accessibility bus.
+        const ACCESSIBILITY_BUS_ACCESS = 16;
+    }
 }
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
-#[repr(u32)]
 #[doc(alias = "XdpSpawnFlags")]
 /// Flags affecting the created sandbox.
-pub enum SpawnFlags {
-    #[doc(alias = "XDP_SPAWN_FLAG_CLEARENV")]
-    /// Clear the environment.
-    ClearEnv,
-    #[doc(alias = "XDP_SPAWN_FLAG_LATEST")]
-    /// Spawn the latest version of the app.
-    LatestVersion,
-    #[doc(alias = "XDP_SPAWN_FLAG_SANDBOX")]
-    /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
-    Sandbox,
-    #[doc(alias = "XDP_SPAWN_FLAG_NO_NETWORK")]
-    /// Spawn without network (equivalent of the `unshare=network` option of
-    /// `flatpak run`).
-    NoNetwork,
-    #[doc(alias = "XDP_SPAWN_FLAG_WATCH")]
-    /// Kill the sandbox when the caller disappears from the session bus.
-    WatchBus,
-    /// Expose the sandbox pids in the callers sandbox, only supported if using
-    /// user namespaces for containers (not setuid), see the support property.
-    ExposePids,
-    /// Emit a SpawnStarted signal once the sandboxed process has been fully
-    /// started.
-    NotifyStart,
-    /// Expose the sandbox process IDs in the caller's sandbox and the caller's
-    /// process IDs in the new sandbox.
-    SharePids,
-    /// Don't provide app files at `/app` in the new sandbox.
-    EmptyApp,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct SpawnFlags(u32);
+
+bitflags::bitflags! {
+    impl SpawnFlags: u32 {
+        #[doc(alias = "XDP_SPAWN_FLAG_CLEARENV")]
+        /// Clear the environment.
+        const CLEAR_ENV = 1;
+        #[doc(alias = "XDP_SPAWN_FLAG_LATEST")]
+        /// Spawn the latest version of the app.
+        const LATEST_VERSION = 2;
+        #[doc(alias = "XDP_SPAWN_FLAG_SANDBOX")]
+        /// Spawn in a sandbox (equivalent of the sandbox option of `flatpak run`).
+        const SANDBOX = 4;
+        #[doc(alias = "XDP_SPAWN_FLAG_NO_NETWORK")]
+        /// Spawn without network (equivalent of the `unshare=network` option of
+        /// `flatpak run`).
+        const NO_NETWORK = 8;
+        #[doc(alias = "XDP_SPAWN_FLAG_WATCH")]
+        /// Kill the sandbox when the caller disappears from the session bus.
+        const WATCH_BUS = 16;
+        /// Expose the sandbox pids in the callers sandbox, only supported if using
+        /// user namespaces for containers (not setuid), see the support property.
+        const EXPOSE_PIDS = 32;
+        /// Emit a SpawnStarted signal once the sandboxed process has been fully
+        /// started.
+        const NOTIFY_START = 64;
+        /// Expose the sandbox process IDs in the caller's sandbox and the caller's
+        /// process IDs in the new sandbox.
+        const SHARE_PIDS = 128;
+        /// Don't provide app files at `/app` in the new sandbox.
+        const EMPTY_APP = 256;
+    }
 }
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
-#[repr(u32)]
 /// Flags marking what optional features are available.
-pub enum SupportsFlags {
-    /// Supports the expose sandbox pids flag of Spawn.
-    ExposePids,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct SupportsFlags(u32);
+
+bitflags::bitflags! {
+    impl SupportsFlags: u32 {
+        /// Supports the expose sandbox pids flag of Spawn.
+        const EXPOSE_PIDS = 1;
+    }
 }
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::spawn`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct SpawnOptions {
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, for reading and writing.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     sandbox_expose: Vec<String>,
     /// A list of filenames for files inside the sandbox that will be exposed to
     /// the new sandbox, read-only.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     sandbox_expose_ro: Vec<String>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, for reading and writing.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
-    sandbox_expose_fd: Vec<zvariant::OwnedFd>,
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose_fd: Vec<wire::OwnedFd>,
     /// A list of file descriptor for files inside the sandbox that will be
     /// exposed to the new sandbox, read-only.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
-    sandbox_expose_fd_ro: Vec<zvariant::OwnedFd>,
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
+    sandbox_expose_fd_ro: Vec<wire::OwnedFd>,
     /// Flags affecting the created sandbox.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    sandbox_flags: Option<BitFlags<SandboxFlags>>,
+    sandbox_flags: Option<SandboxFlags>,
     /// A list of environment variables to remove.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     unset_env: Vec<String>,
     /// A file descriptor of the directory that  will be used as `/usr` in the
     /// new sandbox.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    usr_fd: Option<zvariant::OwnedFd>,
+    usr_fd: Option<wire::OwnedFd>,
     /// A file descriptor of the directory that  will be used as `/app` in the
     /// new sandbox.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    app_fd: Option<zvariant::OwnedFd>,
+    app_fd: Option<wire::OwnedFd>,
 }
 
 impl SpawnOptions {
@@ -180,7 +184,7 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose_fd = sandbox_expose_fd
             .into()
-            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect())
+            .map(|a| a.into_iter().map(wire::OwnedFd::from).collect())
             .unwrap_or_default();
         self
     }
@@ -194,17 +198,14 @@ impl SpawnOptions {
     ) -> Self {
         self.sandbox_expose_fd_ro = sandbox_expose_fd_ro
             .into()
-            .map(|a| a.into_iter().map(zvariant::OwnedFd::from).collect())
+            .map(|a| a.into_iter().map(wire::OwnedFd::from).collect())
             .unwrap_or_default();
         self
     }
 
     /// Sets the created sandbox flags.
     #[must_use]
-    pub fn sandbox_flags(
-        mut self,
-        sandbox_flags: impl Into<Option<BitFlags<SandboxFlags>>>,
-    ) -> Self {
+    pub fn sandbox_flags(mut self, sandbox_flags: impl Into<Option<SandboxFlags>>) -> Self {
         self.sandbox_flags = sandbox_flags.into();
         self
     }
@@ -241,7 +242,7 @@ impl SpawnOptions {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Flatpak::create_update_monitor`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct CreateUpdateMonitorOptions {}
 
 /// The interface exposes some interactions with Flatpak on the host to the
@@ -350,7 +351,7 @@ impl Flatpak {
         argv: &[impl AsRef<Path>],
         fds: HashMap<u32, impl AsFd>,
         envs: HashMap<&str, &str>,
-        flags: BitFlags<SpawnFlags>,
+        flags: SpawnFlags,
         options: SpawnOptions,
     ) -> Result<u32, Error> {
         let cwd_path = FilePath::new(cwd_path)?;
@@ -395,9 +396,9 @@ impl Flatpak {
     ///
     /// See also [`supports`](https://docs.flatpak.org/en/latest/portal-api-reference.html#gdbus-property-org-freedesktop-portal-Flatpak.supports).
     #[doc(alias = "supports")]
-    pub async fn supported_features(&self) -> Result<BitFlags<SupportsFlags>, Error> {
+    pub async fn supported_features(&self) -> Result<SupportsFlags, Error> {
         self.0
-            .property_versioned::<BitFlags<SupportsFlags>>("supports", 3)
+            .property_versioned::<SupportsFlags>("supports", 3)
             .await
     }
 }

@@ -7,7 +7,6 @@ use ashpd::{
             AvailableTargets, ColorOptions, Screenshot as ScreenshotResponse, ScreenshotOptions,
         },
     },
-    enumflags2::BitFlags,
 };
 use async_trait::async_trait;
 
@@ -23,8 +22,8 @@ impl RequestImpl for Screenshot {
 
 #[async_trait]
 impl ScreenshotImpl for Screenshot {
-    fn available_targets(&self) -> BitFlags<AvailableTargets> {
-        AvailableTargets::Window | AvailableTargets::Screen
+    fn available_targets(&self) -> AvailableTargets {
+        AvailableTargets::WINDOW | AvailableTargets::SCREEN
     }
 
     async fn screenshot(

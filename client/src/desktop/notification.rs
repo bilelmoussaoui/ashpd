@@ -8,7 +8,7 @@
 //!     notification::{Action, Button, Notification, NotificationProxy, Priority},
 //! };
 //! use futures_util::StreamExt;
-//! use zbus::zvariant::Value;
+//! use zbus::wire::Variant;
 //!
 //! async fn run() -> ashpd::Result<()> {
 //!     let proxy = NotificationProxy::new().await?;
@@ -54,16 +54,16 @@ use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use futures_util::Stream;
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{
-    OwnedValue, Type, Value,
-    as_value::{self, optional},
+use zbus::wire::{
+    OwnedVariant, Type, Variant,
+    as_variant::{self, optional},
 };
 
 use super::Icon;
 use crate::{Error, proxy::Proxy};
 
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 /// The content of a notification.
 pub enum Category {
     /// Instant messaging apps message.
@@ -167,7 +167,7 @@ impl<'de> Deserialize<'de> for Category {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdPriority"))]
 #[derive(Debug, Copy, Clone, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// The notification priority
 pub enum Priority {
@@ -231,7 +231,7 @@ impl FromStr for Priority {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdNotificationDisplayHint"))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Type, Serialize)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "kebab-case")]
 /// Ways to display a notification.
 pub enum DisplayHint {
@@ -257,11 +257,11 @@ pub enum DisplayHint {
 
 #[derive(Serialize, Type, Debug)]
 /// A notification
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct Notification {
     /// User-visible string to display as the title.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     title: String,
     /// User-visible string to display as the body.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -280,16 +280,16 @@ pub struct Notification {
     default_action: Option<String>,
     /// Target parameter to send along when activating the default action.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    default_action_target: Option<OwnedValue>,
+    default_action_target: Option<OwnedVariant>,
     /// Array of buttons to add to the notification.
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     buttons: Vec<Button>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     category: Option<Category>,
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     display_hint: Vec<DisplayHint>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    sound: Option<OwnedValue>,
+    sound: Option<OwnedVariant>,
 }
 
 impl Notification {
@@ -342,7 +342,7 @@ impl Notification {
         S: AsFd,
     {
         self.sound = sound.into().map(|s| {
-            zbus::zvariant::Value::from(zbus::zvariant::Fd::from(s.as_fd()))
+            zbus::wire::Variant::from(zbus::wire::Fd::from(s.as_fd()))
                 .try_to_owned()
                 .unwrap()
         });
@@ -379,7 +379,7 @@ impl Notification {
 
     /// Sets a value to be sent in the `action_invoked` signal.
     #[must_use]
-    pub fn default_action_target<'a, T: Into<Value<'a>>>(
+    pub fn default_action_target<'a, T: Into<Variant<'a>>>(
         mut self,
         default_action_target: impl Into<Option<T>>,
     ) -> Self {
@@ -398,7 +398,7 @@ impl Notification {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 /// The purpose of a button.
 pub enum ButtonPurpose {
     /// Instant messaging reply with text.
@@ -476,18 +476,18 @@ impl<'de> Deserialize<'de> for ButtonPurpose {
 
 #[derive(Serialize, Type, Debug)]
 /// A notification button
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct Button {
     /// User-visible label for the button. Mandatory.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     label: String,
     /// Name of an action that is exported by the application. The action will
     /// be activated when the user clicks on the button.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     action: String,
     /// Target parameter to send along when activating the action.
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    target: Option<OwnedValue>,
+    target: Option<OwnedVariant>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     purpose: Option<ButtonPurpose>,
 }
@@ -511,7 +511,7 @@ impl Button {
 
     /// The value to send with the action name when the button is clicked.
     #[must_use]
-    pub fn target<'a, T: Into<Value<'a>>>(mut self, target: impl Into<Option<T>>) -> Self {
+    pub fn target<'a, T: Into<Variant<'a>>>(mut self, target: impl Into<Option<T>>) -> Self {
         self.target = target.into().map(|t| t.into().try_to_owned().unwrap());
         self
     }
@@ -526,7 +526,7 @@ impl Button {
 
 #[derive(Debug, Deserialize, Type)]
 /// An invoked action.
-pub struct Action(String, String, Vec<OwnedValue>);
+pub struct Action(String, String, Vec<OwnedVariant>);
 
 impl Action {
     /// Notification ID.
@@ -540,19 +540,19 @@ impl Action {
     }
 
     /// The parameters passed to the action.
-    pub fn parameter(&self) -> &[OwnedValue] {
+    pub fn parameter(&self) -> &[OwnedVariant] {
         &self.2
     }
 }
 
-#[derive(Deserialize, Type, Debug, OwnedValue)]
-#[zvariant(signature = "dict")]
+#[derive(Deserialize, Type, Debug, OwnedVariant)]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 // TODO: figure out why this can't use the enums
 struct SupportedOptions {
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     category: Vec<String>,
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     button_purpose: Vec<String>,
 }
 

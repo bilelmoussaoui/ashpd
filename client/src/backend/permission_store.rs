@@ -5,8 +5,8 @@ use async_trait::async_trait;
 use crate::{
     MaybeAppID, PortalError,
     documents::{DocumentID, Permission},
+    wire::{OwnedVariant, Variant},
     zbus::object_server::SignalEmitter,
-    zvariant::{OwnedValue, Value},
 };
 
 #[async_trait]
@@ -16,7 +16,7 @@ pub trait PermissionStoreSignalEmitter: Send + Sync {
         table: &str,
         id: DocumentID,
         deleted: bool,
-        data: Value<'_>,
+        data: Variant<'_>,
         permissions: HashMap<MaybeAppID, Vec<Permission>>,
     ) -> zbus::Result<()>;
 }
@@ -28,7 +28,7 @@ pub trait PermissionStoreImpl: Send + Sync {
         &self,
         table: &str,
         id: DocumentID,
-    ) -> Result<(HashMap<MaybeAppID, Vec<Permission>>, OwnedValue), PortalError>;
+    ) -> Result<(HashMap<MaybeAppID, Vec<Permission>>, OwnedVariant), PortalError>;
 
     #[doc(alias = "Set")]
     async fn set(
@@ -37,7 +37,7 @@ pub trait PermissionStoreImpl: Send + Sync {
         create: bool,
         id: DocumentID,
         app_permissions: HashMap<MaybeAppID, Vec<Permission>>,
-        data: Value<'_>,
+        data: Variant<'_>,
     ) -> Result<(), PortalError>;
 
     #[doc(alias = "Delete")]
@@ -49,7 +49,7 @@ pub trait PermissionStoreImpl: Send + Sync {
         table: &str,
         create: bool,
         id: DocumentID,
-        data: Value<'_>,
+        data: Variant<'_>,
     ) -> Result<(), PortalError>;
 
     #[doc(alias = "List")]
@@ -107,7 +107,7 @@ impl PermissionStoreInterface {
         table: &str,
         id: DocumentID,
         deleted: bool,
-        data: Value<'_>,
+        data: Variant<'_>,
         permissions: HashMap<MaybeAppID, Vec<Permission>>,
     ) -> zbus::Result<()> {
         let object_server = self.cnx.object_server();
@@ -134,7 +134,7 @@ impl PermissionStoreSignalEmitter for PermissionStoreInterface {
         table: &str,
         id: DocumentID,
         deleted: bool,
-        data: Value<'_>,
+        data: Variant<'_>,
         permissions: HashMap<MaybeAppID, Vec<Permission>>,
     ) -> zbus::Result<()> {
         self.document_changed(table, id, deleted, data, permissions)
@@ -154,7 +154,7 @@ impl PermissionStoreInterface {
         &self,
         table: &str,
         id: DocumentID,
-    ) -> Result<(HashMap<MaybeAppID, Vec<Permission>>, OwnedValue), PortalError> {
+    ) -> Result<(HashMap<MaybeAppID, Vec<Permission>>, OwnedVariant), PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::Lookup");
 
@@ -171,7 +171,7 @@ impl PermissionStoreInterface {
         create: bool,
         id: DocumentID,
         app_permissions: HashMap<MaybeAppID, Vec<Permission>>,
-        data: Value<'_>,
+        data: Variant<'_>,
     ) -> Result<(), PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::Set");
@@ -188,7 +188,7 @@ impl PermissionStoreInterface {
         table: &str,
         create: bool,
         id: DocumentID,
-        data: Value<'_>,
+        data: Variant<'_>,
     ) -> Result<(), PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("PermissionStore::SetValue");
@@ -283,7 +283,7 @@ impl PermissionStoreInterface {
         table: &str,
         id: DocumentID,
         deleted: bool,
-        data: Value<'_>,
+        data: Variant<'_>,
         permissions: HashMap<MaybeAppID, Vec<Permission>>,
     ) -> zbus::Result<()>;
 }

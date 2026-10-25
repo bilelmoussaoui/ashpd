@@ -6,7 +6,7 @@ use futures_util::{
     lock::Mutex,
     task::SpawnExt,
 };
-use zbus::zvariant::{ObjectPath, OwnedObjectPath};
+use zbus::wire::{ObjectPath, OwnedObjectPath};
 
 use crate::{
     PortalError,

@@ -1,16 +1,15 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use enumflags2::{BitFlags, bitflags};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
     MaybeAppID, PortalError,
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
+    wire::{OwnedObjectPath, Type, as_variant},
     zbus::object_server::SignalEmitter,
-    zvariant::{OwnedObjectPath, Type, as_value},
 };
 
 #[derive(Serialize_repr, Deserialize_repr, Copy, Clone, PartialEq, Eq, Debug, Type)]
@@ -22,9 +21,9 @@ pub enum Activity {
 }
 
 #[derive(Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct Background {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     result: Activity,
 }
 
@@ -42,11 +41,13 @@ pub enum AppState {
     Active = 2,
 }
 
-#[bitflags]
-#[derive(Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
-#[repr(u32)]
-pub enum AutoStartFlags {
-    DBusActivation = 1,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct AutoStartFlags(u32);
+
+bitflags::bitflags! {
+    impl AutoStartFlags: u32 {
+        const DBUS_ACTIVATION = 1;
+    }
 }
 
 #[async_trait]
@@ -74,7 +75,7 @@ pub trait BackgroundImpl: RequestImpl {
         app_id: MaybeAppID,
         enable: bool,
         commandline: Vec<String>,
-        flags: BitFlags<AutoStartFlags>,
+        flags: AutoStartFlags,
     ) -> Result<bool, PortalError>;
 
     // Set the signal emitter, allowing to notify of changes.
@@ -160,7 +161,7 @@ impl BackgroundInterface {
         app_id: MaybeAppID,
         enable: bool,
         commandline: Vec<String>,
-        flags: BitFlags<AutoStartFlags>,
+        flags: AutoStartFlags,
     ) -> Result<bool, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Background::EnableAutostart");

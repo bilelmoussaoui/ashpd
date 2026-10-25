@@ -13,7 +13,7 @@ use crate::{
         account::{UserInformation, UserInformationOptions},
         request::Response,
     },
-    zvariant::{Optional, OwnedObjectPath},
+    wire::{Optional, OwnedObjectPath},
 };
 
 #[async_trait]

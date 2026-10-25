@@ -7,14 +7,14 @@ use crate::{
     ActivationToken, MaybeAppID, PortalError, Uri, WindowIdentifierType,
     backend::request::{Request, RequestImpl},
     desktop::{HandleToken, Response},
-    zvariant::{
+    wire::{
         Optional, OwnedObjectPath, Type,
-        as_value::{self, optional},
+        as_variant::{self, optional},
     },
 };
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct ChooserOptions {
     #[serde(default, with = "optional")]
     last_choice: Option<MaybeAppID>,
@@ -57,9 +57,9 @@ impl ChooserOptions {
 }
 
 #[derive(Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct Choice {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     choice: MaybeAppID,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     activation_token: Option<ActivationToken>,

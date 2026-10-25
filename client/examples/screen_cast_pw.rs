@@ -20,8 +20,8 @@ async fn open_portal() -> ashpd::Result<(ScreencastStream, OwnedFd)> {
         .select_sources(
             &session,
             SelectSourcesOptions::default()
-                .set_cursor_mode(CursorMode::Hidden)
-                .set_sources(SourceType::Monitor | SourceType::Window)
+                .set_cursor_mode(CursorMode::HIDDEN)
+                .set_sources(SourceType::MONITOR | SourceType::WINDOW)
                 .set_multiple(false)
                 .set_restore_token(None)
                 .set_persist_mode(PersistMode::DoNot),
@@ -223,7 +223,7 @@ async fn main() {
     println!(
         "node id {}, fd {}",
         pipewire_node_id,
-        &fd.try_clone().unwrap().into_raw_fd()
+        fd.try_clone().unwrap().into_raw_fd()
     );
 
     if let Err(e) = start_streaming(pipewire_node_id, fd).await {

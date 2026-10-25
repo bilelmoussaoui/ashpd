@@ -4,9 +4,9 @@ use std::{collections::HashMap, fmt::Debug, time::Duration};
 
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{
-    ObjectPath, Optional, OwnedObjectPath, OwnedValue, Type,
-    as_value::{self, optional},
+use zbus::wire::{
+    ObjectPath, Optional, OwnedObjectPath, OwnedVariant, Type,
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
@@ -17,10 +17,10 @@ use crate::{
 };
 
 #[derive(Clone, Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct NewShortcutInfo {
     /// User-readable text describing what the shortcut does.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     description: String,
     /// The preferred shortcut trigger, defined as described by the "shortcuts"
     /// XDG specification. Optional.
@@ -55,14 +55,14 @@ impl NewShortcut {
 }
 
 #[derive(Clone, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct ShortcutInfo {
     /// User-readable text describing what the shortcut does.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     description: String,
     /// User-readable text describing how to trigger the shortcut for the client
     /// to render.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     trigger_description: String,
 }
 
@@ -92,19 +92,19 @@ impl Shortcut {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`GlobalShortcuts::bind_shortcuts`] request.
 pub struct BindShortcutsOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
 /// A response to a [`GlobalShortcuts::bind_shortcuts`] request.
 #[derive(Deserialize, Type, Debug)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct BindShortcuts {
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     shortcuts: Vec<Shortcut>,
 }
 
@@ -116,7 +116,7 @@ impl BindShortcuts {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`GlobalShortcuts::configure_shortcuts`] request.
 pub struct ConfigureShortcutsOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -136,20 +136,20 @@ impl ConfigureShortcutsOptions {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`GlobalShortcuts::list_shortcuts`] request.
 pub struct ListShortcutsOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
 /// A response to a [`GlobalShortcuts::list_shortcuts`] request.
 #[derive(Deserialize, Type, Debug)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct ListShortcuts {
     /// A list of shortcuts.
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     shortcuts: Vec<Shortcut>,
 }
 
@@ -162,7 +162,7 @@ impl ListShortcuts {
 
 /// Notifies about a shortcut becoming active.
 #[derive(Debug, Deserialize, Type)]
-pub struct Activated(OwnedObjectPath, String, u64, HashMap<String, OwnedValue>);
+pub struct Activated(OwnedObjectPath, String, u64, HashMap<String, OwnedVariant>);
 
 impl Activated {
     /// Session that requested the shortcut.
@@ -181,14 +181,14 @@ impl Activated {
     }
 
     /// Optional information
-    pub fn options(&self) -> &HashMap<String, OwnedValue> {
+    pub fn options(&self) -> &HashMap<String, OwnedVariant> {
         &self.3
     }
 }
 
 /// Notifies that a shortcut is not active anymore.
 #[derive(Debug, Deserialize, Type)]
-pub struct Deactivated(OwnedObjectPath, String, u64, HashMap<String, OwnedValue>);
+pub struct Deactivated(OwnedObjectPath, String, u64, HashMap<String, OwnedVariant>);
 
 impl Deactivated {
     /// Session that requested the shortcut.
@@ -207,7 +207,7 @@ impl Deactivated {
     }
 
     /// Optional information
-    pub fn options(&self) -> &HashMap<String, OwnedValue> {
+    pub fn options(&self) -> &HashMap<String, OwnedVariant> {
         &self.3
     }
 }

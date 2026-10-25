@@ -13,7 +13,7 @@ use ashpd::{
         Session,
         usb::{Device, DeviceID, UsbError, UsbProxy},
     },
-    zbus::zvariant::OwnedFd,
+    zbus::wire::OwnedFd,
 };
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
@@ -78,7 +78,7 @@ mod imp {
                         super::row::UsbDeviceRow::with_device(device.0.clone(), device.1.clone());
                     let vendor = device.1.vendor().unwrap_or_default();
                     let dev = device.1.model().unwrap_or_default();
-                    row.set_title(&format!("{} {}", &vendor, &dev));
+                    row.set_title(&format!("{vendor} {dev}"));
                     if let Some(devnode) = &device.1.device_file() {
                         row.set_subtitle(devnode);
                     }
@@ -401,7 +401,6 @@ mod row {
     mod imp {
         use std::cell::{Cell, OnceCell};
 
-        use adw::subclass::prelude::*;
         use ashpd::desktop::usb::DeviceID;
         use gtk::glib;
 

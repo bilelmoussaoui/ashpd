@@ -11,14 +11,19 @@ use crate::{
             ColorScheme, Contrast, Namespace,
         },
     },
+    wire::{OwnedVariant, Variant},
     zbus::object_server::SignalEmitter,
-    zvariant::{OwnedValue, Value},
 };
 
 #[async_trait]
 pub trait SettingsSignalEmitter: Send + Sync {
     #[doc(alias = "SettingChanged")]
-    async fn emit_changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()>;
+    async fn emit_changed(
+        &self,
+        namespace: &str,
+        key: &str,
+        value: Variant<'_>,
+    ) -> zbus::Result<()>;
     async fn emit_contrast_changed(&self, contrast: Contrast) -> zbus::Result<()>;
     async fn emit_accent_color_changed(&self, color: Color) -> zbus::Result<()>;
     async fn emit_color_scheme_changed(&self, scheme: ColorScheme) -> zbus::Result<()>;
@@ -33,7 +38,7 @@ pub trait SettingsImpl: Send + Sync {
     ) -> Result<HashMap<String, Namespace>, PortalError>;
 
     #[doc(alias = "Read")]
-    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError>;
+    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedVariant, PortalError>;
 
     // Set the signal emitter, allowing to notify of changes.
     fn set_signal_emitter(&mut self, signal_emitter: Arc<dyn SettingsSignalEmitter>);
@@ -55,7 +60,12 @@ impl SettingsInterface {
         Self { imp, cnx, spawn }
     }
 
-    pub async fn changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
+    pub async fn changed(
+        &self,
+        namespace: &str,
+        key: &str,
+        value: Variant<'_>,
+    ) -> zbus::Result<()> {
         let object_server = self.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
@@ -67,7 +77,7 @@ impl SettingsInterface {
         self.changed(
             APPEARANCE_NAMESPACE,
             CONTRAST_KEY,
-            OwnedValue::from(contrast).into(),
+            OwnedVariant::from(contrast).into(),
         )
         .await
     }
@@ -76,7 +86,7 @@ impl SettingsInterface {
         self.changed(
             APPEARANCE_NAMESPACE,
             ACCENT_COLOR_SCHEME_KEY,
-            OwnedValue::try_from(color).unwrap().into(),
+            OwnedVariant::try_from(color).unwrap().into(),
         )
         .await
     }
@@ -85,7 +95,7 @@ impl SettingsInterface {
         self.changed(
             APPEARANCE_NAMESPACE,
             COLOR_SCHEME_KEY,
-            OwnedValue::from(scheme).into(),
+            OwnedVariant::from(scheme).into(),
         )
         .await
     }
@@ -93,7 +103,12 @@ impl SettingsInterface {
 
 #[async_trait]
 impl SettingsSignalEmitter for SettingsInterface {
-    async fn emit_changed(&self, namespace: &str, key: &str, value: Value<'_>) -> zbus::Result<()> {
+    async fn emit_changed(
+        &self,
+        namespace: &str,
+        key: &str,
+        value: Variant<'_>,
+    ) -> zbus::Result<()> {
         self.changed(namespace, key, value).await
     }
 
@@ -133,7 +148,7 @@ impl SettingsInterface {
     }
 
     #[zbus(out_args("value"))]
-    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedValue, PortalError> {
+    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedVariant, PortalError> {
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::Read");
 
@@ -149,6 +164,6 @@ impl SettingsInterface {
         signal_ctxt: &SignalEmitter<'_>,
         namespace: &str,
         key: &str,
-        value: Value<'_>,
+        value: Variant<'_>,
     ) -> zbus::Result<()>;
 }

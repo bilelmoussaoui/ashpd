@@ -4,7 +4,7 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::Type;
+use zbus::wire::Type;
 
 /// A handle token is a DBus Object Path element.
 ///
@@ -104,10 +104,10 @@ impl TryFrom<&str> for HandleToken {
 }
 
 #[cfg(feature = "backend")]
-impl TryFrom<&zbus::zvariant::OwnedObjectPath> for HandleToken {
+impl TryFrom<&zbus::wire::OwnedObjectPath> for HandleToken {
     type Error = HandleTokenParseError;
 
-    fn try_from(value: &zbus::zvariant::OwnedObjectPath) -> Result<Self, Self::Error> {
+    fn try_from(value: &zbus::wire::OwnedObjectPath) -> Result<Self, Self::Error> {
         let base_segment = value
             .as_str()
             .split('/')

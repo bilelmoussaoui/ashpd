@@ -12,7 +12,7 @@ use raw_window_handle::{
 #[cfg(feature = "raw_handle")]
 use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
 use serde::{Deserialize, Serialize, ser::Serializer};
-use zbus::zvariant::Type;
+use zbus::wire::Type;
 /// Most portals interact with the user by showing dialogs.
 ///
 /// These dialogs should generally be placed on top of the application window
@@ -89,7 +89,7 @@ use zbus::zvariant::Type;
 /// /// Open some portals
 /// ```
 #[derive(Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[doc(alias = "XdpParent")]
 #[non_exhaustive]
 pub enum WindowIdentifier {
@@ -104,7 +104,7 @@ pub enum WindowIdentifier {
     Raw(WindowIdentifierType),
 }
 
-impl zbus::zvariant::NoneValue for WindowIdentifier {
+impl zbus::wire::NoneValue for WindowIdentifier {
     type NoneType = String;
 
     fn null_value() -> Self::NoneType {
@@ -112,7 +112,7 @@ impl zbus::zvariant::NoneValue for WindowIdentifier {
     }
 }
 
-impl zbus::zvariant::NoneValue for &WindowIdentifier {
+impl zbus::wire::NoneValue for &WindowIdentifier {
     type NoneType = String;
 
     fn null_value() -> Self::NoneType {
@@ -278,7 +278,7 @@ impl HasWindowHandle for WindowIdentifier {
 
 /// Supported WindowIdentifier kinds
 #[derive(Debug, Clone, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 pub enum WindowIdentifierType {
     /// X11.
     X11(std::os::raw::c_ulong),
@@ -293,7 +293,7 @@ impl From<WindowIdentifierType> for WindowIdentifier {
     }
 }
 
-impl zbus::zvariant::NoneValue for WindowIdentifierType {
+impl zbus::wire::NoneValue for WindowIdentifierType {
     type NoneType = String;
 
     fn null_value() -> String {

@@ -318,8 +318,8 @@ impl DynamicLauncherPage {
     fn launcher_type(&self) -> LauncherType {
         let imp = self.imp();
         match imp.launcher_type_row.selected() {
-            0 => LauncherType::Application,
-            _ => LauncherType::WebApplication,
+            0 => LauncherType::APPLICATION,
+            _ => LauncherType::WEB_APPLICATION,
         }
     }
 
@@ -416,7 +416,7 @@ impl DynamicLauncherPage {
             .set_editable_icon(editable_icon)
             .set_editable_name(editable_name)
             .set_launcher_type(launcher_type);
-        if launcher_type == LauncherType::WebApplication {
+        if launcher_type == LauncherType::WEB_APPLICATION {
             let target = imp.launcher_target_row.text();
             options = options.set_target(&*target);
         }

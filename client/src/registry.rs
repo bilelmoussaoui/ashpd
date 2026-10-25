@@ -1,10 +1,10 @@
 use serde::Serialize;
-use zbus::zvariant;
+use zbus::wire;
 
 use crate::{AppID, Error, proxy::Proxy};
 
-#[derive(Debug, Serialize, zvariant::Type, Default)]
-#[zvariant(signature = "dict")]
+#[derive(Debug, Serialize, wire::Type, Default)]
+#[zbus(signature = "dict")]
 struct RegisterOptions {}
 
 struct RegistryProxy(Proxy<'static>);

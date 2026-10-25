@@ -8,10 +8,10 @@ license.workspace = true
 name = "ashpd"
 repository.workspace = true
 version.workspace = true
-rust-version = "1.87"
+rust-version = "1.89"
 
 [features]
-async-io = ["zbus/async-io", "futures-util/io"]
+async-io = ["zbus/default-rt", "futures-util/io"]
 default = ["tokio"]
 
 frontend = [
@@ -68,7 +68,7 @@ pipewire = ["dep:pipewire", "dep:futures-channel"]
 
 [dependencies]
 async-trait = { version = "0.1", optional = true }
-enumflags2 = "0.7"
+bitflags = "2.13"
 getrandom = "0.4"
 futures-channel = { version = "0.3", optional = true }
 futures-util = "0.3"
@@ -80,7 +80,7 @@ pipewire = { version = "0.10", optional = true }
 raw-window-handle = { version = "0.6", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_repr = { version = "0.1", optional = true }
-tokio = { version = "1.54", optional = true, default-features = false }
+tokio = { version = "1.54.1", optional = true, default-features = false }
 tracing = { version = "0.1", optional = true }
 wayland-backend = { version = "0.3", optional = true, features = [
     "client_system",
@@ -91,13 +91,13 @@ wayland-protocols = { version = "0.32", optional = true, features = [
     "client",
     "staging",
 ] }
-zbus = { version = "5.16", default-features = false }
+zbus.workspace = true
 
 [dev-dependencies]
 serde_json = "1.0"
 reis = { version = "0.7", features = ["tokio"] }
 pipewire = "0.10"
-tokio = { version = "1.54", features = [ "rt-multi-thread", "macros" ] }
+tokio = { version = "1.54.1", features = [ "rt-multi-thread", "macros" ] }
 gst = { package = "gstreamer", version = "0.25" }
 quick-xml = "0.42"
 

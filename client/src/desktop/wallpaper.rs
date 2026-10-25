@@ -42,9 +42,9 @@
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{self, Deserialize, Serialize};
-use zbus::zvariant::{
+use zbus::wire::{
     Fd, Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::Request;
@@ -53,7 +53,7 @@ use crate::{Error, Uri, WindowIdentifier, desktop::HandleToken, proxy::Proxy};
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdSetOn"))]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// Where to set the wallpaper on.
 pub enum SetOn {
@@ -110,10 +110,10 @@ impl FromStr for SetOn {
 
 /// Options for setting a wallpaper.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct WallpaperOptions {
-    #[serde(rename = "handle_token", with = "as_value", skip_deserializing)]
+    #[serde(rename = "handle_token", with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     show_preview: Option<bool>,

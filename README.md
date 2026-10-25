@@ -43,7 +43,7 @@ pub async fn run() -> ashpd::Result<()> {
 | ---     | ----------- | ------- |
 | tracing | Record various debug information using the `tracing` library | No |
 | tokio | Enable tokio runtime on zbus dependency | Yes |
-| async-io | Enable the use of the async-io crates, compatible with runtimes such smol or glib | No |
+| async-io | Enable zbus's built-in runtime, compatible with runtimes such as smol or glib | No |
 | frontend | Enables all frontend APIs, individual APIs can be enabled separately if needed with `account` , `camera`, `screencast` and so on | No |
 | glib | Make all the enums derive `glib::Enum`. Flags are not supported yet | No |
 | gtk4 | Implement `From<Color>` for [`gdk4::RGBA`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gdk4/struct.RGBA.html) Provides `WindowIdentifier::from_native` that takes a [`IsA<gtk4::Native>`](https://gtk-rs.org/gtk4-rs/stable/latest/docs/gtk4/struct.Native.html) | No |

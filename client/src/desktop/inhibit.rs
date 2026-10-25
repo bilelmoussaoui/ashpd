@@ -19,7 +19,7 @@
 //!             proxy
 //!                 .inhibit(
 //!                     None,
-//!                     InhibitFlags::Logout | InhibitFlags::UserSwitch,
+//!                     InhibitFlags::LOGOUT | InhibitFlags::USER_SWITCH,
 //!                     InhibitOptions::default()
 //!                         .set_reason("please save the opened project first"),
 //!                 )
@@ -35,13 +35,12 @@
 //! }
 //! ```
 
-use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     ObjectPath, Optional, OwnedObjectPath, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request, Session, session::SessionPortal};
@@ -49,19 +48,19 @@ use crate::{Error, WindowIdentifier, desktop::session::CreateSessionResponse, pr
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`InhibitProxy::create_monitor`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct CreateMonitorOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_handle_token: HandleToken,
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InhibitProxy::inhibit`] request.
 pub struct InhibitOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
@@ -76,33 +75,35 @@ impl InhibitOptions {
     }
 }
 
-#[bitflags]
-#[derive(Serialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
-#[repr(u32)]
 #[doc(alias = "XdpInhibitFlags")]
 /// The actions to inhibit that can end the user's session
-pub enum InhibitFlags {
-    #[doc(alias = "XDP_INHIBIT_FLAG_LOGOUT")]
-    /// Logout.
-    Logout,
-    #[doc(alias = "XDP_INHIBIT_FLAG_USER_SWITCH")]
-    /// User switch.
-    UserSwitch,
-    #[doc(alias = "XDP_INHIBIT_FLAG_SUSPEND")]
-    /// Suspend.
-    Suspend,
-    #[doc(alias = "XDP_INHIBIT_FLAG_IDLE")]
-    /// Idle.
-    Idle,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct InhibitFlags(u32);
+
+bitflags::bitflags! {
+    impl InhibitFlags: u32 {
+        #[doc(alias = "XDP_INHIBIT_FLAG_LOGOUT")]
+        /// Logout.
+        const LOGOUT = 1;
+        #[doc(alias = "XDP_INHIBIT_FLAG_USER_SWITCH")]
+        /// User switch.
+        const USER_SWITCH = 2;
+        #[doc(alias = "XDP_INHIBIT_FLAG_SUSPEND")]
+        /// Suspend.
+        const SUSPEND = 4;
+        #[doc(alias = "XDP_INHIBIT_FLAG_IDLE")]
+        /// Idle.
+        const IDLE = 8;
+    }
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 struct State {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     screensaver_active: bool,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_state: SessionState,
 }
 
@@ -217,7 +218,7 @@ impl InhibitProxy {
     pub async fn inhibit(
         &self,
         identifier: Option<&WindowIdentifier>,
-        flags: BitFlags<InhibitFlags>,
+        flags: InhibitFlags,
         options: InhibitOptions,
     ) -> Result<Request<()>, Error> {
         let identifier = Optional::from(identifier);
