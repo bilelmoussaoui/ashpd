@@ -1,7 +1,6 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use enumflags2::BitFlags;
 use serde::Serialize;
 
 use crate::{
@@ -16,20 +15,20 @@ use crate::{
         request::Response,
         screencast::{CursorMode, SelectSourcesOptions, SourceType, StartCastOptions, Streams},
     },
-    zvariant::{Optional, OwnedObjectPath, Type},
+    wire::{Optional, OwnedObjectPath, Type},
 };
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SelectSourcesResponse {}
 
 #[async_trait]
 pub trait ScreencastImpl: RequestImpl + SessionImpl {
     #[doc(alias = "AvailableSourceTypes")]
-    fn available_source_types(&self) -> BitFlags<SourceType>;
+    fn available_source_types(&self) -> SourceType;
 
     #[doc(alias = "AvailableCursorModes")]
-    fn available_cursor_mode(&self) -> BitFlags<CursorMode>;
+    fn available_cursor_mode(&self) -> CursorMode;
 
     #[doc(alias = "CreateSession")]
     async fn create_session(
@@ -89,18 +88,18 @@ impl ScreencastInterface {
         property(emits_changed_signal = "const"),
         name = "AvailableSourceTypes"
     )]
-    fn available_source_types(&self) -> u32 {
+    fn available_source_types(&self) -> SourceType {
         let imp = Arc::clone(&self.imp);
-        imp.available_source_types().bits()
+        imp.available_source_types()
     }
 
     #[zbus(
         property(emits_changed_signal = "const"),
         name = "AvailableCursorModes"
     )]
-    fn available_cursor_mode(&self) -> u32 {
+    fn available_cursor_mode(&self) -> CursorMode {
         let imp = Arc::clone(&self.imp);
-        imp.available_cursor_mode().bits()
+        imp.available_cursor_mode()
     }
 
     #[zbus(property(emits_changed_signal = "const"), name = "version")]

@@ -31,19 +31,19 @@
 //! file](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#introduction) will be used.
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{
+use zbus::wire::{
     Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request};
 use crate::{Error, WindowIdentifier, proxy::Proxy};
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`BackgroundProxy::request_background`] request.
 pub struct BackgroundRequestOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
@@ -56,7 +56,7 @@ pub struct BackgroundRequestOptions {
     )]
     dbus_activatable: Option<bool>,
     #[serde(
-        with = "as_value",
+        with = "as_variant",
         rename = "commandline",
         skip_serializing_if = "Vec::is_empty"
     )]
@@ -100,11 +100,11 @@ impl BackgroundRequestOptions {
 
 #[derive(Deserialize, Type, Debug)]
 /// The response of a [`BackgroundRequest`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct Background {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     background: bool,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     autostart: bool,
 }
 
@@ -129,10 +129,10 @@ impl Background {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`BackgroundProxy::set_status`] request.
 pub struct SetStatusOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     message: String,
 }
 

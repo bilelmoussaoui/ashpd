@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
 use futures_util::Stream;
 use serde::{Deserialize, Serialize, Serializer};
-use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Type, as_value};
+use zbus::wire::{ObjectPath, OwnedObjectPath, OwnedVariant, Type, as_variant};
 
 use crate::{Error, desktop::HandleToken, proxy::Proxy};
 
@@ -20,7 +20,7 @@ use crate::{Error, desktop::HandleToken, proxy::Proxy};
 /// Wrapper of the DBus interface: [`org.freedesktop.portal.Session`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Session.html).
 #[derive(Type)]
 #[doc(alias = "org.freedesktop.portal.Session")]
-#[zvariant(signature = "o")]
+#[zbus(signature = "o")]
 pub struct Session<T>(Proxy<'static>, PhantomData<T>)
 where
     T: SessionPortal;
@@ -69,7 +69,7 @@ where
     #[doc(alias = "Closed")]
     pub async fn receive_closed(
         &self,
-    ) -> Result<impl Stream<Item = HashMap<String, OwnedValue>>, Error> {
+    ) -> Result<impl Stream<Item = HashMap<String, OwnedVariant>>, Error> {
         self.0.signal("Closed").await
     }
 
@@ -117,7 +117,7 @@ pub trait SessionPortal: crate::Sealed {}
 
 /// A response to a `create_session` request.
 #[derive(Type, Debug)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub(crate) struct CreateSessionResponse {
     pub(crate) session_handle: OwnedObjectPath,
 }
@@ -137,7 +137,7 @@ impl<'de> Deserialize<'de> for CreateSessionResponse {
     where
         D: serde::Deserializer<'de>,
     {
-        let map: HashMap<String, OwnedValue> = HashMap::deserialize(deserializer)?;
+        let map: HashMap<String, OwnedVariant> = HashMap::deserialize(deserializer)?;
         let session_handle = map.get("session_handle").ok_or_else(|| {
             serde::de::Error::custom(
                 "CreateSessionResponse failed to deserialize. Couldn't find a session_handle",
@@ -161,11 +161,11 @@ impl<'de> Deserialize<'de> for CreateSessionResponse {
 }
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for creating a session.
 pub struct CreateSessionOptions {
-    #[serde(default, with = "as_value", skip_deserializing)]
+    #[serde(default, with = "as_variant", skip_deserializing)]
     pub(crate) handle_token: HandleToken,
-    #[serde(default, with = "as_value", skip_deserializing)]
+    #[serde(default, with = "as_variant", skip_deserializing)]
     pub(crate) session_handle_token: HandleToken,
 }

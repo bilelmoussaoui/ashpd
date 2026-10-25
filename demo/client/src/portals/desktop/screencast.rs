@@ -10,7 +10,6 @@ use ashpd::{
         PersistMode, Session,
         screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType, Stream},
     },
-    enumflags2::BitFlags,
 };
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
@@ -84,19 +83,19 @@ mod imp {
                     let imp = widget.imp();
                     if let Ok((cursor_modes, source_types)) = available_types().await {
                         imp.virtual_check
-                            .set_sensitive(source_types.contains(SourceType::Virtual));
+                            .set_sensitive(source_types.contains(SourceType::VIRTUAL));
                         imp.monitor_check
-                            .set_sensitive(source_types.contains(SourceType::Monitor));
+                            .set_sensitive(source_types.contains(SourceType::MONITOR));
                         imp.window_check
-                            .set_sensitive(source_types.contains(SourceType::Window));
+                            .set_sensitive(source_types.contains(SourceType::WINDOW));
                         let model = gtk::StringList::default();
-                        if cursor_modes.contains(CursorMode::Hidden) {
+                        if cursor_modes.contains(CursorMode::HIDDEN) {
                             model.append("Hidden");
                         }
-                        if cursor_modes.contains(CursorMode::Metadata) {
+                        if cursor_modes.contains(CursorMode::METADATA) {
                             model.append("Metadata");
                         }
-                        if cursor_modes.contains(CursorMode::Embedded) {
+                        if cursor_modes.contains(CursorMode::EMBEDDED) {
                             model.append("Embedded");
                         }
                         imp.cursor_mode_combo.set_model(Some(&model));
@@ -133,17 +132,17 @@ glib::wrapper! {
 
 impl ScreenCastPage {
     /// Returns the selected SourceType
-    fn selected_sources(&self) -> BitFlags<SourceType> {
+    fn selected_sources(&self) -> SourceType {
         let imp = self.imp();
-        let mut sources: BitFlags<SourceType> = BitFlags::empty();
+        let mut sources = SourceType::empty();
         if imp.monitor_check.is_active() {
-            sources.insert(SourceType::Monitor);
+            sources.insert(SourceType::MONITOR);
         }
         if imp.window_check.is_active() {
-            sources.insert(SourceType::Window);
+            sources.insert(SourceType::WINDOW);
         }
         if imp.virtual_check.is_active() {
-            sources.insert(SourceType::Virtual);
+            sources.insert(SourceType::VIRTUAL);
         }
         sources
     }
@@ -159,9 +158,9 @@ impl ScreenCastPage {
             .string()
             .as_ref()
         {
-            "Hidden" => CursorMode::Hidden,
-            "Embedded" => CursorMode::Embedded,
-            "Metadata" => CursorMode::Metadata,
+            "Hidden" => CursorMode::HIDDEN,
+            "Embedded" => CursorMode::EMBEDDED,
+            "Metadata" => CursorMode::METADATA,
             _ => unreachable!(),
         }
     }
@@ -299,7 +298,7 @@ impl ScreenCastPage {
     }
 }
 
-pub async fn available_types() -> ashpd::Result<(BitFlags<CursorMode>, BitFlags<SourceType>)> {
+pub async fn available_types() -> ashpd::Result<(CursorMode, SourceType)> {
     spawn_tokio(async move {
         let proxy = Screencast::new().await?;
 

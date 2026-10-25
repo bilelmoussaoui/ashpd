@@ -10,14 +10,14 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Icon, request::Response},
-    zvariant::{
+    wire::{
         self, Optional, OwnedObjectPath,
-        as_value::{self, optional},
+        as_variant::{self, optional},
     },
 };
 
-#[derive(Deserialize, zvariant::Type)]
-#[zvariant(signature = "dict")]
+#[derive(Deserialize, wire::Type)]
+#[zbus(signature = "dict")]
 pub struct AccessOptions {
     #[serde(default, with = "optional")]
     modal: Option<bool>,
@@ -27,11 +27,11 @@ pub struct AccessOptions {
     grant_label: Option<String>,
     #[serde(default, with = "optional")]
     icon: Option<String>,
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     choices: Vec<Choice>,
 }
 
-#[derive(Clone, Deserialize, zvariant::Type, Debug)]
+#[derive(Clone, Deserialize, wire::Type, Debug)]
 pub struct Choice(String, String, Vec<(String, String)>, String);
 
 impl Choice {
@@ -81,10 +81,10 @@ impl AccessOptions {
     }
 }
 
-#[derive(Serialize, Debug, zvariant::Type, Default)]
-#[zvariant(signature = "dict")]
+#[derive(Serialize, Debug, wire::Type, Default)]
+#[zbus(signature = "dict")]
 pub struct AccessResponse {
-    #[serde(with = "as_value", skip_serializing_if = "Vec::is_empty")]
+    #[serde(with = "as_variant", skip_serializing_if = "Vec::is_empty")]
     choices: Vec<(String, String)>,
 }
 

@@ -7,7 +7,6 @@ use ashpd::{
         Session,
         inhibit::{InhibitFlags, InhibitOptions, InhibitProxy, SessionState},
     },
-    enumflags2::BitFlags,
 };
 use futures_util::lock::Mutex;
 use gtk::{glib, prelude::*};
@@ -100,21 +99,21 @@ glib::wrapper! {
 }
 
 impl InhibitPage {
-    fn inhibit_flags(&self) -> BitFlags<InhibitFlags> {
+    fn inhibit_flags(&self) -> InhibitFlags {
         let imp = self.imp();
-        let mut flags = BitFlags::empty();
+        let mut flags = InhibitFlags::empty();
 
         if imp.user_switch_check.is_active() {
-            flags.insert(InhibitFlags::UserSwitch);
+            flags.insert(InhibitFlags::USER_SWITCH);
         }
         if imp.suspend_check.is_active() {
-            flags.insert(InhibitFlags::Suspend);
+            flags.insert(InhibitFlags::SUSPEND);
         }
         if imp.idle_check.is_active() {
-            flags.insert(InhibitFlags::Idle);
+            flags.insert(InhibitFlags::IDLE);
         }
         if imp.logout_check.is_active() {
-            flags.insert(InhibitFlags::Logout);
+            flags.insert(InhibitFlags::LOGOUT);
         }
 
         flags

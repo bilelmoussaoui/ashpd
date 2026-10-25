@@ -23,9 +23,9 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{
+use zbus::wire::{
     Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::HandleToken;
@@ -33,9 +33,9 @@ use crate::{Error, Uri, WindowIdentifier, desktop::request::Request, proxy::Prox
 
 /// Options for requesting user information.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct UserInformationOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
@@ -58,13 +58,13 @@ impl UserInformationOptions {
 
 #[derive(Debug, Serialize, Deserialize, Type)]
 /// The response of a [`UserInformationRequest`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct UserInformation {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     id: String,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     name: String,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     image: Uri,
 }
 

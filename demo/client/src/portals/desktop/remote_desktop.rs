@@ -9,7 +9,6 @@ use ashpd::{
         remote_desktop::{DeviceType, RemoteDesktop, SelectDevicesOptions},
         screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType, Stream},
     },
-    enumflags2::BitFlags,
 };
 use futures_util::lock::Mutex;
 use gtk::glib::{self, clone};
@@ -90,19 +89,19 @@ mod imp {
                     let imp = widget.imp();
                     if let Ok((cursor_modes, source_types)) = available_types().await {
                         imp.virtual_check
-                            .set_sensitive(source_types.contains(SourceType::Virtual));
+                            .set_sensitive(source_types.contains(SourceType::VIRTUAL));
                         imp.monitor_check
-                            .set_sensitive(source_types.contains(SourceType::Monitor));
+                            .set_sensitive(source_types.contains(SourceType::MONITOR));
                         imp.window_check
-                            .set_sensitive(source_types.contains(SourceType::Window));
+                            .set_sensitive(source_types.contains(SourceType::WINDOW));
                         let model = gtk::StringList::default();
-                        if cursor_modes.contains(CursorMode::Hidden) {
+                        if cursor_modes.contains(CursorMode::HIDDEN) {
                             model.append("Hidden");
                         }
-                        if cursor_modes.contains(CursorMode::Metadata) {
+                        if cursor_modes.contains(CursorMode::METADATA) {
                             model.append("Metadata");
                         }
-                        if cursor_modes.contains(CursorMode::Embedded) {
+                        if cursor_modes.contains(CursorMode::EMBEDDED) {
                             model.append("Embedded");
                         }
                         imp.cursor_mode_combo.set_model(Some(&model));
@@ -110,11 +109,11 @@ mod imp {
 
                     if let Ok(devices) = available_devices().await {
                         imp.touchscreen_check
-                            .set_sensitive(devices.contains(DeviceType::Touchscreen));
+                            .set_sensitive(devices.contains(DeviceType::TOUCHSCREEN));
                         imp.pointer_check
-                            .set_sensitive(devices.contains(DeviceType::Pointer));
+                            .set_sensitive(devices.contains(DeviceType::POINTER));
                         imp.keyboard_check
-                            .set_sensitive(devices.contains(DeviceType::Keyboard));
+                            .set_sensitive(devices.contains(DeviceType::KEYBOARD));
                     }
                 }
             ));
@@ -148,31 +147,31 @@ glib::wrapper! {
 
 impl RemoteDesktopPage {
     /// Returns the selected DeviceType
-    fn selected_devices(&self) -> BitFlags<DeviceType> {
+    fn selected_devices(&self) -> DeviceType {
         let imp = self.imp();
 
-        let mut devices: BitFlags<DeviceType> = BitFlags::empty();
+        let mut devices = DeviceType::empty();
         if imp.keyboard_check.is_active() {
-            devices.insert(DeviceType::Keyboard);
+            devices.insert(DeviceType::KEYBOARD);
         }
         if imp.pointer_check.is_active() {
-            devices.insert(DeviceType::Pointer);
+            devices.insert(DeviceType::POINTER);
         }
         if imp.touchscreen_check.is_active() {
-            devices.insert(DeviceType::Touchscreen);
+            devices.insert(DeviceType::TOUCHSCREEN);
         }
         devices
     }
 
     /// Returns the selected SourceType
-    fn selected_sources(&self) -> BitFlags<SourceType> {
+    fn selected_sources(&self) -> SourceType {
         let imp = self.imp();
-        let mut sources: BitFlags<SourceType> = BitFlags::empty();
+        let mut sources = SourceType::empty();
         if imp.monitor_check.is_active() {
-            sources.insert(SourceType::Monitor);
+            sources.insert(SourceType::MONITOR);
         }
         if imp.window_check.is_active() {
-            sources.insert(SourceType::Window);
+            sources.insert(SourceType::WINDOW);
         }
         sources
     }
@@ -197,9 +196,9 @@ impl RemoteDesktopPage {
             .string()
             .as_ref()
         {
-            "Hidden" => CursorMode::Hidden,
-            "Embedded" => CursorMode::Embedded,
-            "Metadata" => CursorMode::Metadata,
+            "Hidden" => CursorMode::HIDDEN,
+            "Embedded" => CursorMode::EMBEDDED,
+            "Metadata" => CursorMode::METADATA,
             _ => unreachable!(),
         }
     }
@@ -251,12 +250,7 @@ impl RemoteDesktopPage {
 
     async fn remote(
         &self,
-    ) -> ashpd::Result<(
-        BitFlags<DeviceType>,
-        Vec<Stream>,
-        Session<RemoteDesktop>,
-        bool,
-    )> {
+    ) -> ashpd::Result<(DeviceType, Vec<Stream>, Session<RemoteDesktop>, bool)> {
         let imp = self.imp();
         let root = self.native().unwrap();
         let identifier = WindowIdentifier::from_native(&root).await;
@@ -338,7 +332,7 @@ impl RemoteDesktopPage {
     }
 }
 
-pub async fn available_devices() -> ashpd::Result<BitFlags<DeviceType>> {
+pub async fn available_devices() -> ashpd::Result<DeviceType> {
     spawn_tokio(async {
         let proxy = RemoteDesktop::new().await?;
         proxy.available_device_types().await

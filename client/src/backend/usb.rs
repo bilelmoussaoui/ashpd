@@ -10,15 +10,15 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::Response, usb::UsbDevice},
-    zvariant::{Optional, OwnedObjectPath, Type, as_value::optional},
+    wire::{Optional, OwnedObjectPath, Type, as_variant::optional},
 };
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct AcquireDevicesOptions {}
 
 #[derive(Debug, Serialize, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct AccessOptions {
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     writable: Option<bool>,

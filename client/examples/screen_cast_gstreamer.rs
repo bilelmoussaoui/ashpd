@@ -12,8 +12,8 @@ async fn open_portal() -> ashpd::Result<(Stream, OwnedFd)> {
         .select_sources(
             &session,
             SelectSourcesOptions::default()
-                .set_cursor_mode(CursorMode::Embedded)
-                .set_sources(SourceType::Monitor | SourceType::Window | SourceType::Virtual)
+                .set_cursor_mode(CursorMode::EMBEDDED)
+                .set_sources(SourceType::MONITOR | SourceType::WINDOW | SourceType::VIRTUAL)
                 .set_multiple(false)
                 .set_restore_token(None)
                 .set_persist_mode(ashpd::desktop::PersistMode::ExplicitlyRevoked),

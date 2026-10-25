@@ -40,9 +40,9 @@
 use std::{fmt, os::fd::AsFd, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::{
+use zbus::wire::{
     Fd, Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request};
@@ -51,7 +51,7 @@ use crate::{Error, Uri, WindowIdentifier, proxy::Proxy};
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOrientation"))]
 #[derive(Debug, Copy, Clone, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "snake_case")]
 /// The page orientation.
 pub enum Orientation {
@@ -117,7 +117,7 @@ impl FromStr for Orientation {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdQuality"))]
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// The print quality.
 pub enum Quality {
@@ -181,7 +181,7 @@ impl FromStr for Quality {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdDuplex"))]
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// Duplex printing mode.
 pub enum Duplex {
@@ -196,7 +196,7 @@ pub enum Duplex {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdPrintPages"))]
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// What pages to print.
 pub enum PrintPages {
@@ -213,7 +213,7 @@ pub enum PrintPages {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdPageSet"))]
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// What pages to print.
 pub enum PageSet {
@@ -228,7 +228,7 @@ pub enum PageSet {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdNumberUpLayout"))]
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// Layout for number-up printing.
 pub enum NumberUpLayout {
@@ -261,7 +261,7 @@ pub enum NumberUpLayout {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdOutputFileFormat"))]
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "UPPERCASE")]
 /// Output file format for print-to-file.
 pub enum OutputFileFormat {
@@ -276,7 +276,7 @@ pub enum OutputFileFormat {
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdDither"))]
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "kebab-case")]
 /// Dithering to use for printing.
 pub enum Dither {
@@ -297,7 +297,7 @@ pub enum Dither {
 // Custom serialization modules for string-wrapped types
 mod string_bool {
     use serde::{Deserializer, Serializer, de::Error};
-    use zbus::zvariant::as_value::optional;
+    use zbus::wire::as_variant::optional;
 
     pub fn serialize<S>(value: &Option<bool>, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -326,7 +326,7 @@ mod string_bool {
 
 mod string_u32 {
     use serde::{Deserializer, Serializer, de::Error};
-    use zbus::zvariant::as_value::optional;
+    use zbus::wire::as_variant::optional;
 
     pub fn serialize<S>(value: &Option<u32>, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -348,7 +348,7 @@ mod string_u32 {
 
 mod string_i32 {
     use serde::{Deserializer, Serializer, de::Error};
-    use zbus::zvariant::as_value::optional;
+    use zbus::wire::as_variant::optional;
 
     pub fn serialize<S>(value: &Option<i32>, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -370,7 +370,7 @@ mod string_i32 {
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Print settings to set in the print dialog.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct Settings {
     /// One of landscape, portrait, reverse_landscape or reverse_portrait.
@@ -665,7 +665,7 @@ impl Settings {
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Setup the printed pages.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "PascalCase")]
 pub struct PageSetup {
     /// the PPD name. It's the name to select a given driver.
@@ -775,11 +775,11 @@ impl PageSetup {
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::prepare_print`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct PreparePrintOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(rename = "handle_token", with = "as_value", skip_deserializing)]
+    #[serde(rename = "handle_token", with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
@@ -791,7 +791,7 @@ pub struct PreparePrintOptions {
     /// Added in version 3.
     #[serde(
         default,
-        with = "as_value",
+        with = "as_variant",
         skip_serializing_if = "Vec::is_empty",
         skip_deserializing
     )]
@@ -873,11 +873,11 @@ impl PreparePrintOptions {
 
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`PrintProxy::print`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 #[serde(rename_all = "kebab-case")]
 pub struct PrintOptions {
     /// A string that will be used as the last element of the handle.
-    #[serde(rename = "handle_token", with = "as_value", skip_deserializing)]
+    #[serde(rename = "handle_token", with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     /// Whether to make the dialog modal.
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
@@ -890,7 +890,7 @@ pub struct PrintOptions {
     /// Added in version 3.
     #[serde(
         default,
-        with = "as_value",
+        with = "as_variant",
         skip_serializing_if = "Vec::is_empty",
         skip_deserializing
     )]
@@ -938,16 +938,16 @@ impl PrintOptions {
 
 #[derive(Deserialize, Serialize, Type, Debug)]
 /// A response to a [`PrintProxy::prepare_print`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct PreparePrint {
     /// The printing settings.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     pub settings: Settings,
     /// The printed pages setup.
-    #[serde(rename = "page-setup", with = "as_value")]
+    #[serde(rename = "page-setup", with = "as_variant")]
     pub page_setup: PageSetup,
     /// A token to pass to the print request.
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     pub token: u32,
 }
 

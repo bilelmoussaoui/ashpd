@@ -10,7 +10,6 @@ use ashpd::{
             CreateSessionOptions, InputCapture, ReleaseOptions, StartOptions,
         },
     },
-    enumflags2::BitFlag,
 };
 use async_channel;
 use futures_util::{StreamExt, lock::Mutex};
@@ -395,13 +394,13 @@ impl InputCapturePage {
         let imp = self.imp();
         let mut capabilities = Capabilities::empty();
         if imp.keyboard_check.is_active() {
-            capabilities |= Capabilities::Keyboard;
+            capabilities |= Capabilities::KEYBOARD;
         }
         if imp.pointer_check.is_active() {
-            capabilities |= Capabilities::Pointer;
+            capabilities |= Capabilities::POINTER;
         }
         if imp.touchscreen_check.is_active() {
-            capabilities |= Capabilities::Touchscreen;
+            capabilities |= Capabilities::TOUCHSCREEN;
         }
 
         let persist_mode = self.selected_persist_mode();

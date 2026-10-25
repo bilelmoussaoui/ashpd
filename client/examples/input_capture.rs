@@ -10,7 +10,7 @@ use futures_util::StreamExt;
 async fn main() -> ashpd::Result<()> {
     let input_capture = InputCapture::new().await?;
 
-    let capabilities = Capabilities::Keyboard | Capabilities::Pointer;
+    let capabilities = Capabilities::KEYBOARD | Capabilities::POINTER;
     // Try create_session2 + start first, fall back to legacy
     let session = match input_capture.create_session2(Default::default()).await {
         Ok(session) => {

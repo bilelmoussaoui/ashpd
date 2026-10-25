@@ -35,37 +35,37 @@
 //! ```
 use std::fmt::Debug;
 
-use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Request};
 use crate::{Error, Uri, WindowIdentifier, desktop::Color, proxy::Proxy};
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
-#[repr(u32)]
 /// Available screenshot targets
-pub enum AvailableTargets {
-    /// Screen.
-    Screen = 1,
-    /// Window.
-    Window = 2,
-    /// Area.
-    Area = 4,
-    /// Active window.
-    ActiveWindow = 8,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct AvailableTargets(u32);
+
+bitflags::bitflags! {
+    impl AvailableTargets: u32 {
+        /// Screen.
+        const SCREEN = 1;
+        /// Window.
+        const WINDOW = 2;
+        /// Area.
+        const AREA = 4;
+        /// Active window.
+        const ACTIVE_WINDOW = 8;
+    }
 }
 
 /// Options for taking a screenshot.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct ScreenshotOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
@@ -126,10 +126,10 @@ impl ScreenshotOptions {
 }
 
 #[derive(Serialize, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// The response of a [`ScreenshotRequest`] request.
 pub struct Screenshot {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     uri: Uri,
 }
 
@@ -163,9 +163,9 @@ impl Debug for Screenshot {
 
 /// Options for picking a color.
 #[derive(Serialize, Deserialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct ColorOptions {
-    #[serde(with = "as_value", skip_deserializing)]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
 }
 
@@ -251,9 +251,9 @@ impl ScreenshotProxy {
     ///
     /// See also [`AvailableTargets`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Screenshot.html#org-freedesktop-portal-screenshot-availabletargets).
     #[doc(alias = "AvailableTargets")]
-    pub async fn available_targets(&self) -> Result<BitFlags<AvailableTargets>, Error> {
+    pub async fn available_targets(&self) -> Result<AvailableTargets, Error> {
         self.0
-            .property_versioned::<BitFlags<AvailableTargets>>("AvailableTargets", 3)
+            .property_versioned::<AvailableTargets>("AvailableTargets", 3)
             .await
     }
 }

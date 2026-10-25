@@ -13,7 +13,7 @@
 //!         .select_devices(
 //!             &session,
 //!             SelectDevicesOptions::default()
-//!                 .set_devices(DeviceType::Keyboard | DeviceType::Pointer),
+//!                 .set_devices(DeviceType::KEYBOARD | DeviceType::POINTER),
 //!         )
 //!         .await?;
 //!
@@ -54,15 +54,15 @@
 //!         .select_devices(
 //!             &session,
 //!             SelectDevicesOptions::default()
-//!                 .set_devices(DeviceType::Keyboard | DeviceType::Pointer),
+//!                 .set_devices(DeviceType::KEYBOARD | DeviceType::POINTER),
 //!         )
 //!         .await?;
 //!     screencast
 //!         .select_sources(
 //!             &session,
 //!             SelectSourcesOptions::default()
-//!                 .set_cursor_mode(CursorMode::Metadata)
-//!                 .set_sources(SourceType::Monitor | SourceType::Window)
+//!                 .set_cursor_mode(CursorMode::METADATA)
+//!                 .set_sources(SourceType::MONITOR | SourceType::WINDOW)
 //!                 .set_multiple(true)
 //!                 .set_persist_mode(PersistMode::DoNot),
 //!         )
@@ -88,12 +88,11 @@
 
 use std::os::fd::OwnedFd;
 
-use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
+use zbus::wire::{
     self, Optional, Type,
-    as_value::{self, optional},
+    as_variant::{self, optional},
 };
 
 use super::{
@@ -120,21 +119,23 @@ pub enum KeyState {
     Released = 0,
 }
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Clone, Copy, Type)]
-#[repr(u32)]
 #[doc(alias = "XdpDeviceType")]
 /// A bit flag for the available devices.
-pub enum DeviceType {
-    #[doc(alias = "XDP_DEVICE_KEYBOARD")]
-    /// A keyboard.
-    Keyboard,
-    #[doc(alias = "XDP_DEVICE_POINTER")]
-    /// A mouse pointer.
-    Pointer,
-    #[doc(alias = "XDP_DEVICE_TOUCHSCREEN")]
-    /// A touchscreen
-    Touchscreen,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct DeviceType(u32);
+
+bitflags::bitflags! {
+    impl DeviceType: u32 {
+        #[doc(alias = "XDP_DEVICE_KEYBOARD")]
+        /// A keyboard.
+        const KEYBOARD = 1;
+        #[doc(alias = "XDP_DEVICE_POINTER")]
+        /// A mouse pointer.
+        const POINTER = 2;
+        #[doc(alias = "XDP_DEVICE_TOUCHSCREEN")]
+        /// A touchscreen
+        const TOUCHSCREEN = 4;
+    }
 }
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
@@ -153,57 +154,57 @@ pub enum Axis {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_keyboard_keycode`] request.
 pub struct NotifyKeyboardKeycodeOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_keyboard_keysym`] request.
 pub struct NotifyKeyboardKeysymOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_pointer_axis_discrete`]
 /// request.
 pub struct NotifyPointerAxisDiscreteOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_touch_up`] request.
 pub struct NotifyTouchUpOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_touch_down`] request.
 pub struct NotifyTouchDownOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_touch_motion`] request.
 pub struct NotifyTouchMotionOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_pointer_button`] request.
 pub struct NotifyPointerButtonOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_pointer_motion`] request.
 pub struct NotifyPointerMotionOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_pointer_motion_absolute`]
 /// request.
 pub struct NotifyPointerMotionAbsoluteOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::notify_pointer_axis`] request.
 pub struct NotifyPointerAxisOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     finish: bool,
 }
 
@@ -217,12 +218,12 @@ impl NotifyPointerAxisOptions {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::select_devices`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SelectDevicesOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
-    types: Option<BitFlags<DeviceType>>,
+    types: Option<DeviceType>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -231,7 +232,7 @@ pub struct SelectDevicesOptions {
 
 impl SelectDevicesOptions {
     /// Sets the device types to request remote controlling of.
-    pub fn set_devices(mut self, types: impl Into<Option<BitFlags<DeviceType>>>) -> Self {
+    pub fn set_devices(mut self, types: impl Into<Option<DeviceType>>) -> Self {
         self.types = types.into();
         self
     }
@@ -251,19 +252,19 @@ impl SelectDevicesOptions {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`RemoteDesktop::start`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct StartOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
 #[derive(Deserialize, Type, Debug, Default)]
 /// A response to a [`RemoteDesktop::select_devices`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SelectedDevices {
-    #[serde(default, with = "as_value")]
-    devices: BitFlags<DeviceType>,
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
+    devices: DeviceType,
+    #[serde(default, with = "as_variant")]
     streams: Vec<Stream>,
     #[serde(default, with = "optional")]
     restore_token: Option<String>,
@@ -273,7 +274,7 @@ pub struct SelectedDevices {
 
 impl SelectedDevices {
     /// The selected devices.
-    pub fn devices(&self) -> BitFlags<DeviceType> {
+    pub fn devices(&self) -> DeviceType {
         self.devices
     }
 
@@ -294,7 +295,7 @@ impl SelectedDevices {
 }
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`RemoteDesktop::connect_to_eis`] request.
 pub struct ConnectToEISOptions {}
 
@@ -406,7 +407,7 @@ impl RemoteDesktop {
 
     /// Notify keyboard code.
     ///
-    /// **Note** only works if [`DeviceType::Keyboard`] access was provided
+    /// **Note** only works if [`DeviceType::KEYBOARD`] access was provided
     /// after starting the session.
     ///
     /// # Arguments
@@ -434,7 +435,7 @@ impl RemoteDesktop {
 
     /// Notify keyboard symbol.
     ///
-    /// **Note** only works if [`DeviceType::Keyboard`] access was provided
+    /// **Note** only works if [`DeviceType::KEYBOARD`] access was provided
     /// after starting the session.
     ///
     /// # Arguments
@@ -462,7 +463,7 @@ impl RemoteDesktop {
 
     /// Notify about a new touch up event.
     ///
-    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided
+    /// **Note** only works if [`DeviceType::TOUCHSCREEN`] access was provided
     /// after starting the session.
     ///
     /// # Arguments
@@ -490,7 +491,7 @@ impl RemoteDesktop {
     /// The (x, y) position represents the new touch point position in the
     /// streams logical coordinate space.
     ///
-    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided
+    /// **Note** only works if [`DeviceType::TOUCHSCREEN`] access was provided
     /// after starting the session.
     ///
     /// # Arguments
@@ -524,7 +525,7 @@ impl RemoteDesktop {
     /// The (x, y) position represents where the touch point position in the
     /// streams logical coordinate space moved.
     ///
-    /// **Note** only works if [`DeviceType::Touchscreen`] access was provided
+    /// **Note** only works if [`DeviceType::TOUCHSCREEN`] access was provided
     /// after starting the session.
     ///
     /// # Arguments
@@ -617,7 +618,7 @@ impl RemoteDesktop {
     /// The pointer button is encoded according to Linux Evdev button codes.
     ///
     ///
-    /// **Note** only works if [`DeviceType::Pointer`] access was provided after
+    /// **Note** only works if [`DeviceType::POINTER`] access was provided after
     /// starting the session.
     ///
     /// # Arguments
@@ -645,7 +646,7 @@ impl RemoteDesktop {
 
     /// Notify pointer axis discrete.
     ///
-    /// **Note** only works if [`DeviceType::Pointer`] access was provided after
+    /// **Note** only works if [`DeviceType::POINTER`] access was provided after
     /// starting the session.
     ///
     /// # Arguments
@@ -679,7 +680,7 @@ impl RemoteDesktop {
     /// the motion vector of a pointer motion done using the same advice.
     ///
     ///
-    /// **Note** only works if [`DeviceType::Pointer`] access was provided after
+    /// **Note** only works if [`DeviceType::POINTER`] access was provided after
     /// starting the session.
     ///
     /// # Arguments
@@ -733,7 +734,7 @@ impl RemoteDesktop {
     ) -> Result<OwnedFd, Error> {
         let fd = self
             .0
-            .call_versioned::<zvariant::OwnedFd>("ConnectToEIS", &(session, options), 2)
+            .call_versioned::<wire::OwnedFd>("ConnectToEIS", &(session, options), 2)
             .await?;
         Ok(fd.into())
     }
@@ -744,8 +745,8 @@ impl RemoteDesktop {
     ///
     /// See also [`AvailableDeviceTypes`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.RemoteDesktop.html#org-freedesktop-portal-remotedesktop-availabledevicetypes).
     #[doc(alias = "AvailableDeviceTypes")]
-    pub async fn available_device_types(&self) -> Result<BitFlags<DeviceType>, Error> {
-        self.0.property("AvailableDeviceTypes").await
+    pub async fn available_device_types(&self) -> Result<DeviceType, Error> {
+        self.0.property::<DeviceType>("AvailableDeviceTypes").await
     }
 }
 

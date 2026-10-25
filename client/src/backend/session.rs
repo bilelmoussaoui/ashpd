@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use serde::Serialize;
 use zbus::{
     object_server::SignalEmitter,
-    zvariant::{OwnedObjectPath, Type, as_value},
+    wire::{OwnedObjectPath, Type, as_variant},
 };
 
 use crate::{PortalError, desktop::HandleToken};
@@ -41,7 +41,10 @@ impl Session {
             Arc::clone(&self.manager),
             self.monitor.clone(),
         );
-        cnx.object_server().at(&self.path, interface).await
+        cnx.object_server()
+            .at(&self.path, interface)
+            .await
+            .map(|existing| existing.is_none())
     }
 }
 
@@ -121,9 +124,9 @@ pub trait SessionImpl: Send + Sync {
 }
 
 #[derive(Serialize, Type, Debug)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct CreateSessionResponse {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_id: HandleToken,
 }
 

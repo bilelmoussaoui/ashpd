@@ -9,7 +9,7 @@ use crate::{
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::ResponseType, wallpaper::WallpaperOptions},
-    zvariant::{Optional, OwnedObjectPath},
+    wire::{Optional, OwnedObjectPath},
 };
 
 #[async_trait]

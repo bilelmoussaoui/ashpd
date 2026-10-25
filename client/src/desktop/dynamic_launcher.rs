@@ -50,36 +50,41 @@
 //! }
 //! ```
 
-use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
-    self, Optional, OwnedValue, Type, Value,
-    as_value::{self, optional},
+use zbus::wire::{
+    self, Optional, OwnedVariant, Type, Variant,
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, Icon, Request};
 use crate::{ActivationToken, Error, WindowIdentifier, proxy::Proxy};
 
-#[bitflags]
-#[derive(Default, Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
-#[repr(u32)]
 #[doc(alias = "XdpLauncherType")]
 /// The type of the launcher.
-pub enum LauncherType {
-    #[doc(alias = "XDP_LAUNCHER_APPLICATION")]
-    #[default]
-    /// A launcher that represents an application
-    Application,
-    #[doc(alias = "XDP_LAUNCHER_WEBAPP")]
-    /// A launcher that represents a web application
-    WebApplication,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+pub struct LauncherType(u32);
+
+bitflags::bitflags! {
+    impl LauncherType: u32 {
+        #[doc(alias = "XDP_LAUNCHER_APPLICATION")]
+        /// A launcher that represents an application
+        const APPLICATION = 1;
+        #[doc(alias = "XDP_LAUNCHER_WEBAPP")]
+        /// A launcher that represents a web application
+        const WEB_APPLICATION = 2;
+    }
+}
+
+impl Default for LauncherType {
+    fn default() -> Self {
+        Self::APPLICATION
+    }
 }
 
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdIconType"))]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "lowercase")]
 /// The icon format.
 pub enum IconType {
@@ -92,9 +97,9 @@ pub enum IconType {
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "(vsu)")]
+#[zbus(signature = "(vsu)")]
 /// The icon of the launcher.
-pub struct LauncherIcon(zvariant::OwnedValue, IconType, u32);
+pub struct LauncherIcon(wire::OwnedVariant, IconType, u32);
 
 impl LauncherIcon {
     /// The actual icon.
@@ -114,14 +119,14 @@ impl LauncherIcon {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Options to pass to [`DynamicLauncherProxy::prepare_install`]
 pub struct PrepareInstallOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     modal: Option<bool>,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     launcher_type: LauncherType,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     target: Option<String>,
@@ -144,7 +149,7 @@ impl PrepareInstallOptions {
         self
     }
 
-    /// The URL for a [`LauncherType::WebApplication`] otherwise it is not
+    /// The URL for a [`LauncherType::WEB_APPLICATION`] otherwise it is not
     /// needed.
     pub fn set_target<'a>(mut self, target: impl Into<Option<&'a str>>) -> Self {
         self.target = target.into().map(ToOwned::to_owned);
@@ -165,14 +170,14 @@ impl PrepareInstallOptions {
 }
 
 #[derive(Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// A response of [`DynamicLauncherProxy::prepare_install`]
 pub struct PrepareInstallResponse {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     name: String,
-    #[serde(with = "as_value")]
-    icon: OwnedValue,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
+    icon: OwnedVariant,
+    #[serde(with = "as_variant")]
     token: String,
 }
 
@@ -189,7 +194,7 @@ impl PrepareInstallResponse {
 
     /// The user selected icon or a predefined one
     pub fn icon(&self) -> Icon {
-        let inner = self.icon.downcast_ref::<Value>().unwrap();
+        let inner = self.icon.downcast_ref::<Variant>().unwrap();
         Icon::try_from(inner).unwrap()
     }
 }
@@ -205,7 +210,7 @@ impl std::fmt::Debug for PrepareInstallResponse {
 }
 
 #[derive(Serialize, Type, Debug, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Options to pass to [`DynamicLauncherProxy::launch`]
 pub struct LaunchOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -226,18 +231,18 @@ impl LaunchOptions {
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`DynamicLauncherProxy::install`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct InstallOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`DynamicLauncherProxy::uninstall`] request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct UninstallOptions {}
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`DynamicLauncherProxy::request_install_token`]
 /// request.
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct RequestInstallTokenOptions {}
 
 #[derive(Debug)]
@@ -304,7 +309,7 @@ impl DynamicLauncherProxy {
             .request(
                 &options.handle_token,
                 "PrepareInstall",
-                &(identifier, name, icon.as_value(), &options),
+                &(identifier, name, icon.as_variant(), &options),
             )
             .await
     }
@@ -327,7 +332,7 @@ impl DynamicLauncherProxy {
         }
 
         self.0
-            .call::<String>("RequestInstallToken", &(name, icon.as_value(), options))
+            .call::<String>("RequestInstallToken", &(name, icon.as_variant(), options))
             .await
     }
 
@@ -394,9 +399,9 @@ impl DynamicLauncherProxy {
     ///
     /// See also [`SupportedLauncherTypes`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.DynamicLauncher.html#org-freedesktop-portal-dynamiclauncher-supportedlaunchertypes).
     #[doc(alias = "SupportedLauncherTypes")]
-    pub async fn supported_launcher_types(&self) -> Result<BitFlags<LauncherType>, Error> {
+    pub async fn supported_launcher_types(&self) -> Result<LauncherType, Error> {
         self.0
-            .property::<BitFlags<LauncherType>>("SupportedLauncherTypes")
+            .property::<LauncherType>("SupportedLauncherTypes")
             .await
     }
 }

@@ -13,7 +13,6 @@ use ashpd::{
             StreamsBuilder,
         },
     },
-    enumflags2::BitFlags,
 };
 use async_trait::async_trait;
 
@@ -29,12 +28,12 @@ impl RequestImpl for Screencast {
 
 #[async_trait]
 impl ScreencastImpl for Screencast {
-    fn available_source_types(&self) -> BitFlags<SourceType> {
-        SourceType::Monitor | SourceType::Window
+    fn available_source_types(&self) -> SourceType {
+        SourceType::MONITOR | SourceType::WINDOW
     }
 
-    fn available_cursor_mode(&self) -> BitFlags<CursorMode> {
-        CursorMode::Hidden | CursorMode::Embedded | CursorMode::Metadata
+    fn available_cursor_mode(&self) -> CursorMode {
+        CursorMode::HIDDEN | CursorMode::EMBEDDED | CursorMode::METADATA
     }
 
     async fn create_session(
@@ -70,7 +69,7 @@ impl ScreencastImpl for Screencast {
         tracing::debug!("IN Screencast::start_cast(): {session_token}");
         let streams = vec![
             StreamBuilder::new(42)
-                .source_type(SourceType::Monitor)
+                .source_type(SourceType::MONITOR)
                 .build(),
         ];
         Ok(StreamsBuilder::new(streams).build())

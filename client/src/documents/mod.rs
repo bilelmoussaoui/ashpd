@@ -35,27 +35,27 @@
 
 use std::{collections::HashMap, fmt, os::fd::AsFd, path::Path, str::FromStr};
 
-use enumflags2::{BitFlags, bitflags};
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, OwnedValue, Type};
+use zbus::wire::{Fd, OwnedVariant, Type};
 
 pub use crate::app_id::DocumentID;
 use crate::{AppID, Error, FilePath, proxy::Proxy};
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
-#[repr(u32)]
 /// Document flags
-pub enum DocumentFlags {
-    /// Reuse the existing document store entry for the file.
-    ReuseExisting,
-    /// Persistent file.
-    Persistent,
-    /// Depends on the application needs.
-    AsNeededByApp,
-    /// Export a directory.
-    ExportDirectory,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct DocumentFlags(u32);
+
+bitflags::bitflags! {
+    impl DocumentFlags: u32 {
+        /// Reuse the existing document store entry for the file.
+        const REUSE_EXISTING = 1;
+        /// Persistent file.
+        const PERSISTENT = 2;
+        /// Depends on the application needs.
+        const AS_NEEDED_BY_APP = 4;
+        /// Export a directory.
+        const EXPORT_DIRECTORY = 8;
+    }
 }
 
 /// A [`HashMap`] mapping application IDs to the permissions for that
@@ -65,7 +65,7 @@ pub type Permissions = HashMap<AppID, Vec<Permission>>;
 #[cfg_attr(feature = "glib", derive(glib::Enum))]
 #[cfg_attr(feature = "glib", enum_type(name = "AshpdPermission"))]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Eq, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 #[serde(rename_all = "kebab-case")]
 /// The possible permissions to grant to a specific application for a specific
 /// document.
@@ -227,10 +227,10 @@ impl Documents {
     pub async fn add_full(
         &self,
         o_path_fds: &[impl AsFd],
-        flags: BitFlags<DocumentFlags>,
+        flags: DocumentFlags,
         app_id: Option<&AppID>,
         permissions: &[Permission],
-    ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedValue>), Error> {
+    ) -> Result<(Vec<DocumentID>, HashMap<String, OwnedVariant>), Error> {
         let o_path: Vec<Fd> = o_path_fds.iter().map(Fd::from).collect();
         let app_id = app_id.map(|id| id.as_ref()).unwrap_or("");
         self.0
@@ -307,10 +307,10 @@ impl Documents {
         &self,
         o_path_fd: &impl AsFd,
         filename: impl AsRef<Path>,
-        flags: BitFlags<DocumentFlags>,
+        flags: DocumentFlags,
         app_id: Option<&AppID>,
         permissions: &[Permission],
-    ) -> Result<(DocumentID, HashMap<String, OwnedValue>), Error> {
+    ) -> Result<(DocumentID, HashMap<String, OwnedVariant>), Error> {
         let app_id = app_id.map(|id| id.as_ref()).unwrap_or("");
         let filename = FilePath::new(filename)?;
         self.0
@@ -529,7 +529,7 @@ pub mod file_transfer;
 mod tests {
     use std::collections::HashMap;
 
-    use zbus::zvariant::Type;
+    use zbus::wire::Type;
 
     use crate::{FilePath, app_id::DocumentID, documents::Permission};
 

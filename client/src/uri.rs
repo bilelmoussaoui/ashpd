@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
-use zbus::zvariant::Type;
+use zbus::wire::Type;
 
 /// A simple URI wrapper that stores the URI as a string with minimal
 /// validation.
@@ -12,7 +12,7 @@ use zbus::zvariant::Type;
 /// URIs must contain `:` to be valid (e.g., `file:`, `http:`, `https:`).
 /// URIs can't start with `:` to be valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Type)]
-#[zvariant(signature = "s")]
+#[zbus(signature = "s")]
 pub struct Uri(String);
 
 impl Uri {

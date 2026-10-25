@@ -13,7 +13,7 @@ use crate::{
         file_chooser::{OpenFileOptions, SaveFileOptions, SaveFilesOptions, SelectedFiles},
         request::Response,
     },
-    zvariant::{Optional, OwnedObjectPath},
+    wire::{Optional, OwnedObjectPath},
 };
 
 #[async_trait]

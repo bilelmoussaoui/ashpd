@@ -4,24 +4,25 @@
 
 use std::{collections::HashMap, os::fd::AsFd, path::Path};
 
-use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{Fd, Type};
+use serde::{Deserialize, Serialize};
+use zbus::wire::{Fd, Type};
 
 use crate::{Error, FilePath, Pid, proxy::Proxy};
 
-#[bitflags]
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Copy, Clone, Debug, Type)]
-#[repr(u32)]
 /// Flags affecting the running of commands on the host
-pub enum HostCommandFlags {
-    #[doc(alias = "FLATPAK_HOST_COMMAND_FLAGS_CLEAR_ENV")]
-    /// Clear the environment.
-    ClearEnv,
-    #[doc(alias = "FLATPAK_HOST_COMMAND_FLAGS_WATCH_BUS")]
-    /// Kill the sandbox when the caller disappears from the session bus.
-    WatchBus,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct HostCommandFlags(u32);
+
+bitflags::bitflags! {
+    impl HostCommandFlags: u32 {
+        #[doc(alias = "FLATPAK_HOST_COMMAND_FLAGS_CLEAR_ENV")]
+        /// Clear the environment.
+        const CLEAR_ENV = 1;
+        #[doc(alias = "FLATPAK_HOST_COMMAND_FLAGS_WATCH_BUS")]
+        /// Kill the sandbox when the caller disappears from the session bus.
+        const WATCH_BUS = 2;
+    }
 }
 
 /// The Development interface lets any client, possibly in a sandbox if it has
@@ -87,7 +88,7 @@ impl Development {
         argv: &[impl AsRef<Path>],
         fds: HashMap<u32, impl AsFd>,
         envs: HashMap<&str, &str>,
-        flags: BitFlags<HostCommandFlags>,
+        flags: HostCommandFlags,
     ) -> Result<u32, Error> {
         let cwd_path = FilePath::new(cwd_path)?;
         let argv = argv

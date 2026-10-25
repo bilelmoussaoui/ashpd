@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use enumflags2::BitFlags;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
@@ -16,13 +15,13 @@ use crate::{
             AvailableTargets, ColorOptions, Screenshot as ScreenshotResponse, ScreenshotOptions,
         },
     },
-    zvariant::{Optional, OwnedObjectPath},
+    wire::{Optional, OwnedObjectPath},
 };
 
 #[async_trait]
 pub trait ScreenshotImpl: RequestImpl {
     #[doc(alias = "AvailableTargets")]
-    fn available_targets(&self) -> BitFlags<AvailableTargets>;
+    fn available_targets(&self) -> AvailableTargets;
 
     #[doc(alias = "Screenshot")]
     async fn screenshot(
@@ -62,8 +61,8 @@ impl ScreenshotInterface {
 #[zbus::interface(name = "org.freedesktop.impl.portal.Screenshot")]
 impl ScreenshotInterface {
     #[zbus(property(emits_changed_signal = "const"), name = "AvailableTargets")]
-    fn available_targets(&self) -> u32 {
-        self.imp.available_targets().bits()
+    fn available_targets(&self) -> AvailableTargets {
+        self.imp.available_targets()
     }
 
     #[zbus(property(emits_changed_signal = "const"), name = "version")]

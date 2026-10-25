@@ -4,12 +4,12 @@ use serde::{
     Deserialize, de,
     ser::{Serialize, SerializeTuple},
 };
-use zbus::zvariant::{self, OwnedValue, Type, Value};
+use zbus::wire::{self, OwnedVariant, Type, Variant};
 
 use crate::{Error, Uri};
 
 #[derive(Debug, Type)]
-#[zvariant(signature = "(sv)")]
+#[zbus(signature = "(sv)")]
 /// A representation of an icon.
 ///
 /// Used by both the Notification & Dynamic launcher portals.
@@ -37,36 +37,36 @@ impl Icon {
         matches!(self, Self::Bytes(_))
     }
 
-    pub(crate) fn inner_bytes<'a>(&'a self) -> Value<'a> {
+    pub(crate) fn inner_bytes<'a>(&'a self) -> Variant<'a> {
         match self {
             Self::Bytes(bytes) => {
-                let mut array = zvariant::Array::new(u8::SIGNATURE);
+                let mut array = wire::Array::new(u8::SIGNATURE);
                 for byte in bytes.iter() {
                     // Safe to unwrap because we are sure it is of the correct type
-                    array.append(Value::from(*byte)).unwrap();
+                    array.append(Variant::from(*byte)).unwrap();
                 }
-                Value::from(array)
+                Variant::from(array)
             }
             _ => panic!("Only bytes icons can be converted to a bytes variant"),
         }
     }
 
-    pub(crate) fn as_value<'a>(&'a self) -> Value<'a> {
+    pub(crate) fn as_variant<'a>(&'a self) -> Variant<'a> {
         let tuple = match self {
-            Self::Uri(uri) => ("file", Value::from(uri.as_str())),
+            Self::Uri(uri) => ("file", Variant::from(uri.as_str())),
             Self::Names(names) => {
-                let mut array = zvariant::Array::new(String::SIGNATURE);
+                let mut array = wire::Array::new(String::SIGNATURE);
                 for name in names.iter() {
                     // Safe to unwrap because we are sure it is of the correct type
-                    array.append(Value::from(name)).unwrap();
+                    array.append(Variant::from(name)).unwrap();
                 }
 
-                ("themed", Value::from(array))
+                ("themed", Variant::from(array))
             }
             Self::Bytes(_) => ("bytes", self.inner_bytes()),
-            Self::FileDescriptor(fd) => ("file-descriptor", zvariant::Fd::from(fd).into()),
+            Self::FileDescriptor(fd) => ("file-descriptor", wire::Fd::from(fd).into()),
         };
-        Value::new(tuple)
+        Variant::new(tuple)
     }
 }
 
@@ -79,16 +79,16 @@ impl Serialize for Icon {
         match self {
             Self::Uri(uri) => {
                 tuple.serialize_element("file")?;
-                tuple.serialize_element(&Value::from(uri.as_str()))?;
+                tuple.serialize_element(&Variant::from(uri.as_str()))?;
             }
             Self::Names(names) => {
                 tuple.serialize_element("themed")?;
-                let mut array = zvariant::Array::new(String::SIGNATURE);
+                let mut array = wire::Array::new(String::SIGNATURE);
                 for name in names.iter() {
                     // Safe to unwrap because we are sure it is of the correct type
-                    array.append(Value::from(name)).unwrap();
+                    array.append(Variant::from(name)).unwrap();
                 }
-                tuple.serialize_element(&Value::from(array))?;
+                tuple.serialize_element(&Variant::from(array))?;
             }
             Self::Bytes(_) => {
                 tuple.serialize_element("bytes")?;
@@ -96,7 +96,7 @@ impl Serialize for Icon {
             }
             Self::FileDescriptor(fd) => {
                 tuple.serialize_element("file-descriptor")?;
-                tuple.serialize_element(&Value::from(zvariant::Fd::from(fd)))?;
+                tuple.serialize_element(&Variant::from(wire::Fd::from(fd)))?;
             }
         }
         tuple.end()
@@ -108,16 +108,16 @@ impl<'de> Deserialize<'de> for Icon {
     where
         D: serde::Deserializer<'de>,
     {
-        let (type_, data) = <(String, OwnedValue)>::deserialize(deserializer)?;
+        let (type_, data) = <(String, OwnedVariant)>::deserialize(deserializer)?;
         match type_.as_str() {
             "file" => {
-                let uri_str = data.downcast_ref::<zvariant::Str>().unwrap();
+                let uri_str = data.downcast_ref::<wire::Str>().unwrap();
                 let uri = Uri::parse(uri_str.as_str())
                     .map_err(|e| serde::de::Error::custom(format!("Invalid URI: {}", e)))?;
                 Ok(Self::Uri(uri))
             }
             "bytes" => {
-                let array = data.downcast_ref::<zvariant::Array>().unwrap();
+                let array = data.downcast_ref::<wire::Array>().unwrap();
                 let mut bytes = Vec::with_capacity(array.len());
                 for byte in array.inner() {
                     bytes.push(byte.downcast_ref::<u8>().unwrap());
@@ -125,16 +125,16 @@ impl<'de> Deserialize<'de> for Icon {
                 Ok(Self::Bytes(bytes))
             }
             "themed" => {
-                let array = data.downcast_ref::<zvariant::Array>().unwrap();
+                let array = data.downcast_ref::<wire::Array>().unwrap();
                 let mut names = Vec::with_capacity(array.len());
                 for value in array.inner() {
-                    let name = value.downcast_ref::<zvariant::Str>().unwrap();
+                    let name = value.downcast_ref::<wire::Str>().unwrap();
                     names.push(name.as_str().to_owned());
                 }
                 Ok(Self::Names(names))
             }
             "file-descriptor" => {
-                let fd = data.downcast_ref::<zvariant::Fd>().unwrap();
+                let fd = data.downcast_ref::<wire::Fd>().unwrap();
                 Ok(Self::FileDescriptor(
                     fd.as_fd()
                         .try_clone_to_owned()
@@ -146,23 +146,20 @@ impl<'de> Deserialize<'de> for Icon {
     }
 }
 
-impl TryFrom<&OwnedValue> for Icon {
+impl TryFrom<&OwnedVariant> for Icon {
     type Error = crate::Error;
-    fn try_from(value: &OwnedValue) -> Result<Self, Self::Error> {
-        let structure = value.downcast_ref::<zvariant::Structure>().unwrap();
+    fn try_from(value: &OwnedVariant) -> Result<Self, Self::Error> {
+        let structure = value.downcast_ref::<wire::Structure>().unwrap();
         let fields = structure.fields();
-        let type_ = fields[0].downcast_ref::<zvariant::Str>().unwrap();
+        let type_ = fields[0].downcast_ref::<wire::Str>().unwrap();
         match type_.as_str() {
             "file" => {
-                let uri_str = fields[1]
-                    .downcast_ref::<zvariant::Str>()
-                    .unwrap()
-                    .to_owned();
+                let uri_str = fields[1].downcast_ref::<wire::Str>().unwrap().to_owned();
                 let uri = Uri::parse(uri_str.as_str()).map_err(crate::Error::Uri)?;
                 Ok(Self::Uri(uri))
             }
             "bytes" => {
-                let array = fields[1].downcast_ref::<zvariant::Array>().unwrap();
+                let array = fields[1].downcast_ref::<wire::Array>().unwrap();
                 let mut bytes = Vec::with_capacity(array.len());
                 for byte in array.inner() {
                     bytes.push(byte.downcast_ref::<u8>().unwrap());
@@ -170,16 +167,16 @@ impl TryFrom<&OwnedValue> for Icon {
                 Ok(Self::Bytes(bytes))
             }
             "themed" => {
-                let array = fields[1].downcast_ref::<zvariant::Array>().unwrap();
+                let array = fields[1].downcast_ref::<wire::Array>().unwrap();
                 let mut names = Vec::with_capacity(array.len());
                 for value in array.inner() {
-                    let name = value.downcast_ref::<zvariant::Str>().unwrap();
+                    let name = value.downcast_ref::<wire::Str>().unwrap();
                     names.push(name.as_str().to_owned());
                 }
                 Ok(Self::Names(names))
             }
             "file-descriptor" => {
-                let fd = fields[1].downcast_ref::<zvariant::Fd>().unwrap();
+                let fd = fields[1].downcast_ref::<wire::Fd>().unwrap();
                 Ok(Self::FileDescriptor(
                     fd.as_fd()
                         .try_clone_to_owned()
@@ -191,29 +188,29 @@ impl TryFrom<&OwnedValue> for Icon {
     }
 }
 
-impl TryFrom<OwnedValue> for Icon {
+impl TryFrom<OwnedVariant> for Icon {
     type Error = crate::Error;
-    fn try_from(value: OwnedValue) -> Result<Self, Self::Error> {
+    fn try_from(value: OwnedVariant) -> Result<Self, Self::Error> {
         Self::try_from(&value)
     }
 }
 
-impl TryFrom<Value<'_>> for Icon {
+impl TryFrom<Variant<'_>> for Icon {
     type Error = crate::Error;
-    fn try_from(value: Value<'_>) -> Result<Self, Self::Error> {
+    fn try_from(value: Variant<'_>) -> Result<Self, Self::Error> {
         Self::try_from(&value)
     }
 }
-impl TryFrom<&Value<'_>> for Icon {
+impl TryFrom<&Variant<'_>> for Icon {
     type Error = crate::Error;
-    fn try_from(value: &Value<'_>) -> Result<Self, Self::Error> {
+    fn try_from(value: &Variant<'_>) -> Result<Self, Self::Error> {
         Self::try_from(value.try_to_owned()?)
     }
 }
 
 #[cfg(test)]
 mod test {
-    use zbus::zvariant::{Endian, serialized::Context, to_bytes};
+    use zbus::wire::{Endian, serialized::Context, to_bytes};
 
     use super::*;
 
@@ -224,7 +221,7 @@ mod test {
 
     #[test]
     fn serialize_deserialize() {
-        let ctxt = Context::new_dbus(Endian::Little, 0);
+        let ctxt = Context::new(Endian::Little, 0);
 
         let icon = Icon::with_names(["dialog-symbolic"]);
 

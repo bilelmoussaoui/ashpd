@@ -60,8 +60,7 @@ use std::sync::OnceLock;
 #[cfg(feature = "backend")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend")))]
 pub use async_trait;
-pub use enumflags2;
-pub use zbus::{self, zvariant};
+pub use zbus::{self, wire};
 
 /// Check whether the application is running inside a sandbox.
 ///
@@ -294,3 +293,6 @@ mod tests {
         check_doc_aliases_for_config(config);
     }
 }
+
+#[cfg(all(test, feature = "frontend"))]
+mod flags_tests;

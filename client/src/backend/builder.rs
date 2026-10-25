@@ -1,6 +1,5 @@
 use std::sync::{Arc, Mutex};
 
-use enumflags2::BitFlags;
 use futures_util::{StreamExt, task::SpawnExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
@@ -8,7 +7,7 @@ use crate::backend::{Result, session::SessionManager};
 
 pub struct Builder {
     name: OwnedWellKnownName,
-    flags: BitFlags<zbus::fdo::RequestNameFlags>,
+    flags: zbus::fdo::RequestNameFlags,
     #[cfg(feature = "account")]
     account_impl: Option<Arc<dyn crate::backend::account::AccountImpl>>,
     access_impl: Option<Arc<dyn crate::backend::access::AccessImpl>>,
@@ -51,8 +50,8 @@ impl Builder {
         Ok(Self {
             name: well_known_name.into(),
             // same flags as zbus::Connection::request_name
-            flags: zbus::fdo::RequestNameFlags::ReplaceExisting
-                | zbus::fdo::RequestNameFlags::DoNotQueue,
+            flags: zbus::fdo::RequestNameFlags::REPLACE_EXISTING
+                | zbus::fdo::RequestNameFlags::DO_NOT_QUEUE,
             #[cfg(feature = "account")]
             account_impl: None,
             access_impl: None,
@@ -87,7 +86,7 @@ impl Builder {
         })
     }
 
-    pub fn with_flags(mut self, flags: BitFlags<zbus::fdo::RequestNameFlags>) -> Self {
+    pub fn with_flags(mut self, flags: zbus::fdo::RequestNameFlags) -> Self {
         self.flags = flags;
         self
     }

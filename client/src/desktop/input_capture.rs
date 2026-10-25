@@ -45,11 +45,11 @@
 //!         .create_session(
 //!             None,
 //!             CreateSessionOptions::default().set_capabilities(
-//!                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!                 Capabilities::KEYBOARD | Capabilities::POINTER | Capabilities::TOUCHSCREEN,
 //!             ),
 //!         )
 //!         .await?;
-//!     eprintln!("capabilities: {capabilities}");
+//!     eprintln!("capabilities: {capabilities:?}");
 //!
 //!     let eifd = input_capture
 //!         .connect_to_eis(&session, Default::default())
@@ -101,7 +101,7 @@
 //!         .create_session(
 //!             None,
 //!             CreateSessionOptions::default().set_capabilities(
-//!                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!                 Capabilities::KEYBOARD | Capabilities::POINTER | Capabilities::TOUCHSCREEN,
 //!             ),
 //!         )
 //!         .await?;
@@ -180,7 +180,7 @@
 //!         .create_session(
 //!             None,
 //!             CreateSessionOptions::default().set_capabilities(
-//!                 Capabilities::Keyboard | Capabilities::Pointer | Capabilities::Touchscreen,
+//!                 Capabilities::KEYBOARD | Capabilities::POINTER | Capabilities::TOUCHSCREEN,
 //!             ),
 //!         )
 //!         .await?;
@@ -294,83 +294,83 @@
 
 use std::{collections::HashMap, num::NonZeroU32, os::fd::OwnedFd};
 
-use enumflags2::{BitFlags, bitflags};
 use futures_util::Stream;
 use serde::{Deserialize, Serialize, de::Visitor};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use zbus::zvariant::{
-    self, ObjectPath, Optional, OwnedObjectPath, OwnedValue, Type,
-    as_value::{self, optional},
+use zbus::wire::{
+    self, ObjectPath, Optional, OwnedObjectPath, OwnedVariant, Type,
+    as_variant::{self, optional},
 };
 
 use super::{HandleToken, PersistMode, Request, Session, session::SessionPortal};
 use crate::{Error, WindowIdentifier, proxy::Proxy};
 
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Eq, Debug, Copy, Clone, Type)]
-#[bitflags]
-#[repr(u32)]
 /// Supported capabilities
-pub enum Capabilities {
-    /// Keyboard
-    Keyboard,
-    /// Pointer
-    Pointer,
-    /// Touchscreen
-    Touchscreen,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Type)]
+pub struct Capabilities(u32);
+
+bitflags::bitflags! {
+    impl Capabilities: u32 {
+        /// Keyboard
+        const KEYBOARD = 1;
+        /// Pointer
+        const POINTER = 2;
+        /// Touchscreen
+        const TOUCHSCREEN = 4;
+    }
 }
 
 #[derive(Debug, Serialize, Type, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::create_session`] request.
 pub struct CreateSessionOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_handle_token: HandleToken,
-    #[serde(with = "as_value")]
-    capabilities: BitFlags<Capabilities>,
+    #[serde(with = "as_variant")]
+    capabilities: Capabilities,
 }
 
 impl CreateSessionOptions {
     /// Request the specified capabilities.
-    pub fn set_capabilities(mut self, capabilities: BitFlags<Capabilities>) -> Self {
+    pub fn set_capabilities(mut self, capabilities: Capabilities) -> Self {
         self.capabilities = capabilities;
         self
     }
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct CreateSessionResponse {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_handle: OwnedObjectPath,
-    #[serde(with = "as_value")]
-    capabilities: BitFlags<Capabilities>,
+    #[serde(with = "as_variant")]
+    capabilities: Capabilities,
 }
 
 #[derive(Debug, Serialize, Type, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::create_session2`] request.
 pub struct CreateSession2Options {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_handle_token: HandleToken,
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct CreateSession2Results {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     session_handle: OwnedObjectPath,
 }
 
 #[derive(Debug, Serialize, Type, Default)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::start`] request.
 pub struct StartOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
-    #[serde(with = "as_value")]
-    capabilities: BitFlags<Capabilities>,
+    #[serde(with = "as_variant")]
+    capabilities: Capabilities,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     restore_token: Option<String>,
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -379,7 +379,7 @@ pub struct StartOptions {
 
 impl StartOptions {
     /// Request the specified capabilities.
-    pub fn set_capabilities(mut self, capabilities: BitFlags<Capabilities>) -> Self {
+    pub fn set_capabilities(mut self, capabilities: Capabilities) -> Self {
         self.capabilities = capabilities;
         self
     }
@@ -398,11 +398,11 @@ impl StartOptions {
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Response of [`InputCapture::create_session`] request.
 pub struct StartResponse {
-    #[serde(with = "as_value")]
-    capabilities: BitFlags<Capabilities>,
+    #[serde(with = "as_variant")]
+    capabilities: Capabilities,
     #[serde(default, with = "optional")]
     clipboard_enabled: Option<bool>,
     #[serde(default, with = "optional")]
@@ -411,7 +411,7 @@ pub struct StartResponse {
 
 impl StartResponse {
     /// The capabilities available to this session.
-    pub fn capabilities(&self) -> BitFlags<Capabilities> {
+    pub fn capabilities(&self) -> Capabilities {
         self.capabilities
     }
 
@@ -427,33 +427,33 @@ impl StartResponse {
 }
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::zones`] request.
 pub struct GetZonesOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::set_pointer_barriers`] request.
 pub struct SetPointerBarriersOptions {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     handle_token: HandleToken,
 }
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::enable`] request.
 pub struct EnableOptions {}
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::disable`] request.
 pub struct DisableOptions {}
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::release`] request.
 pub struct ReleaseOptions {
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
@@ -479,14 +479,14 @@ impl ReleaseOptions {
 }
 
 #[derive(Default, Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Specified options for a [`InputCapture::connect_to_eis`] request.
 pub struct ConnectToEISOptions {}
 
 /// Indicates that an input capturing session was disabled.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "(oa{sv})")]
-pub struct Disabled(OwnedObjectPath, HashMap<String, OwnedValue>);
+#[zbus(signature = "(oa{sv})")]
+pub struct Disabled(OwnedObjectPath, HashMap<String, OwnedVariant>);
 
 impl Disabled {
     /// Session that was disabled.
@@ -495,13 +495,13 @@ impl Disabled {
     }
 
     /// Optional information
-    pub fn options(&self) -> &HashMap<String, OwnedValue> {
+    pub fn options(&self) -> &HashMap<String, OwnedVariant> {
         &self.1
     }
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct DeactivatedOptions {
     #[serde(default, with = "optional")]
     activation_id: Option<u32>,
@@ -509,7 +509,7 @@ struct DeactivatedOptions {
 
 /// Indicates that an input capturing session was deactivated.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "(oa{sv})")]
+#[zbus(signature = "(oa{sv})")]
 pub struct Deactivated(OwnedObjectPath, DeactivatedOptions);
 
 impl Deactivated {
@@ -526,7 +526,7 @@ impl Deactivated {
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct ActivatedOptions {
     #[serde(default, with = "optional")]
     activation_id: Option<u32>,
@@ -538,7 +538,7 @@ struct ActivatedOptions {
 
 /// Indicates that an input capturing session was activated.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "(oa{sv})")]
+#[zbus(signature = "(oa{sv})")]
 pub struct Activated(OwnedObjectPath, ActivatedOptions);
 
 impl Activated {
@@ -565,7 +565,7 @@ impl Activated {
 }
 
 #[derive(Clone, Copy, Debug, Type)]
-#[zvariant(signature = "u")]
+#[zbus(signature = "u")]
 /// information about an activation barrier
 pub enum ActivatedBarrier {
     /// [`BarrierID`] of the triggered barrier
@@ -606,7 +606,7 @@ impl Visitor<'_> for ActivatedBarrierVisitor {
 }
 
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 struct ZonesChangedOptions {
     #[serde(default, with = "optional")]
     zone_set: Option<u32>,
@@ -614,7 +614,7 @@ struct ZonesChangedOptions {
 
 /// Indicates that zones available to this session changed.
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "(oa{sv})")]
+#[zbus(signature = "(oa{sv})")]
 pub struct ZonesChanged(OwnedObjectPath, ZonesChangedOptions);
 
 impl ZonesChanged {
@@ -631,7 +631,7 @@ impl ZonesChanged {
 
 /// A region of a [`Zones`].
 #[derive(Debug, Clone, Copy, Deserialize, Type)]
-#[zvariant(signature = "(uuii)")]
+#[zbus(signature = "(uuii)")]
 pub struct Region(u32, u32, i32, i32);
 
 impl Region {
@@ -658,11 +658,11 @@ impl Region {
 
 /// A response of [`InputCapture::zones`].
 #[derive(Debug, Type, Deserialize)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct Zones {
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     zones: Vec<Region>,
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     zone_set: u32,
 }
 
@@ -685,7 +685,7 @@ pub type BarrierID = NonZeroU32;
 ///
 /// Barriers are typically placed along screen edges.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Type)]
-#[zvariant(signature = "(iiii)")]
+#[zbus(signature = "(iiii)")]
 pub struct BarrierPosition {
     /// x coordinate of the first point
     x1: i32,
@@ -757,12 +757,12 @@ impl Serialize for BarrierPosition {
 }
 
 #[derive(Debug, Serialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 /// Input Barrier.
 pub struct Barrier {
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     barrier_id: BarrierID,
-    #[serde(with = "as_value")]
+    #[serde(with = "as_variant")]
     position: BarrierPosition,
 }
 
@@ -788,9 +788,9 @@ impl Barrier {
 
 /// A response to [`InputCapture::set_pointer_barriers`]
 #[derive(Debug, Deserialize, Type)]
-#[zvariant(signature = "dict")]
+#[zbus(signature = "dict")]
 pub struct SetPointerBarriersResponse {
-    #[serde(default, with = "as_value")]
+    #[serde(default, with = "as_variant")]
     failed_barriers: Vec<BarrierID>,
 }
 
@@ -835,7 +835,7 @@ impl InputCapture {
         &self,
         identifier: Option<&WindowIdentifier>,
         options: CreateSessionOptions,
-    ) -> Result<(Session<Self>, BitFlags<Capabilities>), Error> {
+    ) -> Result<(Session<Self>, Capabilities), Error> {
         let identifier = Optional::from(identifier);
         let (request, proxy) = futures_util::try_join!(
             self.0.request::<CreateSessionResponse>(
@@ -880,14 +880,14 @@ impl InputCapture {
     ///     Ok(sess) => {
     ///         // Version 2: explicitly start the session
     ///         let opts = StartOptions::default()
-    ///             .set_capabilities(Capabilities::Keyboard | Capabilities::Pointer);
+    ///             .set_capabilities(Capabilities::KEYBOARD | Capabilities::POINTER);
     ///         input_capture.start(&sess, None, opts).await?;
     ///         sess
     ///     }
     ///     Err(Error::RequiresVersion(_, _)) => {
     ///         // Version 1: fallback to legacy API, starts implicitly
     ///         let opts = ashpd::desktop::input_capture::CreateSessionOptions::default()
-    ///             .set_capabilities(Capabilities::Keyboard | Capabilities::Pointer);
+    ///             .set_capabilities(Capabilities::KEYBOARD | Capabilities::POINTER);
     ///         let (session, _capabilities) = input_capture.create_session(None, opts).await?;
     ///         session
     ///     }
@@ -1049,7 +1049,7 @@ impl InputCapture {
     ) -> Result<OwnedFd, Error> {
         let fd = self
             .0
-            .call::<zvariant::OwnedFd>("ConnectToEIS", &(session, options))
+            .call::<wire::OwnedFd>("ConnectToEIS", &(session, options))
             .await?;
         Ok(fd.into())
     }
@@ -1103,8 +1103,10 @@ impl InputCapture {
     ///
     /// See also [`SupportedCapabilities`](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.InputCapture.html#org-freedesktop-portal-inputcapture-supportedcapabilities).
     #[doc(alias = "SupportedCapabilities")]
-    pub async fn supported_capabilities(&self) -> Result<BitFlags<Capabilities>, Error> {
-        self.0.property("SupportedCapabilities").await
+    pub async fn supported_capabilities(&self) -> Result<Capabilities, Error> {
+        self.0
+            .property::<Capabilities>("SupportedCapabilities")
+            .await
     }
 }
 
