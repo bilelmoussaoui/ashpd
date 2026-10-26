@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Icon, request::Response},
@@ -115,17 +115,12 @@ pub trait AccessImpl: RequestImpl {
 
 pub(crate) struct AccessInterface {
     imp: Arc<dyn AccessImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl AccessInterface {
-    pub fn new(
-        imp: Arc<dyn AccessImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn AccessImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -152,10 +147,9 @@ impl AccessInterface {
 
         Request::spawn(
             "Access::AccessDialog",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.access_dialog(
                     HandleToken::try_from(&handle).unwrap(),

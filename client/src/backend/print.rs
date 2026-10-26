@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -45,17 +45,12 @@ pub trait PrintImpl: RequestImpl {
 
 pub(crate) struct PrintInterface {
     imp: Arc<dyn PrintImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl PrintInterface {
-    pub fn new(
-        imp: Arc<dyn PrintImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn PrintImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -82,10 +77,9 @@ impl PrintInterface {
 
         Request::spawn(
             "Print::PreparePrint",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.prepare_print(
                     HandleToken::try_from(&handle).unwrap(),
@@ -117,10 +111,9 @@ impl PrintInterface {
 
         Request::spawn(
             "Print::Print",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.print(
                     HandleToken::try_from(&handle).unwrap(),

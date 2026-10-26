@@ -44,3 +44,10 @@ pub mod usb;
 #[cfg(feature = "wallpaper")]
 #[cfg_attr(docsrs, doc(cfg(feature = "wallpaper")))]
 pub mod wallpaper;
+
+/// Shared connection and executor for backend interfaces.
+#[derive(Clone)]
+pub(crate) struct IfaceInner {
+    cnx: zbus::Connection,
+    spawn: std::sync::Arc<dyn futures_util::task::Spawn + Send + Sync>,
+}

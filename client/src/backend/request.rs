@@ -10,6 +10,7 @@ use zbus::wire::{ObjectPath, OwnedObjectPath};
 
 use crate::{
     PortalError,
+    backend::IfaceInner,
     desktop::{HandleToken, Response},
 };
 
@@ -34,10 +35,9 @@ impl Request {
 
     pub(crate) async fn spawn<T, R>(
         _method: &'static str,
-        cnx: &zbus::Connection,
+        inner: &IfaceInner,
         path: OwnedObjectPath,
         imp: Arc<R>,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
         callback: impl Future<Output = crate::backend::Result<T>>,
     ) -> crate::backend::Result<Response<T>>
     where
@@ -48,6 +48,7 @@ impl Request {
         tracing::debug!("{_method}");
         let (fut, abort_handle) = abortable(callback);
         let token = HandleToken::try_from(&path).unwrap();
+        let spawn = Arc::clone(&inner.spawn);
         let close_cb = move || {
             if let Err(err) = spawn.spawn(async move {
                 RequestImpl::close(&*imp, token).await;
@@ -57,8 +58,8 @@ impl Request {
                 let _ = err;
             }
         };
-        let request = Request::new(close_cb, path.clone(), abort_handle, cnx.clone());
-        let server = cnx.object_server();
+        let request = Request::new(close_cb, path.clone(), abort_handle, inner.cnx.clone());
+        let server = inner.cnx.object_server();
         #[cfg(feature = "tracing")]
         tracing::debug!(
             "Serving `org.freedesktop.impl.portal.Request` at {:?}",

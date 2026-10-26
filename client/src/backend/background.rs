@@ -6,7 +6,10 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
     MaybeAppID, PortalError,
-    backend::request::{Request, RequestImpl},
+    backend::{
+        IfaceInner,
+        request::{Request, RequestImpl},
+    },
     desktop::{HandleToken, Response},
     wire::{OwnedObjectPath, Type, as_variant},
     zbus::object_server::SignalEmitter,
@@ -84,21 +87,16 @@ pub trait BackgroundImpl: RequestImpl {
 
 pub(crate) struct BackgroundInterface {
     imp: Arc<dyn BackgroundImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl BackgroundInterface {
-    pub fn new(
-        imp: Arc<dyn BackgroundImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn BackgroundImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 
     pub async fn changed(&self) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -143,10 +141,9 @@ impl BackgroundInterface {
 
         Request::spawn(
             "Background::NotifyBackground",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.notify_background(HandleToken::try_from(&handle).unwrap(), app_id, &name)
                     .await

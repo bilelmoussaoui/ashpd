@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::Response, usb::UsbDevice},
@@ -51,17 +51,12 @@ pub trait UsbImpl: RequestImpl {
 
 pub(crate) struct UsbInterface {
     imp: Arc<dyn UsbImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl UsbInterface {
-    pub fn new(
-        imp: Arc<dyn UsbImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn UsbImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -86,10 +81,9 @@ impl UsbInterface {
 
         Request::spawn(
             "Usb::AcquireDevices",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.acquire_devices(
                     HandleToken::try_from(&handle).unwrap(),
