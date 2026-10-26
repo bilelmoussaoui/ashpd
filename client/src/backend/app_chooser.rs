@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ActivationToken, MaybeAppID, PortalError, Uri, WindowIdentifierType,
-    backend::request::{Request, RequestImpl},
+    backend::{
+        IfaceInner,
+        request::{Request, RequestImpl},
+    },
     desktop::{HandleToken, Response},
     wire::{
         Optional, OwnedObjectPath, Type,
@@ -105,17 +108,12 @@ pub trait AppChooserImpl: RequestImpl {
 
 pub(crate) struct AppChooserInterface {
     imp: Arc<dyn AppChooserImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl AppChooserInterface {
-    pub fn new(
-        imp: Arc<dyn AppChooserImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn AppChooserImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -139,10 +137,9 @@ impl AppChooserInterface {
 
         Request::spawn(
             "AppChooser::ChooseApplication",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.choose_application(
                     HandleToken::try_from(&handle).unwrap(),

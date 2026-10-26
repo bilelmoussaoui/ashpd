@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -30,17 +30,12 @@ pub trait AccountImpl: RequestImpl {
 
 pub(crate) struct AccountInterface {
     imp: Arc<dyn AccountImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl AccountInterface {
-    pub fn new(
-        imp: Arc<dyn AccountImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn AccountImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -64,10 +59,9 @@ impl AccountInterface {
 
         Request::spawn(
             "Account::GetUserInformation",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.get_user_information(
                     HandleToken::try_from(&handle).unwrap(),

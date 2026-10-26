@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use futures_util::{StreamExt, task::SpawnExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
-use crate::backend::{Result, session::SessionManager};
+use crate::backend::{IfaceInner, Result, session::SessionManager};
 
 pub struct Builder {
     name: OwnedWellKnownName,
@@ -240,13 +240,13 @@ impl Builder {
         }
 
         let object_server = connection.object_server();
+        let inner = IfaceInner {
+            cnx: connection.clone(),
+            spawn,
+        };
         #[cfg(feature = "account")]
         if let Some(imp) = self.account_impl {
-            let portal = crate::backend::account::AccountInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::account::AccountInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Account`");
             object_server
@@ -255,11 +255,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.access_impl {
-            let portal = crate::backend::access::AccessInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::access::AccessInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Access`");
             object_server
@@ -268,11 +264,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.app_chooser_impl {
-            let portal = crate::backend::app_chooser::AppChooserInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::app_chooser::AppChooserInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.AppChooser`");
             object_server
@@ -282,11 +274,7 @@ impl Builder {
 
         #[cfg(feature = "background")]
         if let Some(imp) = self.background_impl {
-            let portal = crate::backend::background::BackgroundInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::background::BackgroundInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Background`");
             object_server
@@ -296,11 +284,7 @@ impl Builder {
 
         #[cfg(feature = "email")]
         if let Some(imp) = self.email_impl {
-            let portal = crate::backend::email::EmailInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::email::EmailInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Email`");
             object_server
@@ -310,11 +294,8 @@ impl Builder {
 
         #[cfg(feature = "file_chooser")]
         if let Some(imp) = self.file_chooser_impl {
-            let portal = crate::backend::file_chooser::FileChooserInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal =
+                crate::backend::file_chooser::FileChooserInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.FileChooser`");
             object_server
@@ -323,11 +304,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.lockdown_impl {
-            let portal = crate::backend::lockdown::LockdownInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::lockdown::LockdownInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Lockdown`");
             object_server
@@ -337,11 +314,8 @@ impl Builder {
 
         #[cfg(feature = "documents")]
         if let Some(imp) = self.permission_store_impl {
-            let portal = crate::backend::permission_store::PermissionStoreInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal =
+                crate::backend::permission_store::PermissionStoreInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.PermissionStore`");
             object_server
@@ -351,11 +325,7 @@ impl Builder {
 
         #[cfg(feature = "print")]
         if let Some(imp) = self.print_impl {
-            let portal = crate::backend::print::PrintInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::print::PrintInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Print`");
             object_server
@@ -367,8 +337,7 @@ impl Builder {
         if let Some(imp) = self.screencast_impl {
             let portal = crate::backend::screencast::ScreencastInterface::new(
                 imp,
-                connection.clone(),
-                Arc::clone(&spawn),
+                inner.clone(),
                 Arc::clone(&self.sessions),
             );
             #[cfg(feature = "tracing")]
@@ -380,11 +349,7 @@ impl Builder {
 
         #[cfg(feature = "screenshot")]
         if let Some(imp) = self.screenshot_impl {
-            let portal = crate::backend::screenshot::ScreenshotInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::screenshot::ScreenshotInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Screenshot`");
             object_server
@@ -394,11 +359,7 @@ impl Builder {
 
         #[cfg(feature = "secret")]
         if let Some(imp) = self.secret_impl {
-            let portal = crate::backend::secret::SecretInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::secret::SecretInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Secret`");
             object_server
@@ -408,11 +369,7 @@ impl Builder {
 
         #[cfg(feature = "settings")]
         if let Some(imp) = self.settings_impl {
-            let portal = crate::backend::settings::SettingsInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::settings::SettingsInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Settings`");
             object_server
@@ -422,11 +379,7 @@ impl Builder {
 
         #[cfg(feature = "wallpaper")]
         if let Some(imp) = self.wallpaper_impl {
-            let portal = crate::backend::wallpaper::WallpaperInterface::new(
-                imp,
-                connection.clone(),
-                Arc::clone(&spawn),
-            );
+            let portal = crate::backend::wallpaper::WallpaperInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Wallpaper`");
             object_server
@@ -436,8 +389,7 @@ impl Builder {
 
         #[cfg(feature = "usb")]
         if let Some(imp) = self.usb_impl {
-            let portal =
-                crate::backend::usb::UsbInterface::new(imp, connection.clone(), Arc::clone(&spawn));
+            let portal = crate::backend::usb::UsbInterface::new(imp, inner.clone());
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Usb`");
             object_server

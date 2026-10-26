@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -44,17 +44,12 @@ pub trait ScreenshotImpl: RequestImpl {
 
 pub(crate) struct ScreenshotInterface {
     imp: Arc<dyn ScreenshotImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl ScreenshotInterface {
-    pub fn new(
-        imp: Arc<dyn ScreenshotImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn ScreenshotImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -83,10 +78,9 @@ impl ScreenshotInterface {
 
         Request::spawn(
             "Screenshot::Screenshot",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.screenshot(
                     HandleToken::try_from(&handle).unwrap(),
@@ -113,10 +107,9 @@ impl ScreenshotInterface {
 
         Request::spawn(
             "Screenshot::PickColor",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.pick_color(
                     HandleToken::try_from(&handle).unwrap(),

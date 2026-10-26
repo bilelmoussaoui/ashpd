@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{
@@ -51,17 +51,12 @@ pub trait FileChooserImpl: RequestImpl {
 
 pub(crate) struct FileChooserInterface {
     imp: Arc<dyn FileChooserImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl FileChooserInterface {
-    pub fn new(
-        imp: Arc<dyn FileChooserImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn FileChooserImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -85,10 +80,9 @@ impl FileChooserInterface {
 
         Request::spawn(
             "FileChooser::OpenFile",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.open_file(
                     HandleToken::try_from(&handle).unwrap(),
@@ -116,10 +110,9 @@ impl FileChooserInterface {
 
         Request::spawn(
             "FileChooser::SaveFile",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.save_file(
                     HandleToken::try_from(&handle).unwrap(),
@@ -147,10 +140,9 @@ impl FileChooserInterface {
 
         Request::spawn(
             "FileChooser::SaveFiles",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.save_files(
                     HandleToken::try_from(&handle).unwrap(),

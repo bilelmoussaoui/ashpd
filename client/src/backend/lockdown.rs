@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::backend::IfaceInner;
 use async_trait::async_trait;
 
 #[async_trait]
@@ -45,19 +46,12 @@ pub trait LockdownImpl: Send + Sync {
 
 pub(crate) struct LockdownInterface {
     imp: Arc<dyn LockdownImpl>,
-    #[allow(dead_code)]
-    cnx: zbus::Connection,
-    #[allow(dead_code)]
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    inner: IfaceInner,
 }
 
 impl LockdownInterface {
-    pub fn new(
-        imp: Arc<dyn LockdownImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn LockdownImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -75,7 +69,7 @@ impl LockdownInterface {
 
     #[zbus(property, name = "disable-printing")]
     async fn set_disable_printing(&self, disable_printing: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -93,7 +87,7 @@ impl LockdownInterface {
 
     #[zbus(property, name = "disable-save-to-disk")]
     async fn set_disable_save_to_disk(&self, disable_save_to_disk: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -116,7 +110,7 @@ impl LockdownInterface {
         &self,
         disable_application_handlers: bool,
     ) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -136,7 +130,7 @@ impl LockdownInterface {
 
     #[zbus(property, name = "disable-location")]
     async fn set_disable_location(&self, disable_location: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -154,7 +148,7 @@ impl LockdownInterface {
 
     #[zbus(property, name = "disable-camera")]
     async fn set_disable_camera(&self, disable_camera: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -172,7 +166,7 @@ impl LockdownInterface {
 
     #[zbus(property, name = "disable-microphone")]
     async fn set_disable_microphone(&self, disable_microphone: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -190,7 +184,7 @@ impl LockdownInterface {
 
     #[zbus(property, name = "disable-sound-output")]
     async fn set_disable_sound_output(&self, disable_sound_output: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
