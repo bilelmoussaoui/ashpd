@@ -76,7 +76,12 @@ impl UsbInterface {
         app_id: Optional<MaybeAppID>,
         devices: Vec<(String, UsbDevice, AccessOptions)>,
         options: AcquireDevicesOptions,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<Vec<(String, AccessOptions)>>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

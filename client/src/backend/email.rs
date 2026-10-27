@@ -49,7 +49,12 @@ impl EmailInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: EmailOptions,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<()>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

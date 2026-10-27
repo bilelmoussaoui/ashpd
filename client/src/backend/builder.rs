@@ -3,11 +3,18 @@ use std::sync::{Arc, Mutex};
 use futures_util::{StreamExt, task::SpawnExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
-use crate::backend::{IfaceInner, Result, session::SessionManager};
+use crate::{
+    backend::{IfaceInner, Result, caller::CallerAuthorization, session::SessionManager},
+    proxy::DESKTOP_DESTINATION,
+};
 
 pub struct Builder {
     name: OwnedWellKnownName,
     flags: zbus::fdo::RequestNameFlags,
+    caller_authorization: CallerAuthorization,
+    lockdown_caller_authorization: Option<CallerAuthorization>,
+    #[cfg(feature = "documents")]
+    permission_store_caller_authorization: CallerAuthorization,
     #[cfg(feature = "account")]
     account_impl: Option<Arc<dyn crate::backend::account::AccountImpl>>,
     access_impl: Option<Arc<dyn crate::backend::access::AccessImpl>>,
@@ -52,6 +59,11 @@ impl Builder {
             // same flags as zbus::Connection::request_name
             flags: zbus::fdo::RequestNameFlags::REPLACE_EXISTING
                 | zbus::fdo::RequestNameFlags::DO_NOT_QUEUE,
+            caller_authorization: CallerAuthorization::require_name(DESKTOP_DESTINATION)
+                .expect("valid portal frontend bus name"),
+            lockdown_caller_authorization: None,
+            #[cfg(feature = "documents")]
+            permission_store_caller_authorization: CallerAuthorization::allow_all(),
             #[cfg(feature = "account")]
             account_impl: None,
             access_impl: None,
@@ -102,6 +114,43 @@ impl Builder {
 
     pub fn with_name_lost(mut self, name_lost: impl Fn() + Send + Sync + 'static) -> Self {
         self.name_lost = Some(Arc::new(name_lost));
+        self
+    }
+
+    /// Set the caller policy for frontend-facing portal interfaces.
+    ///
+    /// By default, only the current owner of
+    /// `org.freedesktop.portal.Desktop` is allowed. Lockdown inherits this
+    /// policy unless overridden with
+    /// [`Self::with_lockdown_caller_authorization`].
+    pub fn with_caller_authorization(mut self, authorization: CallerAuthorization) -> Self {
+        self.caller_authorization = authorization;
+        self
+    }
+
+    /// Set the caller policy for the Lockdown backend interface.
+    ///
+    /// Lockdown can be shared by multiple portal frontends. By default it
+    /// inherits the frontend-facing policy.
+    pub fn with_lockdown_caller_authorization(
+        mut self,
+        authorization: CallerAuthorization,
+    ) -> Self {
+        self.lockdown_caller_authorization = Some(authorization);
+        self
+    }
+
+    /// Set the caller policy for the PermissionStore backend interface.
+    ///
+    /// PermissionStore has legitimate callers outside the portal frontend,
+    /// including the document portal and PipeWire's permission manager. It
+    /// therefore allows all callers by default.
+    #[cfg(feature = "documents")]
+    pub fn with_permission_store_caller_authorization(
+        mut self,
+        authorization: CallerAuthorization,
+    ) -> Self {
+        self.permission_store_caller_authorization = authorization;
         self
     }
 
@@ -243,6 +292,19 @@ impl Builder {
         let inner = IfaceInner {
             cnx: connection.clone(),
             spawn,
+            caller_authorization: Arc::new(self.caller_authorization),
+        };
+        let lockdown_inner = IfaceInner {
+            caller_authorization: self
+                .lockdown_caller_authorization
+                .map(Arc::new)
+                .unwrap_or_else(|| Arc::clone(&inner.caller_authorization)),
+            ..inner.clone()
+        };
+        #[cfg(feature = "documents")]
+        let permission_store_inner = IfaceInner {
+            caller_authorization: Arc::new(self.permission_store_caller_authorization),
+            ..inner.clone()
         };
         #[cfg(feature = "account")]
         if let Some(imp) = self.account_impl {
@@ -304,7 +366,7 @@ impl Builder {
         }
 
         if let Some(imp) = self.lockdown_impl {
-            let portal = crate::backend::lockdown::LockdownInterface::new(imp, inner.clone());
+            let portal = crate::backend::lockdown::LockdownInterface::new(imp, lockdown_inner);
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.Lockdown`");
             object_server
@@ -314,8 +376,10 @@ impl Builder {
 
         #[cfg(feature = "documents")]
         if let Some(imp) = self.permission_store_impl {
-            let portal =
-                crate::backend::permission_store::PermissionStoreInterface::new(imp, inner.clone());
+            let portal = crate::backend::permission_store::PermissionStoreInterface::new(
+                imp,
+                permission_store_inner,
+            );
             #[cfg(feature = "tracing")]
             tracing::debug!("Serving interface `org.freedesktop.impl.portal.PermissionStore`");
             object_server

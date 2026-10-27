@@ -52,7 +52,12 @@ impl WallpaperInterface {
         window_identifier: Optional<WindowIdentifierType>,
         uri: Uri,
         options: WallpaperOptions,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<ResponseType> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

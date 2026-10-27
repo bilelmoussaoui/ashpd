@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
@@ -73,7 +74,12 @@ impl ScreenshotInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: ScreenshotOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<ScreenshotResponse>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -102,7 +108,12 @@ impl ScreenshotInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: ColorOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Color>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

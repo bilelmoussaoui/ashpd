@@ -3,6 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, PortalError,
@@ -119,7 +120,14 @@ impl BackgroundInterface {
     }
 
     #[zbus(out_args("apps"))]
-    async fn get_app_state(&self) -> Result<HashMap<MaybeAppID, AppState>, PortalError> {
+    async fn get_app_state(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+    ) -> Result<HashMap<MaybeAppID, AppState>, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Background::GetAppState");
 
@@ -136,7 +144,12 @@ impl BackgroundInterface {
         handle: OwnedObjectPath,
         app_id: MaybeAppID,
         name: String,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Background>, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -159,7 +172,12 @@ impl BackgroundInterface {
         enable: bool,
         commandline: Vec<String>,
         flags: AutoStartFlags,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<bool, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Background::EnableAutostart");
 

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use zbus::message::Header;
 
 use crate::{
     ActivationToken, MaybeAppID, PortalError, Uri, WindowIdentifierType,
@@ -132,7 +133,12 @@ impl AppChooserInterface {
         parent_window: Optional<WindowIdentifierType>,
         choices: Vec<MaybeAppID>,
         options: ChooserOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Choice>, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -158,7 +164,12 @@ impl AppChooserInterface {
         &self,
         handle: OwnedObjectPath,
         choices: Vec<MaybeAppID>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<(), PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("AppChooser::UpdateChoices");
 
