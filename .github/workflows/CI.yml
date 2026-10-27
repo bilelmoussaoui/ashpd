@@ -21,18 +21,18 @@ jobs:
             dockerfile:
               - 'Dockerfile'
       - name: Log in to GitHub Container Registry
-        if: steps.changes.outputs.dockerfile == 'true'
+        if: steps.changes.outputs.dockerfile == 'true' && github.event_name == 'push'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push container image
+      - name: Build container image
         if: steps.changes.outputs.dockerfile == 'true'
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: true
+          push: ${{ github.event_name == 'push' }}
           tags: ghcr.io/${{ github.repository }}/ci:latest
 
   check:
