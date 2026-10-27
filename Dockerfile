@@ -4,6 +4,7 @@ FROM ghcr.io/gtk-rs/gtk4-rs/gtk4:latest
 RUN sudo dnf install -y \
     pipewire-devel \
     clang-devel \
+    dbus-daemon \
     gstreamer1-devel \
     gstreamer1-plugins-base-devel \
     libshumate-devel \
