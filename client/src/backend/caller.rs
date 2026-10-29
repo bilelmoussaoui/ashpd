@@ -100,24 +100,4 @@ impl CallerAuthorization {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn constructs_single_and_multiple_name_policies() {
-        let one = CallerAuthorization::require_name("org.freedesktop.portal.Desktop").unwrap();
-        assert_eq!(one.allowed_names.unwrap().len(), 1);
-
-        let multiple = CallerAuthorization::require_names([
-            "org.freedesktop.portal.Desktop",
-            "org.freedesktop.portal.Documents",
-        ])
-        .unwrap();
-        assert_eq!(multiple.allowed_names.unwrap().len(), 2);
-    }
-
-    #[test]
-    fn rejects_invalid_well_known_names() {
-        assert!(CallerAuthorization::require_name(":1.42").is_err());
-    }
-}
+mod tests;
