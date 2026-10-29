@@ -123,6 +123,10 @@ impl Builder {
     /// `org.freedesktop.portal.Desktop` is allowed. Lockdown inherits this
     /// policy unless overridden with
     /// [`Self::with_lockdown_caller_authorization`].
+    ///
+    /// If the deployment enforces caller restrictions through bus policy,
+    /// pass [`CallerAuthorization::allow_all`] to use that policy instead.
+    /// This does not change PermissionStore's independently configured policy.
     pub fn with_caller_authorization(mut self, authorization: CallerAuthorization) -> Self {
         self.caller_authorization = authorization;
         self

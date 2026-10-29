@@ -6,6 +6,13 @@ use zbus::{
 use crate::{PortalError, backend::Result};
 
 /// Controls which D-Bus peers may call a portal backend interface.
+///
+/// This application-level check authenticates the current owner of a bus name,
+/// not a particular executable. It does not configure bus policy or sandbox
+/// permissions, and relies on the deployment to protect name ownership.
+///
+/// Deployments that enforce caller restrictions through bus policy can use
+/// [`Self::allow_all`] to leave authorization to that policy.
 #[derive(Clone, Debug)]
 pub struct CallerAuthorization {
     allowed_names: Option<Vec<OwnedWellKnownName>>,
