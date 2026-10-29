@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     MaybeAppID, Uri, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, request::ResponseType, wallpaper::WallpaperOptions},
@@ -27,17 +27,12 @@ pub trait WallpaperImpl: RequestImpl {
 
 pub(crate) struct WallpaperInterface {
     imp: Arc<dyn WallpaperImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl WallpaperInterface {
-    pub fn new(
-        imp: Arc<dyn WallpaperImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn WallpaperImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -57,15 +52,19 @@ impl WallpaperInterface {
         window_identifier: Optional<WindowIdentifierType>,
         uri: Uri,
         options: WallpaperOptions,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<ResponseType> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Wallpaper::SetWallpaperURI",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.with_uri(
                     HandleToken::try_from(&handle).unwrap(),

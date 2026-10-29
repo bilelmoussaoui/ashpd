@@ -2,11 +2,12 @@ use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 use serde::Serialize;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, PortalError, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
         session::{CreateSessionResponse, Session, SessionImpl, SessionManager},
     },
@@ -61,22 +62,19 @@ pub trait ScreencastImpl: RequestImpl + SessionImpl {
 
 pub(crate) struct ScreencastInterface {
     imp: Arc<dyn ScreencastImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
     sessions: Arc<Mutex<SessionManager>>,
 }
 
 impl ScreencastInterface {
     pub fn new(
         imp: Arc<dyn ScreencastImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+        inner: IfaceInner,
         sessions: Arc<Mutex<SessionManager>>,
     ) -> Self {
         Self {
             imp,
-            cnx,
-            spawn,
+            inner,
             sessions,
         }
     }
@@ -115,7 +113,12 @@ impl ScreencastInterface {
         session_handle: OwnedObjectPath,
         app_id: Optional<MaybeAppID>,
         options: CreateSessionOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<CreateSessionResponse>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let session_token = HandleToken::try_from(&session_handle).unwrap();
         {
             let sessions = self.sessions.lock().unwrap();
@@ -131,10 +134,9 @@ impl ScreencastInterface {
         let token = session_token.clone();
         let result = Request::spawn(
             "ScreenCast::CreateSession",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.create_session(
                     HandleToken::try_from(&handle).unwrap(),
@@ -157,8 +159,9 @@ impl ScreencastInterface {
                 session_handle,
                 Arc::clone(&self.sessions),
                 Some(Arc::clone(&self.imp) as Arc<dyn SessionImpl>),
+                Arc::clone(&self.inner.caller_authorization),
             );
-            session.serve(self.cnx.clone()).await?;
+            session.serve(self.inner.cnx.clone()).await?;
             {
                 let mut sessions = self.sessions.lock().unwrap();
                 sessions.add(session);
@@ -181,7 +184,12 @@ impl ScreencastInterface {
         session_handle: OwnedObjectPath,
         app_id: Optional<MaybeAppID>,
         options: SelectSourcesOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<SelectSourcesResponse>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let session_token = HandleToken::try_from(&session_handle).unwrap();
         {
             let sessions = self.sessions.lock().unwrap();
@@ -191,10 +199,9 @@ impl ScreencastInterface {
         let imp = Arc::clone(&self.imp);
         Request::spawn(
             "ScreenCast::SelectSources",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.select_sources(
                     HandleToken::try_from(&handle).unwrap(),
@@ -217,7 +224,12 @@ impl ScreencastInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: StartCastOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Streams>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let session_token = HandleToken::try_from(&session_handle).unwrap();
         {
             let sessions = self.sessions.lock().unwrap();
@@ -227,10 +239,9 @@ impl ScreencastInterface {
         let imp = Arc::clone(&self.imp);
         Request::spawn(
             "ScreenCast::Start",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.start_cast(
                     HandleToken::try_from(&handle).unwrap(),

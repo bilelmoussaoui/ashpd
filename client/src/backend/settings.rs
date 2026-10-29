@@ -1,9 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     PortalError,
+    backend::IfaceInner,
     desktop::{
         Color,
         settings::{
@@ -46,18 +48,12 @@ pub trait SettingsImpl: Send + Sync {
 
 pub(crate) struct SettingsInterface {
     imp: Arc<dyn SettingsImpl>,
-    cnx: zbus::Connection,
-    #[allow(dead_code)]
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    inner: IfaceInner,
 }
 
 impl SettingsInterface {
-    pub fn new(
-        imp: Arc<dyn SettingsImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn SettingsImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 
     pub async fn changed(
@@ -66,7 +62,7 @@ impl SettingsInterface {
         key: &str,
         value: Variant<'_>,
     ) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -136,7 +132,12 @@ impl SettingsInterface {
     async fn read_all(
         &self,
         namespaces: Vec<String>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<HashMap<String, Namespace>, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::ReadAll");
 
@@ -148,7 +149,16 @@ impl SettingsInterface {
     }
 
     #[zbus(out_args("value"))]
-    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedVariant, PortalError> {
+    async fn read(
+        &self,
+        namespace: &str,
+        key: &str,
+        #[zbus(header)] header: Header<'_>,
+    ) -> Result<OwnedVariant, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::Read");
 

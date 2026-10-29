@@ -6,7 +6,7 @@ use zbus::wire::{self, OwnedVariant};
 use crate::{
     MaybeAppID,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, Response},
@@ -14,6 +14,10 @@ use crate::{
 
 #[async_trait]
 pub trait SecretImpl: RequestImpl {
+    /// Retrieve a secret for `app_id`.
+    ///
+    /// The D-Bus interface applies the caller authorization configured on
+    /// [`crate::backend::Builder`] before invoking this method.
     #[doc(alias = "RetrieveSecret")]
     async fn retrieve(
         &self,
@@ -25,17 +29,12 @@ pub trait SecretImpl: RequestImpl {
 
 pub(crate) struct SecretInterface {
     imp: Arc<dyn SecretImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl SecretInterface {
-    pub fn new(
-        imp: Arc<dyn SecretImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn SecretImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -53,15 +52,19 @@ impl SecretInterface {
         app_id: MaybeAppID,
         fd: wire::OwnedFd,
         _options: HashMap<String, OwnedVariant>,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<HashMap<String, OwnedVariant>>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Secret::RetrieveSecret",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.retrieve(
                     HandleToken::try_from(&handle).unwrap(),

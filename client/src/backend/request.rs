@@ -10,6 +10,7 @@ use zbus::wire::{ObjectPath, OwnedObjectPath};
 
 use crate::{
     PortalError,
+    backend::{IfaceInner, caller::CallerAuthorization},
     desktop::{HandleToken, Response},
 };
 
@@ -25,6 +26,7 @@ pub struct Request {
     abort_handle: AbortHandle,
     #[allow(dead_code)]
     cnx: zbus::Connection,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl Request {
@@ -34,10 +36,9 @@ impl Request {
 
     pub(crate) async fn spawn<T, R>(
         _method: &'static str,
-        cnx: &zbus::Connection,
+        inner: &IfaceInner,
         path: OwnedObjectPath,
         imp: Arc<R>,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
         callback: impl Future<Output = crate::backend::Result<T>>,
     ) -> crate::backend::Result<Response<T>>
     where
@@ -48,6 +49,7 @@ impl Request {
         tracing::debug!("{_method}");
         let (fut, abort_handle) = abortable(callback);
         let token = HandleToken::try_from(&path).unwrap();
+        let spawn = Arc::clone(&inner.spawn);
         let close_cb = move || {
             if let Err(err) = spawn.spawn(async move {
                 RequestImpl::close(&*imp, token).await;
@@ -57,8 +59,14 @@ impl Request {
                 let _ = err;
             }
         };
-        let request = Request::new(close_cb, path.clone(), abort_handle, cnx.clone());
-        let server = cnx.object_server();
+        let request = Request::new(
+            close_cb,
+            path.clone(),
+            abort_handle,
+            inner.cnx.clone(),
+            Arc::clone(&inner.caller_authorization),
+        );
+        let server = inner.cnx.object_server();
         #[cfg(feature = "tracing")]
         tracing::debug!(
             "Serving `org.freedesktop.impl.portal.Request` at {:?}",
@@ -94,12 +102,14 @@ impl Request {
         path: OwnedObjectPath,
         abort_handle: AbortHandle,
         cnx: zbus::Connection,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
         Self {
             close_cb: Mutex::new(Some(Box::new(close_cb))),
             path,
             abort_handle,
             cnx,
+            caller_authorization,
         }
     }
 }
@@ -115,17 +125,18 @@ impl Eq for Request {}
 impl Request {
     async fn close(
         &self,
-        #[zbus(object_server)] server: &zbus::ObjectServer,
+        #[zbus(connection)] connection: &zbus::Connection,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> zbus::fdo::Result<()> {
+        self.caller_authorization
+            .authorize_fdo(connection, &header)
+            .await?;
         self.abort_handle.abort();
         if let Some(close_cb) = self.close_cb.lock().await.take() {
             close_cb();
         }
 
-        // Drop the request as it served it purpose once closed
-        #[cfg(feature = "tracing")]
-        tracing::debug!("Releasing request {:?}", self.path.as_str());
-        server.remove::<Self, _>(&self.path).await?;
+        // Request::spawn removes the object when the aborted future completes.
         Ok(())
     }
 }

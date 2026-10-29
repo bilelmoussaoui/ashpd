@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use crate::{
     MaybeAppID, WindowIdentifierType,
     backend::{
-        Result,
+        IfaceInner, Result,
         request::{Request, RequestImpl},
     },
     desktop::{HandleToken, email::EmailOptions, request::Response},
@@ -26,17 +26,12 @@ pub trait EmailImpl: RequestImpl {
 
 pub(crate) struct EmailInterface {
     imp: Arc<dyn EmailImpl>,
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    cnx: zbus::Connection,
+    inner: IfaceInner,
 }
 
 impl EmailInterface {
-    pub fn new(
-        imp: Arc<dyn EmailImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn EmailImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -54,15 +49,19 @@ impl EmailInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: EmailOptions,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<()>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
             "Email::ComposeEmail",
-            &self.cnx,
+            &self.inner,
             handle.clone(),
             Arc::clone(&self.imp),
-            Arc::clone(&self.spawn),
             async move {
                 imp.compose(
                     HandleToken::try_from(&handle).unwrap(),

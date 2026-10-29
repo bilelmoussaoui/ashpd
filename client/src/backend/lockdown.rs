@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use zbus::message::Header;
+
+use crate::backend::IfaceInner;
 
 #[async_trait]
 pub trait LockdownImpl: Send + Sync {
@@ -45,19 +48,12 @@ pub trait LockdownImpl: Send + Sync {
 
 pub(crate) struct LockdownInterface {
     imp: Arc<dyn LockdownImpl>,
-    #[allow(dead_code)]
-    cnx: zbus::Connection,
-    #[allow(dead_code)]
-    spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
+    inner: IfaceInner,
 }
 
 impl LockdownInterface {
-    pub fn new(
-        imp: Arc<dyn LockdownImpl>,
-        cnx: zbus::Connection,
-        spawn: Arc<dyn futures_util::task::Spawn + Send + Sync>,
-    ) -> Self {
-        Self { imp, cnx, spawn }
+    pub fn new(imp: Arc<dyn LockdownImpl>, inner: IfaceInner) -> Self {
+        Self { imp, inner }
     }
 }
 
@@ -69,13 +65,28 @@ impl LockdownInterface {
     }
 
     #[zbus(property, name = "disable-printing")]
-    async fn disable_printing(&self) -> bool {
-        self.imp.disable_printing().await
+    async fn disable_printing(
+        &self,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<bool> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        Ok(self.imp.disable_printing().await)
     }
 
     #[zbus(property, name = "disable-printing")]
-    async fn set_disable_printing(&self, disable_printing: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+    async fn set_disable_printing(
+        &self,
+        disable_printing: bool,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<()> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -87,13 +98,28 @@ impl LockdownInterface {
     }
 
     #[zbus(property, name = "disable-save-to-disk")]
-    async fn disable_save_to_disk(&self) -> bool {
-        self.imp.disable_save_to_disk().await
+    async fn disable_save_to_disk(
+        &self,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<bool> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        Ok(self.imp.disable_save_to_disk().await)
     }
 
     #[zbus(property, name = "disable-save-to-disk")]
-    async fn set_disable_save_to_disk(&self, disable_save_to_disk: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+    async fn set_disable_save_to_disk(
+        &self,
+        disable_save_to_disk: bool,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<()> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -107,16 +133,28 @@ impl LockdownInterface {
     }
 
     #[zbus(property, name = "disable-application-handlers")]
-    async fn disable_application_handlers(&self) -> bool {
-        self.imp.disable_application_handlers().await
+    async fn disable_application_handlers(
+        &self,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<bool> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        Ok(self.imp.disable_application_handlers().await)
     }
 
     #[zbus(property, name = "disable-application-handlers")]
     async fn set_disable_application_handlers(
         &self,
         disable_application_handlers: bool,
-    ) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<()> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -130,13 +168,28 @@ impl LockdownInterface {
     }
 
     #[zbus(property, name = "disable-location")]
-    async fn disable_location(&self) -> bool {
-        self.imp.disable_location().await
+    async fn disable_location(
+        &self,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<bool> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        Ok(self.imp.disable_location().await)
     }
 
     #[zbus(property, name = "disable-location")]
-    async fn set_disable_location(&self, disable_location: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+    async fn set_disable_location(
+        &self,
+        disable_location: bool,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<()> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -148,13 +201,28 @@ impl LockdownInterface {
     }
 
     #[zbus(property, name = "disable-camera")]
-    async fn disable_camera(&self) -> bool {
-        self.imp.disable_camera().await
+    async fn disable_camera(
+        &self,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<bool> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        Ok(self.imp.disable_camera().await)
     }
 
     #[zbus(property, name = "disable-camera")]
-    async fn set_disable_camera(&self, disable_camera: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+    async fn set_disable_camera(
+        &self,
+        disable_camera: bool,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<()> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -166,13 +234,28 @@ impl LockdownInterface {
     }
 
     #[zbus(property, name = "disable-microphone")]
-    async fn disable_microphone(&self) -> bool {
-        self.imp.disable_microphone().await
+    async fn disable_microphone(
+        &self,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<bool> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        Ok(self.imp.disable_microphone().await)
     }
 
     #[zbus(property, name = "disable-microphone")]
-    async fn set_disable_microphone(&self, disable_microphone: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+    async fn set_disable_microphone(
+        &self,
+        disable_microphone: bool,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<()> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;
@@ -184,13 +267,28 @@ impl LockdownInterface {
     }
 
     #[zbus(property, name = "disable-sound-output")]
-    async fn disable_sound_output(&self) -> bool {
-        self.imp.disable_sound_output().await
+    async fn disable_sound_output(
+        &self,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<bool> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        Ok(self.imp.disable_sound_output().await)
     }
 
     #[zbus(property, name = "disable-sound-output")]
-    async fn set_disable_sound_output(&self, disable_sound_output: bool) -> zbus::Result<()> {
-        let object_server = self.cnx.object_server();
+    async fn set_disable_sound_output(
+        &self,
+        disable_sound_output: bool,
+        #[zbus(header)] header: Option<Header<'_>>,
+    ) -> zbus::fdo::Result<()> {
+        self.inner
+            .caller_authorization
+            .authorize_property(&self.inner.cnx, header.as_ref())
+            .await?;
+        let object_server = self.inner.cnx.object_server();
         let iface_ref = object_server
             .interface::<_, Self>(crate::proxy::DESKTOP_PATH)
             .await?;

@@ -10,12 +10,13 @@ use zbus::{
     wire::{OwnedObjectPath, Type, as_variant},
 };
 
-use crate::{PortalError, desktop::HandleToken};
+use crate::{PortalError, backend::caller::CallerAuthorization, desktop::HandleToken};
 
 pub(crate) struct Session {
     path: OwnedObjectPath,
     manager: Arc<Mutex<SessionManager>>,
     monitor: Option<Arc<dyn SessionImpl>>,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl Session {
@@ -23,11 +24,13 @@ impl Session {
         path: OwnedObjectPath,
         manager: Arc<Mutex<SessionManager>>,
         monitor: Option<Arc<dyn SessionImpl>>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
         Self {
             path,
             manager,
             monitor,
+            caller_authorization,
         }
     }
 
@@ -40,6 +43,7 @@ impl Session {
             self.path.clone(),
             Arc::clone(&self.manager),
             self.monitor.clone(),
+            Arc::clone(&self.caller_authorization),
         );
         cnx.object_server()
             .at(&self.path, interface)
@@ -64,6 +68,7 @@ struct SessionInterface {
     path: OwnedObjectPath,
     manager: Arc<Mutex<SessionManager>>,
     monitor: Option<Arc<dyn SessionImpl>>,
+    caller_authorization: Arc<CallerAuthorization>,
 }
 
 impl SessionInterface {
@@ -71,11 +76,13 @@ impl SessionInterface {
         path: OwnedObjectPath,
         manager: Arc<Mutex<SessionManager>>,
         monitor: Option<Arc<dyn SessionImpl>>,
+        caller_authorization: Arc<CallerAuthorization>,
     ) -> Self {
         Self {
             path,
             manager,
             monitor,
+            caller_authorization,
         }
     }
 }
@@ -91,7 +98,12 @@ impl SessionInterface {
     async fn close(
         &self,
         #[zbus(object_server)] server: &zbus::ObjectServer,
+        #[zbus(connection)] connection: &zbus::Connection,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> zbus::fdo::Result<()> {
+        self.caller_authorization
+            .authorize_fdo(connection, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("SessionInterface::Close {}", self.path.as_str());
         let token = HandleToken::try_from(&self.path).unwrap();
