@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
@@ -72,7 +73,12 @@ impl PrintInterface {
         settings: Settings,
         page_setup: PageSetup,
         options: PreparePrintOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<PreparePrint>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -106,7 +112,12 @@ impl PrintInterface {
         title: String,
         fd: wire::OwnedFd,
         options: PrintOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<()>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     PortalError,
@@ -131,7 +132,12 @@ impl SettingsInterface {
     async fn read_all(
         &self,
         namespaces: Vec<String>,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<HashMap<String, Namespace>, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::ReadAll");
 
@@ -143,7 +149,16 @@ impl SettingsInterface {
     }
 
     #[zbus(out_args("value"))]
-    async fn read(&self, namespace: &str, key: &str) -> Result<OwnedVariant, PortalError> {
+    async fn read(
+        &self,
+        namespace: &str,
+        key: &str,
+        #[zbus(header)] header: Header<'_>,
+    ) -> Result<OwnedVariant, PortalError> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         #[cfg(feature = "tracing")]
         tracing::debug!("Settings::Read");
 

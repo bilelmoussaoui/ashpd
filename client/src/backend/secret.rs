@@ -14,6 +14,10 @@ use crate::{
 
 #[async_trait]
 pub trait SecretImpl: RequestImpl {
+    /// Retrieve a secret for `app_id`.
+    ///
+    /// The D-Bus interface applies the caller authorization configured on
+    /// [`crate::backend::Builder`] before invoking this method.
     #[doc(alias = "RetrieveSecret")]
     async fn retrieve(
         &self,
@@ -48,7 +52,12 @@ impl SecretInterface {
         app_id: MaybeAppID,
         fd: wire::OwnedFd,
         _options: HashMap<String, OwnedVariant>,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<HashMap<String, OwnedVariant>>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

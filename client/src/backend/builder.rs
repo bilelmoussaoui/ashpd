@@ -3,11 +3,15 @@ use std::sync::{Arc, Mutex};
 use futures_util::{StreamExt, task::SpawnExt};
 use zbus::names::{OwnedWellKnownName, WellKnownName};
 
-use crate::backend::{IfaceInner, Result, session::SessionManager};
+use crate::{
+    backend::{IfaceInner, Result, caller::CallerAuthorization, session::SessionManager},
+    proxy::DESKTOP_DESTINATION,
+};
 
 pub struct Builder {
     name: OwnedWellKnownName,
     flags: zbus::fdo::RequestNameFlags,
+    caller_authorization: CallerAuthorization,
     #[cfg(feature = "account")]
     account_impl: Option<Arc<dyn crate::backend::account::AccountImpl>>,
     access_impl: Option<Arc<dyn crate::backend::access::AccessImpl>>,
@@ -52,6 +56,8 @@ impl Builder {
             // same flags as zbus::Connection::request_name
             flags: zbus::fdo::RequestNameFlags::REPLACE_EXISTING
                 | zbus::fdo::RequestNameFlags::DO_NOT_QUEUE,
+            caller_authorization: CallerAuthorization::require_name(DESKTOP_DESTINATION)
+                .expect("valid portal frontend bus name"),
             #[cfg(feature = "account")]
             account_impl: None,
             access_impl: None,
@@ -102,6 +108,21 @@ impl Builder {
 
     pub fn with_name_lost(mut self, name_lost: impl Fn() + Send + Sync + 'static) -> Self {
         self.name_lost = Some(Arc::new(name_lost));
+        self
+    }
+
+    /// Set the caller policy for frontend-facing portal interfaces.
+    ///
+    /// By default, only the current owner of
+    /// `org.freedesktop.portal.Desktop` is allowed. This policy also applies
+    /// to the associated request and session objects.
+    ///
+    /// If the deployment enforces caller restrictions through bus policy,
+    /// pass [`CallerAuthorization::allow_all`] to use that policy instead.
+    /// Lockdown and PermissionStore are excluded from this policy; configure
+    /// their caller restrictions through bus policy.
+    pub fn with_caller_authorization(mut self, authorization: CallerAuthorization) -> Self {
+        self.caller_authorization = authorization;
         self
     }
 
@@ -243,6 +264,7 @@ impl Builder {
         let inner = IfaceInner {
             cnx: connection.clone(),
             spawn,
+            caller_authorization: Arc::new(self.caller_authorization),
         };
         #[cfg(feature = "account")]
         if let Some(imp) = self.account_impl {

@@ -142,7 +142,12 @@ impl AccessInterface {
         subtitle: String,
         body: String,
         options: AccessOptions,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<AccessResponse>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
