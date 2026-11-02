@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, WindowIdentifierType,
@@ -75,7 +76,12 @@ impl FileChooserInterface {
         window_identifier: Optional<WindowIdentifierType>,
         title: String,
         options: OpenFileOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<SelectedFiles>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -105,7 +111,12 @@ impl FileChooserInterface {
         window_identifier: Optional<WindowIdentifierType>,
         title: String,
         options: SaveFileOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<SelectedFiles>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(
@@ -135,7 +146,12 @@ impl FileChooserInterface {
         window_identifier: Optional<WindowIdentifierType>,
         title: String,
         options: SaveFilesOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<SelectedFiles>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

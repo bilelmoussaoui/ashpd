@@ -54,7 +54,12 @@ impl AccountInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: UserInformationOptions,
+        #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<UserInformation>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let imp = Arc::clone(&self.imp);
 
         Request::spawn(

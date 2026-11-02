@@ -30,6 +30,13 @@ pub enum PortalError {
     WindowDestroyed(String),
 }
 
+#[cfg(feature = "backend")]
+impl PortalError {
+    pub(crate) fn caller_not_allowed() -> Self {
+        Self::NotAllowed("caller is not authorized to invoke this portal backend".into())
+    }
+}
+
 #[derive(Debug)]
 #[non_exhaustive]
 /// The error type for ashpd.

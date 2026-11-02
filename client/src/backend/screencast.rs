@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 use serde::Serialize;
+use zbus::message::Header;
 
 use crate::{
     MaybeAppID, PortalError, WindowIdentifierType,
@@ -112,7 +113,12 @@ impl ScreencastInterface {
         session_handle: OwnedObjectPath,
         app_id: Optional<MaybeAppID>,
         options: CreateSessionOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<CreateSessionResponse>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let session_token = HandleToken::try_from(&session_handle).unwrap();
         {
             let sessions = self.sessions.lock().unwrap();
@@ -153,6 +159,7 @@ impl ScreencastInterface {
                 session_handle,
                 Arc::clone(&self.sessions),
                 Some(Arc::clone(&self.imp) as Arc<dyn SessionImpl>),
+                Arc::clone(&self.inner.caller_authorization),
             );
             session.serve(self.inner.cnx.clone()).await?;
             {
@@ -177,7 +184,12 @@ impl ScreencastInterface {
         session_handle: OwnedObjectPath,
         app_id: Optional<MaybeAppID>,
         options: SelectSourcesOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<SelectSourcesResponse>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let session_token = HandleToken::try_from(&session_handle).unwrap();
         {
             let sessions = self.sessions.lock().unwrap();
@@ -212,7 +224,12 @@ impl ScreencastInterface {
         app_id: Optional<MaybeAppID>,
         window_identifier: Optional<WindowIdentifierType>,
         options: StartCastOptions,
+        #[zbus(header)] header: Header<'_>,
     ) -> Result<Response<Streams>> {
+        self.inner
+            .caller_authorization
+            .authorize(&self.inner.cnx, &header)
+            .await?;
         let session_token = HandleToken::try_from(&session_handle).unwrap();
         {
             let sessions = self.sessions.lock().unwrap();
