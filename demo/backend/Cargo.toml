@@ -7,7 +7,7 @@ license.workspace = true
 
 [dependencies]
 async-trait = "0.1"
-tokio = { version = "1.54.1", features = [
+tokio = { workspace = true, features = [
     "io-util",
     "net",
     "time",
@@ -15,8 +15,8 @@ tokio = { version = "1.54.1", features = [
     "rt-multi-thread",
 ] }
 libc = "0.2"
-tracing = "0.1"
-tracing-subscriber = "0.3.23"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 zbus = { workspace = true, features = ["tokio"] }
 
 [dependencies.ashpd]

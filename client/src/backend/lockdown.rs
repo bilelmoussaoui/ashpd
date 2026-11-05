@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
-use crate::backend::IfaceInner;
 use async_trait::async_trait;
+
+use crate::backend::IfaceInner;
 
 #[async_trait]
 pub trait LockdownImpl: Send + Sync {

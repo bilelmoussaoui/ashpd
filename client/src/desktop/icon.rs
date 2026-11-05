@@ -42,7 +42,8 @@ impl Icon {
             Self::Bytes(bytes) => {
                 let mut array = wire::Array::new(u8::SIGNATURE);
                 for byte in bytes.iter() {
-                    // Safe to unwrap because we are sure it is of the correct type
+                    // Safe to unwrap because we are sure it is of the correct
+                    // type
                     array.append(Variant::from(*byte)).unwrap();
                 }
                 Variant::from(array)
@@ -57,7 +58,8 @@ impl Icon {
             Self::Names(names) => {
                 let mut array = wire::Array::new(String::SIGNATURE);
                 for name in names.iter() {
-                    // Safe to unwrap because we are sure it is of the correct type
+                    // Safe to unwrap because we are sure it is of the correct
+                    // type
                     array.append(Variant::from(name)).unwrap();
                 }
 
@@ -85,7 +87,8 @@ impl Serialize for Icon {
                 tuple.serialize_element("themed")?;
                 let mut array = wire::Array::new(String::SIGNATURE);
                 for name in names.iter() {
-                    // Safe to unwrap because we are sure it is of the correct type
+                    // Safe to unwrap because we are sure it is of the correct
+                    // type
                     array.append(Variant::from(name)).unwrap();
                 }
                 tuple.serialize_element(&Variant::from(array))?;

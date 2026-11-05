@@ -17,7 +17,8 @@ use async_trait::async_trait;
 #[derive(Default, Clone)]
 pub struct Settings {
     color_scheme: ColorScheme,
-    // The signal emitter allows dispatching changed events without exposing DBus internals
+    // The signal emitter allows dispatching changed events without exposing
+    // DBus internals
     signal_emitter: Option<Arc<dyn SettingsSignalEmitter>>,
 }
 

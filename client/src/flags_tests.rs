@@ -144,9 +144,11 @@ fn portal_flags_use_unsigned_integers() {
 #[cfg(feature = "screencast")]
 #[test]
 fn optional_flags_are_variants_and_absent_fields_are_omitted() {
-    use crate::desktop::screencast::{SelectSourcesOptions, SourceType};
     use std::collections::HashMap;
+
     use zbus::OwnedVariant;
+
+    use crate::desktop::screencast::{SelectSourcesOptions, SourceType};
 
     let context = Context::new(LE, 0);
     for sources in [
@@ -169,9 +171,11 @@ fn optional_flags_are_variants_and_absent_fields_are_omitted() {
 #[cfg(feature = "input_capture")]
 #[test]
 fn required_flags_are_variants_and_retain_unknown_bits() {
-    use crate::desktop::input_capture::{Capabilities, CreateSessionOptions, StartResponse};
     use std::collections::HashMap;
+
     use zbus::OwnedVariant;
+
+    use crate::desktop::input_capture::{Capabilities, CreateSessionOptions, StartResponse};
 
     let bits = Capabilities::KEYBOARD.bits() | Capabilities::POINTER.bits() | (1 << 31);
     let options =

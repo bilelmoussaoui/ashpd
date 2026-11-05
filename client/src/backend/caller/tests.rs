@@ -71,7 +71,8 @@ mod dbus {
 
     const FRONTEND: &str = "org.test.Frontend";
 
-    // Exercise the policy directly with real peers' unique names in the headers.
+    // Exercise the policy directly with real peers' unique names in the
+    // headers.
     fn message(sender: &Connection) -> Message {
         Message::method_call("/org/test/Backend", "Test")
             .sender(sender.unique_name().unwrap())

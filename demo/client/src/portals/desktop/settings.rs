@@ -140,7 +140,8 @@ impl SettingsPage {
 
         // Display all settings grouped by namespace
         for (namespace, settings_map) in all_settings {
-            // Skip appearance namespace as we handle those with dedicated getters
+            // Skip appearance namespace as we handle those with dedicated
+            // getters
             if namespace == APPEARANCE_NAMESPACE {
                 continue;
             }

@@ -78,7 +78,8 @@ mod tests {
         let encoded_filename_2 = to_bytes(ctxt, &file_path_2).unwrap().to_vec();
         let encoded_bytes = to_bytes(ctxt, &bytes).unwrap().to_vec();
 
-        // It does not matter whether we use new("abc") or deserialize from b"abc\0".
+        // It does not matter whether we use new("abc") or deserialize from
+        // b"abc\0".
         assert_eq!(encoded_filename, encoded_bytes);
         assert_eq!(encoded_filename_2, encoded_bytes);
 

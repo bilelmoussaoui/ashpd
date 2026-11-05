@@ -156,8 +156,8 @@ impl Application {
             .unwrap()
             .set_enabled(ashpd::is_sandboxed());
 
-        // Install update requires Flatpak and is disabled by default until an update is
-        // available
+        // Install update requires Flatpak and is disabled by default until an
+        // update is available
         self.lookup_action("install-update")
             .and_downcast_ref::<gio::SimpleAction>()
             .unwrap()

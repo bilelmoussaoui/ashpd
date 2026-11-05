@@ -156,7 +156,8 @@ mod imp {
                             window.docs_button.disconnect(handler_id);
                         }
 
-                        // Bind portal version to subtitle and docs URL to button
+                        // Bind portal version to subtitle and docs URL to
+                        // button
                         if let Some(portal_page) = page.downcast_ref::<PortalPage>() {
                             let binding = portal_page
                                 .bind_property("portal-version", &window_title, "subtitle")

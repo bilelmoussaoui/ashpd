@@ -5,8 +5,8 @@ use zbus::{
 
 use crate::{PortalError, backend::Result};
 
-/// Controls which D-Bus peers may call frontend-facing portal backend interfaces
-/// and their request and session objects.
+/// Controls which D-Bus peers may call frontend-facing portal backend
+/// interfaces and their request and session objects.
 ///
 /// Lockdown and PermissionStore are excluded; their caller restrictions belong
 /// in deployment bus policy.
