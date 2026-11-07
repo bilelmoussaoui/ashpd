@@ -113,8 +113,11 @@ pub async fn retrieve() -> Result<Vec<u8>, Error> {
     let proxy = Secret::new().await?;
 
     let (mut x1, x2) = UnixStream::pair()?;
-    proxy.retrieve(&x2, Default::default()).await?;
+    let request = proxy.retrieve(&x2, Default::default()).await?;
     drop(x2);
+    // A refused request sends no secret, and the backend may keep its copy of
+    // the fd open, so reading would wait for an EOF that never comes.
+    request.response()?;
 
     // Read the secret on a blocking thread since it's a small amount of data
     #[cfg(feature = "tokio")]
