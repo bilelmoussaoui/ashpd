@@ -374,88 +374,88 @@ mod string_i32 {
 #[serde(rename_all = "kebab-case")]
 pub struct Settings {
     /// One of landscape, portrait, reverse_landscape or reverse_portrait.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub orientation: Option<Orientation>,
     /// A paper name according to [PWG 5101.1-2002](ftp://ftp.pwg.org/pub/pwg/candidates/cs-pwgmsn10-20020226-5101.1.pdf)
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub paper_format: Option<String>,
     /// Paper width, in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub paper_width: Option<String>,
     /// Paper height, in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub paper_height: Option<String>,
     /// The number of copies to print.
-    #[serde(with = "string_u32", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_u32", skip_serializing_if = "Option::is_none")]
     pub n_copies: Option<u32>,
     /// The default paper source.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub default_source: Option<String>,
     /// Print quality.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub quality: Option<Quality>,
     /// The resolution, sets both resolution-x & resolution-y
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub resolution: Option<String>,
     /// Whether to use color.
-    #[serde(with = "string_bool", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_bool", skip_serializing_if = "Option::is_none")]
     pub use_color: Option<bool>,
     /// Duplex printing mode.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub duplex: Option<Duplex>,
     /// Whether to collate copies.
-    #[serde(with = "string_bool", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_bool", skip_serializing_if = "Option::is_none")]
     pub collate: Option<bool>,
     /// Whether to reverse the order of printed pages.
-    #[serde(with = "string_bool", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_bool", skip_serializing_if = "Option::is_none")]
     pub reverse: Option<bool>,
     /// A media type according to [PWG 5101.1-2002](ftp://ftp.pwg.org/pub/pwg/candidates/cs-pwgmsn10-20020226-5101.1.pdf)
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub media_type: Option<String>,
     /// The dithering to use.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub dither: Option<Dither>,
     /// The scale in percent.
-    #[serde(with = "string_u32", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_u32", skip_serializing_if = "Option::is_none")]
     pub scale: Option<u32>,
     /// What pages to print.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub print_pages: Option<PrintPages>,
     /// A list of page ranges, formatted like this: 0-2,4,9-11.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub page_ranges: Option<String>,
     /// Whether to print all, even, or odd pages.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub page_set: Option<PageSet>,
     /// The finishings.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub finishings: Option<String>,
     /// The number of pages per sheet.
-    #[serde(with = "string_u32", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_u32", skip_serializing_if = "Option::is_none")]
     pub number_up: Option<u32>,
     /// Layout for number-up printing.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub number_up_layout: Option<NumberUpLayout>,
     /// The output bin.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_bin: Option<String>,
     /// The horizontal resolution in dpi.
-    #[serde(with = "string_i32", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_i32", skip_serializing_if = "Option::is_none")]
     pub resolution_x: Option<i32>,
     /// The vertical resolution in dpi.
-    #[serde(with = "string_i32", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "string_i32", skip_serializing_if = "Option::is_none")]
     pub resolution_y: Option<i32>,
     /// The resolution in lpi (lines per inch).
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub printer_lpi: Option<String>,
     /// Basename to use for print-to-file.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_basename: Option<String>,
     /// Format to use for print-to-file.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_file_format: Option<OutputFileFormat>,
     /// The uri used for print-to file.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub output_uri: Option<Uri>,
 }
 
@@ -670,34 +670,34 @@ impl Settings {
 pub struct PageSetup {
     /// the PPD name. It's the name to select a given driver.
     #[serde(rename = "PPDName")]
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub ppdname: Option<String>,
     /// The name of the page setup.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// The user-visible name of the page setup.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub display_name: Option<String>,
     /// Paper width in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub width: Option<f64>,
     /// Paper height in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub height: Option<f64>,
     /// Top margin in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_top: Option<f64>,
     /// Bottom margin in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_bottom: Option<f64>,
     /// Right margin in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_right: Option<f64>,
     /// Left margin in millimeters.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub margin_left: Option<f64>,
     /// The page orientation.
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     pub orientation: Option<Orientation>,
 }
 
