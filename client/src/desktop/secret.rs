@@ -74,6 +74,37 @@ pub struct RetrieveOptions {
     parent_window_type: Option<WindowIdentifierType>,
 }
 
+impl RetrieveOptions {
+    #[cfg(feature = "backend")]
+    /// Gets the window identifier.
+    pub fn parent_window(&self) -> Option<&WindowIdentifierType> {
+        self.parent_window_type.as_ref()
+    }
+
+    #[cfg(feature = "backend")]
+    /// Gets the activation token.
+    pub fn activation_token(&self) -> Option<&ActivationToken> {
+        self.activation_token.as_ref()
+    }
+
+    #[must_use]
+    /// Sets a window identifier.
+    pub fn set_parent_window(mut self, parent_window: impl Into<Option<WindowIdentifier>>) -> Self {
+        self.parent_window = parent_window.into();
+        self
+    }
+
+    #[must_use]
+    /// Sets an activation token.
+    pub fn set_activation_token(
+        mut self,
+        activation_token: impl Into<Option<ActivationToken>>,
+    ) -> Self {
+        self.activation_token = activation_token.into();
+        self
+    }
+}
+
 /// The interface lets sandboxed applications retrieve a per-application secret.
 ///
 /// The secret can then be used for encrypting confidential data inside the
