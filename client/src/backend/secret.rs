@@ -9,7 +9,7 @@ use crate::{
         IfaceInner, Result,
         request::{Request, RequestImpl},
     },
-    desktop::{HandleToken, Response},
+    desktop::{HandleToken, Response, secret::RetrieveOptions},
 };
 
 #[async_trait]
@@ -24,6 +24,7 @@ pub trait SecretImpl: RequestImpl {
         token: HandleToken,
         app_id: MaybeAppID,
         fd: std::os::fd::OwnedFd,
+        options: RetrieveOptions,
     ) -> Result<HashMap<String, OwnedVariant>>;
 }
 
@@ -42,7 +43,7 @@ impl SecretInterface {
 impl SecretInterface {
     #[zbus(property(emits_changed_signal = "const"), name = "version")]
     fn version(&self) -> u32 {
-        1
+        2
     }
 
     #[zbus(out_args("response", "results"))]
@@ -51,7 +52,7 @@ impl SecretInterface {
         handle: wire::OwnedObjectPath,
         app_id: MaybeAppID,
         fd: wire::OwnedFd,
-        _options: HashMap<String, OwnedVariant>,
+        options: RetrieveOptions,
         #[zbus(header)] header: zbus::message::Header<'_>,
     ) -> Result<Response<HashMap<String, OwnedVariant>>> {
         self.inner
@@ -70,6 +71,7 @@ impl SecretInterface {
                     HandleToken::try_from(&handle).unwrap(),
                     app_id,
                     std::os::fd::OwnedFd::from(fd),
+                    options,
                 )
                 .await
             },
