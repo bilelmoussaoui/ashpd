@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ashpd::{
     MaybeAppID,
     backend::{Result, request::RequestImpl, secret::SecretImpl},
-    desktop::HandleToken,
+    desktop::{HandleToken, secret::RetrieveOptions},
     zbus::wire::OwnedVariant,
 };
 use async_trait::async_trait;
@@ -25,6 +25,7 @@ impl SecretImpl for Secret {
         _token: HandleToken,
         _app_id: MaybeAppID,
         _fd: std::os::fd::OwnedFd,
+        _options: RetrieveOptions,
     ) -> Result<HashMap<String, OwnedVariant>> {
         Ok(Default::default())
     }
