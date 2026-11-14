@@ -30,7 +30,9 @@ use zbus::wire::{
 };
 
 use super::{HandleToken, Request};
-use crate::{Error, proxy::Proxy};
+use crate::{
+    Error, activation_token::ActivationToken, proxy::Proxy, window_identifier::WindowIdentifier,
+};
 
 #[derive(Serialize, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.
@@ -42,6 +44,15 @@ pub struct RetrieveOptions {
     /// TODO: seems to not be used by the portal...
     #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
     token: Option<String>,
+    /// A token that can be used to activate a window that might be shown in
+    /// response of this request. This option was added in version 2 of the
+    /// interface.
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    activation_token: Option<ActivationToken>,
+    /// Identifier for the application window. This option was added in version
+    /// 2 of the interface.
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    parent_window: Option<WindowIdentifier>,
 }
 
 /// The interface lets sandboxed applications retrieve a per-application secret.
