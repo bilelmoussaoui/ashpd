@@ -23,7 +23,7 @@ use std::{
     os::{fd::AsFd, unix::net::UnixStream},
 };
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use zbus::wire::{
     Fd, Type,
     as_variant::{self, optional},
@@ -31,11 +31,19 @@ use zbus::wire::{
 
 use super::{HandleToken, Request};
 use crate::{
-    Error, activation_token::ActivationToken, proxy::Proxy, window_identifier::WindowIdentifier,
+    Error,
+    activation_token::ActivationToken,
+    proxy::Proxy,
+    window_identifier::{WindowIdentifier, WindowIdentifierType},
 };
 
-#[derive(Serialize, Type, Debug, Default)]
+#[derive(Serialize, Deserialize, Type, Debug, Default)]
 /// Specified options for a [`Secret::retrieve`] request.
+///
+/// The struct uses `parent_window` and `parent_window_type` depending on
+/// whether this is serialized or deserialized. i.e. on the client side
+/// `parent_window` is used and `parent_window_type` will be used in the backend
+/// if the `backend` feature is enabled.
 #[zbus(signature = "dict")]
 pub struct RetrieveOptions {
     #[serde(with = "as_variant")]
@@ -51,8 +59,19 @@ pub struct RetrieveOptions {
     activation_token: Option<ActivationToken>,
     /// Identifier for the application window. This option was added in version
     /// 2 of the interface.
-    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_deserializing,
+        with = "optional",
+        skip_serializing_if = "Option::is_none"
+    )]
     parent_window: Option<WindowIdentifier>,
+
+    /// Identifier for the application window. This option was added in version
+    /// 2 of the interface.
+    #[cfg(feature = "backend")]
+    #[serde(default, rename(deserialize = "parent_window"), skip_serializing)]
+    parent_window_type: Option<WindowIdentifierType>,
 }
 
 /// The interface lets sandboxed applications retrieve a per-application secret.
