@@ -378,7 +378,12 @@ struct StreamProperties {
     source_type: Option<SourceType>,
     #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     mapping_id: Option<String>,
-    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        with = "optional",
+        skip_serializing_if = "Option::is_none",
+        rename = "pipewire-serial"
+    )]
     pipewire_serial: Option<u64>,
 }
 
