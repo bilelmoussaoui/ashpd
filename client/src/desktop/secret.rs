@@ -50,7 +50,7 @@ pub struct RetrieveOptions {
     handle_token: HandleToken,
     /// A string returned by a previous call to `retrieve`.
     /// TODO: seems to not be used by the portal...
-    #[serde(with = "optional", skip_serializing_if = "Option::is_none")]
+    #[serde(default, with = "optional", skip_serializing_if = "Option::is_none")]
     token: Option<String>,
     /// A token that can be used to activate a window that might be shown in
     /// response of this request. This option was added in version 2 of the
@@ -156,6 +156,28 @@ impl Secret {
                 &(Fd::from(fd), &options),
             )
             .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use zbus::wire::{Dict, Endian, Signature, serialized::Context, to_bytes_for_signature};
+
+    use super::*;
+
+    #[test]
+    fn deserialize_options_without_token() {
+        // What a backend receives: the frontend strips `handle_token` and
+        // apps rarely set `token` (it is only set on subsequent calls).
+        let dict = Dict::new(
+            &Signature::from_bytes(b"s").unwrap(),
+            &Signature::from_bytes(b"v").unwrap(),
+        );
+
+        let ctxt = Context::new(Endian::Little, 0);
+        let encoded = to_bytes_for_signature(ctxt, "a{sv}", &dict).unwrap();
+        let (options, _) = encoded.deserialize::<RetrieveOptions>().unwrap();
+        assert_eq!(options.token, None);
     }
 }
 
