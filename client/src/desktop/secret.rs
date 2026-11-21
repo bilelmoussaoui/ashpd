@@ -46,7 +46,7 @@ use crate::{
 /// if the `backend` feature is enabled.
 #[zbus(signature = "dict")]
 pub struct RetrieveOptions {
-    #[serde(with = "as_variant")]
+    #[serde(with = "as_variant", skip_deserializing)]
     handle_token: HandleToken,
     /// A string returned by a previous call to `retrieve`.
     /// TODO: seems to not be used by the portal...
