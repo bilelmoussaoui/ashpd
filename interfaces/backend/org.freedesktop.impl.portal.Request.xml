@@ -5,5 +5,8 @@
   <interface name="org.freedesktop.impl.portal.Request">
     <method name="Close">
     </method>
+    <signal name="Created">
+    </signal>
+    <property name="version" type="u" access="read"/>
   </interface>
 </node>
